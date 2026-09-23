@@ -98,7 +98,7 @@ fragment for remaining peers, while whole destroy removes the default Farrow
 SSH integration. Host network removal is separate
 and refuses while a VM is attached:
 
-`farrow purge` (alias `farrow rm`) is the concise disposable-lab path. It is
+`farrow purge` is the concise disposable-lab path. It is
 equivalent to `destroy --force --purge`, accepts no node selectors, and is
 idempotent when no deployment exists. It keeps the image cache and host
 network, and it does not bypass process, ownership, or path-integrity checks.

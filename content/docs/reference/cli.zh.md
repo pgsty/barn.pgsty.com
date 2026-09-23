@@ -48,10 +48,9 @@ JSON/YAML 模式下，空命名空间返回结构化用法错误。显式 `--hel
 | `ssh-config` | `sc` | `image` | `images`、`im` |
 | `doctor` | `dt` | `network` | `n`、`net` |
 | `exec` / `logs` | `ex` / `l` | `version` | `ver` |
-| `purge` | `rm` |  |  |
 
 `up`、`ssh`、`init`、`start`、`stop`、`restart`、`reload`、`provision`、`hosts`、
-`completion` 没有别名。`purge` 使用 `rm` 作为明确的整套 Deployment 处置别名。
+`completion` 没有别名；`purge` 也刻意不设别名，两个字母不应丢弃整个实验室。
 命名空间内部，`hosts` 与 `network` 的 install/uninstall 使用
 `i`/`u`，`network status` 使用 `st`；`image` 使用 `list=ls`、`info=in`、`pull=p`、
 `prune=pr`、`sync=sy`、`import=i`。`image reset` 保留 `reset-manifest` 作为兼容别名。
@@ -173,17 +172,23 @@ macOS 新网络安装先完成 Homebrew 发现/安装或固定归档下载，再
 
 ## 退出码
 
-| 代码 | 含义 |
-|---:|---|
-| 0 | 成功，包括客机可用但可选功能受限 |
-| 1 | 运行时失败 |
-| 2 | 用法或配置错误 |
-| 3 | 缺少宿主能力 |
-| 4 | 状态冲突或需要显式收敛 |
-| 5 | 节点操作部分完成 |
-| 6 | 资源冲突 |
-| 7 | 完整性或属主失败 |
-| 130 | 被中断（SIGINT/SIGTERM）或拒绝确认 |
+| 代码 | `error` | 含义 |
+|---:|---|---|
+| 0 | | 成功，包括客机可用但可选功能受限 |
+| 1 | `runtime` | 操作已执行但失败（外部工具、下载或客机失败） |
+| 2 | `usage` | 命令行或 Inventory 有误 |
+| 3 | `capability` | 宿主缺少工具、Farrow 网络或权限 |
+| 4 | `conflict` | Deployment 当前状态不允许，或另一个 farrow 命令正持有它 |
+| 5 | `partial` | 部分节点成功、部分失败 |
+| 6 | `resource` | 宿主地址、端口、网段或磁盘被占用 |
+| 7 | `integrity` | 已校验的摘要、签名、身份或属主不一致 |
+| 130 | `cancelled` | 被中断（SIGINT/SIGTERM）或拒绝确认 |
+
+失败时 stderr 输出 `error: <消息>`；外部工具失败时附上它 stderr 的最后几行；有明确下一步时
+再输出一行 `next:`。结构化模式的失败对象包含 `error`（上表类别）、`message`，以及适用时的
+稳定 `reason`、`next` 和描述外部程序的 `command`。遇到另一个 farrow 命令持有 Deployment 时，
+修改类命令最多等待 10 分钟并指出对方；`status`、`ssh`、`exec`、`ssh-config`、`hosts`
+不等待，直接显示已记录状态并附 `note`。
 
 `ssh` 与 `exec` 原样透传 SSH 子进程退出码，包括 255；255 可能是 SSH 连接失败，
 也可能是远端命令返回该值。文本、JSON 与进程退出码保持一致。

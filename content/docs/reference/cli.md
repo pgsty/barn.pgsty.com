@@ -49,11 +49,10 @@ Frequently used commands have scoped aliases:
 | `ssh-config` | `sc` | `image` | `images`, `im` |
 | `doctor` | `dt` | `network` | `n`, `net` |
 | `exec` / `logs` | `ex` / `l` | `version` | `ver` |
-| `purge` | `rm` |  |  |
 
 `up`, `ssh`, `init`, `start`, `stop`, `restart`, `reload`, `provision`,
-`hosts`, and `completion` have no aliases. `purge` uses `rm` as its explicit
-whole-deployment disposal alias. Inside a namespace, `hosts` and
+`hosts`, `purge`, and `completion` have no aliases; two letters must not
+discard a lab. Inside a namespace, `hosts` and
 `network` use `i`/`u` for install/uninstall; `network status` uses `st`; and
 `image` maps `list=ls`, `info=in`, `pull=p`, `prune=pr`, `sync=sy`,
 and `import=i`. `image reset` keeps `reset-manifest` as a compatibility alias.
@@ -102,17 +101,21 @@ long-only. On commands that read an Inventory, `-f` always selects a file;
 `logs -f` retains the conventional `--follow`. `-n` always means `--no-wait`,
 and `-d` always means a dry run.
 
-`farrow purge` (alias `farrow rm`) is the no-confirmation shortcut for
+`farrow purge` is the no-confirmation shortcut for
 `farrow destroy --force --purge`. It accepts no nodes or Inventory, removes the
 complete deployment plus persistent disks, keys, state, and the default SSH
 fragment, and keeps images and the host network. With no deployment it succeeds
 without changing the image cache. Missing state never authorizes deletion of
 residual node artifacts whose identity cannot be proven.
 
-If a failing command has not already emitted a richer typed result, structured
-mode writes one object containing `error` and `message` before returning the
-documented non-zero exit code. Existing typed failure results are never followed
-by a second JSON/YAML document.
+A failure prints `error: <message>` on stderr, the failing program's last
+stderr lines when an external tool failed, and a `next:` line when there is one
+clear action. If a failing command has not already emitted a richer typed
+result, structured mode writes one object before returning the exit code:
+`error` (the class below), `message`, and where they apply a stable `reason`,
+`next`, and `command` (`name`, `argv`, `exit_status`, `signal`, `timed_out`,
+`stderr`) for a failed external program. Existing typed failure results are
+never followed by a second JSON/YAML document.
 
 `plan` is read-only and returns success even when its action is `recreate` or
 `blocked-removal`; automation must inspect the action and `create`, `recreate`,
@@ -194,7 +197,8 @@ shell, like plain SSH. `exec` preserves argument boundaries; explicitly use
 `sh -c` when you need shell expansion or pipelines. A single command string
 retains the shell shorthand. Before `--`, only zero or one known node is accepted.
 For convenience, omitting `--` uses a known first argument as the node, or
-runs all arguments as a command on the default node with a warning. Use an
+runs all arguments as a command on the default node with a warning. A first
+argument within two edits of a node name is refused as a likely typo. Use an
 explicit `--` in scripts.
 
 Load `farrow completion bash|zsh|fish|powershell` for command and scoped-flag
@@ -204,17 +208,21 @@ specification.
 
 ## Exit codes
 
-| Code | Meaning |
-|---:|---|
-| 0 | success, including usable guests with optional limitations |
-| 1 | runtime failure |
-| 2 | usage or invalid configuration |
-| 3 | missing host capability |
-| 4 | state conflict or explicit convergence required |
-| 5 | partial completion of node operations |
-| 6 | resource conflict |
-| 7 | integrity or ownership failure |
-| 130 | interrupted (SIGINT/SIGTERM) or confirmation declined |
+| Code | `error` | Meaning |
+|---:|---|---|
+| 0 | | success, including usable guests with optional limitations |
+| 1 | `runtime` | the operation ran and failed (a tool, download, or guest failed) |
+| 2 | `usage` | the command line or inventory is wrong |
+| 3 | `capability` | the host lacks a tool, the Farrow network, or a privilege |
+| 4 | `conflict` | the deployment's state forbids it, or another farrow command holds it |
+| 5 | `partial` | some nodes succeeded and some failed |
+| 6 | `resource` | a host address, port, subnet, or disk is taken |
+| 7 | `integrity` | a verified digest, signature, identity, or ownership did not match |
+| 130 | `cancelled` | interrupted (SIGINT/SIGTERM) or confirmation declined |
+
+A command that finds another farrow command holding the deployment waits up to
+10 minutes and names it; `status`, `ssh`, `exec`, `ssh-config`, and `hosts`
+do not wait and show the recorded state with a `note`.
 
 `ssh` and `exec` pass through the SSH child exit code unchanged, including
 255. That value may indicate an SSH connection failure or a remote command

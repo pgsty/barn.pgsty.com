@@ -20,8 +20,8 @@ Delete nodes, persistent disks, keys, and deployment state:
 farrow purge
 ```
 
-This whole-deployment command asks for no confirmation and is also available as
-`farrow rm`. The image cache and host network remain. Use the granular,
+This whole-deployment command asks for no confirmation. The image cache and
+host network remain. Use the granular,
 confirmed `farrow destroy` command instead when preserving persistent disks or
 removing selected nodes.
 

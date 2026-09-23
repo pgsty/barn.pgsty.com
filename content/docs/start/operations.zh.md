@@ -83,7 +83,7 @@ farrow purge                         # 无需确认，处置整套实验室
 剩余节点的 SSH fragment，整体 destroy 会移除默认 Farrow SSH 集成。宿主网络单独卸载，仍有
 VM 挂接时会拒绝：
 
-`farrow purge`（别名 `farrow rm`）是一次性实验室的简洁路径，等价于
+`farrow purge` 是一次性实验室的简洁路径，等价于
 `destroy --force --purge`。它不接受节点选择器，没有 Deployment 时幂等成功，保留镜像缓存与
 宿主网络，同时不会绕过进程身份、属主和路径完整性检查。
 
