@@ -1,17 +1,18 @@
 ---
 title: "repo.yaml Is Intent; catalog.json Is Evidence"
 linkTitle: "Image repository contract"
-description: "Why Farrow separates human-authored image policy from generated metadata that must match the actual qcow2 artifacts."
+description: "Why Barn separates human-authored image policy from generated metadata that must match the actual qcow2 artifacts."
 date: 2026-08-29T19:00:00+08:00
 weight: 50
 categories: [Design]
 tags: [Images, Supply Chain, Catalog]
 icon: fa-solid fa-box-archive
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> **Renamed 2026-09-29:** names now follow the unreleased Barn 0.9.0 candidate.
+> The prior source review was on 2026-09-26: the original publication date is retained; the text
 > below reflects the implementation reviewed on this date. See
 > [Status](/docs/about/status/) for released versus candidate behavior and
 > dated acceptance evidence.
@@ -22,7 +23,7 @@ hand and which facts must be derived from the bytes being published.
 
 If checksums and sizes live in the hand-authored source, they are easy to copy
 incorrectly. If policy exists only in generated JSON, reviewing a channel
-change or deprecation requires reading machine output. Farrow keeps the two
+change or deprecation requires reading machine output. Barn keeps the two
 jobs separate.
 
 ## `repo.yaml`: what the maintainer means
@@ -97,9 +98,9 @@ The repository CLI keeps observation, generation, and proof separate:
 
 | Command | Responsibility |
 | --- | --- |
-| `farrow repo scan` | report tracked, missing, untracked, or unsafe artifacts without changing anything |
-| `farrow repo build` | validate source and artifacts, then atomically materialize the Catalog |
-| `farrow repo verify` | rebuild the materialization in memory and require byte-for-byte equality with the published Catalog |
+| `barn repo scan` | report tracked, missing, untracked, or unsafe artifacts without changing anything |
+| `barn repo build` | validate source and artifacts, then atomically materialize the Catalog |
+| `barn repo verify` | rebuild the materialization in memory and require byte-for-byte equality with the published Catalog |
 
 `build` never edits `repo.yaml` or qcow2 bytes. `verify` is stronger than
 “every checksum is valid”: it also proves that no source policy or artifact
@@ -130,7 +131,7 @@ an unsigned Catalog because local ownership or authenticated transport is the
 explicit trust decision. An implicit compiled default remains in the signed
 trust domain even if its URL is HTTPS.
 
-Accepted Catalog state is tracked independently per repository. Farrow rejects
+Accepted Catalog state is tracked independently per repository. Barn rejects
 unknown keys, a revision below that repository's high-water mark, and different
 bytes at the same revision. An explicit downgrade is visible and scoped to the
 selected repository; resetting to the embedded Catalog does not erase the
@@ -142,13 +143,13 @@ root disks are overlays, so normal VM writes never mutate the trusted base.
 
 ## Separate trust domains stay separate
 
-Image Catalog keys authorize image policy. Release signing proves the Farrow
+Image Catalog keys authorize image policy. Release signing proves the Barn
 application artifacts and checksum manifest. The two key sets are intentionally
 independent: permission to publish a VM image must not imply permission to ship
-a new Farrow binary, or vice versa.
+a new Barn binary, or vice versa.
 
-Ordinary public builds default to `https://repo.pigsty.io/farrow` and expose
-`--mirror` for `https://repo.pigsty.cc/farrow`; `--repo` remains the explicit
+The Barn 0.9.0 candidate defaults to `https://repo.pigsty.io/barn` and expose
+`--mirror` for `https://repo.pigsty.cc/barn`; `--repo` remains the explicit
 custom override. **Updated since 0.7.0:** the two official repositories may
 fall back to each other for image downloads, always verifying the same
 Catalog size and SHA-256. Custom repositories remain exclusive. Catalog

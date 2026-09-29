@@ -1,17 +1,18 @@
 ---
-title: "Why Every Farrow Node Has Two NICs"
+title: "Why Every Barn Node Has Two NICs"
 linkTitle: "Fixed IP, two NICs"
-description: "Why Farrow separates management egress from the fixed-address network used by the host, peers, Ansible, and Pigsty."
+description: "Why Barn separates management egress from the fixed-address network used by the host, peers, Ansible, and Pigsty."
 date: 2026-08-27T20:00:00+08:00
 weight: 20
 categories: [Design]
 tags: [Networking, QEMU, Pigsty]
 icon: fa-solid fa-network-wired
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> **Renamed 2026-09-29:** names now follow the unreleased Barn 0.9.0 candidate.
+> The prior source review was on 2026-09-26: the original publication date is retained; the text
 > below reflects the implementation reviewed on this date. See
 > [Status](/docs/about/status/) for released versus candidate behavior and
 > dated acceptance evidence.
@@ -22,7 +23,7 @@ assume that `10.10.10.11` continues to mean the same node. A loopback port
 forward can expose SSH or PostgreSQL to the host, but it cannot provide that
 network identity to peers.
 
-This is why Farrow does not choose between a convenient NAT mode and an
+This is why Barn does not choose between a convenient NAT mode and an
 advanced fixed-network mode. Every normal node gets both jobs, on separate
 interfaces.
 
@@ -33,7 +34,7 @@ interfaces.
 | management | QEMU user-mode NAT, DHCP | DNS, default route, outbound internet, and loopback SSH fallback |
 | private, MAC-matched | fixed Inventory address | host-to-node, node-to-node, Ansible, Pigsty services, and VIP traffic |
 
-Farrow matches both virtual interfaces by their deterministic MAC addresses
+Barn matches both virtual interfaces by their deterministic MAC addresses
 and does not rename them. Guest-visible names are whatever the image's network
 stack chooses (commonly `eth0` or `enp0s4`); the MAC and address contract, not
 the display name, determines each interface's role.
@@ -51,7 +52,7 @@ deploying a service that needs this interface, inspect the warnings and test
 the relevant host/peer connection. Repeat `up` after correcting the cause.
 
 > [!NOTE]
-> **Decision status: current.** The topology is part of Farrow's normal
+> **Decision status: current.** The topology is part of Barn's normal
 > lifecycle, not an optional “private mode.” See the
 > [design reference](/docs/about/design/) for the current platform boundary.
 
@@ -79,32 +80,32 @@ nodes, Pigsty addresses, and aliases—must agree on one subnet.
 
 ## Platform-specific backend, identical guest contract
 
-The guest sees the same topology on every supported host, while Farrow follows
+The guest sees the same topology on every supported host, while Barn follows
 the host's native networking owner:
 
 - **macOS:** a pinned `socket_vmnet` service provides the private link. Host
   mode is the default; shared mode is explicit. QEMU still runs as the user.
-- **Linux with active NetworkManager:** Farrow creates an owned `farrow0`
+- **Linux with active NetworkManager:** Barn creates an owned `barn0`
   bridge through `nmcli` and integrates with active firewalld policy.
-- **Linux with systemd-networkd:** Farrow installs owned units and uses the
+- **Linux with systemd-networkd:** Barn installs owned units and uses the
   distribution `qemu-bridge-helper` so QEMU remains unprivileged.
 - **Inactive networkd:** activation is allowed only after a pre-mutation scan
   proves that existing units cannot claim a real host interface.
 
 Supporting both Linux managers is not abstraction for its own sake. Starting
-networkd on a desktop or RHEL-family host merely because Farrow knows how to
+networkd on a desktop or RHEL-family host merely because Barn knows how to
 write `.network` files can disrupt the host's real network. The backend must
 follow the component already in charge.
 
 ## Host networking is a transaction
 
 A bridge or vmnet daemon outlives one CLI process and crosses a privilege
-boundary, so Farrow treats installation as a reversible host transaction:
+boundary, so Barn treats installation as a reversible host transaction:
 
 1. inspect routes, interfaces, services, ownership, and existing state;
 2. print the exact plan before mutation;
 3. re-check the preconditions immediately before apply;
-4. write root-owned state describing what Farrow created and what existed
+4. write root-owned state describing what Barn created and what existed
    before it;
 5. prove an unprivileged QEMU attachment;
 6. accept the installation only after readiness checks pass.

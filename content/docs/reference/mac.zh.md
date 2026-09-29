@@ -1,23 +1,23 @@
 ---
 title: Mac 命令
-description: farrow mac 的命令与参数、机器规则、JSON 结果、失败原因、网络与文件。
+description: barn mac 的命令与参数、机器规则、JSON 结果、失败原因、网络与文件。
 weight: 25
 icon: fa-brands fa-apple
 ---
 
 > [!IMPORTANT]
-> **尚未发布。** `farrow mac` 还不在公开版 0.8.0 或任何软件包中。本参考描述
-> 2026-09-29 完成验证的开发版本，详见[当前状态](../../about/status/#macos-guests)。
-> 请以实际运行的二进制中 `farrow mac --help` 为准。按任务组织的教程见
-> [macOS 虚拟机](../../start/macos/)。
+> **Barn 0.9.0 发布候选，尚未发布。** 本页描述改名后的 `barn mac`，
+> 使用全新 Barn 状态，不提供旧开发环境迁移。改名前的实机记录保留在
+> [当前状态](../../about/status/#macos-guests)，不代表改名后已经完成同等验收。
+> 请以实际运行的 `barn mac --help` 为准。
 
 ```text
-farrow [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
+barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 ```
 
-`farrow mac` 需要 Apple 芯片与 macOS 27 或更高版本，以已登录用户身份运行，拒绝以
+`barn mac` 需要 Apple 芯片与 macOS 27 或更高版本，以已登录用户身份运行，拒绝以
 root 运行。在其他宿主上该命令默认隐藏，需要 Mac 组件的命令会以
-`mac_host_unsupported` 失败。不带子命令的 `farrow mac` 等同于 `farrow mac ls`。
+`mac_host_unsupported` 失败。不带子命令的 `barn mac` 等同于 `barn mac ls`。
 
 ## 命令
 
@@ -72,7 +72,7 @@ root 运行。在其他宿主上该命令默认隐藏，需要 Mac 组件的命�
 | `--cpu` | 虚拟 CPU 数，至少 2，不超过 Mac 的逻辑 CPU 数；默认 4 |
 | `--memory` | `16G`、`16GiB`、`16GB` 或字节数；至少 4 GiB，不超过物理内存；默认 8 GiB |
 | `--disk` | 基础镜像容量，至少 32 GiB；默认沿用已准备的基础镜像，即 100 GiB。其他容量会安装另一个基础镜像 |
-| `--user` | 管理员账号；默认你的 macOS 用户名，该名称不合法时为 `farrow` |
+| `--user` | 管理员账号；默认你的 macOS 用户名，该名称不合法时为 `barn` |
 | `--share` | `[name=]path[:ro\|:rw]`，可重复，最多 8 个；名称默认取路径最后一段；`~/` 展开为主目录 |
 | `--clipboard` | `on` 或 `off`；默认 on |
 | `--subnet` | 规范的私有 `/24`，例如 `10.10.30.0/24`；`auto` 表示第一个空闲网段 |
@@ -86,11 +86,11 @@ CPU、内存、共享、网段与剪贴板用 `configure` 修改。账号与磁�
 
 - **名称**：1–32 个小写字母、数字或中间连字符，以字母开头，例如 `mac1`、`dev`、`build-2`。
 - **运行上限**：每台 Mac 同时运行两台 macOS 虚拟机，其他工具与 macOS 安装过程也计算在内。
-  Farrow 从不为腾出名额而停止任何机器。
+  Barn 从不为腾出名额而停止任何机器。
 - **账号**：管理员账号，免密 sudo、SSH 密钥登录、桌面自动登录，并开启远程登录；
   SSH 密码登录被关闭。登录密码随机生成，保存在机器目录的 `password` 文件中。
-- **客机名称**：电脑名称即机器名；本地主机名为 `farrow-<name>`，因此客机以
-  `farrow-<name>.local` 应答。
+- **客机名称**：电脑名称即机器名；本地主机名为 `barn-<name>`，因此客机以
+  `barn-<name>.local` 应答。
 - **共享**：一个由 macOS 挂载到 `/Volumes/My Shared Files/<name>` 的 VirtioFS 设备。
   共享必须是已存在的目录，不能是符号链接，只能在机器停止时修改。
 - **剪贴板**：纯文本，在窗口获得或失去焦点时经这台机器的 SSH 连接同步；最大 1 MiB；
@@ -114,7 +114,7 @@ root 权限。
 SSH 主机密钥绑定到机器实例而不是地址，因此 `configure --subnet` 后信任关系不变。
 
 macOS 的“本地网络”隐私控制会阻止未获授权的第三方程序连接这些网络，报错为
-"No route to host"；需要在**隐私与安全性 → 本地网络**中允许对应应用。Farrow 自身通过
+"No route to host"；需要在**隐私与安全性 → 本地网络**中允许对应应用。Barn 自身通过
 Apple 的 `/usr/bin/nc` 与 `/usr/bin/ssh` 连接，不受该限制。
 
 ## JSON 输出 {#json-output}
@@ -126,7 +126,7 @@ Apple 的 `/usr/bin/nc` 与 `/usr/bin/ssh` 连接，不受该限制。
 ```json
 {
   "schema_version": 2,
-  "root": "/Users/alice/.farrow/mac",
+  "root": "/Users/alice/.barn/mac",
   "prepared": true,
   "base": {"version": "27.0", "build": "26A428", "base_id": "26A428-e16af589f4b705ca397f5b21"},
   "machines": [
@@ -184,12 +184,12 @@ Apple 的 `/usr/bin/nc` 与 `/usr/bin/ssh` 连接，不受该限制。
 | `window` | 显示了桌面时为 `true` |
 | `warnings` | 不影响结果的后续事项，例如下次启动才生效的变更 |
 
-`exec --json` 返回与 Linux `farrow exec --json` 相同的对象：`node` 为机器名，
+`exec --json` 返回与 Linux `barn exec --json` 相同的对象：`node` 为机器名，
 `exit_code`、`stdout` 与 `stderr` 来自客机。交互式 `ssh` 没有 JSON 形式。
 
 ## 失败
 
-退出码与 [Farrow 命令行](../cli/#退出码)一致；远程命令自身的退出码经 `ssh` 与
+退出码与 [Barn 命令行](../cli/#退出码)一致；远程命令自身的退出码经 `ssh` 与
 `exec` 原样返回。JSON 失败结果带有稳定的 `reason` 与 `next` 命令：
 
 | Reason | 退出码 | 含义与下一步 |
@@ -199,24 +199,22 @@ Apple 的 `/usr/bin/nc` 与 `/usr/bin/ssh` 连接，不受该限制。
 | `mac_runner_protocol` | 3 | 命令行与组件来自不同构建，请一起安装 |
 | `mac_root` | 2 | 请以普通登录用户运行，不要使用 sudo |
 | `mac_download_consent` | 2 | 没有终端时下载 macOS 需要 `--yes`，或改用 `--ipsw` |
-| `mac_machine_absent` | 4 | 没有该名称的机器；执行 `farrow mac up NAME` |
-| `mac_not_initialized` | 4 | 机器尚未完成首次启动；执行 `farrow mac up NAME` |
-| `mac_not_running` | 4 | `ssh`/`exec` 需要机器正在运行；执行 `farrow mac start NAME` |
-| `mac_running` | 4 | 该变更需要先停机；执行 `farrow mac stop NAME` |
+| `mac_machine_absent` | 4 | 没有该名称的机器；执行 `barn mac up NAME` |
+| `mac_not_initialized` | 4 | 机器尚未完成首次启动；执行 `barn mac up NAME` |
+| `mac_not_running` | 4 | `ssh`/`exec` 需要机器正在运行；执行 `barn mac start NAME` |
+| `mac_running` | 4 | 该变更需要先停机；执行 `barn mac stop NAME` |
 | `mac_configuration_conflict` | 4 | `up` 的参数与已有机器不同；按提示执行 `configure` 或其他命令 |
-| `mac_legacy_state` | 4 | 未发布开发版写入的 Mac 数据；用 `farrow mac migrate` 转换 |
 | `ssh_config_linked` | 4 | `~/.ssh/config` 是链接；请手动加入打印出的 `Include` 行 |
 | `mac_vm_limit` | 6 | 已有两台 macOS 虚拟机在运行；停止提示中的那台 |
 | `mac_subnet_in_use` | 6 | 宿主路由与机器网段重叠；执行 `configure NAME --subnet auto` |
 | `disk_full` | 6 | 可用空间不足以下载或安装 macOS |
 | `mac_machine_damaged` | 7 | 启动过的机器丢失了磁盘或身份文件；其目录原样保留 |
 | `mac_readiness_interrupted` | 130 | `stop` 中断了首次启动时的 SSH 等待 |
-| `sudo_unavailable` | 3 | `migrate` 需要 sudo 来移除开发版的 root 守护进程 |
 
 ## 文件
 
 ```text
-$FARROW_HOME/mac/
+$BARN_HOME/mac/
   config.json                        安装标识与默认基础镜像
   images/ipsw/<build>.ipsw(.json)    Apple 恢复镜像；下载中为 .partial
   images/base/<id>/                  只读、从未启动过的 macOS 基础镜像
@@ -225,16 +223,16 @@ $FARROW_HOME/mac/
   slots/<name>/machine-id.bin        Apple 机器标识
   slots/<name>/auxiliary-storage.bin 启动存储
   slots/<name>/id_ed25519(.pub)      机器的 SSH 密钥对
-  slots/<name>/known_hosts           固定的主机密钥，别名为 farrow-mac-<instance>
+  slots/<name>/known_hosts           固定的主机密钥，别名为 barn-mac-<instance>
   slots/<name>/password              登录密码，权限 0600
-  slots/<name>/runner.log            运行日志（farrow mac logs）
+  slots/<name>/runner.log            运行日志（barn mac logs）
 ```
 
-运行时 socket 位于 `/tmp/farrow-mac-<uid>-<hash>/`。`ssh-config` 写入
-`~/.ssh/farrow-mac_config`，并在 `~/.ssh/config` 中加入一个 `# farrow-mac:include`
-区块，与 Linux 的 `# farrow:include` 区块互不影响。桌面窗口位置保存在
-`~/Library/Preferences/io.pgsty.farrow.mac-runner.plist`。
+运行时 socket 位于 `/tmp/barn-mac-<uid>-<hash>/`。`ssh-config` 写入
+`~/.ssh/barn-mac_config`，并在 `~/.ssh/config` 中加入一个 `# barn-mac:include`
+区块，与 Linux 的 `# barn:include` 区块互不影响。桌面窗口位置保存在
+`~/Library/Preferences/io.pgsty.barn.mac-runner.plist`。
 
-Farrow 在客机中写入 `~/.ssh/authorized_keys`、`/private/etc/sudoers.d/80-farrow`、
-`/etc/ssh/sshd_config.d/000-farrow.conf`，设置电脑名称与本地主机名，并用 `pmset`
+Barn 在客机中写入 `~/.ssh/authorized_keys`、`/private/etc/sudoers.d/80-barn`、
+`/etc/ssh/sshd_config.d/000-barn.conf`，设置电脑名称与本地主机名，并用 `pmset`
 关闭睡眠。

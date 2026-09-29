@@ -5,9 +5,9 @@ weight: 30
 icon: fa-solid fa-hard-drive
 ---
 
-Farrow uses a materialized static-file Catalog plus immutable qcow2 artifacts.
+Barn uses a materialized static-file Catalog plus immutable qcow2 artifacts.
 Official and HTTP Catalogs are signed; explicitly selected local and HTTPS
-repositories may be unsigned. A Catalog update does not require a new Farrow
+repositories may be unsigned. A Catalog update does not require a new Barn
 binary, but the binary decides which signing keys and image safety rules are
 trusted.
 
@@ -17,15 +17,15 @@ trusted.
 
 ## Aliases and pull order
 
-Farrow 0.8.0 embeds Catalog `2026092001`: 9 families and 37 artifacts, retaining
+Barn 0.9.0 embeds Catalog `2026092001`: 9 families and 37 artifacts, retaining
 all 27 artifacts from the previous Catalog. `el7` is amd64-only; every other
 family has amd64 and arm64 artifacts. EL9 includes 9.3, 9.6, 9.7, and 9.8;
 EL10 includes 10.0, 10.1, and 10.2. `u24:stable` (Ubuntu 24.04) on the native
 architecture is the default request.
 
 The September stable versions below include both amd64 and arm64. This is the
-embedded Catalog snapshot, not a live repository listing. Run `farrow update`
-then `farrow image list` to inspect the currently selected repository. Dated
+embedded Catalog snapshot, not a live repository listing. Run `barn update`
+then `barn image list` to inspect the currently selected repository. Dated
 public endpoint checks and guest point-release observations are recorded in
 [Status](../../about/status/).
 
@@ -55,13 +55,13 @@ explicitly pinned versions continue using their original base images.
 | `u22`, `u24`, `u26` | Ubuntu | amd64, arm64 | UEFI | supported |
 
 ```bash
-farrow image list
-farrow image info d13
-farrow image info d13:stable
-farrow image info el9@9.7
-farrow image pull d13@20260810.2566.1
-farrow image pull d13 --arch arm64
-farrow update
+barn image list
+barn image info d13
+barn image info d13:stable
+barn image info el9@9.7
+barn image pull d13@20260810.2566.1
+barn image pull d13 --arch arm64
+barn update
 ```
 
 Catalog status values are advisory rather than an activation switch:
@@ -70,11 +70,11 @@ explicit test/risk acceptance but is not supported; `deprecated` is retained
 only for EOL compatibility; and `unknown` has no support classification.
 Non-`supported` entries remain runnable and print a warning.
 
-For a pull, Farrow:
+For a pull, Barn:
 
 1. reads the selected repository's active local Catalog once for the complete
    command: the Catalog embedded in this build, or the one last activated for
-   that repository by `farrow update` or `image sync`;
+   that repository by `barn update` or `image sync`;
 2. resolves `image[:channel]` or `image@version-prefix`, defaulting to
    `u24:stable` with the official Catalog; standalone `image pull` defaults to
    the native architecture and accepts `--arch`, while lifecycle resolution
@@ -85,19 +85,19 @@ For a pull, Farrow:
    while custom repositories remain exclusive. All accepted bytes must match
    the Catalog. An immutable upstream URL is provenance, not a fallback.
 
-Released builds use `https://repo.pigsty.io/farrow` by default. Long-only
-`--mirror` selects `https://repo.pigsty.cc/farrow`; precedence is `--repo`,
-`--mirror`, `FARROW_REPO`, then the global default. Both official roots retain
+Released builds use `https://repo.pigsty.io/barn` by default. Long-only
+`--mirror` selects `https://repo.pigsty.cc/barn`; precedence is `--repo`,
+`--mirror`, `BARN_REPO`, then the global default. Both official roots retain
 canonical signed-Catalog trust. Repository selection determines both the local
 Catalog slot and the source of downloads. Keep selecting the same custom
-repository even when its image bytes are cached. Farrow never refreshes the
+repository even when its image bytes are cached. Barn never refreshes the
 Catalog on its own; ordinary image resolution can work offline with an active
 local Catalog and verified cache. Run
-`farrow update` to fetch, verify, and activate the selected repository's current
+`barn update` to fetch, verify, and activate the selected repository's current
 Catalog. Catalog updates use that selected source; a failed update is an error.
 An image download fails when none of its permitted sources supplies verified bytes.
 Changing `--repo` alone does not fetch or activate that repository's Catalog;
-run `farrow update --repo <root>` before using its custom aliases.
+run `barn update --repo <root>` before using its custom aliases.
 
 Verified writable cache files are made read-only again. A damaged, unreferenced
 cache file is preserved with a `.corrupt-<timestamp>` suffix before replacement;
@@ -118,9 +118,9 @@ resolves the intended image and runtime without requiring those tools. Named
 `local-*` imports are byte-checked during resolution and still need `qemu-img`.
 
 ```bash
-farrow image pull d13 --mirror
-farrow image pull d13 --repo https://mirror.example/farrow
-FARROW_REPO=/absolute/local/repository farrow up
+barn image pull d13 --mirror
+barn image pull d13 --repo https://mirror.example/barn
+BARN_REPO=/absolute/local/repository barn up
 ```
 
 Unsigned repositories must be local paths or HTTPS. HTTP repositories require a
@@ -140,17 +140,17 @@ Verified base images become read-only; node root disks are overlays and never
 modify the base.
 
 ```bash
-farrow update
-farrow image sync --repo https://repo.example/farrow \
-  https://repo.example/farrow/catalog.json
-farrow image sync --repo /absolute/repo --allow-downgrade /absolute/repo/catalog.json
-farrow image reset
+barn update
+barn image sync --repo https://repo.example/barn \
+  https://repo.example/barn/catalog.json
+barn image sync --repo /absolute/repo --allow-downgrade /absolute/repo/catalog.json
+barn image reset
 ```
 
 `image reset` restores the embedded Catalog but keeps the anti-rollback
 high-water mark; `reset-manifest` remains as a compatibility alias.
 
-`farrow update` checks the repository now and activates a newer Catalog. Farrow
+`barn update` checks the repository now and activates a newer Catalog. Barn
 never refreshes the Catalog on its own; the Catalog embedded in each release is
 used until you update. `image sync` is the recovery path for an exact URL or
 file, including a downgrade.
@@ -158,13 +158,13 @@ file, including a downgrade.
 For repository-scoped recovery, pass the same root explicitly:
 
 ```bash
-farrow image sync --repo /srv/farrow --allow-downgrade /srv/farrow/catalog.json
-farrow image reset --repo /srv/farrow
+barn image sync --repo /srv/barn --allow-downgrade /srv/barn/catalog.json
+barn image reset --repo /srv/barn
 ```
 
 `--repo` selects the independent active-Catalog and high-water slot. The source
 argument does not change this selection. `image sync` and `image reset` accept
-`--repo`, but not `--mirror`; when `--repo` is omitted they use `FARROW_REPO`
+`--repo`, but not `--mirror`; when `--repo` is omitted they use `BARN_REPO`
 or the compiled default. For an unsigned custom Catalog, the exact source must
 be the selected root's `catalog.json`.
 
@@ -173,7 +173,7 @@ be the selected root's `catalog.json`.
 The published root is deliberately small:
 
 ```text
-farrow/
+barn/
 ├── repo.yaml
 ├── catalog.json
 ├── catalog.json.minisig       # required for official and HTTP repositories
@@ -184,14 +184,14 @@ farrow/
 `repo.yaml` stores author intent: defaults, aliases, channels, exact versions,
 architectures, boot mode, status, and optional provenance-only upstream URLs.
 `source_user` records the image's declared source login identity, for example
-`rocky` in an upstream image or `dba` after Farrow's official normalization.
+`rocky` in an upstream image or `dba` after Barn's official normalization.
 The pipeline takes the upstream account separately when sanitizing a candidate.
 Catalog/import metadata does not replace the deployment SSH user (`dba` by
 default) or itself normalize the image. The file contains no generated
 checksum or size fields. `catalog.json` uses the same logical tree but
 materializes each variant's file, SHA-256, artifact size, and virtual size.
 `repo.yaml` is `schema: 1`; the generated `catalog.json` is the schema-3
-Catalog that Farrow embeds and signs.
+Catalog that Barn embeds and signs.
 
 ```yaml
 schema: 1
@@ -225,7 +225,7 @@ d13:stable + native
   -> images/d13-20260914.2601.1-arm64.qcow2
 ```
 
-`farrow repo scan` is read-only. `build` performs strict YAML validation,
+`barn repo scan` is read-only. `build` performs strict YAML validation,
 full qcow2 inspection/checking, and atomic Catalog replacement without changing
 `repo.yaml` or QCOW bytes. `verify` requires the generated Catalog bytes to
 match a fresh materialization exactly. `build` and `verify` require local
@@ -237,14 +237,14 @@ together where possible; an inconsistent pair fails verification. Increase
 
 ## Local layout and imports
 
-Images live under `FARROW_HOME/images` (default `~/.farrow/images`): family
+Images live under `BARN_HOME/images` (default `~/.barn/images`): family
 directories contain downloaded artifacts, `manifests/` stores the active
 Catalog with an independent high-water entry per repository, and `local/` plus
 `local-images.json` hold imports.
 
 ```bash
-farrow image import --sha256 <digest> /path/to/base.qcow2
-farrow image import --name local-mybase --boot uefi \
+barn image import --sha256 <digest> /path/to/base.qcow2
+barn image import --name local-mybase --boot uefi \
   --source-user ubuntu --sha256 <digest> /path/to/base.qcow2
 ```
 
@@ -264,8 +264,8 @@ to select a named import; unnamed imports only populate the cache.
 ## Pruning
 
 ```bash
-farrow image prune --dry-run
-farrow image prune --yes
+barn image prune --dry-run
+barn image prune --yes
 ```
 
 Bare `prune` and `--dry-run` only report candidates; `--yes` deletes them.

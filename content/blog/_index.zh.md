@@ -1,7 +1,7 @@
 ---
-title: Farrow 博客
+title: Barn 博客
 linkTitle: 博客
-description: Farrow 当前动态与迁名前历史记录。
+description: Barn 当前动态与迁名前历史记录。
 weight: 60
 icon: fa-solid fa-newspaper
 sidebar_root_menu: false

@@ -6,9 +6,8 @@ weight: 35
 icon: fa-solid fa-terminal
 ---
 
-These examples work with public **0.8.0** and the reviewed 0.9 candidate unless
-marked otherwise. Run host commands as the Unix user who owns the deployment.
-Use the same inventory and `FARROW_HOME` on every invocation; a new working
+These examples target the **Barn 0.9.0 release candidate**. Run host commands as the Unix user who owns the deployment.
+Use the same inventory and `BARN_HOME` on every invocation; a new working
 directory does not create an independent lab.
 
 ## Prepare a predictable lab
@@ -16,14 +15,14 @@ directory does not create an independent lab.
 For a first lab, create and review the inventory before starting automation:
 
 ```bash
-mkdir -p ~/farrow-lab
-cd ~/farrow-lab
-farrow init dual
-# Edit farrow.yml before proceeding.
-farrow version
-farrow validate -f farrow.yml
-farrow plan -f farrow.yml
-farrow setup -f farrow.yml --dry-run
+mkdir -p ~/barn-lab
+cd ~/barn-lab
+barn init dual
+# Edit barn.yml before proceeding.
+barn version
+barn validate -f barn.yml
+barn plan -f barn.yml
+barn setup -f barn.yml --dry-run
 ```
 
 Keep the selected inventory in version control. Set `vm_image` explicitly;
@@ -34,8 +33,8 @@ from automatically moving an untouched default template to another subnet.
 After reviewing the host plan, prepare the machine once:
 
 ```bash
-farrow setup -f farrow.yml --yes
-farrow up -f farrow.yml --json > up.json
+barn setup -f barn.yml --yes
+barn up -f barn.yml --json > up.json
 ```
 
 `--yes` accepts the setup plan; it does not grant sudo credentials. An
@@ -44,17 +43,17 @@ and privilege policy. Noninteractive `up` does not perform the interactive
 first-run host preparation. `up` has no `--yes` flag.
 
 For a custom repository, use the same `--repo` value for setup and up, and
-explicitly activate its Catalog with `farrow update --repo URL` before
+explicitly activate its Catalog with `barn update --repo URL` before
 planning. See [Image Repositories](../images/).
 
 ## Check more than the exit code
 
-Farrow writes structured results to stdout and diagnostics to stderr. Preserve
+Barn writes structured results to stdout and diagnostics to stderr. Preserve
 both outputs and the command's exit code; a later shell command must not
 overwrite the status you intend to inspect. This Bash example also uses `jq`:
 
 ```bash
-if farrow up -f farrow.yml --json > up.json 2> up.stderr; then
+if barn up -f barn.yml --json > up.json 2> up.stderr; then
   jq -e '
     (.nodes | type == "array" and length > 0) and
     all(.nodes[];
@@ -64,10 +63,10 @@ if farrow up -f farrow.yml --json > up.json 2> up.stderr; then
     ((.warnings // []) | length == 0)
   ' up.json
 else
-  farrow_exit=$?
+  barn_exit=$?
   cat up.stderr >&2
   cat up.json
-  exit "$farrow_exit"
+  exit "$barn_exit"
 fi
 ```
 
@@ -93,23 +92,22 @@ inspect `nodes` and/or `failures` when present before retrying.
 The **0.9 candidate** moves some failures to different classes. For example,
 a missing first inventory is usage/2 and an unknown image is usage/2;
 `recreate_required` and `nodes_removed` are `reason` values under conflict/4.
-It also adds bounded lock waiting and `deployment_busy` on timeout. These
-details must not be assumed for a public 0.8.0 binary.
+It also uses bounded lock waiting and `deployment_busy` on timeout.
 
 Not every failing command returns the generic `error`/`message` envelope:
 doctor, network status, provision, and SSH execution can return their own
 reports. `ssh`/`exec` pass through the remote exit status, including 255 from
 OpenSSH. In structured execution output, inspect `success`, `exit_code`,
-`stdout`, and `stderr`; do not interpret a remote status as a Farrow class.
+`stdout`, and `stderr`; do not interpret a remote status as a Barn class.
 
 ## Run one command or a script
 
 Use an explicit node and `--` to separate it from the remote command:
 
 ```bash
-farrow exec meta -- hostname
-farrow exec node-1 -- sh -c 'id; df -h /data'
-farrow exec meta --json -- uname -a > uname.json
+barn exec meta -- hostname
+barn exec node-1 -- sh -c 'id; df -h /data'
+barn exec meta --json -- uname -a > uname.json
 ```
 
 For multiple guests, save a local Bash script as `check-lab.sh`:
@@ -126,13 +124,13 @@ test -d /data
 Then run it on selected nodes:
 
 ```bash
-farrow provision --script ./check-lab.sh meta node-1
-farrow provision --script ./check-lab.sh --parallel 2 --timeout 5m --json > provision.json
+barn provision --script ./check-lab.sh meta node-1
+barn provision --script ./check-lab.sh --parallel 2 --timeout 5m --json > provision.json
 ```
 
 With no selectors, `provision` targets all committed nodes; they must be
 running. It does not create or start VMs. The local script must be a nonempty,
-regular, non-symlink file of at most 4 MiB. Farrow streams one verified snapshot
+regular, non-symlink file of at most 4 MiB. Barn streams one verified snapshot
 to guest Bash, records its SHA-256, and does not save the script as a guest file.
 The script need not be executable on the host.
 
@@ -141,7 +139,7 @@ defaults to one hour, applies to the whole operation, and cannot exceed 24 hours
 `--sudo` runs through guest `sudo -n`, so it cannot prompt for a password.
 Results contain `results[]`, per-node stdout/stderr and exit codes, and
 `successful`/`failed` counts. A partial run can leave successful changes in
-place. Write scripts so that running them again is safe; Farrow does not roll
+place. Write scripts so that running them again is safe; Barn does not roll
 back guest commands or automatically rerun them on the next `up`.
 
 A provision run with successful and failed targets exits 5. With one failing
@@ -150,18 +148,18 @@ all-failed runs exit 1; inspect `results[].exit_code` for the guest/SSH details.
 
 ## Use the lab with Pigsty
 
-Farrow and Pigsty can read the same `pigsty.yml`, but `farrow init dual` only
+Barn and Pigsty can read the same `pigsty.yml`, but `barn init dual` only
 creates VM topology. It does not configure a PostgreSQL cluster. Start with
 the service inventory appropriate to your Pigsty checkout and review it:
 
 ```bash
-farrow validate -f pigsty.yml
-farrow plan -f pigsty.yml
-farrow up -f pigsty.yml
-farrow ssh
+barn validate -f pigsty.yml
+barn plan -f pigsty.yml
+barn up -f pigsty.yml
+barn ssh
 ```
 
-Farrow prepares the guest administrator and control-node SSH access. Deploy
+Barn prepares the guest administrator and control-node SSH access. Deploy
 services through Pigsty after checking the inventory and guest connectivity.
 The [validation record](../../about/status/) distinguishes Ansible connectivity
 checks from a complete Pigsty installation. For host-side file transfer or

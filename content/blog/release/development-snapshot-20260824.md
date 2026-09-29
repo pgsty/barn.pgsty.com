@@ -10,9 +10,9 @@ icon: fa-solid fa-flask
 ---
 
 > [!CAUTION]
-> Pre-Farrow historical record. Names, commands, paths, hashes, and claims on
+> Pre-Barn historical record. Names, commands, paths, hashes, and claims on
 > this page describe the predecessor snapshot only. Use the current
-> [Farrow status](/docs/about/status/) and guides for present behavior.
+> [Barn status](/docs/about/status/) and guides for present behavior.
 
 Piglet's 2026-08-24 source snapshot has moved well beyond an initial QEMU
 spike. It now presents one coherent local-VM product: zero-configuration Quick,
@@ -24,7 +24,7 @@ It is still a development snapshot—not a stable release.
 
 > [!NOTE]
 > This page is a historical 2026-08-24 snapshot. A later predecessor candidate
-> is archived separately; neither page is current Farrow release evidence.
+> is archived separately; neither page is current Barn release evidence.
 
 > [!WARNING]
 > There is no public v1.0 tag, signed production artifact, Homebrew tap, or

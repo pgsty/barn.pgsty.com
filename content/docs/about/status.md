@@ -1,60 +1,56 @@
 ---
 title: Status
-description: Published 0.8.0, the unreleased 0.9 source baseline, dated validation, and remaining limits.
+description: Barn 0.9.0 rename candidate, publication boundaries, historical validation, and known limits.
 weight: 20
 icon: fa-solid fa-list-check
 aliases: [/docs/project/, /docs/project/status/, /docs/project/roadmap/, /docs/project/release/, /docs/project/design-history/]
 ---
 
-Farrow is pre-1.0. Source tests, dated native replays, packages, release, CI,
-and the public site are separate gates. Install instructions are in the
-[Quick Start](../../start/tutorial/#install).
-
-As checked on **2026-09-26**, the current public release is
-[`v0.8.0`](https://github.com/pgsty/farrow/releases/tag/v0.8.0), marked Pre-release.
-It improves partial-start recovery, host preparation, cleanup reporting, and
-setup authentication, and embeds the September image Catalog. See the
-[release notes](../../../blog/release/farrow-0.8.0/) for changes and upgrade guidance.
+Barn 0.9.0 is the first release candidate under the new name and is **not yet
+published**. Source checks, local builds, packages, CI, releases, and the public
+site are verified separately. Renamed source alone does not establish public
+delivery. Installation instructions are in the [Quick Start](../../start/tutorial/#install).
 
 ## Documentation baseline {#documentation-baseline}
 
-| Baseline | Identity | How to read these docs |
+| Object | Current identity | How to use it |
 |---|---|---|
-| Public application and Homebrew formula | `v0.8.0`, source `320a32a` | The installation and ordinary lab tutorials use this version. |
-| Source reviewed for this calibration | Local `b91ec37`, an **unreleased 0.9 candidate** | Changes to errors, confirmation, lock waiting, and recovery are explicitly marked as 0.9 candidate behavior. |
-| Embedded image Catalog | Revision `2026092001`, schema 3 | Unchanged between those application checkpoints; `farrow update` can activate another signed Catalog. |
+| Application and current docs | Barn 0.9.0 release candidate | Build a checkout containing the rename; package commands apply after publication. |
+| CLI and configuration | `barn`, `barn.yml`, `BARN_*` | No old-name command aliases or environment fallbacks. |
+| State and host resources | `~/.barn`, Barn networking and helpers | Create fresh Barn state; there is no development-state migration. |
+| Image repository | `/barn` at the official endpoints | Catalog signatures remain required; cloud migration and public access need independent verification. |
 
-At this checkpoint, public `main` still points to `320a32a`. A fresh public
-clone does not contain the local candidate. There is no public 0.9 release or
-download to install. Check `farrow version` before applying the
-[CLI contract](../../reference/cli/) to automation.
-
-The candidate removes the `rm` alias, accepts `--version`, classifies failures
-consistently, and waits for a deployment lock for up to ten minutes. It also
-repairs several interrupted-lifecycle cases. These are source behavior, not a
-claim of public delivery or a fresh native acceptance of `b91ec37`.
-The matrix below retains its exact dated validation scope.
-
-On 2026-09-26, both official Catalog endpoints again returned revision
-`2026092001` with SHA-256
-`23e8dbf6c19bd192d56c6d71eb30901f17945b3487e427a43abe108463780306`.
-Isolated `farrow update` checks verified their signatures. This checks Catalog
-delivery, not a new download of every image or a native guest replay.
-
-Public 0.8.0 and the reviewed `b91ec37` baseline run Linux guests on macOS or
-Linux hosts; neither contains a `farrow mac` command. macOS guests are tracked
-separately below.
+Stop old internal environments and preserve needed data before creating a fresh
+Barn installation. Do not simply rename an old state directory. The final
+release commit, artifact digests, Homebrew and public endpoints will be recorded
+after verification. Historical 0.2–0.8 records keep the Farrow name and do not
+establish Barn 0.9.0 publication or acceptance.
 
 ## macOS guests {#macos-guests}
 
-`farrow mac` runs macOS 27 virtual machines on Apple Silicon; see the
-[guide](../../start/macos/) and [reference](../../reference/mac/). It is
-**unreleased**: as checked on 2026-09-29 it exists only in a local development
-tree — commit `45f931b` plus uncommitted changes — that is not on public
-`main`, in any release, or in any package. It must not be read as part of the
-public installation contract until a release includes it.
+`barn mac` runs macOS 27 guests on Apple Silicon; see the [guide](../../start/macos/)
+and [reference](../../reference/mac/). Its component is `Barn Mac.app`, with
+signing identifier `io.pgsty.barn.mac-runner`. It uses independent
+`$BARN_HOME/mac` state and has no command to migrate earlier development data.
 
-That tree was validated on 2026-09-29 on an Apple Silicon Mac running macOS
+After the rename on 2026-09-29, local CLI/hosts-helper tests, native
+Bridge/image/exit-prompt/menu tests, the runner build, ad-hoc signature checks
+and `probe` passed. These checks started no VM and did not repeat the complete
+Mac native lifecycle. Earlier native results retain their original identity below.
+
+## Remaining release checks
+
+- The full source, archives, DEB/RPM, installer and cross-platform checks at the final Barn commit;
+- Fresh host setup and Linux/macOS VM lifecycle and cleanup under the new names;
+- Mac Developer ID signing, notarization and publication;
+- The live GitHub repository, Homebrew, both image repositories and `barn.pgsty.com`.
+
+The records below describe pre-rename checkpoints. Their old commands, paths,
+versions and links are historical evidence only.
+
+## Farrow Mac native record: 2026-09-29
+
+The pre-rename Farrow development tree was validated on 2026-09-29 on an Apple Silicon Mac running macOS
 27.0 (26A428), with an ad-hoc signed development build. No macOS image was
 downloaded for the run: every test home used an APFS clone of a base prepared
 on 2026-09-26 from Apple's pinned 27.0 restore image.
@@ -69,7 +65,7 @@ published release; downloading and installing macOS through the current CLI
 **Restart…** and **Shut Down…** menu actions; other Apple Silicon models and
 macOS 27 updates; and physical-host reboot.
 
-## Summary
+## Pre-rename Linux validation summary {#summary}
 
 | Host or artifact | Path | Last verified | Result |
 |---|---|---|---|
@@ -95,7 +91,7 @@ activated revision `2026092001`. The public image check used HEAD/content length
 for ten new objects at each endpoint, not a fresh download/hash of every public
 artifact.
 
-## Still open
+## Coverage left open at the earlier checkpoint
 
 - EL9 hosts with NetworkManager and firewalld, and a current systemd-networkd replay;
 - physical-host reboot persistence;
@@ -111,7 +107,7 @@ compatibility versions EL9 9.3/9.6 and EL10 10.0, which are `deprecated`.
 Active and standby Catalog public keys are embedded. Private-key custody and
 rotation, together with release custody, must be formalized before 1.0.
 
-## Verification history
+## Farrow verification history
 
 Each entry belongs to the exact checkpoint exercised that day. Later source or
 documentation edits do not inherit native proof without another replay.

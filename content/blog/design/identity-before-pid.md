@@ -1,17 +1,18 @@
 ---
 title: "A PID Is Not a Virtual Machine"
 linkTitle: "Identity before PID"
-description: "Why Farrow combines QMP identity, process evidence, typed invocations, and journals before it signals or deletes anything."
+description: "Why Barn combines QMP identity, process evidence, typed invocations, and journals before it signals or deletes anything."
 date: 2026-08-28T10:00:00+08:00
 weight: 40
 categories: [Design]
 tags: [QMP, Recovery, Safety]
 icon: fa-solid fa-fingerprint
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> **Renamed 2026-09-29:** names now follow the unreleased Barn 0.9.0 candidate.
+> The prior source review was on 2026-09-26: the original publication date is retained; the text
 > below reflects the implementation reviewed on this date. See
 > [Status](/docs/about/status/) for released versus candidate behavior and
 > dated acceptance evidence.
@@ -24,19 +25,19 @@ the node an operator wants to stop.
 That is not enough authority for `SIGKILL`, and certainly not enough authority
 to remove a root disk.
 
-Farrow treats identity as a chain of independent evidence. Each link has a
+Barn treats identity as a chain of independent evidence. Each link has a
 different job, and destructive action proceeds only when the required links
 agree.
 
 ## QMP is the primary runtime identity
 
 Every VM receives a generated UUID and an expected QEMU name. After launch,
-Farrow connects to the QEMU Machine Protocol socket and asks QEMU for both.
+Barn connects to the QEMU Machine Protocol socket and asks QEMU for both.
 The VM is not considered started merely because the process returned or a
 socket path appeared; QMP must report the expected name and UUID.
 
 The same check guards shutdown. A QMP endpoint with a different name or UUID
-is not “probably the old VM.” It is a hard identity mismatch, and Farrow sends
+is not “probably the old VM.” It is a hard identity mismatch, and Barn sends
 no command through it.
 
 QMP also provides the clean path: request Guest powerdown, wait for the Guest,
@@ -51,7 +52,7 @@ are fallback tools, not the primary lifecycle API.
 ## Process identity closes the fallback gap
 
 QMP may be unavailable after a crash, a damaged runtime directory, or a
-half-completed shutdown. For that case Farrow records a process tuple:
+half-completed shutdown. For that case Barn records a process tuple:
 
 - PID;
 - executable path;
@@ -59,17 +60,17 @@ half-completed shutdown. For that case Farrow records a process tuple:
 - SHA-256 of the observed command line.
 
 The complete typed QEMU invocation is stored beside it. Before sending
-`SIGTERM`, Farrow re-reads the live process and requires the tuple to match.
+`SIGTERM`, Barn re-reads the live process and requires the tuple to match.
 Before escalating to `SIGKILL`, it captures the tuple again, specifically to
 close the PID-reuse window created by the bounded TERM wait.
 
-If QMP still answers but a QMP operation fails, Farrow does not bypass that
+If QMP still answers but a QMP operation fails, Barn does not bypass that
 live control plane with a signal. If QMP reports another identity, it stops. If
 the process tuple cannot be verified, it stops. “Unable to prove” is a result,
 not a reason to weaken the check.
 
 **Unreleased 0.9 candidate update:** when QMP is unavailable and the recorded
-PID is positively identified as an unrelated process, Farrow treats the old VM
+PID is positively identified as an unrelated process, Barn treats the old VM
 as stopped and never signals that unrelated process. This differs from an
 unreadable or ambiguous identity, which still blocks the operation.
 
@@ -80,7 +81,7 @@ seed media must exist before the VM can start, and the process must start
 before its identity can be committed. A crash in that interval would otherwise
 leave artifacts with no trustworthy owner.
 
-Farrow writes a mode-0600 prepare journal first. It contains:
+Barn writes a mode-0600 prepare journal first. It contains:
 
 - operation and VM UUIDs;
 - node name and resolved-spec hash;

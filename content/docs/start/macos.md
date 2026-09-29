@@ -1,26 +1,27 @@
 ---
 title: macOS Virtual Machines
 linkTitle: macOS VMs
-description: Run macOS 27 virtual machines on Apple Silicon with farrow mac — create, connect, share files and the clipboard, and clean up.
+description: Run macOS 27 virtual machines on Apple Silicon with barn mac — create, connect, share files and the clipboard, and clean up.
 weight: 38
 icon: fa-brands fa-apple
 ---
 
 > [!IMPORTANT]
-> **Unreleased.** `farrow mac` is not part of public 0.8.0, its packages, or
-> the public source repository yet. This guide describes the development tree
-> validated on 2026-09-29; see [Status](../../about/status/#macos-guests).
-> Commands and output may still change before it ships.
+> **Barn 0.9.0 release candidate; unreleased.** This page describes the renamed
+> `barn mac`, which uses fresh Barn state and provides no development-state
+> migration. Earlier native records are retained in [Status](../../about/status/#macos-guests)
+> and do not establish the same acceptance for the renamed build. Check the
+> `barn mac --help` of the binary you run.
 
-`farrow mac` creates and runs macOS virtual machines on an Apple Silicon Mac.
+`barn mac` creates and runs macOS virtual machines on an Apple Silicon Mac.
 Each machine is a clean, disposable macOS with an administrator account,
 passwordless sudo, pinned SSH keys and a fixed address — for testing, building
 and reproducing macOS-specific behavior. It uses Apple's Virtualization
 framework directly and needs no administrator access.
 
-Mac machines are separate from the Linux lab. They never read `farrow.yml`,
-never join a Pigsty inventory, and keep their files under `$FARROW_HOME/mac`
-(default `~/.farrow/mac`). Linux `destroy` and `purge` leave them alone.
+Mac machines are separate from the Linux lab. They never read `barn.yml`,
+never join a Pigsty inventory, and keep their files under `$BARN_HOME/mac`
+(default `~/.barn/mac`). Linux `destroy` and `purge` leave them alone.
 
 ## Requirements
 
@@ -40,31 +41,31 @@ more machines and start any two.
 
 ## Build the Mac component
 
-From a Farrow source checkout that contains `farrow mac`:
+From a Barn source checkout that contains `barn mac`:
 
 ```bash
 make mac-build
 export PATH="$PWD/bin/mac:$PATH"
-farrow mac doctor
+barn mac doctor
 ```
 
-`bin/mac` holds the CLI, `Farrow Mac.app` (the native component that runs the
+`bin/mac` holds the CLI, `Barn Mac.app` (the native component that runs the
 machines and their desktops) and the guide; keep them together. The build is
 signed ad hoc for local use. `doctor` checks macOS, the component, and free
 disk space:
 
 ```text
 CHECK           RESULT  DETAIL
-component       ok      /path/to/farrow/bin/mac/Farrow Mac.app/Contents/MacOS/farrow-mac-runner
+component       ok      /path/to/barn/bin/mac/Barn Mac.app/Contents/MacOS/barn-mac-runner
 virtualization  ok      macOS 27.0.0 on Apple Silicon; virtualization supported
 disk            ok      549.8 GiB free
-data            ok      no Mac machines yet; farrow mac up creates the first
+data            ok      no Mac machines yet; barn mac up creates the first
 ```
 
 ## Create your first machine
 
 ```bash
-farrow mac up
+barn mac up
 ```
 
 On a Mac without a prepared macOS, `up` first shows what it needs and asks:
@@ -77,7 +78,7 @@ free:      551.2 GiB
 Download macOS from Apple now? [Y/n]
 ```
 
-After you confirm, Farrow:
+After you confirm, Barn:
 
 1. **Downloads the restore image from Apple only** and verifies it against
    Apple's published SHA-256. An interrupted download resumes where it
@@ -89,23 +90,23 @@ After you confirm, Farrow:
 
 ```text
   ✓  mac1 created and ready · macOS 27.0 (26A428) · alice@10.10.20.10
-shell:     farrow mac ssh mac1
-desktop:   farrow mac open mac1
+shell:     barn mac ssh mac1
+desktop:   barn mac open mac1
 ```
 
 Every later machine reuses the base and is ready in tens of seconds; a machine
 created from a prepared base on the validation host was ready in 22 seconds.
 
 If you already have Apple's restore image, pass it instead of downloading.
-On the same APFS volume Farrow clones it without copying; elsewhere it verifies
+On the same APFS volume Barn clones it without copying; elsewhere it verifies
 and uses the file where it is:
 
 ```bash
-farrow mac up --ipsw ~/Downloads/UniversalMac_27.0_26A428_Restore.ipsw
+barn mac up --ipsw ~/Downloads/UniversalMac_27.0_26A428_Restore.ipsw
 ```
 
 Without a terminal, for example in a script, `up` needs `--yes` to download:
-it refuses rather than silently fetching 25 GiB. `farrow mac setup` prepares
+it refuses rather than silently fetching 25 GiB. `barn mac setup` prepares
 the base ahead of time without creating a machine.
 
 ## Work in the machine
@@ -113,9 +114,9 @@ the base ahead of time without creating a machine.
 ### Shell and commands
 
 ```bash
-farrow mac ssh                                  # interactive shell
-farrow mac exec -- sw_vers                      # one command
-farrow mac ssh -- 'id; sudo -n true && echo sudo works'
+barn mac ssh                                  # interactive shell
+barn mac exec -- sw_vers                      # one command
+barn mac ssh -- 'id; sudo -n true && echo sudo works'
 ```
 
 ```text
@@ -130,7 +131,7 @@ guest shell like plain ssh; `exec` keeps argument boundaries. Both return the
 guest's exit status, and `--json` records stdout, stderr and the exit code:
 
 ```bash
-farrow --json mac exec -- sh -c 'echo out; exit 3'
+barn --json mac exec -- sh -c 'echo out; exit 3'
 ```
 
 ```json
@@ -151,7 +152,7 @@ lists every field.
 ### Desktop
 
 ```bash
-farrow mac open
+barn mac open
 ```
 
 The desktop opens in a native window sized to your screen. Resizing the window
@@ -164,15 +165,15 @@ focused, so the host commands live in the menu bar:
 |---|---|
 | **Machine → Share Clipboard** | turn clipboard sharing on or off for this session |
 | **Machine → Restart…** | restart macOS in the guest |
-| **Machine → Shut Down…** | shut down normally, like `farrow mac stop` |
+| **Machine → Shut Down…** | shut down normally, like `barn mac stop` |
 | **Window → Keep Running in Background** | hide the window; the machine keeps running |
-| **Farrow Mac → Quit Farrow Mac…** | choose to keep the machine running or shut it down |
+| **Barn Mac → Quit Barn Mac…** | choose to keep the machine running or shut it down |
 
 The login password, needed for the lock screen and administrator prompts in the
 desktop, is random per machine. Copy it without printing it:
 
 ```bash
-farrow mac password --copy
+barn mac password --copy
 ```
 
 ### Clipboard
@@ -183,7 +184,7 @@ when you switch to another app. It travels over the machine's own SSH
 connection; nothing is installed in the guest. Items that password managers
 mark as concealed never leave the Mac. Images and files are not shared.
 
-Turn it off for a machine with `farrow mac configure mac1 --clipboard off`;
+Turn it off for a machine with `barn mac configure mac1 --clipboard off`;
 the setting applies from the machine's next start.
 
 ### Shared folders
@@ -192,19 +193,19 @@ Share Mac folders when creating a machine. The guest mounts them under
 `/Volumes/My Shared Files/<name>`:
 
 ```bash
-farrow mac up dev --share ~/src --share docs=~/Documents:ro
-farrow mac exec dev -- ls "/Volumes/My Shared Files"
+barn mac up dev --share ~/src --share docs=~/Documents:ro
+barn mac exec dev -- ls "/Volumes/My Shared Files"
 ```
 
 The name defaults to the folder's last path component; `:ro` makes a share
-read-only. A share must be an existing directory, not a symlink; Farrow never
+read-only. A share must be an existing directory, not a symlink; Barn never
 creates or deletes shared folders. To change shares later, stop the machine
 and use `configure`:
 
 ```bash
-farrow mac stop dev
-farrow mac configure dev --share data=/Volumes/Work/data --unshare docs
-farrow mac start dev
+barn mac stop dev
+barn mac configure dev --share data=/Volumes/Work/data --unshare docs
+barn mac start dev
 ```
 
 macOS guests can show stale file contents for a short while after the Mac
@@ -213,19 +214,19 @@ consistent view.
 
 ### SSH from other tools
 
-When the first machine becomes ready, Farrow adds one marked `Include` to
+When the first machine becomes ready, Barn adds one marked `Include` to
 `~/.ssh/config`, so `ssh mac1`, `scp`, `rsync`, and editors with Remote-SSH
 reach every machine by name, with its own key and pinned host key:
 
 ```bash
 ssh mac1 'uptime'
 rsync -a ./project/ mac1:project/
-farrow mac ssh-config              # print the entries
-farrow mac ssh-config --remove     # remove only what Farrow added
+barn mac ssh-config              # print the entries
+barn mac ssh-config --remove     # remove only what Barn added
 ```
 
 Lifecycle commands keep the entries current. A `~/.ssh/config` managed by a
-dotfile tool through a link is never edited; Farrow prints the `Include` line
+dotfile tool through a link is never edited; Barn prints the `Include` line
 to add instead.
 
 ## Several machines
@@ -233,8 +234,8 @@ to add instead.
 Give each machine a name. Creation options apply only to a new machine:
 
 ```bash
-farrow mac up dev --cpu 8 --memory 16G
-farrow mac ls
+barn mac up dev --cpu 8 --memory 16G
+barn mac ls
 ```
 
 ```text
@@ -258,21 +259,21 @@ running, a third is refused before anything is created, naming a machine to
 stop:
 
 ```bash
-farrow mac up build --user ci
+barn mac up build --user ci
 ```
 
 ```text
 error: dev and mac1 are running; macOS allows 2 macOS virtual machines at a time
-next: farrow mac stop mac1
+next: barn mac stop mac1
 ```
 
 ## Everyday lifecycle
 
 ```bash
-farrow mac stop dev               # shut down through macOS
-farrow mac start dev              # boot and wait for SSH
-farrow mac restart dev            # stop, then start, applying changes
-farrow mac stop --all             # every machine
+barn mac stop dev               # shut down through macOS
+barn mac start dev              # boot and wait for SSH
+barn mac restart dev            # stop, then start, applying changes
+barn mac stop --all             # every machine
 ```
 
 `stop` shuts down normally. A machine still running after two minutes is
@@ -285,7 +286,7 @@ differs, it refuses and names the command to use:
 
 ```text
 error: dev already exists, so --cpu would not apply; its configuration and data were preserved
-next: farrow mac configure dev --cpu 4
+next: barn mac configure dev --cpu 4
 ```
 
 `configure` changes CPUs, memory, shared folders and the network while the
@@ -293,9 +294,9 @@ machine is stopped, and clipboard sharing at any time. Changes apply at the next
 start:
 
 ```bash
-farrow mac stop dev
-farrow mac configure dev --cpu 6 --memory 12G --subnet auto
-farrow mac start dev
+barn mac stop dev
+barn mac configure dev --cpu 6 --memory 12G --subnet auto
+barn mac start dev
 ```
 
 `recreate` replaces a machine with a fresh macOS from the base, keeping its
@@ -304,8 +305,8 @@ machines. Both describe what they delete and ask you to type the command name;
 `--force` confirms without a terminal.
 
 ```bash
-farrow mac recreate dev
-farrow mac destroy dev build
+barn mac recreate dev
+barn mac destroy dev build
 ```
 
 | Operation | Guest disk and apps | Settings, address, account |
@@ -321,7 +322,7 @@ destroyed.
 ## macOS versions and disk space
 
 ```bash
-farrow mac image ls
+barn mac image ls
 ```
 
 ```text
@@ -329,10 +330,10 @@ KIND  OS          BUILD   STATE  ON DISK   CAPACITY  USED BY
 base  macOS 27.0  26A428  ready  26.7 GiB  100 GiB   mac1,default
 ```
 
-Updates are explicit. `farrow mac image update` asks Apple for the newest
+Updates are explicit. `barn mac image update` asks Apple for the newest
 macOS 27, downloads it after you confirm, and makes it the base for new
 machines. Existing machines keep their macOS until you run
-`farrow mac recreate NAME --update`. `up` and `start` never change a machine's
+`barn mac recreate NAME --update`. `up` and `start` never change a machine's
 macOS.
 
 `image prune` lists bases that no machine uses and that are not the default,
@@ -341,24 +342,24 @@ APFS clones share blocks, so `ON DISK` and machine disk figures are not
 exclusive usage and should not be added up.
 
 ```bash
-farrow mac image prune --installers         # review
-farrow mac image prune --installers --yes   # delete
+barn mac image prune --installers         # review
+barn mac image prune --installers --yes   # delete
 ```
 
 ## Troubleshooting
 
-Start with `farrow mac doctor`; it checks the host, the component, the base
+Start with `barn mac doctor`; it checks the host, the component, the base
 and every machine, and prints a `next:` command for each failure.
-`farrow mac logs [name]` shows the machine's runtime log: startup, network,
+`barn mac logs [name]` shows the machine's runtime log: startup, network,
 shutdown and Apple Virtualization errors.
 
 | Symptom | What to do |
 |---|---|
-| `network … overlaps route …` on start | A VPN or another tool now uses that subnet. Run `farrow mac configure NAME --subnet auto`. |
+| `network … overlaps route …` on start | A VPN or another tool now uses that subnet. Run `barn mac configure NAME --subnet auto`. |
 | `macOS allows 2 macOS virtual machines at a time` | Stop one of the named machines, or quit another tool's macOS VM. |
-| `ssh mac1` from a third-party client says "No route to host" | macOS Local Network privacy blocks that app from private networks. Allow it in **System Settings → Privacy & Security → Local Network**, or use `/usr/bin/ssh`. `farrow mac ssh` and `exec` always use Apple's tools and are not affected. |
-| `the Farrow Mac component is not installed` or `speaks protocol …` | Keep `farrow` and `Farrow Mac.app` from the same build together; rebuild with `make mac-build`. |
-| Starting fails from an SSH session to the Mac | Run `farrow mac` in a terminal of the Mac's desktop session: machines need the logged-in user's session and unlocked login keychain. |
+| `ssh mac1` from a third-party client says "No route to host" | macOS Local Network privacy blocks that app from private networks. Allow it in **System Settings → Privacy & Security → Local Network**, or use `/usr/bin/ssh`. `barn mac ssh` and `exec` always use Apple's tools and are not affected. |
+| `the Barn Mac component is not installed` or `speaks protocol …` | Keep `barn` and `Barn Mac.app` from the same build together; rebuild with `make mac-build`. |
+| Starting fails from an SSH session to the Mac | Run `barn mac` in a terminal of the Mac's desktop session: machines need the logged-in user's graphical session. |
 
 Apple Account sign-in inside a virtual machine is unreliable, and USB devices,
 snapshots and suspending a machine are not supported.
@@ -366,14 +367,14 @@ snapshots and suspending a machine are not supported.
 ## Clean up
 
 ```bash
-farrow mac destroy --force mac1 dev           # delete machines
-farrow mac image prune --installers --yes     # delete unused images
+barn mac destroy --force mac1 dev           # delete machines
+barn mac image prune --installers --yes     # delete unused images
 ```
 
 Destroying the last machine also removes its entries from `~/.ssh/config`. The
 default base stays for new machines; to remove every Mac file including it,
-destroy all machines and then delete `$FARROW_HOME/mac` (default
-`~/.farrow/mac`). Outside that directory Farrow writes only its
+destroy all machines and then delete `$BARN_HOME/mac` (default
+`~/.barn/mac`). Outside that directory Barn writes only its
 `~/.ssh/config` entries, the desktop window positions in
-`~/Library/Preferences/io.pgsty.farrow.mac-runner.plist`, and a short runtime
+`~/Library/Preferences/io.pgsty.barn.mac-runner.plist`, and a short runtime
 directory under `/tmp`. Nothing needs sudo.

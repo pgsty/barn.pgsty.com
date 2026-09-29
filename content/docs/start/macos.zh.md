@@ -1,22 +1,23 @@
 ---
 title: macOS 虚拟机
 linkTitle: macOS 虚拟机
-description: 用 farrow mac 在 Apple 芯片 Mac 上运行 macOS 27 虚拟机：创建、连接、共享文件与剪贴板，以及清理。
+description: 用 barn mac 在 Apple 芯片 Mac 上运行 macOS 27 虚拟机：创建、连接、共享文件与剪贴板，以及清理。
 weight: 38
 icon: fa-brands fa-apple
 ---
 
 > [!IMPORTANT]
-> **尚未发布。** `farrow mac` 还不在公开版 0.8.0、各类软件包或公开源码仓库中。
-> 本教程描述的是 2026-09-29 完成验证的开发版本，验证记录见
-> [当前状态](../../about/status/#macos-guests)。正式发布前，命令与输出仍可能调整。
+> **Barn 0.9.0 发布候选，尚未发布。** 本页描述改名后的 `barn mac`，
+> 使用全新 Barn 状态，不提供旧开发环境迁移。改名前的实机记录保留在
+> [当前状态](../../about/status/#macos-guests)，不代表改名后已经完成同等验收。
+> 请以实际运行的 `barn mac --help` 为准。
 
-`farrow mac` 在 Apple 芯片 Mac 上创建并运行 macOS 虚拟机。每台机器都是干净、可随时
+`barn mac` 在 Apple 芯片 Mac 上创建并运行 macOS 虚拟机。每台机器都是干净、可随时
 丢弃的 macOS：带管理员账号、免密 sudo、固定的 SSH 密钥和固定地址，适合测试、构建与复现
 macOS 特有的问题。它直接使用 Apple 的 Virtualization 框架，全程不需要管理员权限。
 
-Mac 机器与 Linux 实验环境相互独立：不读取 `farrow.yml`，不加入 Pigsty Inventory，
-所有文件都在 `$FARROW_HOME/mac`（默认 `~/.farrow/mac`）下。Linux 的 `destroy` 与
+Mac 机器与 Linux 实验环境相互独立：不读取 `barn.yml`，不加入 Pigsty Inventory，
+所有文件都在 `$BARN_HOME/mac`（默认 `~/.barn/mac`）下。Linux 的 `destroy` 与
 `purge` 不会触碰它们。
 
 ## 前提条件
@@ -33,29 +34,29 @@ Apple 规定一台 Mac 上**同时最多运行两台 macOS 虚拟机**，其他�
 
 ## 构建 Mac 组件
 
-在包含 `farrow mac` 的 Farrow 源码目录中执行：
+在包含 `barn mac` 的 Barn 源码目录中执行：
 
 ```bash
 make mac-build
 export PATH="$PWD/bin/mac:$PATH"
-farrow mac doctor
+barn mac doctor
 ```
 
-`bin/mac` 中包含命令行、`Farrow Mac.app`（运行机器及其桌面的原生组件）和使用说明，
+`bin/mac` 中包含命令行、`Barn Mac.app`（运行机器及其桌面的原生组件）和使用说明，
 请保持它们放在一起。本地构建使用 ad-hoc 签名。`doctor` 会检查 macOS 版本、组件与可用空间：
 
 ```text
 CHECK           RESULT  DETAIL
-component       ok      /path/to/farrow/bin/mac/Farrow Mac.app/Contents/MacOS/farrow-mac-runner
+component       ok      /path/to/barn/bin/mac/Barn Mac.app/Contents/MacOS/barn-mac-runner
 virtualization  ok      macOS 27.0.0 on Apple Silicon; virtualization supported
 disk            ok      549.8 GiB free
-data            ok      no Mac machines yet; farrow mac up creates the first
+data            ok      no Mac machines yet; barn mac up creates the first
 ```
 
 ## 创建第一台机器
 
 ```bash
-farrow mac up
+barn mac up
 ```
 
 这台 Mac 上还没有准备好 macOS 时，`up` 会先列出需要做的事并请你确认：
@@ -68,7 +69,7 @@ free:      551.2 GiB
 Download macOS from Apple now? [Y/n]
 ```
 
-确认后，Farrow 依次：
+确认后，Barn 依次：
 
 1. **只从 Apple 官方下载恢复镜像**，并用 Apple 公布的 SHA-256 校验；下载中断后从断点继续。
 2. **一次性安装 macOS**，得到一个从未启动过的*基础镜像*。安装期间会占用两个 macOS
@@ -78,31 +79,31 @@ Download macOS from Apple now? [Y/n]
 
 ```text
   ✓  mac1 created and ready · macOS 27.0 (26A428) · alice@10.10.20.10
-shell:     farrow mac ssh mac1
-desktop:   farrow mac open mac1
+shell:     barn mac ssh mac1
+desktop:   barn mac open mac1
 ```
 
 之后的每台机器都复用这个基础镜像，几十秒即可就绪；在验证主机上，从已准备好的基础镜像
 创建一台机器用时 22 秒。
 
 如果手上已有 Apple 的恢复镜像，可以直接使用，不必重新下载。它与数据在同一个 APFS
-卷上时，Farrow 以克隆方式引入，不占额外空间；否则校验后原地使用：
+卷上时，Barn 以克隆方式引入，不占额外空间；否则校验后原地使用：
 
 ```bash
-farrow mac up --ipsw ~/Downloads/UniversalMac_27.0_26A428_Restore.ipsw
+barn mac up --ipsw ~/Downloads/UniversalMac_27.0_26A428_Restore.ipsw
 ```
 
 没有终端时（例如在脚本中），`up` 需要 `--yes` 才会下载，否则直接拒绝，绝不会悄悄下载
-25 GiB。`farrow mac setup` 可以提前准备基础镜像而不创建机器。
+25 GiB。`barn mac setup` 可以提前准备基础镜像而不创建机器。
 
 ## 使用机器
 
 ### 终端与命令
 
 ```bash
-farrow mac ssh                                  # 交互式终端
-farrow mac exec -- sw_vers                      # 执行一条命令
-farrow mac ssh -- 'id; sudo -n true && echo sudo works'
+barn mac ssh                                  # 交互式终端
+barn mac exec -- sw_vers                      # 执行一条命令
+barn mac ssh -- 'id; sudo -n true && echo sudo works'
 ```
 
 ```text
@@ -116,7 +117,7 @@ BuildVersion:		26A428
 `--json` 会记录标准输出、标准错误与退出码：
 
 ```bash
-farrow --json mac exec -- sh -c 'echo out; exit 3'
+barn --json mac exec -- sh -c 'echo out; exit 3'
 ```
 
 ```json
@@ -136,7 +137,7 @@ farrow --json mac exec -- sh -c 'echo out; exit 3'
 ### 桌面
 
 ```bash
-farrow mac open
+barn mac open
 ```
 
 桌面在一个与屏幕大小相称的原生窗口中打开。调整窗口大小时客机分辨率随之改变，
@@ -148,14 +149,14 @@ farrow mac open
 |---|---|
 | **Machine → Share Clipboard** | 在本次运行中开关剪贴板共享 |
 | **Machine → Restart…** | 重启客机中的 macOS |
-| **Machine → Shut Down…** | 正常关机，与 `farrow mac stop` 相同 |
+| **Machine → Shut Down…** | 正常关机，与 `barn mac stop` 相同 |
 | **Window → Keep Running in Background** | 隐藏窗口，机器继续运行 |
-| **Farrow Mac → Quit Farrow Mac…** | 选择让机器在后台继续运行，或关机 |
+| **Barn Mac → Quit Barn Mac…** | 选择让机器在后台继续运行，或关机 |
 
 锁屏和桌面中的管理员授权需要登录密码。每台机器的密码随机生成，可以直接复制而不在终端显示：
 
 ```bash
-farrow mac password --copy
+barn mac password --copy
 ```
 
 ### 剪贴板
@@ -164,7 +165,7 @@ farrow mac password --copy
 切换到其他应用时同步回 Mac。内容经由这台机器自己的 SSH 连接传输，客机中无需安装任何程序。
 被密码管理器标记为敏感的内容不会离开 Mac；图片和文件不会同步。
 
-执行 `farrow mac configure mac1 --clipboard off` 可为某台机器关闭剪贴板共享，
+执行 `barn mac configure mac1 --clipboard off` 可为某台机器关闭剪贴板共享，
 从这台机器下次启动起生效。
 
 ### 共享目录
@@ -172,17 +173,17 @@ farrow mac password --copy
 创建机器时共享 Mac 上的目录，客机把它们挂载在 `/Volumes/My Shared Files/<名称>`：
 
 ```bash
-farrow mac up dev --share ~/src --share docs=~/Documents:ro
-farrow mac exec dev -- ls "/Volumes/My Shared Files"
+barn mac up dev --share ~/src --share docs=~/Documents:ro
+barn mac exec dev -- ls "/Volumes/My Shared Files"
 ```
 
 名称默认取目录路径的最后一段；`:ro` 表示只读。共享的必须是已存在的目录，不能是符号链接；
-Farrow 从不创建或删除共享目录。之后要调整共享，先停机再用 `configure`：
+Barn 从不创建或删除共享目录。之后要调整共享，先停机再用 `configure`：
 
 ```bash
-farrow mac stop dev
-farrow mac configure dev --share data=/Volumes/Work/data --unshare docs
-farrow mac start dev
+barn mac stop dev
+barn mac configure dev --share data=/Volumes/Work/data --unshare docs
+barn mac start dev
 ```
 
 Mac 修改共享文件后，macOS 客机可能在短时间内仍看到旧内容。需要即时一致的结果时，
@@ -190,27 +191,27 @@ Mac 修改共享文件后，macOS 客机可能在短时间内仍看到旧内容�
 
 ### 在其他工具中使用 SSH
 
-第一台机器就绪时，Farrow 会在 `~/.ssh/config` 中加入一个带标记的 `Include`。之后
+第一台机器就绪时，Barn 会在 `~/.ssh/config` 中加入一个带标记的 `Include`。之后
 `ssh mac1`、`scp`、`rsync` 以及支持 Remote-SSH 的编辑器都能按名称访问每台机器，
 并使用它自己的密钥和固定的主机密钥：
 
 ```bash
 ssh mac1 'uptime'
 rsync -a ./project/ mac1:project/
-farrow mac ssh-config              # 打印这些条目
-farrow mac ssh-config --remove     # 只移除 Farrow 添加的内容
+barn mac ssh-config              # 打印这些条目
+barn mac ssh-config --remove     # 只移除 Barn 添加的内容
 ```
 
 生命周期命令会保持这些条目为最新。若 `~/.ssh/config` 是由 dotfile 工具管理的链接，
-Farrow 不会修改它，而是打印需要你手动添加的 `Include` 行。
+Barn 不会修改它，而是打印需要你手动添加的 `Include` 行。
 
 ## 多台机器
 
 为每台机器命名。创建参数只对新机器生效：
 
 ```bash
-farrow mac up dev --cpu 8 --memory 16G
-farrow mac ls
+barn mac up dev --cpu 8 --memory 16G
+barn mac ls
 ```
 
 ```text
@@ -229,21 +230,21 @@ limit:     2 of 2 macOS VMs are running; stop one before starting another
 已有两台机器在运行时，第三台会在创建任何内容之前被拒绝，并指出可以停止哪一台：
 
 ```bash
-farrow mac up build --user ci
+barn mac up build --user ci
 ```
 
 ```text
 error: dev and mac1 are running; macOS allows 2 macOS virtual machines at a time
-next: farrow mac stop mac1
+next: barn mac stop mac1
 ```
 
 ## 日常管理
 
 ```bash
-farrow mac stop dev               # 通过 macOS 正常关机
-farrow mac start dev              # 启动并等待 SSH
-farrow mac restart dev            # 先停再启，使配置变更生效
-farrow mac stop --all             # 所有机器
+barn mac stop dev               # 通过 macOS 正常关机
+barn mac start dev              # 启动并等待 SSH
+barn mac restart dev            # 先停再启，使配置变更生效
+barn mac stop --all             # 所有机器
 ```
 
 `stop` 执行正常关机；两分钟后仍在运行的机器会被断电，结果中会明确说明。
@@ -254,16 +255,16 @@ farrow mac stop --all             # 所有机器
 
 ```text
 error: dev already exists, so --cpu would not apply; its configuration and data were preserved
-next: farrow mac configure dev --cpu 4
+next: barn mac configure dev --cpu 4
 ```
 
 `configure` 在机器停止时修改 CPU、内存、共享目录与网络，剪贴板共享可随时修改；
 变更从下次启动起生效：
 
 ```bash
-farrow mac stop dev
-farrow mac configure dev --cpu 6 --memory 12G --subnet auto
-farrow mac start dev
+barn mac stop dev
+barn mac configure dev --cpu 6 --memory 12G --subnet auto
+barn mac start dev
 ```
 
 `recreate` 用基础镜像中全新的 macOS 替换机器，保留名称、账号、资源、共享目录与地址；
@@ -271,8 +272,8 @@ farrow mac start dev
 没有终端时用 `--force` 确认。
 
 ```bash
-farrow mac recreate dev
-farrow mac destroy dev build
+barn mac recreate dev
+barn mac destroy dev build
 ```
 
 | 操作 | 客机磁盘与应用 | 设置、地址与账号 |
@@ -287,7 +288,7 @@ farrow mac destroy dev build
 ## macOS 版本与磁盘空间
 
 ```bash
-farrow mac image ls
+barn mac image ls
 ```
 
 ```text
@@ -295,44 +296,44 @@ KIND  OS          BUILD   STATE  ON DISK   CAPACITY  USED BY
 base  macOS 27.0  26A428  ready  26.7 GiB  100 GiB   mac1,default
 ```
 
-升级总是显式进行。`farrow mac image update` 向 Apple 查询最新的 macOS 27，确认后下载，
+升级总是显式进行。`barn mac image update` 向 Apple 查询最新的 macOS 27，确认后下载，
 并将其设为新机器的基础镜像。已有机器保持原来的 macOS，直到执行
-`farrow mac recreate NAME --update`。`up` 与 `start` 从不改变机器的 macOS 版本。
+`barn mac recreate NAME --update`。`up` 与 `start` 从不改变机器的 macOS 版本。
 
 `image prune` 列出没有机器使用、且不是默认的基础镜像，加 `--yes` 才会删除；
 `--installers` 会一并处理已下载的恢复镜像。APFS 克隆共享数据块，因此 `ON DISK`
 与各机器的磁盘数字都不是独占空间，不要相加。
 
 ```bash
-farrow mac image prune --installers         # 先查看
-farrow mac image prune --installers --yes   # 再删除
+barn mac image prune --installers         # 先查看
+barn mac image prune --installers --yes   # 再删除
 ```
 
 ## 故障排查
 
-先执行 `farrow mac doctor`：它检查宿主、组件、基础镜像与每台机器，并为每个失败项给出
-`next:` 命令。`farrow mac logs [名称]` 显示机器的运行日志：启动、网络、关机以及 Apple
+先执行 `barn mac doctor`：它检查宿主、组件、基础镜像与每台机器，并为每个失败项给出
+`next:` 命令。`barn mac logs [名称]` 显示机器的运行日志：启动、网络、关机以及 Apple
 Virtualization 的错误。
 
 | 现象 | 处理方法 |
 |---|---|
-| 启动时报 `network … overlaps route …` | VPN 或其他工具占用了该网段。执行 `farrow mac configure NAME --subnet auto`。 |
+| 启动时报 `network … overlaps route …` | VPN 或其他工具占用了该网段。执行 `barn mac configure NAME --subnet auto`。 |
 | `macOS allows 2 macOS virtual machines at a time` | 停止提示中的某台机器，或退出其他工具的 macOS 虚拟机。 |
-| 第三方 SSH 客户端执行 `ssh mac1` 报 "No route to host" | macOS 的“本地网络”隐私控制阻止了该应用访问私有网络。在**系统设置 → 隐私与安全性 → 本地网络**中允许它，或改用 `/usr/bin/ssh`。`farrow mac ssh` 与 `exec` 始终使用 Apple 自带工具，不受影响。 |
-| `the Farrow Mac component is not installed` 或 `speaks protocol …` | 同一次构建的 `farrow` 与 `Farrow Mac.app` 需放在一起；用 `make mac-build` 重新构建。 |
-| 通过 SSH 登录 Mac 后启动失败 | 请在 Mac 桌面会话的终端中运行 `farrow mac`：机器需要已登录用户的会话和已解锁的登录钥匙串。 |
+| 第三方 SSH 客户端执行 `ssh mac1` 报 "No route to host" | macOS 的“本地网络”隐私控制阻止了该应用访问私有网络。在**系统设置 → 隐私与安全性 → 本地网络**中允许它，或改用 `/usr/bin/ssh`。`barn mac ssh` 与 `exec` 始终使用 Apple 自带工具，不受影响。 |
+| `the Barn Mac component is not installed` 或 `speaks protocol …` | 同一次构建的 `barn` 与 `Barn Mac.app` 需放在一起；用 `make mac-build` 重新构建。 |
+| 通过 SSH 登录 Mac 后启动失败 | 请在 Mac 桌面会话的终端中运行 `barn mac`：机器需要已登录用户的会话和已解锁的登录钥匙串。 |
 
 在虚拟机中登录 Apple 账户并不可靠；不支持 USB 设备、快照和挂起机器。
 
 ## 清理
 
 ```bash
-farrow mac destroy --force mac1 dev           # 删除机器
-farrow mac image prune --installers --yes     # 删除不再使用的镜像
+barn mac destroy --force mac1 dev           # 删除机器
+barn mac image prune --installers --yes     # 删除不再使用的镜像
 ```
 
 删除最后一台机器时，`~/.ssh/config` 中的相应条目也会一并移除。默认基础镜像会保留，
 供之后创建机器使用；如需删除包括它在内的所有 Mac 文件，先删除全部机器，再删除
-`$FARROW_HOME/mac`（默认 `~/.farrow/mac`）。除该目录外，Farrow 只会写入
-`~/.ssh/config` 中的条目、保存在 `~/Library/Preferences/io.pgsty.farrow.mac-runner.plist`
+`$BARN_HOME/mac`（默认 `~/.barn/mac`）。除该目录外，Barn 只会写入
+`~/.ssh/config` 中的条目、保存在 `~/Library/Preferences/io.pgsty.barn.mac-runner.plist`
 中的桌面窗口位置，以及 `/tmp` 下的一个短路径运行目录。整个过程都不需要 sudo。

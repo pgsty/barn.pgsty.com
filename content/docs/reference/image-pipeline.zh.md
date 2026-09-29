@@ -6,11 +6,11 @@ icon: fa-solid fa-shield-halved
 ---
 
 底层 `packaging/image-pipeline/build.sh` 接受一份已下载的不可变 qcow2 与独立获得的
-SHA-256。它绝不下载、上传、修改 Farrow 运行时/网络状态、读取签名密钥，也不会把镜像
+SHA-256。它绝不下载、上传、修改 Barn 运行时/网络状态、读取签名密钥，也不会把镜像
 标成 `supported`。
 
-以下命令从 Farrow 源码目录执行。需要 Python 3 与 `qemu-img`；`offline` 还需要可用的
-libguestfs `virt-customize`、`virt-cat`。这是镜像构建宿主的依赖，与 `farrow setup`
+以下命令从 Barn 源码目录执行。需要 Python 3 与 `qemu-img`；`offline` 还需要可用的
+libguestfs `virt-customize`、`virt-cat`。这是镜像构建宿主的依赖，与 `barn setup`
 为运行 VM 安装的依赖是不同边界。
 
 ## 模式
@@ -63,8 +63,8 @@ Debian 同时生成 `en_US.UTF-8`，并保留 `C.UTF-8` 作为默认 locale；�
 ```
 
 构建分散在不同根时，可以重复 `--assemble-from`。八个目标都必须有且只有一个 Bundle；
-组装会创建新的静态仓库，并调用 PATH 中的 `farrow` 执行 `repo build` 与 `verify`，
-也可用 `--farrow /absolute/path/to/farrow` 指定程序。构建模式使用已存在的输出根，
+组装会创建新的静态仓库，并调用 PATH 中的 `barn` 执行 `repo build` 与 `verify`，
+也可用 `--barn /absolute/path/to/barn` 指定程序。构建模式使用已存在的输出根，
 组装模式的目标目录则必须不存在。生成仓库使用 `candidate` Channel，而不是 `stable`，
 例如应选 `d13:candidate`。此过程不包含真机 Smoke、签名、上传或 Catalog 发布。
 

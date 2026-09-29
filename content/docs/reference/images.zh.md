@@ -5,8 +5,8 @@ weight: 30
 icon: fa-solid fa-hard-drive
 ---
 
-Farrow 使用物化的静态 Catalog 与不可变 qcow2 工件。官方与 HTTP Catalog 必须签名；
-用户显式选择的本地或 HTTPS 仓库可以不签名。更新 Catalog 不需要发布新的 Farrow
+Barn 使用物化的静态 Catalog 与不可变 qcow2 工件。官方与 HTTP Catalog 必须签名；
+用户显式选择的本地或 HTTPS 仓库可以不签名。更新 Catalog 不需要发布新的 Barn
 二进制，但二进制决定信任哪些签名公钥与镜像安全规则。
 
 > [!WARNING]
@@ -15,13 +15,13 @@ Farrow 使用物化的静态 Catalog 与不可变 qcow2 工件。官方与 HTTP 
 
 ## 别名与拉取顺序
 
-Farrow 0.8.0 内置 Catalog `2026092001`，包含 9 个 Family、37 个工件，保留前一版的
+Barn 0.9.0 内置 Catalog `2026092001`，包含 9 个 Family、37 个工件，保留前一版的
 全部 27 个工件。`el7` 只有 amd64，其余 Family 均有 amd64 与 arm64。
 EL9 包含 9.3、9.6、9.7、9.8；EL10 包含 10.0、10.1、10.2。
 默认请求为本机架构的 `u24:stable`（Ubuntu 24.04）。
 
 以下九月 `stable` 均覆盖 amd64 和 arm64。这是内置 Catalog 快照，不是实时仓库列表。
-运行 `farrow update`，再用 `farrow image list` 查看选定仓库当前的目录。带日期的公开
+运行 `barn update`，再用 `barn image list` 查看选定仓库当前的目录。带日期的公开
 端点检查与 Guest 小版本观测见[当前状态](../../about/status/)。
 
 | Family | 内置 stable | 发行版系列 |
@@ -48,39 +48,39 @@ Debian 保留离线安装的 XFS 工具和已生成的 `en_US.UTF-8`，默认 lo
 | `u22`、`u24`、`u26` | Ubuntu | amd64、arm64 | UEFI | supported |
 
 ```bash
-farrow image list
-farrow image info d13
-farrow image info d13:stable
-farrow image info el9@9.7
-farrow image pull d13@20260810.2566.1
-farrow image pull d13 --arch arm64
-farrow update
+barn image list
+barn image info d13
+barn image info d13:stable
+barn image info el9@9.7
+barn image pull d13@20260810.2566.1
+barn image pull d13 --arch arm64
+barn update
 ```
 
 Catalog 状态只表达支持策略，不是启动开关：`supported` 表示已通过声明的支持门禁；
 `testing` 可在显式测试/风险接受下使用，但不受支持；`deprecated` 只为 EOL 兼容保留；
 `unknown` 尚无支持分类。非 `supported` 条目仍可运行，但会打印警告。
 
-拉取时 Farrow 会：
+拉取时 Barn 会：
 
 1. 为整条命令读取一次选定仓库的本地 Catalog：即本次构建内置的 Catalog，或最近一次
-   为该仓库通过 `farrow update`/`image sync` 激活的 Catalog；
+   为该仓库通过 `barn update`/`image sync` 激活的 Catalog；
 2. 解析 `image[:channel]` 或 `image@version-prefix`，官方 Catalog 缺省为 `u24:stable`；
    独立 `image pull` 默认使用本机架构，可通过 `--arch` 覆盖；生命周期解析遵循 `vm_arch`；
 3. 只有尺寸、SHA-256、qcow2 结构全部匹配时才复用本地文件；
 4. 否则下载 Catalog 指定的准确工件，并支持重试和断点续传；两个官方仓库可互相回退，
    自定义仓库仍为唯一来源。接受的字节始终须匹配 Catalog；不可变 Upstream URL 只用于溯源。
 
-Release 构建默认使用 `https://repo.pigsty.io/farrow`；仅有长参数的 `--mirror` 选择
-`https://repo.pigsty.cc/farrow`。优先级依次为 `--repo`、`--mirror`、`FARROW_REPO`、
+Release 构建默认使用 `https://repo.pigsty.io/barn`；仅有长参数的 `--mirror` 选择
+`https://repo.pigsty.cc/barn`。优先级依次为 `--repo`、`--mirror`、`BARN_REPO`、
 全球默认仓库，两个官方根都保持规范的签名 Catalog 信任。仓库选择同时决定本地 Catalog
-槽位和下载来源；即使字节已缓存，仍需选择相同的自定义仓库。Farrow 不会自动刷新
+槽位和下载来源；即使字节已缓存，仍需选择相同的自定义仓库。Barn 不会自动刷新
 Catalog，已有激活目录与已校验缓存时，普通镜像解析可以离线进行。
-运行 `farrow update` 可获取、校验并激活选定
+运行 `barn update` 可获取、校验并激活选定
 仓库当前的 Catalog。Catalog 更新使用该指定源，失败时直接报错；镜像下载则在所有
 允许的来源均无法提供通过校验的字节时失败。
 仅改变 `--repo` 不会获取或激活该仓库的 Catalog；使用它的自定义别名前，先运行
-`farrow update --repo <root>`。
+`barn update --repo <root>`。
 
 已校验但可写的缓存文件会恢复为只读；损坏且未被引用的缓存会先保留为带
 `.corrupt-<timestamp>` 后缀的文件，再重新下载。仍被 VM 引用的基础镜像保持原位并报错。
@@ -98,9 +98,9 @@ EL7 刻意仅支持 Linux/amd64 原生运行。Linux setup 只安装宿主原生
 仍然需要 `qemu-img`。
 
 ```bash
-farrow image pull d13 --mirror
-farrow image pull d13 --repo https://mirror.example/farrow
-FARROW_REPO=/absolute/local/repository farrow up
+barn image pull d13 --mirror
+barn image pull d13 --repo https://mirror.example/barn
+BARN_REPO=/absolute/local/repository barn up
 ```
 
 未签名仓库必须是本地路径或 HTTPS。HTTP 仓库必须提供可信密钥签名；不可变 Upstream
@@ -117,30 +117,30 @@ Revision；只有操作者显式允许时才可降级。
 Base。
 
 ```bash
-farrow update
-farrow image sync --repo https://repo.example/farrow \
-  https://repo.example/farrow/catalog.json
-farrow image sync --repo /absolute/repo --allow-downgrade /absolute/repo/catalog.json
-farrow image reset
+barn update
+barn image sync --repo https://repo.example/barn \
+  https://repo.example/barn/catalog.json
+barn image sync --repo /absolute/repo --allow-downgrade /absolute/repo/catalog.json
+barn image reset
 ```
 
 `image reset` 恢复二进制内置的 Catalog，但不会清除防回滚 High-water Mark；
 `reset-manifest` 作为兼容别名保留。
 
-`farrow update` 立即检查仓库并激活更新的 Catalog。Farrow 不会自动刷新 Catalog；每个版本
+`barn update` 立即检查仓库并激活更新的 Catalog。Barn 不会自动刷新 Catalog；每个版本
 内嵌的 Catalog 会一直使用到你运行 update。`image sync` 是指定精确 URL 或文件（含降级）的
 恢复路径。
 
 按仓库恢复时要显式传入同一个根目录：
 
 ```bash
-farrow image sync --repo /srv/farrow --allow-downgrade /srv/farrow/catalog.json
-farrow image reset --repo /srv/farrow
+barn image sync --repo /srv/barn --allow-downgrade /srv/barn/catalog.json
+barn image reset --repo /srv/barn
 ```
 
 `--repo` 决定独立的活动 Catalog 与 High-water 槽，位置参数中的源不会改变这个选择。
 `image sync`、`image reset` 接受 `--repo`，不接受 `--mirror`；省略 `--repo` 时使用
-`FARROW_REPO` 或编译期默认值。未签名自定义 Catalog 的精确源必须是选定根下的
+`BARN_REPO` 或编译期默认值。未签名自定义 Catalog 的精确源必须是选定根下的
 `catalog.json`。
 
 ## 静态仓库格式
@@ -148,7 +148,7 @@ farrow image reset --repo /srv/farrow
 发布根刻意保持很小：
 
 ```text
-farrow/
+barn/
 ├── repo.yaml
 ├── catalog.json
 ├── catalog.json.minisig       # 官方与 HTTP 仓库必需
@@ -158,11 +158,11 @@ farrow/
 
 `repo.yaml` 保存人工意图：默认值、别名、Channel、精确版本、架构、启动模式、状态和可选、
 只用于溯源的 Upstream URL。`source_user` 记录镜像声明的源登录身份，例如上游镜像的
-`rocky`，或经过 Farrow 官方归一化后的 `dba`。流水线清理候选镜像时另行接收上游账号。
+`rocky`，或经过 Barn 官方归一化后的 `dba`。流水线清理候选镜像时另行接收上游账号。
 Catalog/导入元数据不会替换 deployment SSH 用户（默认 `dba`），也不会自行归一化镜像。
 该文件不保存任何生成的摘要或大小；`catalog.json` 保持同一逻辑树，
 但为每个 Variant 物化文件名、SHA-256、工件大小和虚拟大小。`repo.yaml` 是 `schema: 1`；
-生成的 `catalog.json` 则是 Farrow 内嵌并签名的 Schema-3 Catalog。
+生成的 `catalog.json` 则是 Barn 内嵌并签名的 Schema-3 Catalog。
 
 ```yaml
 schema: 1
@@ -193,7 +193,7 @@ d13:stable + native
   -> images/d13-20260914.2601.1-arm64.qcow2
 ```
 
-`farrow repo scan` 只读；`build` 执行严格 YAML 校验、完整 qcow2 inspect/check，
+`barn repo scan` 只读；`build` 执行严格 YAML 校验、完整 qcow2 inspect/check，
 并原子替换 Catalog，永不修改 `repo.yaml` 或 QCOW 字节；`verify` 要求新鲜物化结果与
 现有 Catalog 逐字节一致。`build`、`verify` 需要本机 `qemu-img`，`scan` 不需要。
 应在安装 QEMU 的机器上构建，先发布不可变工件，最后发布 Catalog 与匹配签名，尽量
@@ -202,13 +202,13 @@ d13:stable + native
 
 ## 本地布局与导入
 
-镜像位于 `FARROW_HOME/images`（默认 `~/.farrow/images`）：各 Family 目录保存下载工件，
+镜像位于 `BARN_HOME/images`（默认 `~/.barn/images`）：各 Family 目录保存下载工件，
 `manifests/` 保存当前激活的 Catalog 与每个仓库独立的 High-water 状态，`local/` 与
 `local-images.json` 保存导入镜像。
 
 ```bash
-farrow image import --sha256 <digest> /path/to/base.qcow2
-farrow image import --name local-mybase --boot uefi \
+barn image import --sha256 <digest> /path/to/base.qcow2
+barn image import --name local-mybase --boot uefi \
   --source-user ubuntu --sha256 <digest> /path/to/base.qcow2
 ```
 
@@ -225,8 +225,8 @@ CLI 中 `--sha256` 是可选参数；提供独立获得的可信摘要，才能�
 ## 清理
 
 ```bash
-farrow image prune --dry-run
-farrow image prune --yes
+barn image prune --dry-run
+barn image prune --yes
 ```
 
 不带参数的 `prune` 与 `--dry-run` 只报告候选，`--yes` 才执行删除。保护集合是选定活动

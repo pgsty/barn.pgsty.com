@@ -8,20 +8,20 @@ sections:
   - cta
 
 hero:
-  eyebrow: Farrow 0.8.0 · 预发布 · Go + QEMU
+  eyebrow: Barn 0.9.0 · 发布候选 · Go + QEMU
   title_lines:
     - 一份 Inventory，
     - 一套 Deployment。
   title_size: 4.15rem
   lead: >-
-    Farrow 在 macOS 与 Linux 上，把 Pigsty 兼容的 Inventory 启动成固定 IP 的
-    QEMU 虚拟机。用同一份配置，通过 Farrow 准备虚拟机，再通过 Pigsty 部署服务。
-  note: 默认 Ubuntu 24.04。重复 farrow up 可接续初始化、重试受限功能，健康 VM 保持运行。
+    Barn 在 macOS 与 Linux 上，把 Pigsty 兼容的 Inventory 启动成固定 IP 的
+    QEMU 虚拟机。用同一份配置，通过 Barn 准备虚拟机，再通过 Pigsty 部署服务。
+  note: 默认 Ubuntu 24.04。重复 barn up 可接续初始化、重试受限功能，健康 VM 保持运行。
   note_icon: fa-solid fa-flask
   image:
-    light: images/farrow-hero-light.svg?v=0.8.0-docs2
-    dark: images/farrow-hero-dark.svg?v=0.8.0-docs2
-    alt: 一份 Pigsty Inventory 变成一套固定 IP 的 Farrow deployment
+    light: images/barn-hero-light.svg?v=0.9.0-rename
+    dark: images/barn-hero-dark.svg?v=0.9.0-rename
+    alt: 一份 Pigsty Inventory 变成一套固定 IP 的 Barn deployment
   actions:
     - { label: 快速上手, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
     - { label: 查阅参考, url: docs/reference/, icon: fa-solid fa-book-open, style: ghost }
@@ -33,14 +33,14 @@ hero:
 facts:
   eyebrow: 当前模型
   title: 更少的机制，更清楚的行为
-  text: Farrow 面向一套可信的本地 Pigsty 实验环境，不是通用云控制平面。
+  text: Barn 面向一套可信的本地 Pigsty 实验环境，不是通用云控制平面。
   animate: true
   columns: 4
   link_label: 查看详情
   items:
     - { value: 2, label: 条上手命令, desc: 安装后 up + ssh, url: docs/start/tutorial/ }
-    - { value: 1, label: 份 Inventory, desc: farrow.yml 或 pigsty.yml, url: docs/reference/configuration/ }
-    - { value: 1, label: 套用户 Deployment, desc: 状态位于 ~/.farrow, url: docs/about/design/ }
+    - { value: 1, label: 份 Inventory, desc: barn.yml 或 pigsty.yml, url: docs/reference/configuration/ }
+    - { value: 1, label: 套用户 Deployment, desc: 状态位于 ~/.barn, url: docs/about/design/ }
     - { value: 9, label: 个镜像家族, desc: Ubuntu、Debian、Rocky、CentOS, url: docs/reference/images/ }
 
 entry_points:
@@ -60,10 +60,10 @@ entry_points:
 first_command:
   eyebrow: 正常路径
   title: 启动环境，然后进入
-  text: 先按快速上手安装 Farrow；首次部署时，在终端的空目录执行以下命令。交互式 up 会准备缺少的宿主依赖，在尚无部署时生成默认配置。
+  text: 先按快速上手从源码准备 Barn 0.9.0 候选；首次部署时，在终端的空目录执行以下命令。交互式 up 会准备缺少的宿主依赖，在尚无部署时生成默认配置。
   code: |-
-    farrow up
-    farrow ssh
+    barn up
+    barn ssh
   lang: bash
   note: 增加主机行后再次 up：创建新节点、启动选中的已停止节点，运行中节点保留进程，同时重试未完成的初始化；删掉一行永远不会删除 VM。
 
@@ -81,21 +81,21 @@ faq:
   eyebrow: 简短回答
   title: 开始之前
   items:
-    - question: 工作目录还是 Farrow 项目吗？
-      answer: 不是。状态是 ~/.farrow 下唯一的一套 deployment；显式或当前目录发现的 Inventory 提供期望状态，没有文件时生命周期命令可回退到已应用规格。
+    - question: 工作目录还是 Barn 项目吗？
+      answer: 不是。状态是 ~/.barn 下唯一的一套 deployment；显式或当前目录发现的 Inventory 提供期望状态，没有文件时生命周期命令可回退到已应用规格。
       open: true
     - question: 可以直接使用 pigsty.yml 吗？
-      answer: 可以。Farrow 读取已记录的 VM 字段，以及用于命名、控制节点和管理员身份的一小组 Pigsty 字段；其余参数保持不透明。
+      answer: 可以。Barn 读取已记录的 VM 字段，以及用于命名、控制节点和管理员身份的一小组 Pigsty 字段；其余参数保持不透明。
     - question: 第一次 up 会修改宿主吗？
       answer: 可能安装缺少的依赖与固定 IP 网络，并在需要时调用 sudo。可先用 setup --dry-run 查看宿主计划；可选 hosts helper 仅在 hosts install 时安装。
     - question: up 会安装 PostgreSQL 或 Pigsty 吗？
       answer: 它准备虚拟机与客机访问环境。PostgreSQL 和其他服务由 Pigsty 单独部署；内置模板只描述 VM 拓扑。
-    - question: Farrow 可以用于生产吗？
+    - question: Barn 可以用于生产吗？
       answer: 不可以。它仍是 pre-1.0 的本地开发运行时；请在状态页查看准确验证矩阵与开放门禁。
 
 cta:
   title: 从两条命令开始。
-  desc: 安装 0.8.0，用 up 启动、ssh 进入，再按需要添加节点。
+  desc: 当前从源码构建 0.9.0 候选；正式发布后安装 Barn，用 up 启动、ssh 进入。
   actions:
     - { label: 快速上手, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
     - { label: 参考, url: docs/reference/, icon: fa-solid fa-book-open, style: ghost }

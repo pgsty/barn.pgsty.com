@@ -1,24 +1,24 @@
 ---
 title: "repo.yaml 是意图，catalog.json 是证据"
 linkTitle: "镜像仓库契约"
-description: "为什么 Farrow 把人工维护的镜像策略与必须匹配实际 qcow2 工件的生成元数据分离。"
+description: "为什么 Barn 把人工维护的镜像策略与必须匹配实际 qcow2 工件的生成元数据分离。"
 date: 2026-08-29T19:00:00+08:00
 weight: 50
 categories: [设计]
 tags: [镜像, 供应链, Catalog]
 icon: fa-solid fa-box-archive
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **2026-09-26 校准：** 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
+> **2026-09-29 更名：** Barn 0.9.0 尚未发布；本文名称已同步更新。2026-09-26 校准记录： 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
 > 边界见[当前状态](/zh/docs/about/status/)，不以本文日期代替发布或验收日期。
 
 静态镜像仓库看起来只是一些 qcow2 文件加一个 JSON 索引。真正困难的问题是：哪些事实允许
 维护者手写，哪些事实必须从即将发布的字节中推导。
 
 如果 Checksum 与 Size 放在手写源文件里，它们很容易被错误复制；如果策略只存在于生成 JSON
-中，审查 Channel 变化或弃用决定就要阅读机器输出。Farrow 把这两项工作明确分开。
+中，审查 Channel 变化或弃用决定就要阅读机器输出。Barn 把这两项工作明确分开。
 
 ## `repo.yaml`：维护者表达什么意图
 
@@ -83,9 +83,9 @@ images/d13-20260810.2566.0-arm64.qcow2
 
 | 命令 | 职责 |
 | --- | --- |
-| `farrow repo scan` | 只读报告 Tracked、Missing、Untracked 与 Unsafe Artifact |
-| `farrow repo build` | 校验 Source 与 Artifact，再原子生成 Catalog |
-| `farrow repo verify` | 在内存中重新物化，并要求与已发布 Catalog 逐字节一致 |
+| `barn repo scan` | 只读报告 Tracked、Missing、Untracked 与 Unsafe Artifact |
+| `barn repo build` | 校验 Source 与 Artifact，再原子生成 Catalog |
+| `barn repo verify` | 在内存中重新物化，并要求与已发布 Catalog 逐字节一致 |
 
 `build` 永远不修改 `repo.yaml` 或 qcow2 字节。`verify` 比“每个 Checksum 都正确”更强：它还能
 证明没有任何源策略或工件变化被漏出生成 Catalog。
@@ -108,7 +108,7 @@ images/d13-20260810.2566.0-arm64.qcow2
 或 HTTPS Repository 时，可以使用 Unsigned Catalog，因为本地属主或认证传输本身就是显式
 信任决策。即使 URL 是 HTTPS，隐式 Compiled Default 仍属于签名信任域。
 
-Accepted Catalog State 按 Repository 独立记录。Farrow 会拒绝未知 Key、低于该仓库 High-water
+Accepted Catalog State 按 Repository 独立记录。Barn 会拒绝未知 Key、低于该仓库 High-water
 Mark 的 Revision，以及同 Revision 不同字节。显式 Downgrade 可见且只影响选定 Repository；
 重置到 Embedded Catalog 也不会擦掉防回滚记录。
 
@@ -117,11 +117,11 @@ Base Image 变为只读，Node Root Disk 使用 Overlay，因此普通 VM 写入
 
 ## 不同信任域保持分离
 
-Image Catalog Key 授权镜像策略；Release Signing 证明 Farrow 应用工件与 Checksum Manifest。
-两组 Key 刻意独立：有权发布 VM Image 不应自动获得发布 Farrow Binary 的权限，反之亦然。
+Image Catalog Key 授权镜像策略；Release Signing 证明 Barn 应用工件与 Checksum Manifest。
+两组 Key 刻意独立：有权发布 VM Image 不应自动获得发布 Barn Binary 的权限，反之亦然。
 
-普通 Public Build 默认使用 `https://repo.pigsty.io/farrow`，并通过 `--mirror` 显式选择
-`https://repo.pigsty.cc/farrow`；`--repo` 仍是自定义覆盖。**自 0.7.0 起的更新：** 两个
+普通 Public Build 默认使用 `https://repo.pigsty.io/barn`，并通过 `--mirror` 显式选择
+`https://repo.pigsty.cc/barn`；`--repo` 仍是自定义覆盖。**自 0.7.0 起的更新：** 两个
 官方仓库在下载镜像时可以互相回退，始终校验同一 Catalog 的尺寸与 SHA-256。自定义仓库
 仍是唯一工件源，Catalog 更新仍使用选定来源；Embedded Catalog 的 Upstream URL
 只提供溯源，绝不会变成工件回退。源码配置、生成

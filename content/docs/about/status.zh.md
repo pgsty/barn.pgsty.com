@@ -1,51 +1,50 @@
 ---
 title: 当前状态
-description: 公开版 0.8.0、未发布的 0.9 源码基线、带日期的验证与已知限制。
+description: Barn 0.9.0 重命名候选、发布边界、历史验收记录与已知限制。
 weight: 20
 icon: fa-solid fa-list-check
 aliases: [/docs/project/, /docs/project/status/, /docs/project/roadmap/, /docs/project/release/, /docs/project/design-history/]
 ---
 
-Farrow 仍是 pre-1.0。源码测试、带日期的真机重放、软件包、发布、CI 与线上站点是不同门禁。
-安装方法见[快速上手](../../start/tutorial/#安装)。
-
-截至 **2026-09-26** 核对，当前公开版本为
-[`v0.8.0`](https://github.com/pgsty/farrow/releases/tag/v0.8.0)，标记为 Pre-release，
-改进部分节点启动恢复、宿主准备、清理摘要和初始化认证，并内置九月镜像 Catalog。
-变化与升级方法见[发布说明](../../../blog/release/farrow-0.8.0/)。
+Barn 0.9.0 是项目更名后的首次发行候选，**尚未发布**。源码检查、本地构建、
+软件包、CI、发行和线上文档分别核验；源码中出现新名称不代表公开交付已完成。
+安装方式见[快速上手](../../start/tutorial/#安装)。
 
 ## 文档基线 {#documentation-baseline}
 
-| 基线 | 身份 | 如何阅读本站 |
+| 对象 | 当前身份 | 使用方式 |
 |---|---|---|
-| 公开程序与 Homebrew Formula | `v0.8.0`，源码 `320a32a` | 安装与常规实验教程以此版本为准。 |
-| 本次校准审查的源码 | 本地 `b91ec37`，**未发布的 0.9 候选** | 错误、确认、锁等待和恢复方面的变化明确标为 0.9 候选行为。 |
-| 内置镜像 Catalog | revision `2026092001`，schema 3 | 两个程序基线相同；`farrow update` 可以激活另一份已签名 Catalog。 |
+| 程序与当前文档 | Barn 0.9.0 发布候选 | 从包含改名变更的源码构建；发行包命令在发布后使用。 |
+| CLI 与配置 | `barn`、`barn.yml`、`BARN_*` | 不提供旧名称别名或环境变量回退。 |
+| 状态与宿主资源 | `~/.barn`、Barn 网络与 helper | 使用新状态重新创建；不迁移旧开发环境。 |
+| 镜像仓库 | 官方入口的 `/barn` 前缀 | Catalog 仍需验签；云端迁移和公开访问要独立核验。 |
 
-此时公开 `main` 仍指向 `320a32a`，新克隆公开仓库不会得到本地候选。
-目前没有可安装的公开 0.9 Release 或下载。自动化依赖[命令行契约](../../reference/cli/)
-前，请先执行 `farrow version` 核对版本。
-
-候选版移除 `rm` 别名，接受 `--version`，统一错误分类，最多等待部署锁十分钟，
-并修复若干生命周期中断后的恢复场景。这些是源码行为，不代表已经公开交付，
-也不代表本次对 `b91ec37` 重新执行了真机验收。下表保留各次验证的准确日期与范围。
-
-2026-09-26 再次检查两个官方 Catalog 入口，均返回 revision `2026092001`，
-SHA-256 为 `23e8dbf6c19bd192d56c6d71eb30901f17945b3487e427a43abe108463780306`；
-隔离的 `farrow update` 均成功验签。这是 Catalog 交付检查，不代表重新下载所有镜像
-或重放真机客机生命周期。
-
-公开版 0.8.0 与本次审查的 `b91ec37` 基线均在 macOS 或 Linux 宿主上运行 Linux
-客机，两者都不包含 `farrow mac` 命令。macOS 客机的状态单独记录如下。
+旧内部环境应先停机并保留所需数据，再按全新安装创建 Barn 环境；不要仅改名旧状态目录。
+最终发布提交、制品摘要、Homebrew 与公开入口在完成后单独记录。历史 0.2–0.8 记录仍保留
+Farrow 名称，不能当作 Barn 0.9.0 的发布或验收证明。
 
 ## macOS 客机 {#macos-guests}
 
-`farrow mac` 在 Apple 芯片上运行 macOS 27 虚拟机，见[使用教程](../../start/macos/)与
-[命令参考](../../reference/mac/)。它**尚未发布**：截至 2026-09-29，它只存在于本地开发
-源码中（提交 `45f931b` 加上尚未提交的修改），不在公开 `main`、任何发布版本或软件包中。
-在正式发布之前，不应视为公开安装契约的一部分。
+`barn mac` 在 Apple 芯片上运行 macOS 27 虚拟机，见[教程](../../start/macos/)与
+[命令参考](../../reference/mac/)。组件名称为 `Barn Mac.app`，签名标识为
+`io.pgsty.barn.mac-runner`。它使用独立的 `$BARN_HOME/mac`，不提供旧开发环境迁移命令。
 
-该源码于 2026-09-29 在运行 macOS 27.0（26A428）的 Apple 芯片 Mac 上完成验证，使用
+2026-09-29 改名后，本地 CLI/hosts-helper 测试、原生 Bridge/镜像/退出提示/菜单测试、
+runner 编译、ad-hoc 签名验证与 `probe` 通过。这些检查没有启动 VM，未重新执行完整
+Mac 实机生命周期。此前的实机结果按原身份保留在下文。
+
+## 发行前仍需核验
+
+- 最终 Barn 提交的完整源码、归档、DEB/RPM、安装器与跨平台检查；
+- 新名称下的全新宿主准备、Linux/macOS VM 生命周期与清理；
+- Mac Developer ID 签名、公证及正式发布；
+- GitHub 仓库、Homebrew、两地镜像源与 `barn.pgsty.com` 的实际公开状态。
+
+以下保留改名前的历史记录；其中的旧命令、路径、版本和链接只描述当时的检查点。
+
+## Farrow Mac 实机记录：2026-09-29
+
+改名前的 Farrow 开发源码于 2026-09-29 在运行 macOS 27.0（26A428）的 Apple 芯片 Mac 上完成验证，使用
 ad-hoc 签名的开发构建。验证期间没有下载 macOS 镜像：每个测试目录都以 APFS 克隆方式
 复用 2026-09-26 由 Apple 固定版本 27.0 恢复镜像准备的基础镜像。
 
@@ -57,7 +56,7 @@ macOS 客机尚待完成：Developer ID 签名、公证与正式发布；用当�
 （在没有基础镜像时首次 `up`，或 `image update`）；桌面菜单中的 **Restart…** 与
 **Shut Down…**；其他 Apple 芯片机型与 macOS 27 后续更新；以及物理宿主重启。
 
-## 概览
+## 改名前的 Linux 验证概览 {#summary}
 
 | 宿主或产物 | 路径 | 最后验证 | 结果 |
 |---|---|---|---|
@@ -81,7 +80,7 @@ macOS 客机尚待完成：Developer ID 签名、公证与正式发布；用当�
 两端分别执行隔离的 `farrow update`，成功验签并激活 revision `2026092001`。
 公开镜像检查覆盖每端十个新增对象的 HEAD/内容长度，没有重新下载并计算全部公开工件摘要。
 
-## 仍未完成
+## 旧检查点尚未覆盖的范围
 
 - EL9 宿主的 NetworkManager + firewalld，以及当前 systemd-networkd 重放；
 - 物理宿主重启后的持久性；
@@ -96,7 +95,7 @@ macOS 客机尚待完成：Developer ID 签名、公证与正式发布；用当�
 为 `deprecated`。active/standby Catalog 公钥已经内置；私钥托管、轮换与 Release 职责
 必须在 1.0 前正式落实。
 
-## 验证历史
+## Farrow 验证历史
 
 每条记录只属于当天真正执行过的准确 Checkpoint；后续源码或文档修改不会自动继承真机证明。
 

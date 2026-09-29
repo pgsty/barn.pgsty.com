@@ -1,4 +1,4 @@
-module github.com/pgsty/farrow.pgsty.com
+module github.com/pgsty/barn.pgsty.com
 
 go 1.27.1
 

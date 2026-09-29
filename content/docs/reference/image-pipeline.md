@@ -7,13 +7,13 @@ icon: fa-solid fa-shield-halved
 
 The low-level `packaging/image-pipeline/build.sh` accepts one already-downloaded
 immutable qcow2 and an independently obtained SHA-256. It never downloads,
-uploads, touches Farrow runtime/network state, reads signing keys, or marks an
+uploads, touches Barn runtime/network state, reads signing keys, or marks an
 image `supported`.
 
-Run these commands from the Farrow source checkout. Python 3 and `qemu-img`
+Run these commands from the Barn source checkout. Python 3 and `qemu-img`
 are required; `offline` additionally needs working `virt-customize` and
 `virt-cat` tools from libguestfs. These are build-host dependencies, separate
-from the dependencies that `farrow setup` installs for running VMs.
+from the dependencies that `barn setup` installs for running VMs.
 
 ## Modes
 
@@ -74,8 +74,8 @@ output root, assemble them with:
 
 Repeat `--assemble-from` if builds are split across roots. Assembly requires
 exactly one bundle for each of the eight targets, creates a new static
-repository, and runs `farrow repo build` plus `verify` using `farrow` on PATH
-(or `--farrow /absolute/path/to/farrow`). Unlike build mode's existing output
+repository, and runs `barn repo build` plus `verify` using `barn` on PATH
+(or `--barn /absolute/path/to/barn`). Unlike build mode's existing output
 root, the assembly destination must not exist. Its channels are `candidate`,
 not `stable`: use `d13:candidate`, for example. This does not perform native
 smoke, signing, upload, or Catalog publication.

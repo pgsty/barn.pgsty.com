@@ -6,25 +6,24 @@ icon: fa-solid fa-gears
 aliases: [/docs/start/lifecycle/, /docs/start/provisioning/]
 ---
 
-以下常规生命周期适用于已公开发布的 0.8.0。标记为 **0.9 候选版**的章节描述
-2026-09-26 审核的未发布源码；发布边界见[当前状态](../../about/status/)。
+本教程描述 **Barn 0.9.0 发布候选**。发布与验收边界见[当前状态](../../about/status/)。
 
 ## 检查与访问
 
 ```bash
-farrow status
-farrow ssh meta
-farrow exec node-1 -- hostname
-farrow logs meta --source serial
+barn status
+barn ssh meta
+barn exec node-1 -- hostname
+barn logs meta --source serial
 ```
 
-应用状态默认位于 `~/.farrow`（可由 `FARROW_HOME` 覆盖），这些命令可在任意目录执行。
+应用状态默认位于 `~/.barn`（可由 `BARN_HOME` 覆盖），这些命令可在任意目录执行。
 切换工作目录不会创建另一套 deployment。
 Status 默认显示镜像和资源；`--verbose` 显示架构、加速器、SSH 端口和 PID，
 TCG 在普通输出中也明确标记。异常节点不会隐藏其他节点的状态。
-`farrow up` 会在选中 VM 启动后，根据完整 applied deployment 重建默认 SSH 别名；因此
+`barn up` 会在选中 VM 启动后，根据完整 applied deployment 重建默认 SSH 别名；因此
 局部 `up` 不会删除未选中节点，可直接运行 `ssh meta`；如需手工重写，使用
-`farrow ssh-config --install`。
+`barn ssh-config --install`。
 `plan`、`up`、`reload`、`recreate` 依次优先使用 `-f`、当前目录发现的 Inventory，
 两者都没有时才回退到已应用规格；`validate` 始终需要文件。
 
@@ -35,25 +34,25 @@ TCG 在普通输出中也明确标记。异常节点不会隐藏其他节点的�
 ## 停止与启动
 
 ```bash
-farrow stop
-farrow start
-farrow restart node-1
-farrow reload -f farrow.yml       # 读取并检查配置、停止、收敛
+barn stop
+barn start
+barn restart node-1
+barn reload -f barn.yml       # 读取并检查配置、停止、收敛
 ```
 
 `start` 启动已停止的 VM 并复查运行中 VM 的就绪状态；`start` 与 `restart` 都使用已应用
 状态，并刷新 SSH 别名，包括重新分配的自动端口。`reload` 先读取 Inventory、检查配置变化与启动依赖，再停止选中节点
 并执行完整的 `up` 路径。
 
-`up`、`start`、`restart`、`reload`、`recreate` 还会刷新运行中 guest 的 Farrow hosts
+`up`、`start`、`restart`、`reload`、`recreate` 还会刷新运行中 guest 的 Barn hosts
 和控制节点 SSH 条目。`--no-wait` 跳过就绪检查、客机恢复与 guest 刷新，后续运行 `up` 补齐。
 
 ## 变更 deployment
 
 ```bash
-farrow plan
-farrow up                         # 创建/启动选中节点，并安装 SSH 别名
-farrow recreate node-1            # 应用某个节点的 VM 定义变化
+barn plan
+barn up                         # 创建/启动选中节点，并安装 SSH 别名
+barn recreate node-1            # 应用某个节点的 VM 定义变化
 ```
 
 `plan` 规划 Catalog 镜像时无需先准备宿主，展示镜像、资源总量、变更原因与磁盘影响；
@@ -66,8 +65,8 @@ farrow recreate node-1            # 应用某个节点的 VM 定义变化
 
 | 字段 | 含义 | 操作 |
 |---|---|---|
-| `create` | 配置有、状态无 | `farrow up` |
-| `recreate` | VM 定义改变 | `farrow recreate <node>` |
+| `create` | 配置有、状态无 | `barn up` |
+| `recreate` | VM 定义改变 | `barn recreate <node>` |
 | `missing` | 状态有、配置无 | 恢复配置，或显式 destroy |
 
 删除 YAML 永远不会删除 VM。未消费的 Pigsty 变更得到 `action:none`；命名与
@@ -76,7 +75,7 @@ fragment。
 
 ## 并发命令（0.9 候选版）
 
-修改 deployment 的命令会等待其他 Farrow 操作释放锁，最长十分钟，同时受命令自身
+修改 deployment 的命令会等待其他 Barn 操作释放锁，最长十分钟，同时受命令自身
 超时限制。等待信息会显示持锁命令、PID 与开始时间。等待超时返回退出码 4，JSON
 为 `error: conflict`、`reason: deployment_busy`；持锁操作完成后再重试。
 持锁进程退出时锁自动释放；不要通过删除锁文件打断仍在运行的操作。
@@ -91,19 +90,19 @@ fragment。
 ## 销毁
 
 ```bash
-farrow destroy node-3
-farrow destroy
-farrow destroy --delete-persistent
-farrow destroy --purge
-farrow purge                         # 无需确认，处置整套实验室
+barn destroy node-3
+barn destroy
+barn destroy --delete-persistent
+barn destroy --purge
+barn purge                         # 无需确认，处置整套实验室
 ```
 
 `--delete-persistent` 与 `--purge` 只适用于整体销毁，不能和节点选择器一起使用。
 `--purge` 删除持久盘、密钥和 deployment 状态，但保留镜像。节点级 destroy 会刷新
-剩余节点的 SSH fragment，整体 destroy 会移除默认 Farrow SSH 集成。宿主网络单独卸载，
+剩余节点的 SSH fragment，整体 destroy 会移除默认 Barn SSH 集成。宿主网络单独卸载，
 仍有 VM 挂接时会拒绝。
 
-`farrow purge` 是一次性实验室的简洁路径，等价于
+`barn purge` 是一次性实验室的简洁路径，等价于
 对已有部署执行 `destroy --force --purge`。它不接受节点选择器，没有 Deployment 时
 幂等成功，保留镜像缓存与
 宿主网络，同时不会绕过进程身份、属主和路径完整性检查。
@@ -113,7 +112,7 @@ farrow purge                         # 无需确认，处置整套实验室
 会提示改用该命令。旧的 `rm` 别名已移除，必须写出 `purge`。
 
 ```bash
-farrow network uninstall --yes
+barn network uninstall --yes
 ```
 
 镜像选择、镜像站与缓存清理见[镜像仓库](../images/)；彻底移除宿主状态见

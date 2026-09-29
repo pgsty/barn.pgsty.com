@@ -5,13 +5,13 @@ weight: 30
 icon: fa-solid fa-screwdriver-wrench
 ---
 
-This page describes the source tree reviewed at `b91ec37` on 2026-09-26.
-Its 0.9 changes are unreleased; the public application remains 0.8.0. Build
-commands operate on your checkout, so always record its commit.
+This page describes the **Barn 0.9.0 release candidate**. Build commands use
+your current checkout; record its commit and uncommitted changes. Source builds
+and local checks do not establish a published release.
 
 ## Repository boundary
 
-The Farrow source repository contains code, tests, build/package definitions,
+The Barn source repository contains code, tests, build/package definitions,
 legal notices, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`,
 and bilingual application release notes. This site provides user, design,
 operator, and release documentation. Runtime behavior and command flags must
@@ -25,7 +25,7 @@ Generated output is disposable:
 
 - `bin/` — development builds;
 - `dist/` and `.goreleaser-*` — release/snapshot staging;
-- root `farrow`, `farrow-hosts-helper`, and `catalogsign` binaries;
+- root `barn`, `barn-hosts-helper`, and `catalogsign` binaries;
 - Hugo `public/` and `resources/`.
 
 ## Build and source gates
@@ -58,7 +58,7 @@ A source gate is not native VM evidence. macOS HVF, Linux KVM/networking,
 package consumption, release publication, and public website rendering remain
 separate checks. `make image-pipeline-native-test` runs the separate native
 image-pipeline gate with QEMU/libguestfs and explicit image inputs; the required
-`FARROW_IMAGE_PIPELINE_NATIVE_*` variables are documented in
+`BARN_IMAGE_PIPELINE_NATIVE_*` variables are documented in
 `tests/image-pipeline-native-test.sh`. It never downloads a test image.
 
 ## Release and package contract
@@ -68,9 +68,9 @@ is source, even though its generated directories are not. Archives and Linux
 packages contain the matching CLI and hosts-helper binaries, `LICENSE`, the
 source README, and exact upstream license bytes reconstructed from modules
 pinned by `go.mod`. Archives place the two binaries under `bin/` and the license
-texts under `licenses/`. Linux packages install `/usr/bin/farrow`,
-`/opt/farrow/libexec/farrow-hosts-helper`, and documentation under
-`/usr/share/doc/farrow/`.
+texts under `licenses/`. Linux packages install `/usr/bin/barn`,
+`/opt/barn/libexec/barn-hosts-helper`, and documentation under
+`/usr/share/doc/barn/`.
 
 `BUILD_INFO.json` is included in Linux packages and the older development
 archive format. Formal GoReleaser archives carry build identity in the binary,
@@ -87,7 +87,7 @@ trust mechanism.
 Commit, tag, archive/package verification, CI, draft upload, public release,
 and anonymous consumption are separate evidence. The tag workflow creates a
 draft; it does not publish it. Pre-1.0 versions are GitHub prereleases and the
-installer requires an explicit `FARROW_VERSION`.
+installer requires an explicit `BARN_VERSION`.
 
 `make release-local VERSION=<version>` builds and verifies without publishing.
 It requires a clean checkout at the matching `v<version>` tag, an `origin`

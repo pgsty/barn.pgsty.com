@@ -73,12 +73,12 @@ def main() -> int:
         # interactive pages and intentionally not a second print URL graph.
         if "/_print/" in source_url or source_url.startswith("/_print/"):
             continue
-        base_url = "https://farrow.pgsty.com" + source_url
+        base_url = "https://barn.pgsty.com" + source_url
         for raw in parsed.references:
             split = urlsplit(raw)
             if split.scheme in {"mailto", "tel", "javascript", "data"}:
                 continue
-            if split.netloc and split.netloc != "farrow.pgsty.com":
+            if split.netloc and split.netloc != "barn.pgsty.com":
                 continue
             absolute = urlsplit(urljoin(base_url, raw))
             target = target_file(absolute.path, root)

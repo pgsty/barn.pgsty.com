@@ -1,17 +1,18 @@
 ---
 title: "Declarative Does Not Mean Destructive"
 linkTitle: "Convergence without surprise"
-description: "How Farrow uses per-node hashes and explicit operations so missing configuration can never authorize deletion."
+description: "How Barn uses per-node hashes and explicit operations so missing configuration can never authorize deletion."
 date: 2026-08-27T21:00:00+08:00
 weight: 30
 categories: [Design]
 tags: [Lifecycle, Drift, Safety]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> **Renamed 2026-09-29:** names now follow the unreleased Barn 0.9.0 candidate.
+> The prior source review was on 2026-09-26: the original publication date is retained; the text
 > below reflects the implementation reviewed on this date. See
 > [Status](/docs/about/status/) for released versus candidate behavior and
 > dated acceptance evidence.
@@ -21,7 +22,7 @@ useful slogan until the file is incomplete, the wrong branch is checked out,
 or one YAML group is temporarily removed. If absence is treated as deletion,
 an ordinary editing mistake becomes a destructive operation.
 
-Farrow uses a narrower rule:
+Barn uses a narrower rule:
 
 > Desired state may authorize creation. It can describe drift. It never
 > authorizes destruction by omission.
@@ -32,7 +33,7 @@ but it must be a decision the operator can see.
 
 ## From Inventory to node identity
 
-Farrow does not hash the whole Pigsty Inventory. It first extracts the fields
+Barn does not hash the whole Pigsty Inventory. It first extracts the fields
 it owns, fills defaults, canonicalizes image selectors and architecture, and
 builds a canonical resolved spec. Exact Catalog artifact resolution remains
 separate, so a channel update does not itself change a node's spec hash. Each
@@ -47,27 +48,27 @@ unconsumed Pigsty field—PostgreSQL version, packages, or service policy—does
 not produce VM drift. The VM layer reacts only to the contract it actually
 understands.
 
-This also avoids a dangerous half-promise: Farrow does not pretend to implement
+This also avoids a dangerous half-promise: Barn does not pretend to implement
 Ansible's entire variable system. Unknown `vm_*` keys and conflicting values
 inside the owned namespace fail. Everything outside the documented boundary
 is opaque rather than partially interpreted.
 
 > [!NOTE]
-> **Decision status: current.** Farrow converges additions automatically, but
+> **Decision status: current.** Barn converges additions automatically, but
 > definition changes and removal require explicit commands. See
 > [Daily Operations](/docs/start/operations/) for the command workflow.
 
 ## The five plan outcomes
 
-`farrow plan` compares desired state, applied deployment state, and committed
+`barn plan` compares desired state, applied deployment state, and committed
 node state. The result is intentionally small:
 
 | Outcome | Meaning | Apply path |
 | --- | --- | --- |
-| create | desired node has no committed state | `farrow up` creates it |
+| create | desired node has no committed state | `barn up` creates it |
 | unchanged | definition and runtime still match | running peer stays untouched; stopped peer may start |
-| recreate | node definition changed | explicit `farrow recreate --force <node>` |
-| missing | applied node is absent or skipped in the Inventory | explicit `farrow destroy <node> --force`, or restore it to the file |
+| recreate | node definition changed | explicit `barn recreate --force <node>` |
+| missing | applied node is absent or skipped in the Inventory | explicit `barn destroy <node> --force`, or restore it to the file |
 | envelope drift | subnet, login identity, architecture, or runtime policy changed | whole-deployment recreate |
 
 Plan is read-only. It reports the exact node sets and, in text mode, the command
@@ -75,7 +76,7 @@ that applies the required explicit transition.
 
 ## Why `up` stops at drift
 
-Farrow could decide that changing CPU or memory is harmless enough to apply,
+Barn could decide that changing CPU or memory is harmless enough to apply,
 or that a new image should silently rebuild a root disk. Pre-1.0 intentionally
 does neither. A changed VM definition is classified as recreate and `up`
 returns a typed conflict.
@@ -83,7 +84,7 @@ returns a typed conflict.
 That conservative boundary has two advantages:
 
 1. all changes that can invalidate Guest state share one visible operation;
-2. Farrow can finish every prerequisite check before touching the current
+2. Barn can finish every prerequisite check before touching the current
    node.
 
 The recreate path resolves the selected emulator, acceleration policy,
@@ -124,7 +125,7 @@ running ones. A per-node recreate preserves peers and, when requested by the
 disk contract, persistent data.
 
 The result is declarative where desired state is strong evidence—creation and
-comparison—and explicit where the cost is irreversible. Farrow does not make
+comparison—and explicit where the cost is irreversible. Barn does not make
 the operator manually calculate drift, but it also does not confuse a diff
 with permission.
 

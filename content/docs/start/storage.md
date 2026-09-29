@@ -6,8 +6,7 @@ weight: 36
 icon: fa-solid fa-hard-drive
 ---
 
-This guide uses the public 0.8.0 interface, also supported by the reviewed 0.9
-candidate. Start with the [Quick Start](../tutorial/) before running the
+This guide uses the **Barn 0.9.0 release candidate** interface. Start with the [Quick Start](../tutorial/) before running the
 guest-side checks. The examples use node `meta` and the default subnet; retain
 your actual names and addresses when adapting an existing inventory.
 
@@ -40,12 +39,12 @@ all:
 Then review and create it:
 
 ```bash
-farrow validate -f storage.yml
-farrow plan -f storage.yml
-farrow up -f storage.yml
-farrow exec meta -- findmnt /data
-farrow exec meta -- findmnt /scratch
-farrow exec meta -- df -h / /data /scratch
+barn validate -f storage.yml
+barn plan -f storage.yml
+barn up -f storage.yml
+barn exec meta -- findmnt /data
+barn exec meta -- findmnt /scratch
+barn exec meta -- df -h / /data /scratch
 ```
 
 `size: 64` means 64 GiB; `size: 64GiB` is also valid for a data disk. These are
@@ -72,7 +71,7 @@ explicitly using `recreate`; that replaces the root and non-persistent disks.
 Persistence is based on disk identity and a compatible specification. Keep
 the node, mount path, size, and filesystem definition consistent when reusing a
 retained disk. It is not an automatic resize, rename, filesystem conversion,
-backup, or snapshot facility. Farrow rejects incompatible retained disks;
+backup, or snapshot facility. Barn rejects incompatible retained disks;
 do not edit state files to force attachment.
 
 **A persistent disk is still disposable test storage.** During guest recovery,
@@ -86,11 +85,11 @@ write check, or deliberately prepare permissions for your application.
 To demonstrate normal restart retention on the created lab:
 
 ```bash
-farrow exec meta -- sudo -n sh -c \
-  'printf "retention check\n" > /data/farrow-retention.txt'
-farrow stop meta
-farrow start meta
-farrow exec meta -- cat /data/farrow-retention.txt
+barn exec meta -- sudo -n sh -c \
+  'printf "retention check\n" > /data/barn-retention.txt'
+barn stop meta
+barn start meta
+barn exec meta -- cat /data/barn-retention.txt
 ```
 
 This checks a VM stop/start, not persistence after a physical-host reboot.
@@ -101,15 +100,15 @@ See [Status](../../about/status/) for the native validation boundary.
 Generate a standalone OpenSSH configuration from the running deployment:
 
 ```bash
-farrow ssh-config > farrow-ssh.conf
-ssh -F ./farrow-ssh.conf farrow-meta hostname
-scp -F ./farrow-ssh.conf ./storage.yml farrow-meta:/tmp/storage.yml
-scp -F ./farrow-ssh.conf farrow-meta:/data/farrow-retention.txt ./farrow-retention.txt
+barn ssh-config > barn-ssh.conf
+ssh -F ./barn-ssh.conf barn-meta hostname
+scp -F ./barn-ssh.conf ./storage.yml barn-meta:/tmp/storage.yml
+scp -F ./barn-ssh.conf barn-meta:/data/barn-retention.txt ./barn-retention.txt
 ```
 
 The generated fragment selects the current loopback SSH port, deployment key,
 and instance host-key identity. Regenerate it after recreation or a management
-port change. `farrow ssh-config --install` is optional when you want these
+port change. `barn ssh-config --install` is optional when you want these
 aliases available in your normal SSH configuration; `-F` works without that
 integration. The exported file references your deployment key; it does not
 embed or export the private key.
@@ -119,14 +118,14 @@ embed or export the private key.
 From the host, a service listening on the guest's fixed IP can be reached on
 that IP if its guest firewall and service configuration allow it. For example,
 a PostgreSQL server on `10.10.10.10:5432` is a separate service you must install;
-Farrow does not install PostgreSQL merely by booting a VM.
+Barn does not install PostgreSQL merely by booting a VM.
 
 To reach a service listening only on the guest's loopback address, use OpenSSH
 with the generated configuration:
 
 ```bash
-ssh -F ./farrow-ssh.conf -N \
-  -L 127.0.0.1:15432:127.0.0.1:5432 farrow-meta
+ssh -F ./barn-ssh.conf -N \
+  -L 127.0.0.1:15432:127.0.0.1:5432 barn-meta
 ```
 
 Keep that host terminal open, then connect a local client to
@@ -145,23 +144,23 @@ For a Linux host, a read-only share can be added before the first `up`:
 
 ```yaml
 vm_shares:
-  - host: /srv/farrow-project
+  - host: /srv/barn-project
     guest: /workspace
     readonly: true
 ```
 
 Put this under the intended host or `all.vars`. Replace the host path with an
-existing real directory owned by your Farrow user and accessible to that user.
+existing real directory owned by your Barn user and accessible to that user.
 Read-only shares also require this ownership. Host paths must be
-absolute, cannot pass through symlinks, and cannot overlap the Farrow data root.
+absolute, cannot pass through symlinks, and cannot overlap the Barn data root.
 An explicit read-only share is a useful starting point for source files.
-For writable shares, guest-user permissions also matter; Farrow can fall back
+For writable shares, guest-user permissions also matter; Barn can fall back
 to read-only and report a limitation without changing host ownership.
 
 **Do not add `vm_shares` to a macOS lab using the currently documented runtime.**
 The tested macOS/QEMU path cannot reopen the secure directory descriptor and
 the affected node cannot start. Use SSH file transfer there. Restoring a missing
-host directory or mount lets you retry `up`; Farrow never creates an empty
+host directory or mount lets you retry `up`; Barn never creates an empty
 replacement source. Changing an existing node's share definition requires
 explicit recreation. See [Configuration](../../reference/configuration/) for
 the full disk and share constraints.

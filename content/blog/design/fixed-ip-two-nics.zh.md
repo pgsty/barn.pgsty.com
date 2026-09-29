@@ -1,24 +1,24 @@
 ---
-title: "为什么每个 Farrow 节点都有两张网卡"
+title: "为什么每个 Barn 节点都有两张网卡"
 linkTitle: "固定 IP，双网卡"
-description: "为什么 Farrow 把管理出网与宿主、节点、Ansible 和 Pigsty 使用的固定地址网络分离。"
+description: "为什么 Barn 把管理出网与宿主、节点、Ansible 和 Pigsty 使用的固定地址网络分离。"
 date: 2026-08-27T20:00:00+08:00
 weight: 20
 categories: [设计]
 tags: [网络, QEMU, Pigsty]
 icon: fa-solid fa-network-wired
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **2026-09-26 校准：** 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
+> **2026-09-29 更名：** Barn 0.9.0 尚未发布；本文名称已同步更新。2026-09-26 校准记录： 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
 > 边界见[当前状态](/zh/docs/about/status/)，不以本文日期代替发布或验收日期。
 
 Pigsty Inventory 用稳定地址标识机器。PostgreSQL 复制、etcd 成员、HAProxy 后端、VIP、
 监控目标与 Ansible 都假设 `10.10.10.11` 始终代表同一个节点。回环端口转发可以把 SSH 或
 PostgreSQL 暴露给宿主，却无法把这种网络身份提供给其它节点。
 
-因此 Farrow 不让用户在“方便的 NAT 模式”和“高级固定网络模式”之间二选一。每个正常节点
+因此 Barn 不让用户在“方便的 NAT 模式”和“高级固定网络模式”之间二选一。每个正常节点
 同时获得两种能力，并由两张网卡分别承担。
 
 ## 一张网卡不该承担两项冲突职责
@@ -28,7 +28,7 @@ PostgreSQL 暴露给宿主，却无法把这种网络身份提供给其它节点
 | 管理网卡 | QEMU User-mode NAT、DHCP | DNS、默认路由、互联网出站与回环 SSH 备用路径 |
 | 私网网卡（按 MAC 匹配） | Inventory 固定地址 | 宿主到节点、节点间、Ansible、Pigsty 服务与 VIP 流量 |
 
-Farrow 使用确定的 MAC 地址匹配两张虚拟网卡，不再修改它们的名称。Guest 中看到的名字由镜像
+Barn 使用确定的 MAC 地址匹配两张虚拟网卡，不再修改它们的名称。Guest 中看到的名字由镜像
 自身的网络栈决定（通常是 `eth0` 或 `enp0s4`）；网卡角色由 MAC 与地址契约决定，而不是显示名称。
 
 管理网卡刻意保持普通：一张新的 Cloud Image 在应用尚未安装前就能访问软件仓库，宿主无需
@@ -40,7 +40,7 @@ Farrow 使用确定的 MAC 地址匹配两张虚拟网卡，不再修改它们�
 部署依赖该网卡的服务前，应检查警告并测试相应宿主/节点间连接，修正原因后重复 `up`。
 
 > [!NOTE]
-> **决策状态：当前有效。** 这套拓扑属于 Farrow 的正常生命周期，并不是可选的
+> **决策状态：当前有效。** 这套拓扑属于 Barn 的正常生命周期，并不是可选的
 > “Private Mode”。当前平台边界见[设计参考](/zh/docs/about/design/)。
 
 ## 地址规划归 Inventory 所有
@@ -63,30 +63,30 @@ vmnet 配置的 DHCP 范围止于 `.8`，受管节点从 `.9` 开始；Linux 使
 
 ## 后端因平台而异，Guest 契约保持一致
 
-Guest 在所有支持宿主上看到相同拓扑，Farrow 则跟随宿主真正的网络管理者：
+Guest 在所有支持宿主上看到相同拓扑，Barn 则跟随宿主真正的网络管理者：
 
 - **macOS：** 固定版本的 `socket_vmnet` 服务提供私有链路。Host Mode 默认，Shared Mode
   必须显式选择；QEMU 仍以普通用户运行。
-- **NetworkManager 活跃的 Linux：** Farrow 通过 `nmcli` 创建自有 `farrow0` Bridge，
+- **NetworkManager 活跃的 Linux：** Barn 通过 `nmcli` 创建自有 `barn0` Bridge，
   并与活跃的 firewalld 策略配合。
-- **systemd-networkd 管理的 Linux：** Farrow 安装自有 Unit，并借助发行版
+- **systemd-networkd 管理的 Linux：** Barn 安装自有 Unit，并借助发行版
   `qemu-bridge-helper` 保持 QEMU 非特权。
 - **networkd 尚未启动：** 只有预变更扫描能证明现有 Unit 不会接管真实宿主网卡时，才允许
   激活它。
 
-同时支持两种 Linux 管理器不是为了抽象而抽象。如果只因为 Farrow 会写 `.network` 文件，就在
+同时支持两种 Linux 管理器不是为了抽象而抽象。如果只因为 Barn 会写 `.network` 文件，就在
 桌面或 RHEL 家族宿主上启动 networkd，可能破坏宿主真实网络；后端必须服从当前已经负责网络
 的组件。
 
 ## 宿主网络是一项事务
 
-Bridge 或 vmnet Daemon 会跨越一次 CLI 进程，也会跨越特权边界，因此 Farrow 把安装视为
+Bridge 或 vmnet Daemon 会跨越一次 CLI 进程，也会跨越特权边界，因此 Barn 把安装视为
 可逆宿主事务：
 
 1. 检查 Route、Interface、Service、属主与已有状态；
 2. 修改前打印准确计划；
 3. Apply 前立即重新检查前置条件；
-4. 用 root-owned 状态记录 Farrow 创建了什么、此前存在什么；
+4. 用 root-owned 状态记录 Barn 创建了什么、此前存在什么；
 5. 证明普通用户 QEMU 确实可以接入；
 6. 全部 Readiness 检查通过后才接受安装。
 

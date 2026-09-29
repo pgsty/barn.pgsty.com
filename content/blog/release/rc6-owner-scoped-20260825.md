@@ -10,8 +10,8 @@ icon: fa-solid fa-vial-circle-check
 ---
 
 > [!CAUTION]
-> Pre-Farrow historical record. It preserves the predecessor candidate's exact
-> identity and does not establish support for current Farrow bytes or paths.
+> Pre-Barn historical record. It preserves the predecessor candidate's exact
+> identity and does not establish support for current Barn bytes or paths.
 > See [current status](/docs/about/status/).
 
 Piglet `1.0.0-rc.6` is the owner-scoped local development candidate for the

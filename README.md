@@ -1,10 +1,10 @@
-# Farrow Documentation
+# Barn Documentation
 
-This directory contains the bilingual documentation site for Farrow. English
+This directory contains the bilingual documentation site for Barn. English
 is served at `/`; Simplified Chinese is served at `/zh/`. The site uses Hugo
 Extended and Oink 1.1.0.
 
-Farrow is pre-1.0. Public pages must describe only source repositories,
+Barn is pre-1.0. Public pages must describe only source repositories,
 Releases channels, and package paths that are actually available at the same
 checkpoint; a local build or draft is never publication evidence.
 
@@ -25,7 +25,7 @@ make build
 make check
 ```
 
-The production target is `https://farrow.pgsty.com/` and its build is warning-
+The production target is `https://barn.pgsty.com/` and its build is warning-
 strict. Pages settings and DNS must authorize that domain before publication.
 
 The source-controlled `wrangler.toml` defines the Pages project, output
@@ -41,4 +41,4 @@ English and Chinese pages live beside each other as `page.md` and
 Blog posts live under `content/blog/article`, `content/blog/design`, or
 `content/blog/release`; do not put regular posts directly under `content/blog`.
 Historical Piglet release and evidence records retain their original identity
-and must not be presented as post-rename Farrow validation.
+and must not be presented as post-rename Barn validation.

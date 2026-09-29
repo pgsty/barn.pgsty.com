@@ -1,26 +1,27 @@
 ---
-title: "Why Farrow Has No Projects"
+title: "Why Barn Has No Projects"
 linkTitle: "One deployment, no projects"
-description: "Why Farrow replaced per-directory project state with one owner-scoped deployment driven by one Pigsty Inventory."
+description: "Why Barn replaced per-directory project state with one owner-scoped deployment driven by one Pigsty Inventory."
 date: 2026-08-27T19:00:00+08:00
 weight: 10
 categories: [Design]
 tags: [Architecture, Inventory, State]
 icon: fa-solid fa-layer-group
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> **Renamed 2026-09-29:** names now follow the unreleased Barn 0.9.0 candidate.
+> The prior source review was on 2026-09-26: the original publication date is retained; the text
 > below reflects the implementation reviewed on this date. See
 > [Status](/docs/about/status/) for released versus candidate behavior and
 > dated acceptance evidence.
 
-Farrow began with a familiar VM-manager abstraction: a working directory was
+Barn began with a familiar VM-manager abstraction: a working directory was
 a project, a hidden marker gave it identity, a registry found projects again,
 and a host-global lease kept their private networks from colliding. That model
 can support many independent VM sets. It was also the wrong model for the
-product Farrow was actually becoming.
+product Barn was actually becoming.
 
 The target is not a general-purpose hypervisor front end. It is one local,
 fixed-IP Pigsty lab. The operator already has a complete description of that
@@ -41,35 +42,35 @@ questions:
 - Is a missing directory an abandoned project or an unavailable disk?
 - Which project owns the one host network?
 
-Those are legitimate multi-project questions. Farrow chose to stop creating
+Those are legitimate multi-project questions. Barn chose to stop creating
 them.
 
 ## One Inventory is enough
 
-The Inventory handed to Pigsty is also Farrow's desired state. Farrow reads a
+The Inventory handed to Pigsty is also Barn's desired state. Barn reads a
 small, documented boundary: host addresses, a few Pigsty-native identity
 fields, and the `vm_*` namespace. Validation is strict inside that namespace;
 the rest of the Inventory stays opaque and passes to Pigsty untouched.
 
 This asymmetric rule matters. A misspelled `vm_mem` must fail because it would
-change the machine Farrow builds. A new PostgreSQL tuning parameter must not
+change the machine Barn builds. A new PostgreSQL tuning parameter must not
 fail merely because the VM layer has never heard of it. The same file can
-therefore evolve as a Pigsty Inventory without becoming a second Farrow
+therefore evolve as a Pigsty Inventory without becoming a second Barn
 format in disguise.
 
 Names follow the same principle. A node uses `nodename` when present, then a
-stable Pigsty cluster/sequence derivation, then its address suffix. Farrow does
+stable Pigsty cluster/sequence derivation, then its address suffix. Barn does
 not add a parallel `vm_name` that can disagree with the hostname Pigsty sees.
 
 ## One owner-scoped state root
 
-Applied state lives under `FARROW_HOME`, normally `~/.farrow`. There is no
+Applied state lives under `BARN_HOME`, normally `~/.barn`. There is no
 marker in the working directory and no per-directory registry. Commands that
 operate on applied state can run from any directory; commands that propose new
 desired state discover or receive an Inventory explicitly.
 
 This is an owner-scoped deployment, not a root-enforced machine-wide
-singleton. Each Unix user has an independent state root. Farrow is intended
+singleton. Each Unix user has an independent state root. Barn is intended
 for a trusted development workstation, not hostile-user arbitration on a
 shared server.
 
@@ -86,7 +87,7 @@ The simplification has practical consequences:
 
 ## Configuration absence is not intent
 
-One deployment does **not** mean the Inventory is disposable. It means Farrow
+One deployment does **not** mean the Inventory is disposable. It means Barn
 can distinguish desired configuration from applied evidence. When a command
 needs desired state, an existing deployment can supply its applied spec where
 the command contract allows that fallback. A missing file is never interpreted
@@ -98,7 +99,7 @@ ambiguous resources instead of guessing what the user meant.
 
 ## The trade-off is deliberate
 
-Farrow does not support multiple concurrent deployments per user. Projects,
+Barn does not support multiple concurrent deployments per user. Projects,
 registries, and address-level leasing are not hidden future features; they
 were rejected because they would reintroduce the abstraction the product
 removed.
@@ -108,4 +109,4 @@ is a different product boundary. For a local Pigsty lab, one Inventory and one
 deployment make the important things—addresses, ownership, drift, recovery,
 and cleanup—much easier to explain and prove.
 
-Read next: [Why every Farrow node has two NICs](/blog/design/fixed-ip-two-nics/).
+Read next: [Why every Barn node has two NICs](/blog/design/fixed-ip-two-nics/).

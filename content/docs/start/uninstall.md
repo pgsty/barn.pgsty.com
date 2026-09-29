@@ -1,15 +1,15 @@
 ---
 title: Uninstall and Clean Up
-description: Safely remove the Farrow deployment, integrations, images, host network, and default state directory.
+description: Safely remove the Barn deployment, integrations, images, host network, and default state directory.
 weight: 60
 icon: fa-solid fa-trash-can
 ---
 
 This page deletes VMs and local data. Inspect the current state and stop if any
-Farrow VM must remain:
+Barn VM must remain:
 
 ```bash
-farrow st
+barn st
 ```
 
 ## 1. Remove the deployment
@@ -17,36 +17,35 @@ farrow st
 Delete nodes, persistent disks, keys, and deployment state:
 
 ```bash
-farrow purge
+barn purge
 ```
 
 This whole-deployment command asks for no confirmation. The image cache and
 host network remain. Use the granular,
-confirmed `farrow destroy` command instead when preserving persistent disks or
+confirmed `barn destroy` command instead when preserving persistent disks or
 removing selected nodes.
 
 ## 2. Remove optional integrations
 
-Whole-deployment destroy already removes the default `farrow` SSH integration.
+Whole-deployment destroy already removes the default `barn` SSH integration.
 If you installed a custom fragment name or `/etc/hosts` entries:
 
 ```bash
-farrow ssh-config --remove --name lab
-farrow hosts uninstall --json
-farrow hosts uninstall --yes
+barn ssh-config --remove --name lab
+barn hosts uninstall --json
+barn hosts uninstall --yes
 ```
 
 Without `--yes`, the `--json` command only shows the marker-owned plan. Apply
-the `--yes` command after checking its target. In the unreleased 0.9 candidate,
-ordinary terminal output asks `[y/N]` and applies removal after confirmation;
-in 0.8.0 it only plans. The candidate reads the hosts plan without sudo; applying
+the `--yes` command after checking its target. In Barn 0.9.0, ordinary terminal output asks `[y/N]` and applies removal
+after confirmation. Barn reads the hosts plan without sudo; applying
 the change still needs privilege.
 
 ## 3. Remove cached images
 
 ```bash
-farrow image prune --dry-run
-farrow image prune --yes
+barn image prune --dry-run
+barn image prune --yes
 ```
 
 Prune removes unreferenced cached images and stale staging files. It protects
@@ -57,8 +56,8 @@ cleanup below removes the remaining cache too.
 ## 4. Uninstall host networking
 
 ```bash
-farrow network uninstall --json
-farrow network uninstall --yes
+barn network uninstall --json
+barn network uninstall --yes
 ```
 
 The first JSON command only shows the owned removal plan, although sudo may
@@ -69,11 +68,11 @@ does not establish that another user's VMs have stopped.
 ## 5. Clean up a source setup
 
 Network uninstall preserves the independently useful hosts helper. Only after
-confirming Farrow is no longer needed, remove these exact paths:
+confirming Barn is no longer needed, remove these exact paths:
 
 ```bash
-sudo rm -f -- /opt/farrow/libexec/farrow-hosts-helper
-sudo rmdir /opt/farrow/libexec /opt/farrow
+sudo rm -f -- /opt/barn/libexec/barn-hosts-helper
+sudo rmdir /opt/barn/libexec /opt/barn
 ```
 
 With the default state directory, and only after every earlier step succeeds,
@@ -82,17 +81,17 @@ remove the remaining state:
 ```bash
 (
   set -eu
-  test -z "${FARROW_HOME:-}"
-  farrow_state_root="$(cd "$HOME" && pwd -P)/.farrow"
-  test ! -L "$farrow_state_root"
-  if test -d "$farrow_state_root"; then
-    printf 'removing exact state root: %s\n' "$farrow_state_root"
-    find "$farrow_state_root" -depth -delete
+  test -z "${BARN_HOME:-}"
+  barn_state_root="$(cd "$HOME" && pwd -P)/.barn"
+  test ! -L "$barn_state_root"
+  if test -d "$barn_state_root"; then
+    printf 'removing exact state root: %s\n' "$barn_state_root"
+    find "$barn_state_root" -depth -delete
   fi
 )
 ```
 
-This snippet stops if `FARROW_HOME` is set or the default path is a symlink.
+This snippet stops if `BARN_HOME` is set or the default path is a symlink.
 Review a custom state directory separately; never substitute `$HOME`, `/`, a
 workspace root, or an unverified path. After deletion, avoid running lifecycle
 commands just to check that the directory is gone: they may recreate lock
@@ -108,8 +107,8 @@ brew uninstall qemu
 Verify network removal and the default state directory:
 
 ```bash
-farrow network status --json
-test ! -e "$HOME/.farrow" && echo 'no Farrow state'
+barn network status --json
+test ! -e "$HOME/.barn" && echo 'no Barn state'
 ```
 
 An uninstalled network is expected to report an absent/not-ready finding;

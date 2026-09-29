@@ -1,5 +1,5 @@
-baseURL: https://farrow.pgsty.com/
-title: Farrow
+baseURL: https://barn.pgsty.com/
+title: Barn
 timeZone: Asia/Shanghai
 defaultContentLanguage: en
 defaultContentLanguageInSubdir: false
@@ -23,7 +23,7 @@ languages:
     label: English
     locale: en-US
     weight: 1
-    title: Farrow
+    title: Barn
     params:
       description: Native QEMU virtual machines for Pigsty development
     menus:
@@ -88,7 +88,7 @@ languages:
     label: 简体中文
     locale: zh-CN
     weight: 2
-    title: Farrow
+    title: Barn
     params:
       description: 面向 Pigsty 开发环境的原生 QEMU 虚拟机运行时
     menus:
@@ -185,10 +185,10 @@ outputs:
 
 params:
   description: Native Go and QEMU runtime for reproducible Pigsty development virtual machines on macOS and Linux.
-  logo: images/farrow-mark.svg
-  version: 0.8.0
+  logo: images/barn-mark.svg
+  version: 0.9.0
   copyright:
-    authors: '[PGSTY](https://pgsty.com/) and Farrow contributors'
+    authors: '[PGSTY](https://pgsty.com/) and Barn contributors'
     from_year: 2026
   footer_center_info: 'Built with [Oink](https://oink.pgsty.com/)'
   offline_search: true

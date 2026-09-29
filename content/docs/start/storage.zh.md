@@ -6,7 +6,7 @@ weight: 36
 icon: fa-solid fa-hard-drive
 ---
 
-本教程使用公开版 0.8.0 的接口，已审查的 0.9 候选也支持。执行客机内检查之前，
+本教程使用 **Barn 0.9.0 发布候选**的接口。执行客机内检查之前，
 先完成[快速上手](../tutorial/)。示例使用 `meta` 节点与默认子网；调整已有配置时，
 请沿用实际节点名称与地址。
 
@@ -39,12 +39,12 @@ all:
 审查配置，然后创建：
 
 ```bash
-farrow validate -f storage.yml
-farrow plan -f storage.yml
-farrow up -f storage.yml
-farrow exec meta -- findmnt /data
-farrow exec meta -- findmnt /scratch
-farrow exec meta -- df -h / /data /scratch
+barn validate -f storage.yml
+barn plan -f storage.yml
+barn up -f storage.yml
+barn exec meta -- findmnt /data
+barn exec meta -- findmnt /scratch
+barn exec meta -- df -h / /data /scratch
 ```
 
 `size: 64` 表示 64 GiB；数据盘也可写成 `size: 64GiB`。这些是虚拟容量，
@@ -68,7 +68,7 @@ VM 进程启动成功不代表数据盘已挂载，请检查客机结果与警�
 
 保留盘复用依赖磁盘身份和兼容的规格。再次使用时应保持节点、挂载路径、大小和
 文件系统定义一致。它不是自动扩容、改名、文件系统转换、备份或快照功能。
-Farrow 会拒绝不兼容的保留盘，不要通过手改状态文件强行挂载。
+Barn 会拒绝不兼容的保留盘，不要通过手改状态文件强行挂载。
 
 **持久盘仍然是可丢弃的测试存储。** 客机恢复期间，`up` 可能清空重建无法识别或
 确认损坏的文件系统，并报告数据丢弃。持久性只控制 VM 销毁/重建时的保留行为。
@@ -79,11 +79,11 @@ Farrow 会拒绝不兼容的保留盘，不要通过手改状态文件强行挂�
 应另行明确配置。在已创建的环境中，可以验证普通重启的数据保留：
 
 ```bash
-farrow exec meta -- sudo -n sh -c \
-  'printf "retention check\n" > /data/farrow-retention.txt'
-farrow stop meta
-farrow start meta
-farrow exec meta -- cat /data/farrow-retention.txt
+barn exec meta -- sudo -n sh -c \
+  'printf "retention check\n" > /data/barn-retention.txt'
+barn stop meta
+barn start meta
+barn exec meta -- cat /data/barn-retention.txt
 ```
 
 这只检查 VM stop/start，不是物理宿主重启后的持久性验证。
@@ -94,28 +94,28 @@ farrow exec meta -- cat /data/farrow-retention.txt
 从运行中的部署生成独立 OpenSSH 配置：
 
 ```bash
-farrow ssh-config > farrow-ssh.conf
-ssh -F ./farrow-ssh.conf farrow-meta hostname
-scp -F ./farrow-ssh.conf ./storage.yml farrow-meta:/tmp/storage.yml
-scp -F ./farrow-ssh.conf farrow-meta:/data/farrow-retention.txt ./farrow-retention.txt
+barn ssh-config > barn-ssh.conf
+ssh -F ./barn-ssh.conf barn-meta hostname
+scp -F ./barn-ssh.conf ./storage.yml barn-meta:/tmp/storage.yml
+scp -F ./barn-ssh.conf barn-meta:/data/barn-retention.txt ./barn-retention.txt
 ```
 
 生成的片段包含当前回环 SSH 端口、部署密钥路径与实例主机密钥身份。
 重建 VM 或管理端口变化后，应重新生成。如果希望普通 SSH 配置也能使用这些别名，
-可选用 `farrow ssh-config --install`；上面的 `-F` 用法无需这项集成。
+可选用 `barn ssh-config --install`；上面的 `-F` 用法无需这项集成。
 导出的配置只引用部署密钥，不会内嵌或导出私钥内容。
 
 ## 访问客机内的服务
 
 宿主可以通过客机固定 IP 访问监听在该地址上的服务，前提是客机防火墙与服务配置允许。
-例如 `10.10.10.10:5432` 上的 PostgreSQL 服务需要另外安装；Farrow 启动 VM
+例如 `10.10.10.10:5432` 上的 PostgreSQL 服务需要另外安装；Barn 启动 VM
 不会自动安装 PostgreSQL。
 
 如果服务只监听客机回环地址，可以使用刚才生成的 OpenSSH 配置建立隧道：
 
 ```bash
-ssh -F ./farrow-ssh.conf -N \
-  -L 127.0.0.1:15432:127.0.0.1:5432 farrow-meta
+ssh -F ./barn-ssh.conf -N \
+  -L 127.0.0.1:15432:127.0.0.1:5432 barn-meta
 ```
 
 保持该宿主终端打开，再让本地客户端连接 `127.0.0.1:15432`。
@@ -132,18 +132,18 @@ Linux 宿主可以在首次 `up` 前配置只读共享：
 
 ```yaml
 vm_shares:
-  - host: /srv/farrow-project
+  - host: /srv/barn-project
     guest: /workspace
     readonly: true
 ```
 
-将其放入目标主机变量或 `all.vars`，把宿主路径替换为已存在、Farrow 用户能够访问的
-真实目录，而且目录必须属于当前 Farrow 用户，只读共享也不例外。
-宿主路径必须为绝对路径，不能穿过符号链接，也不能与 Farrow 数据根重叠。
-源文件共享可以从显式只读开始；可写共享还取决于客机用户权限，Farrow 可能回退到
+将其放入目标主机变量或 `all.vars`，把宿主路径替换为已存在、Barn 用户能够访问的
+真实目录，而且目录必须属于当前 Barn 用户，只读共享也不例外。
+宿主路径必须为绝对路径，不能穿过符号链接，也不能与 Barn 数据根重叠。
+源文件共享可以从显式只读开始；可写共享还取决于客机用户权限，Barn 可能回退到
 只读并报告限制，不会修改宿主目录属主。
 
 **不要在当前文档所述运行时的 macOS 环境中添加 `vm_shares`。** 已测 macOS/QEMU
 路径无法重新打开安全持有的目录描述符，受影响节点无法启动；这里应使用 SSH 文件传输。
-宿主源目录或挂载丢失时，恢复原目录/挂载后再重试 `up`；Farrow 不会新建空目录替代。
+宿主源目录或挂载丢失时，恢复原目录/挂载后再重试 `up`；Barn 不会新建空目录替代。
 修改已有节点的共享定义需要显式重建。完整磁盘与共享约束见[配置参考](../../reference/configuration/)。

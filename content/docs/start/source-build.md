@@ -1,29 +1,27 @@
 ---
 title: Build from Source
-description: Build Farrow for development and review, then run the complete source gate.
+description: Build Barn for development and review, then run the complete source gate.
 weight: 50
 icon: fa-solid fa-code-branch
 ---
 
-Ordinary users should prefer the public release's archive or native package.
-As of 2026-09-26, that release is **0.8.0**, marked as a GitHub prerelease
-because Farrow is pre-1.0. The locally reviewed `b91ec37` tree is an **unreleased
-0.9 candidate**, not an installable 0.9 release; see
-[Status](../../about/status/).
+Barn 0.9.0 is an **unreleased candidate**. Use this page to build and check a
+checkout containing the rename. Installation commands for the eventual release
+are in the [Quick Start](../tutorial/).
 
 ## Choose the source
 
-To reproduce the public release in a new checkout:
+Use a checkout containing the Barn changes. Once that source is pushed to the
+public repository, it can also be cloned with:
 
 ```bash
-git clone --branch v0.8.0 --depth 1 https://github.com/pgsty/farrow.git farrow-0.8.0
-cd farrow-0.8.0
+git clone https://github.com/pgsty/barn.git
+cd barn
 ```
 
-To review candidate behavior, use a checkout that actually contains the
-candidate commit. At the review date, a fresh clone of public `main` did not
-contain `b91ec37`; fetching a nonexistent 0.9 tag cannot obtain it. Check the
-source identity before building:
+Do not assume a `v0.9.0` tag exists before publication. Check the source identity
+and working-tree changes first; `go.mod` must name `github.com/pgsty/barn` and
+the command source must live in `cmd/barn`:
 
 ```bash
 git log -1 --oneline
@@ -40,22 +38,22 @@ the CLI. From the selected checkout:
 ```bash
 make build
 export PATH="$PWD/bin:$PATH"
-farrow version
+barn version
 ```
 
-`make build` writes the matching `farrow` and `farrow-hosts-helper` binaries
+`make build` writes the matching `barn` and `barn-hosts-helper` binaries
 under the Git-ignored `bin/` directory. Do not mix the two binaries across
 commits or releases. Development builds report `dev` by default; their commit
 field identifies a clean source revision or says `uncommitted` for a dirty
 checkout. The version string alone does not prove candidate behavior.
 
-Keep the inventory in a separate lab directory. This does not isolate Farrow
+Keep the inventory in a separate lab directory. This does not isolate Barn
 state: if you already have a deployment, inspect it before running `up`:
 
 ```bash
-mkdir -p ~/farrow-lab && cd ~/farrow-lab
-farrow setup
-farrow up
+mkdir -p ~/barn-lab && cd ~/barn-lab
+barn setup
+barn up
 ```
 
 ## Complete checks

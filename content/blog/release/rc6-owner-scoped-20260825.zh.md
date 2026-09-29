@@ -10,7 +10,7 @@ icon: fa-solid fa-vial-circle-check
 ---
 
 > [!CAUTION]
-> Farrow 之前的历史记录。本页保留前任候选的准确身份，不证明当前 Farrow 二进制或路径。
+> Barn 之前的历史记录。本页保留前任候选的准确身份，不证明当前 Barn 二进制或路径。
 > 当前边界见[当前状态](/zh/docs/about/status/)。
 
 Piglet `1.0.0-rc.6` 是单一 Native-QEMU 路径的 Owner-scope 本地开发候选。它在两条 Tier 1

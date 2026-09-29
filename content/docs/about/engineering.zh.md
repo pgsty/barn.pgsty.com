@@ -5,12 +5,12 @@ weight: 30
 icon: fa-solid fa-screwdriver-wrench
 ---
 
-本页以 2026-09-26 审核的源码 `b91ec37` 为准，其中的 0.9 变更尚未发布；
-公开应用版本仍为 0.8.0。构建命令使用当前工作区，必须同时记录其提交。
+本页描述 **Barn 0.9.0 发布候选**。构建命令使用当前工作区，请同时记录提交与
+未提交变更。源码构建和本地检查通过不代表已经正式发布。
 
 ## 仓库边界
 
-Farrow 源码仓库包含代码、测试、构建/打包定义、法律声明、`README.md`、`CHANGELOG.md`、
+Barn 源码仓库包含代码、测试、构建/打包定义、法律声明、`README.md`、`CHANGELOG.md`、
 `CONTRIBUTING.md`、`SECURITY.md` 与双语应用发布说明。本网站提供用户、设计、运维
 与发布文档。运行行为和命令参数需要以匹配的源码及二进制核对；未发布源码的行为不能
 代表公开软件包。
@@ -21,7 +21,7 @@ Review 记录、临时 Inventory、生成二进制与 Release 输出树不是生
 
 - `bin/`：开发构建；
 - `dist/` 与 `.goreleaser-*`：Release/Snapshot Staging；
-- 根目录 `farrow`、`farrow-hosts-helper`、`catalogsign` 二进制；
+- 根目录 `barn`、`barn-hosts-helper`、`catalogsign` 二进制；
 - Hugo 的 `public/` 与 `resources/`。
 
 ## 构建与源码门禁
@@ -49,7 +49,7 @@ make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 源码检查不等于真机验证。macOS HVF、Linux KVM/网络、软件包消费、Release 发布与
 线上网站渲染需要分别验证。`make image-pipeline-native-test` 是独立真机镜像流水线
 门禁，需要 QEMU/libguestfs 与显式镜像输入。必填的
-`FARROW_IMAGE_PIPELINE_NATIVE_*` 变量见 `tests/image-pipeline-native-test.sh`，
+`BARN_IMAGE_PIPELINE_NATIVE_*` 变量见 `tests/image-pipeline-native-test.sh`，
 该测试不会下载镜像。
 
 ## Release 与软件包契约
@@ -57,8 +57,8 @@ make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 `packaging/`、`.goreleaser.yaml` 与 `.github/workflows` 属于源码；它们生成的目录不是。
 Archive 与 Linux Package 携带配套 CLI 和 hosts-helper 二进制、`LICENSE`、源码
 README，以及根据 `go.mod` 锁定模块版本重建的准确上游许可证字节。Archive 的二进制
-位于 `bin/`、许可证位于 `licenses/`；Linux Package 安装 `/usr/bin/farrow`、
-`/opt/farrow/libexec/farrow-hosts-helper`，文档位于 `/usr/share/doc/farrow/`。
+位于 `bin/`、许可证位于 `licenses/`；Linux Package 安装 `/usr/bin/barn`、
+`/opt/barn/libexec/barn-hosts-helper`，文档位于 `/usr/share/doc/barn/`。
 
 Linux Package 与旧开发 Archive 格式包含 `BUILD_INFO.json`。正式 GoReleaser
 Archive 的构建身份在二进制中，发布元数据随资产单独提供，不能假定每种 Archive 都包含
@@ -70,7 +70,7 @@ Catalog 的 Minisign 签名属于另一套信任机制。
 
 Commit、Tag、归档/软件包验证、CI、草稿上传、公开发行与匿名下载验证应分别记录。
 Tag 工作流创建草稿，不会直接发布。pre-1.0 版本在 GitHub 标记为预发布，安装器需要
-显式指定 `FARROW_VERSION`。
+显式指定 `BARN_VERSION`。
 
 `make release-local VERSION=<version>` 在本地构建并验证，不执行发布。它要求干净
 工作区正好位于对应 `v<version>` Tag，配置 `origin`，使用固定工具，并且暂存/输出

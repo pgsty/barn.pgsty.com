@@ -1,24 +1,24 @@
 ---
 title: "声明式不等于破坏式"
 linkTitle: "不制造意外的收敛"
-description: "Farrow 如何用逐节点哈希与显式操作保证配置缺席永远不能授权删除。"
+description: "Barn 如何用逐节点哈希与显式操作保证配置缺席永远不能授权删除。"
 date: 2026-08-27T21:00:00+08:00
 weight: 30
 categories: [设计]
 tags: [生命周期, Drift, 安全]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **2026-09-26 校准：** 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
+> **2026-09-29 更名：** Barn 0.9.0 尚未发布；本文名称已同步更新。2026-09-26 校准记录： 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
 > 边界见[当前状态](/zh/docs/about/status/)，不以本文日期代替发布或验收日期。
 
 “声明式”常被简化成“让现实等于文件”。在文件完整、分支正确时，这是一句好口号；但当配置
 暂时不完整、检出了错误分支，或某个 YAML Group 被误删时，把“缺席”理解成“删除”就会让普通
 编辑错误直接变成破坏操作。
 
-Farrow 采用一条更窄的规则：
+Barn 采用一条更窄的规则：
 
 > 期望状态可以授权创建，也可以描述 Drift；它永远不能通过省略来授权销毁。
 
@@ -27,46 +27,46 @@ Farrow 采用一条更窄的规则：
 
 ## 从 Inventory 得到节点身份
 
-Farrow 不会对整份 Pigsty Inventory 做哈希。它先提取自己拥有的字段、填入默认值，
+Barn 不会对整份 Pigsty Inventory 做哈希。它先提取自己拥有的字段、填入默认值，
 规范化镜像选择器与架构，再构造 Canonical Resolved Spec。精确 Catalog 工件另行解析，
 因此 Channel 更新本身不会改变节点的 Spec Hash。每个节点的哈希只包含：
 
 - 所有节点共享的 Deployment Envelope，例如子网、登录用户、架构策略与部署级默认镜像请求；
 - 该节点自己的完整 Resolved Definition。
 
-因此，增加一个同伴不会改变已有节点的哈希；修改 Farrow 不消费的 Pigsty 字段——例如
+因此，增加一个同伴不会改变已有节点的哈希；修改 Barn 不消费的 Pigsty 字段——例如
 PostgreSQL 版本、软件包或服务策略——也不会产生 VM Drift。VM 层只响应自己真正理解的契约。
 
-这也避免了一项危险的半承诺：Farrow 不假装实现完整 Ansible 变量系统。自有命名空间里的未知
+这也避免了一项危险的半承诺：Barn 不假装实现完整 Ansible 变量系统。自有命名空间里的未知
 `vm_*` 字段与冲突值会失败；记录边界之外的内容保持不透明，而不是只解释一半。
 
 > [!NOTE]
-> **决策状态：当前有效。** Farrow 自动收敛新增节点，但定义变更与删除都需要显式命令。
+> **决策状态：当前有效。** Barn 自动收敛新增节点，但定义变更与删除都需要显式命令。
 > 命令流程见[日常管理](/zh/docs/start/operations/)。
 
 ## Plan 只有五种结果
 
-`farrow plan` 对比期望状态、Applied Deployment State 与已提交的 Node State，结果刻意保持精简：
+`barn plan` 对比期望状态、Applied Deployment State 与已提交的 Node State，结果刻意保持精简：
 
 | 结果 | 含义 | 应用路径 |
 | --- | --- | --- |
-| create | 期望节点没有已提交状态 | `farrow up` 创建 |
+| create | 期望节点没有已提交状态 | `barn up` 创建 |
 | unchanged | 定义与运行时仍一致 | 运行中同伴不动；已停止节点可以启动 |
-| recreate | 节点定义发生变化 | 显式 `farrow recreate --force <node>` |
-| missing | Applied Node 在 Inventory 中缺席或被跳过 | 显式 `farrow destroy <node> --force`，或恢复配置 |
+| recreate | 节点定义发生变化 | 显式 `barn recreate --force <node>` |
+| missing | Applied Node 在 Inventory 中缺席或被跳过 | 显式 `barn destroy <node> --force`，或恢复配置 |
 | envelope drift | 子网、登录身份、架构或运行时策略改变 | 整套 Deployment 重建 |
 
 Plan 完全只读。它列出准确节点集合，并在文本模式中给出应用显式转换的命令。
 
 ## 为什么 `up` 遇到 Drift 会停下
 
-Farrow 可以把 CPU/内存变化认定为“足够安全”并自动应用，也可以在镜像变化时静默重建根盘。
+Barn 可以把 CPU/内存变化认定为“足够安全”并自动应用，也可以在镜像变化时静默重建根盘。
 Pre-1.0 刻意不这样做：任何 VM 定义变化都归类为 Recreate，`up` 返回类型化冲突。
 
 这条保守边界有两个好处：
 
 1. 所有可能使 Guest 状态失效的变化共享一个可见操作；
-2. Farrow 可以在触碰当前节点前完成全部前置检查。
+2. Barn 可以在触碰当前节点前完成全部前置检查。
 
 Recreate 会先解析 Emulator、加速策略、Firmware、镜像字节、网络后端、Share 与 Persistent Disk
 契约，再开始销毁。若外来架构 Emulator 缺失，或一个 Share 不安全，已有 VM 会保持原样。
@@ -96,7 +96,7 @@ Persistent Data Disk 还有独立边界：普通 Destroy 会保留它们；
 安全并不意味着全部重建。新增节点创建时不会停止已有同伴；选中的已停止节点可以直接启动，
 不会重建运行中节点；逐节点 Recreate 保留其它节点，并按磁盘契约保留 Persistent Data。
 
-最终，Farrow 在期望状态足以构成强证据的地方——创建与比较——保持声明式；在代价不可逆的
+最终，Barn 在期望状态足以构成强证据的地方——创建与比较——保持声明式；在代价不可逆的
 地方保持显式。它不会让操作者手工计算 Drift，也不会把 Diff 错当成权限。
 
 下一篇：[PID 不是虚拟机身份](/zh/blog/design/identity-before-pid/)。

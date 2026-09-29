@@ -1,7 +1,7 @@
 ---
 title: Quick Start
 linkTitle: Quick Start
-description: Install Farrow 0.8.0, start an Ubuntu lab with up, connect with ssh, and scale from the same inventory.
+description: Install Barn 0.9.0, start an Ubuntu lab with up, connect with ssh, and scale from the same inventory.
 weight: 10
 icon: fa-solid fa-play
 aliases: [/docs/start/installation/, /docs/start/upgrade/, /docs/start/lab/, /docs/start/pigsty/, /docs/features/]
@@ -9,59 +9,61 @@ aliases: [/docs/start/installation/, /docs/start/upgrade/, /docs/start/lab/, /do
 
 ## Install
 
-This tutorial targets the public **0.8.0** release. The CLI reference also
-documents explicitly marked, unreleased 0.9 changes; see the
-[version baseline](../../about/status/#documentation-baseline).
+This tutorial targets the **Barn 0.9.0 release candidate**. For now,
+[build from source](../source-build/). The package and Homebrew commands below
+apply after 0.9.0 is published and the formula is updated; these links do not
+establish publication. See [Status](../../about/status/#documentation-baseline).
 
-The current public version is [Farrow 0.8.0](https://github.com/pgsty/farrow/releases/tag/v0.8.0),
-marked **Pre-release** on GitHub. The user-scoped installer supports macOS and
-Linux on arm64 and amd64, verifies the archive checksum, and needs no sudo:
+Barn has no compatibility layer for earlier development builds. It uses
+`barn.yml`, `BARN_*`, and fresh `~/.barn` state, with no old command aliases or
+state migration. Stop internal old environments, preserve needed data, and
+create a fresh Barn installation. Renaming an old state directory is unsupported.
+
+After publication, the user-scoped installer supports macOS and Linux on
+arm64 and amd64, verifies the archive checksum, and needs no sudo to install:
 
 ```bash
-curl -fLO https://github.com/pgsty/farrow/releases/download/v0.8.0/install.sh
+curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.0/install.sh
 chmod +x install.sh
-FARROW_VERSION=0.8.0 ./install.sh
+BARN_VERSION=0.9.0 ./install.sh
 export PATH="$HOME/.local/bin:$PATH"
-farrow version
+barn version
 ```
 
 The default installation directory is `~/.local/bin`; add the same PATH line
-to your shell configuration to keep it in new terminals. `farrow version`
-should report `0.8.0`. GitHub excludes prereleases from `/releases/latest`,
-so keep the explicit `FARROW_VERSION`.
+to your shell configuration. A release build should report `0.9.0`. GitHub
+excludes prereleases from `/releases/latest`, so specify `BARN_VERSION=0.9.0`.
 
-If GitHub downloads time out, configure your terminal's proxy environment;
-see [Download and PATH problems](../troubleshooting/#download-and-path-problems).
+See [Download and PATH problems](../troubleshooting/#download-and-path-problems)
+if downloads fail.
 
 ### Other installation methods
 
-Choose one installation method. The [official Homebrew tap](https://github.com/pgsty/homebrew-infra/blob/main/Formula/farrow.rb)
-currently provides 0.8.0 and depends on QEMU. The Linux examples below use
-amd64 packages; use the corresponding `linux_arm64` asset on ARM64 Linux.
+Once the release assets and [Homebrew formula](https://github.com/pgsty/homebrew-infra/blob/main/Formula/barn.rb)
+are available, choose one method. The Linux examples use amd64 packages;
+use the corresponding `linux_arm64` asset on ARM64 Linux.
 
 ```bash {tab="Homebrew" group="install" value="brew"}
-brew install pgsty/infra/farrow
-farrow version
+brew install pgsty/infra/barn
+barn version
 ```
 
 ```bash {tab="Debian / Ubuntu" value="deb"}
-farrow_release=https://github.com/pgsty/farrow/releases/download/v0.8.0
-curl -fLO "$farrow_release/farrow_0.8.0_linux_amd64.deb"
-sudo apt install ./farrow_0.8.0_linux_amd64.deb
-farrow version
+barn_release=https://github.com/pgsty/barn/releases/download/v0.9.0
+curl -fLO "$barn_release/barn_0.9.0_linux_amd64.deb"
+sudo apt install ./barn_0.9.0_linux_amd64.deb
+barn version
 ```
 
 ```bash {tab="RHEL / Fedora" value="rpm"}
-farrow_release=https://github.com/pgsty/farrow/releases/download/v0.8.0
-curl -fLO "$farrow_release/farrow_0.8.0_linux_amd64.rpm"
-sudo dnf install ./farrow_0.8.0_linux_amd64.rpm
-farrow version
+barn_release=https://github.com/pgsty/barn/releases/download/v0.9.0
+curl -fLO "$barn_release/barn_0.9.0_linux_amd64.rpm"
+sudo dnf install ./barn_0.9.0_linux_amd64.rpm
+barn version
 ```
 
-For development, see [Build from Source](../source-build/).
-
-The supported guests are Linux images. macOS in the host table below describes
-the machine running Farrow, not a macOS guest image.
+The host requirements below apply to Linux guests. macOS guests use the
+independent [barn mac](../macos/) command.
 
 ### Host requirements
 
@@ -73,7 +75,7 @@ the machine running Farrow, not a macOS guest image.
 The host also needs `qemu-img`, OpenSSH, and firmware for the selected guest.
 Interactive `up` can prepare missing dependencies through Homebrew on macOS
 or apt/dnf on supported Linux distributions, and install the fixed-IP network.
-Host package and network changes may require sudo; run Farrow itself as your
+Host package and network changes may require sudo; run Barn itself as your
 normal user. Linux needs usable KVM and NetworkManager or systemd-networkd.
 The dated native validation covers macOS arm64 and Ubuntu amd64; other build
 platforms have narrower evidence. See [Status](../../about/status/).
@@ -83,24 +85,24 @@ platforms have narrower evidence. See [Status](../../about/status/).
 For a first deployment, open a terminal in an empty directory:
 
 ```bash
-mkdir -p ~/farrow-lab && cd ~/farrow-lab
-farrow up
-farrow ssh
+mkdir -p ~/barn-lab && cd ~/barn-lab
+barn up
+barn ssh
 ```
 
 Use `exit` to return from the guest to your host terminal before running more
-Farrow commands.
+Barn commands.
 
 When no inventory or applied deployment exists, interactive `up` creates
-`farrow.yml` with one `meta` node. It prepares missing host dependencies and
+`barn.yml` with one `meta` node. It prepares missing host dependencies and
 networking, downloads and verifies the image, starts QEMU, and waits for
 management SSH. Host changes are displayed; sudo may ask for your password.
-To review the full host plan before applying it, use `farrow setup --dry-run`.
+To review the full host plan before applying it, use `barn setup --dry-run`.
 
 > [!NOTE]
-> A new directory is not a new lab. State lives in `$FARROW_HOME` (default
-> `~/.farrow`). If a deployment already exists and no inventory is found,
-> `up` continues that deployment. Use `farrow status` to inspect it first.
+> A new directory is not a new lab. State lives in `$BARN_HOME` (default
+> `~/.barn`). If a deployment already exists and no inventory is found,
+> `up` continues that deployment. Use `barn status` to inspect it first.
 
 The default template resolves to:
 
@@ -114,28 +116,28 @@ The default template resolves to:
 
 Disk sizes are virtual capacities; qcow2 files grow as data is written.
 A four-node lab uses 8 vCPUs and 16 GiB of guest memory, in addition to host
-resources. Use `farrow plan` to inspect totals before starting.
+resources. Use `barn plan` to inspect totals before starting.
 
 A fresh, unedited built-in template on the default subnet may be moved to an available private `/24`
 when setup finds a subnet conflict. An existing template is backed up as
-`farrow.yml.before-network-change`. Check the resulting `farrow.yml` and
-`farrow status` for actual addresses; explicit `-f` files, edited templates,
+`barn.yml.before-network-change`. Check the resulting `barn.yml` and
+`barn status` for actual addresses; explicit `-f` files, edited templates,
 and existing deployments keep their selected subnet.
 
 A healthy first start ends with a result such as:
 
 ```text
   ✓  1 node ready
-connect:   farrow ssh meta
+connect:   barn ssh meta
 ```
 
-`farrow ssh` selects the control node, `meta` in this template. You can also
+`barn ssh` selects the control node, `meta` in this template. You can also
 name it or run a command directly:
 
 ```bash
-farrow ssh meta
-farrow exec meta -- hostname
-farrow st
+barn ssh meta
+barn exec meta -- hostname
+barn st
 ```
 
 `st` is the alias of `status`; its `running` state describes the VM
@@ -143,12 +145,12 @@ process, not a fresh guest-readiness check.
 
 ### Continue interrupted setup
 
-Repeat `farrow up` to continue interrupted work, retry unfinished guest setup,
+Repeat `barn up` to continue interrupted work, retry unfinished guest setup,
 or update older guest helpers. Healthy running VMs keep their process and
 root disk. A guest with usable management SSH can finish with limitations,
 such as a read-only share or unavailable private networking. Review those
 messages; automation should inspect `nodes[].warnings` and `nodes[].repairs`
-in `farrow up --json`, as these limitations still return exit 0.
+in `barn up --json`, as these limitations still return exit 0.
 
 > [!WARNING]
 > Data disks are disposable test storage. `up` can reset an unrecognized or
@@ -157,8 +159,8 @@ in `farrow up --json`, as these limitations still return exit 0.
 > not protect corrupt contents during recovery. See [Data disks](../../reference/configuration/#data-disks).
 
 `--no-wait` skips guest readiness, recovery, and metadata refresh; a later
-`farrow up` completes them. Image downloads support retries and resumption.
-Use `farrow up --mirror` to prefer the official China repository; see
+`barn up` completes them. Image downloads support retries and resumption.
+Use `barn up --mirror` to prefer the official China repository; see
 [Image Repositories](../images/) for image selection and fallback behavior.
 
 ## Choose an inventory before booting
@@ -167,10 +169,10 @@ This is an alternative to the automatic first run above. In a fresh lab
 directory, generate and inspect the configuration before starting:
 
 ```bash
-farrow init
-farrow validate
-farrow plan
-farrow up
+barn init
+barn validate
+barn plan
+barn up
 ```
 
 For the Catalog images used here, `init`, `validate`, and `plan` do not require
@@ -197,8 +199,8 @@ There are four built-in templates:
 | `trio` | 3 | `10.10.10.10`–`10.10.10.12` |
 | `full` | 4 | `10.10.10.10`–`10.10.10.13` |
 
-For example, `farrow init full` writes four nodes;
-`farrow init full -c 10.20.30.0/24` selects another subnet. Existing files are
+For example, `barn init full` writes four nodes;
+`barn init full -c 10.20.30.0/24` selects another subnet. Existing files are
 preserved unless `--force` is explicit. Set `vm_cpu`, `vm_mem`, `vm_image`,
 and other fields before the first `up`; see [Configuration](../../reference/configuration/).
 
@@ -207,22 +209,22 @@ and other fields before the first `up`; see [Configuration](../../reference/conf
 `setup` prepares dependencies and networking without starting VMs:
 
 ```bash
-farrow setup --dry-run
-farrow setup
+barn setup --dry-run
+barn setup
 ```
 
 Unlike the preparation performed by `up`, standalone `setup` asks for
 confirmation before applying a mutating plan. It reuses the discovered
 inventory, or generates `meta` if no file exists. The optional `/etc/hosts`
-helper is installed only when `farrow hosts install --yes` needs it;
-ordinary startup and `farrow ssh` do not need that integration.
+helper is installed only when `barn hosts install --yes` needs it;
+ordinary startup and `barn ssh` do not need that integration.
 
 Downloads honor `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, and `NO_PROXY`,
 including lowercase forms. For unattended first setup in an empty directory:
 
 ```bash
-farrow setup --yes
-farrow up --json
+barn setup --yes
+barn up --json
 ```
 
 `setup --yes` can generate the inventory itself; a separate `init` is needed
@@ -234,12 +236,12 @@ check guest limitations before proceeding.
 ### Use an existing Pigsty inventory
 
 ```bash
-farrow validate -f pigsty.yml
-farrow plan -f pigsty.yml
-farrow up -f pigsty.yml
+barn validate -f pigsty.yml
+barn plan -f pigsty.yml
+barn up -f pigsty.yml
 ```
 
-Farrow reads the documented VM, naming, and login fields and preserves other
+Barn reads the documented VM, naming, and login fields and preserves other
 Pigsty settings. This starts the virtual machines; installing PostgreSQL or
 other Pigsty services is a separate Pigsty operation. The built-in templates
 describe VM topology and do not include a complete Pigsty service configuration.
@@ -250,7 +252,7 @@ service connections.
 ## Scale and operate
 
 To expand the default one-node lab, preserve the existing settings and add
-three hosts to `farrow.yml`:
+three hosts to `barn.yml`:
 
 ```yaml
 all:
@@ -270,30 +272,30 @@ subnet for every address, including `admin_ip`. Do not overwrite a customized
 inventory with `init --force` to expand it.
 
 ```bash
-farrow plan
-farrow up
-farrow st
+barn plan
+barn up
+barn st
 ```
 
 With only these additions, the plan lists three nodes to create. `up` creates
 them, keeps a running `meta` process, and refreshes guest hosts and control-node
-SSH entries. A healthy result is `4 nodes ready`. The embedded 0.8.0 Catalog
+SSH entries. A healthy result is `4 nodes ready`. The embedded 0.9.0 Catalog
 resolves `u24:stable` to `u24@20260911.0.0`; a manually updated Catalog may
 resolve another version, which appears in `plan` and `status`.
 
 Changing CPU, memory, or other consumed VM fields requires an explicit
-`farrow recreate <node>`. Removing a YAML entry never deletes its VM. Stop
+`barn recreate <node>`. Removing a YAML entry never deletes its VM. Stop
 and resume the lab without recreating disks:
 
 ```bash
-farrow stop
-farrow start
+barn stop
+barn start
 ```
 
 When finished, destroy the deployment:
 
 ```bash
-farrow destroy
+barn destroy
 ```
 
 On a terminal, type `destroy` to confirm. Root and non-persistent data disks
@@ -301,16 +303,10 @@ are deleted; cached images, keys, declared persistent disks, and host networking
 remain. See [Uninstall and Clean Up](../uninstall/) for complete disposal, or
 [Daily Operations](../operations/) for restart, logs, explicit changes, and scale-in.
 
-## Upgrade an existing installation
+## Fresh installation for 0.9.0
 
-Use the same installation channel: rerun the version-pinned installer, run
-`brew update` followed by `brew upgrade pgsty/infra/farrow`, or install the new
-DEB/RPM. Then check `farrow version` and `farrow plan` before `farrow up`.
-`farrow update` refreshes the image Catalog, not the Farrow executable.
-See the [0.8.0 release notes](../../../blog/release/farrow-0.8.0/) for recovery
-changes and the native validation scope.
-
-When upgrading an older Debian lab that omitted `vm_image`, set `vm_image: d13`
-in `all.vars` to preserve that choice; the default changed to Ubuntu 24.04 in
-0.6.0. Read the [0.7.0 upgrade notes](../../../blog/release/farrow-0.7.0/) for data-disk
-recovery and the control-node SSH limitation after an interrupted 0.6.0 bootstrap.
+Barn 0.9.0 is the first release under the new name. Stop earlier internal labs,
+preserve needed data, and create a fresh Barn lab. There is no in-place upgrade,
+old command alias, or state migration. Build from source before publication;
+the installation commands at the top apply after release. `barn update`
+refreshes the image Catalog, not the Barn executable.

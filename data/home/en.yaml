@@ -8,21 +8,21 @@ sections:
   - cta
 
 hero:
-  eyebrow: Farrow 0.8.0 · Pre-release · Go + QEMU
+  eyebrow: Barn 0.9.0 · Release candidate · Go + QEMU
   title_lines:
     - One inventory.
     - One deployment.
   title_size: 4.15rem
   lead: >-
-    Farrow boots a Pigsty-compatible inventory into fixed-IP QEMU virtual
+    Barn boots a Pigsty-compatible inventory into fixed-IP QEMU virtual
     machines on macOS and Linux. Use the same inventory to provision your VMs
-    with Farrow and deploy services with Pigsty.
-  note: Ubuntu 24.04 by default. Repeat farrow up to continue interrupted setup and retry limited guest features without restarting healthy VMs.
+    with Barn and deploy services with Pigsty.
+  note: Ubuntu 24.04 by default. Repeat barn up to continue interrupted setup and retry limited guest features without restarting healthy VMs.
   note_icon: fa-solid fa-flask
   image:
-    light: images/farrow-hero-light.svg?v=0.8.0-docs2
-    dark: images/farrow-hero-dark.svg?v=0.8.0-docs2
-    alt: One Pigsty inventory becomes one fixed-IP Farrow deployment
+    light: images/barn-hero-light.svg?v=0.9.0-rename
+    dark: images/barn-hero-dark.svg?v=0.9.0-rename
+    alt: One Pigsty inventory becomes one fixed-IP Barn deployment
   actions:
     - { label: Quick Start, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
     - { label: Read the reference, url: docs/reference/, icon: fa-solid fa-book-open, style: ghost }
@@ -34,14 +34,14 @@ hero:
 facts:
   eyebrow: The current model
   title: Less machinery, clearer behavior
-  text: Farrow targets one trusted local Pigsty lab, not a general-purpose cloud control plane.
+  text: Barn targets one trusted local Pigsty lab, not a general-purpose cloud control plane.
   animate: true
   columns: 4
   link_label: Details
   items:
     - { value: 2, label: commands after installation, desc: up + ssh, url: docs/start/tutorial/ }
-    - { value: 1, label: inventory, desc: farrow.yml or pigsty.yml, url: docs/reference/configuration/ }
-    - { value: 1, label: deployment per user, desc: state under ~/.farrow, url: docs/about/design/ }
+    - { value: 1, label: inventory, desc: barn.yml or pigsty.yml, url: docs/reference/configuration/ }
+    - { value: 1, label: deployment per user, desc: state under ~/.barn, url: docs/about/design/ }
     - { value: 9, label: image families, desc: "Ubuntu, Debian, Rocky, CentOS", url: docs/reference/images/ }
 
 entry_points:
@@ -61,10 +61,10 @@ entry_points:
 first_command:
   eyebrow: Normal path
   title: Start the lab, then connect
-  text: Install Farrow from the Quick Start, then run these commands in an empty directory on a terminal for your first deployment. Interactive up prepares missing host dependencies and creates the default inventory when no deployment exists.
+  text: Prepare the Barn 0.9.0 candidate from source as described in the Quick Start, then run these commands in an empty directory on a terminal for your first deployment. Interactive up prepares missing host dependencies and creates the default inventory when no deployment exists.
   code: |-
-    farrow up
-    farrow ssh
+    barn up
+    barn ssh
   lang: bash
   note: Add host lines and run up again; new nodes are created, stopped selected nodes start, and running peers keep their processes while unfinished setup is retried. Removing a line never destroys a VM.
 
@@ -82,21 +82,21 @@ faq:
   eyebrow: Short answers
   title: Before you begin
   items:
-    - question: Is the working directory still a Farrow project?
-      answer: No. State is one deployment under ~/.farrow. An explicit or discovered Inventory supplies desired state; without one, lifecycle commands can fall back to the applied spec.
+    - question: Is the working directory still a Barn project?
+      answer: No. State is one deployment under ~/.barn. An explicit or discovered Inventory supplies desired state; without one, lifecycle commands can fall back to the applied spec.
       open: true
     - question: Can I use pigsty.yml directly?
-      answer: Yes. Farrow consumes the documented VM fields plus a small naming, control-node, and node-admin whitelist; other Pigsty settings stay opaque.
+      answer: Yes. Barn consumes the documented VM fields plus a small naming, control-node, and node-admin whitelist; other Pigsty settings stay opaque.
     - question: Does the first up modify the host?
       answer: It can install missing dependencies and fixed-IP networking, requesting sudo when needed. Use setup --dry-run to inspect the host plan first. The optional hosts helper is installed only by hosts install.
     - question: Does up install PostgreSQL or Pigsty?
       answer: It prepares the virtual machines and guest access. Deploy PostgreSQL and other services separately with Pigsty; the built-in templates describe VM topology.
-    - question: Is Farrow ready for production?
+    - question: Is Barn ready for production?
       answer: No. It is a pre-1.0 local development runtime; read the status page for the exact verified matrix and open release gates.
 
 cta:
   title: Start with two commands.
-  desc: Install 0.8.0, start with up, connect with ssh, and add nodes when you need them.
+  desc: Build the 0.9.0 candidate from source; after release, install Barn, start with up, and connect with ssh.
   actions:
     - { label: Quick Start, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
     - { label: Reference, url: docs/reference/, icon: fa-solid fa-book-open, style: ghost }

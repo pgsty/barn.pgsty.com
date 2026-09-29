@@ -1,24 +1,24 @@
 ---
 title: 配置
-description: Farrow 读取的 Pigsty Inventory 字段、默认值与节点级漂移行为。
+description: Barn 读取的 Pigsty Inventory 字段、默认值与节点级漂移行为。
 weight: 10
 icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-**版本范围：** 下列 Inventory 格式适用于公开预发布版本 v0.8.0，以及 2026-09-26
-核对的本地源码 `b91ec37`（尚未发布的 0.9 候选版本）。新增校验诊断会明确标注，
-参见[版本矩阵](../../about/status/#documentation-baseline)。
+本参考描述 **Barn 0.9.0 发布候选**。Barn 只使用新名称与全新的 Barn 状态，
+不提供旧开发版本的兼容或迁移层。编写脚本前先核对 `barn version`，
+发布进度见[当前状态](../../about/status/#documentation-baseline)。
 
 ## 发现顺序
 
-依次查找：显式 `-f`、当前目录的 `farrow.yml`、`farrow.yaml`、`pigsty.yml`、
+依次查找：显式 `-f`、当前目录的 `barn.yml`、`barn.yaml`、`pigsty.yml`、
 `pigsty.yaml`。所有文件名都使用同一种 Pigsty 兼容 YAML Inventory。
 
 `plan`、`up`、`reload`、`recreate` 找不到文件时，如果 deployment 已存在，会回退到
 已应用规格；`validate` 不会回退。配置必须是最大 4 MiB 的普通非符号链接文件。
 发现顺序中第一个存在的文件生效；它若无效会直接报错，不会继续尝试下一个文件名。
-重命名文件或切换目录不会产生另一套部署，已应用状态保存在 `FARROW_HOME`。
+重命名文件或切换目录不会产生另一套部署，已应用状态保存在 `BARN_HOME`。
 
 ## 完整配置示例
 
@@ -41,12 +41,12 @@ all:
             - { path: /data, size: 128, fs: auto, persistent: true }
 ```
 
-这里定义了两个托管节点，控制节点为 `meta`。保存为 `farrow.yml` 后，可以先检查而不启动 VM：
+这里定义了两个托管节点，控制节点为 `meta`。保存为 `barn.yml` 后，可以先检查而不启动 VM：
 
 ```bash
-farrow validate -f farrow.yml
-farrow --json validate -f farrow.yml
-farrow plan -f farrow.yml
+barn validate -f barn.yml
+barn --json validate -f barn.yml
+barn plan -f barn.yml
 ```
 
 JSON 校验结果包含 `valid`、`source`、`spec_hash`、`resolved`。**0.9 候选版本**的
@@ -54,13 +54,13 @@ JSON 校验结果包含 `valid`、`source`、`spec_hash`、`resolved`。**0.9 �
 不会声称镜像已检查；`local-*` 镜像字节校验仍由 `up` 完成。配置校验不能证明宿主资源、
 共享访问、网络、镜像字节或客机就绪可用，也不会启动 VM 或下载镜像。
 
-## Farrow 读取什么
+## Barn 读取什么
 
-Farrow 读取主机 IP、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq`、
+Barn 读取主机 IP、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq`、
 `node_admin_username`、`node_admin_uid` 与已记录的 `vm_*` 变量。`admin_ip` 只从
 `all.vars` 读取，用于选择控制节点；没有匹配时使用第一台托管主机。所有节点必须解析为
 同一个登录用户名；默认用户 `dba` 的显式 `node_admin_uid` 必须为 88。
-自定义用户名下，`node_admin_uid` 仍需通过整数校验，但不会设置客机 UID；Farrow
+自定义用户名下，`node_admin_uid` 仍需通过整数校验，但不会设置客机 UID；Barn
 没有提供任意定制客机 UID 的配置契约。
 
 其余内容完全不读，也不会产生 drift。这里指 `pg_role`、`pg_version`、`repo_*`、
@@ -99,9 +99,8 @@ Farrow 读取主机 IP、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq`、
 （区分大小写）。`8GiB` 合法，`8G`、`1.5GiB` 和无单位的引号字符串 `"8192"` 不合法。
 根盘与数据盘尺寸必须为正值；`up` 还会检查根盘不小于所选基础镜像的虚拟尺寸。
 
-从 Farrow 0.6.0 起，省略 `vm_image` 时的默认值由 Debian 13 改为 Ubuntu 24.04。
-旧环境若要继续使用 Debian，请在 `all.vars` 中写明 `vm_image: d13`。升级程序不会自动
-替换 VM 磁盘；再次应用配置前先查看 `farrow plan`。
+省略 `vm_image` 时默认选择 Ubuntu 24.04。使用 Debian 13 时，在 `all.vars` 中
+写明 `vm_image: d13`；修改已有 Barn 配置后先查看 `barn plan`。
 
 `vm_version` 将简短的版本意图与镜像 Family 分开：
 
@@ -137,7 +136,7 @@ vm_disks:
 
 挂载点需是 `/data`、`/data/pg` 等规范绝对路径。磁盘身份由路径去除首尾 `/`，再把中间的
 `/` 替换为 `-`，必须匹配 `[a-z][a-z0-9-]{0,31}`；单个节点内磁盘身份与挂载点均不得重复。
-`/`、`/etc`、`/usr`、`/root`、`/var/lib/farrow` 等系统路径及与它们重叠的父子路径会被拒绝。
+`/`、`/etc`、`/usr`、`/root`、`/var/lib/barn` 等系统路径及与它们重叠的父子路径会被拒绝。
 修改持久盘身份或声明可能需要显式迁移；persistent 不表示任意新定义都能自动复用旧盘。
 
 **数据盘按可丢弃的测试存储处理。** `up` 会将无法识别或确认损坏的文件系统清空重建为
@@ -147,10 +146,10 @@ vm_disks:
 
 ## 目录共享
 
-**v0.8 与 0.9 候选版本的 macOS 限制：** Farrow 的目录身份保护共享方式尚不支持
+**macOS 限制：** Barn 的目录身份保护共享方式尚不支持
 macOS，配置了 `vm_shares` 的节点无法启动；候选版本还会在 `validate`、`plan` 时发出警告。新建 macOS 实验环境
 应先省略共享；完整共享支持仍待完成。修改已有节点的共享配置需要 `recreate`，会替换
-根盘，请先保留所需数据。Farrow 不会退回未经身份校验的宿主路径。
+根盘，请先保留所需数据。Barn 不会退回未经身份校验的宿主路径。
 
 ```yaml
 vm_shares:
@@ -161,17 +160,17 @@ vm_shares:
 
 `readonly` 默认为 `true`，每个节点最多八个共享。宿主与客机路径必须是规范绝对路径，
 不会展开 `~` 或相对路径。源目录必须已经存在、属于调用者，路径的任何分量都不能是
-符号链接，也不能与 `FARROW_HOME` 重叠。Linux 上请优先使用真实路径（`realpath /path/to/source`）；**0.9 候选版本**
+符号链接，也不能与 `BARN_HOME` 重叠。Linux 上请优先使用真实路径（`realpath /path/to/source`）；**0.9 候选版本**
 会在符号链接错误中提示应该填写的真实路径。
 
 同一节点内宿主源目录、客机目标目录均不得相互重叠；不同节点只有全部只读时才允许宿主
 源目录重叠。客机目标不能覆盖数据盘挂载点、保留系统路径或登录用户的 `.ssh` 目录。
 9p 只适合可信开发文件，不能放 PostgreSQL 数据。
-请求可写共享但客机无法写入时，Farrow 尝试只读访问并报告限制；修正权限后再次 `up`
-即可重试。Farrow 不会递归修改宿主文件的属主。
+请求可写共享但客机无法写入时，Barn 尝试只读访问并报告限制；修正权限后再次 `up`
+即可重试。Barn 不会递归修改宿主文件的属主。
 
-Farrow 0.8 的 `up`、`start` 会将源目录缺失的影响限制在对应节点，其余选中节点
-继续执行。恢复原目录或宿主挂载后，再重试该节点；Farrow 不会创建空目录代替。
+Barn 的 `up`、`start` 会将源目录缺失的影响限制在对应节点，其余选中节点
+继续执行。恢复原目录或宿主挂载后，再重试该节点；Barn 不会创建空目录代替。
 restart、reload、recreate 会在停止已有节点前校验源目录。
 
 ## 名称与地址
@@ -185,11 +184,11 @@ restart、reload、recreate 会在停止已有节点前校验源目录。
 `.9`–`.254`。
 
 Guest 内部，固定 IP 网卡就是承载 Inventory 地址的那块网卡（`ip -br addr`）；其名称不是
-Farrow 契约。
+Barn 契约。
 
 ## 漂移
 
-Farrow 对每个解析后节点计算哈希。新增主机由 `up` 创建；选中的已停止节点会启动，
+Barn 对每个解析后节点计算哈希。新增主机由 `up` 创建；选中的已停止节点会启动，
 运行中同伴保留进程，同时重试未完成的客机初始化。VM 定义变化需要节点级 recreate；删除主机条目只报告、绝不销毁。
 deployment 架构、用户或子网变化需要整体重建。`plan`/`up` 会把镜像选择器解析为精确镜像身份，
 因此 Catalog 更新后即使 Inventory 文本未改动，也应检查计划。修改用于派生节点名的字段会表现为旧节点

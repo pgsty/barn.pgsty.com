@@ -1,17 +1,17 @@
 ---
 title: "PID 不是虚拟机身份"
 linkTitle: "先证明身份，再处理 PID"
-description: "为什么 Farrow 在发送信号或删除任何东西前，必须让 QMP 身份、进程证据、类型化 Invocation 与 Journal 相互吻合。"
+description: "为什么 Barn 在发送信号或删除任何东西前，必须让 QMP 身份、进程证据、类型化 Invocation 与 Journal 相互吻合。"
 date: 2026-08-28T10:00:00+08:00
 weight: 40
 categories: [设计]
 tags: [QMP, 恢复, 安全]
 icon: fa-solid fa-fingerprint
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **2026-09-26 校准：** 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
+> **2026-09-29 更名：** Barn 0.9.0 尚未发布；本文名称已同步更新。2026-09-26 校准记录： 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
 > 边界见[当前状态](/zh/docs/about/status/)，不以本文日期代替发布或验收日期。
 
 Pidfile 只能回答一个问题：写入文件时，某个进程使用了哪个整数。它不能证明进程仍然存活，
@@ -20,17 +20,17 @@ Pidfile 只能回答一个问题：写入文件时，某个进程使用了哪个
 
 这些证据不足以授权 `SIGKILL`，更不足以授权删除 Root Disk。
 
-Farrow 把身份视为一条由独立证据组成的链。每一环承担不同职责；只有操作所需的证据全部一致，
+Barn 把身份视为一条由独立证据组成的链。每一环承担不同职责；只有操作所需的证据全部一致，
 破坏性动作才可以继续。
 
 ## QMP 是主要运行时身份
 
-每台 VM 都有生成的 UUID 与预期 QEMU Name。启动后，Farrow 连接 QEMU Machine Protocol
+每台 VM 都有生成的 UUID 与预期 QEMU Name。启动后，Barn 连接 QEMU Machine Protocol
 Socket，并向 QEMU 查询这两个字段。仅仅因为进程启动命令返回，或某条 Socket 路径出现，并不
 代表 VM 已经启动；QMP 必须报告预期 Name 与 UUID。
 
 同一检查也保护关机。如果 QMP Endpoint 返回另一个 Name 或 UUID，它不会被解释成“大概就是
-旧 VM”，而是明确的身份不匹配；Farrow 不会通过它发送任何命令。
+旧 VM”，而是明确的身份不匹配；Barn 不会通过它发送任何命令。
 
 QMP 同时提供干净关机路径：请求 Guest Powerdown，等待 Guest；若有界 Graceful Wait 到期，再
 要求 QEMU Quit。进程信号只是备用工具，不是主要生命周期 API。
@@ -41,7 +41,7 @@ QMP 同时提供干净关机路径：请求 Guest Powerdown，等待 Guest；若
 
 ## 进程身份封住备用路径的缺口
 
-Crash、Runtime Directory 损坏或半完成关机都可能让 QMP 不可用。为此 Farrow 会记录一组
+Crash、Runtime Directory 损坏或半完成关机都可能让 QMP 不可用。为此 Barn 会记录一组
 进程身份：
 
 - PID；
@@ -49,16 +49,16 @@ Crash、Runtime Directory 损坏或半完成关机都可能让 QMP 不可用。�
 - 进程启动时间；
 - 实际命令行的 SHA-256。
 
-完整的类型化 QEMU Invocation 与它一同保存。发送 `SIGTERM` 前，Farrow 会重新读取活进程，
+完整的类型化 QEMU Invocation 与它一同保存。发送 `SIGTERM` 前，Barn 会重新读取活进程，
 要求整组身份完全匹配；升级到 `SIGKILL` 前还会再次捕获，专门封住有界 TERM 等待期间产生的
 PID 复用窗口。
 
-如果 QMP 仍然可用但某项 QMP 操作失败，Farrow 不会绕开活控制平面直接发信号；如果 QMP
+如果 QMP 仍然可用但某项 QMP 操作失败，Barn 不会绕开活控制平面直接发信号；如果 QMP
 报告另一个身份，它会停止；如果进程元组无法验证，它也会停止。“无法证明”本身就是结果，
 不是降低检查强度的理由。
 
 **未发布的 0.9 候选更新：** QMP 不可用、且记录的 PID 已被明确证明属于无关进程时，
-Farrow 把旧 VM 视为已停止，绝不会向那个无关进程发送信号。这与身份不可读或有歧义不同，
+Barn 把旧 VM 视为已停止，绝不会向那个无关进程发送信号。这与身份不可读或有歧义不同，
 后两种情况仍会阻止操作。
 
 ## Journal 描述 State 提交前的工作
@@ -66,7 +66,7 @@ Farrow 把旧 VM 视为已停止，绝不会向那个无关进程发送信号。
 Committed Node State 无法描述创建的最早阶段：Disk 与 Seed 必须先存在，VM 才能启动；进程
 必须先启动，身份才能提交。若 CLI 在这个间隔 Crash，就可能留下没有可信 Owner 的工件。
 
-Farrow 会先写一份 `0600` Prepare Journal，其中包含：
+Barn 会先写一份 `0600` Prepare Journal，其中包含：
 
 - Operation UUID 与 VM UUID；
 - Node Name 与 Resolved-spec Hash；

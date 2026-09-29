@@ -1,6 +1,6 @@
 ---
 title: Design
-description: Farrow's one-deployment architecture, networking, state, and safety boundaries.
+description: Barn's one-deployment architecture, networking, state, and safety boundaries.
 weight: 10
 icon: fa-solid fa-compass-drafting
 aliases: [/docs/concepts/, /docs/concepts/networking/, /docs/concepts/storage/, /docs/concepts/safety/, /docs/architecture/, /docs/architecture/overview/, /docs/architecture/networking/, /docs/architecture/security/]
@@ -8,18 +8,18 @@ aliases: [/docs/concepts/, /docs/concepts/networking/, /docs/concepts/storage/, 
 
 ## One useful abstraction
 
-Farrow boots one Pigsty Inventory as one local QEMU deployment. It deliberately
+Barn boots one Pigsty Inventory as one local QEMU deployment. It deliberately
 has no project marker, project registry, lease model, provider layer, or
 second configuration format.
 
-State lives under `FARROW_HOME` (default `~/.farrow`) for one Unix user. The
+State lives under `BARN_HOME` (default `~/.barn`) for one Unix user. The
 product assumes one active
 Pigsty deployment per computer; this is not a root-enforced cross-user
 singleton.
 
 ## Node-level convergence
 
-Farrow extracts only the documented VM and Pigsty-native fields, computes
+Barn extracts only the documented VM and Pigsty-native fields, computes
 per-node hashes, and keeps applied state plus process identity. Additions are
 incremental. Changes require an
 explicit per-node recreate. `up` also starts selected existing stopped nodes;
@@ -37,7 +37,7 @@ image/host incompatibility selects a fixed TCG profile; there is no user
 accelerator argument and no arbitrary failure fallback.
 
 The effective architecture and accelerator are persisted in each QEMU
-invocation and exposed by `status`. Before destructive recreate, Farrow proves
+invocation and exposed by `status`. Before destructive recreate, Barn proves
 the selected QEMU binary and version, network backend, image bytes, boot mode,
 and firmware. A later binary changing runtime policy cannot mix new nodes with
 old invocations: runtime drift requires whole-deployment recreation.

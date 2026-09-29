@@ -1,6 +1,6 @@
 ---
 title: 设计
-description: Farrow 的单 deployment 架构、网络、状态与安全边界。
+description: Barn 的单 deployment 架构、网络、状态与安全边界。
 weight: 10
 icon: fa-solid fa-compass-drafting
 aliases: [/docs/concepts/, /docs/concepts/networking/, /docs/concepts/storage/, /docs/concepts/safety/, /docs/architecture/, /docs/architecture/overview/, /docs/architecture/networking/, /docs/architecture/security/]
@@ -8,15 +8,15 @@ aliases: [/docs/concepts/, /docs/concepts/networking/, /docs/concepts/storage/, 
 
 ## 一个有用的抽象
 
-Farrow 把一份 Pigsty Inventory 启动成一套本地 QEMU deployment。它刻意不再拥有
+Barn 把一份 Pigsty Inventory 启动成一套本地 QEMU deployment。它刻意不再拥有
 project marker、项目注册表、租约模型、Provider Layer 或第二种配置格式。
 
-状态位于当前 Unix 用户的 `FARROW_HOME`（默认 `~/.farrow`）。产品假设每台电脑只有一套运行中的 Pigsty；
+状态位于当前 Unix 用户的 `BARN_HOME`（默认 `~/.barn`）。产品假设每台电脑只有一套运行中的 Pigsty；
 这并不是 root 强制的跨用户单例。
 
 ## 节点级收敛
 
-Farrow 只提取已记录的 VM 与 Pigsty 原生字段，计算逐节点哈希，并保存应用状态与完整
+Barn 只提取已记录的 VM 与 Pigsty 原生字段，计算逐节点哈希，并保存应用状态与完整
 进程身份。新增节点增量创建；`up` 也会启动选中的已停止节点，保留运行中同伴的进程，
 同时重试未完成的初始化、刷新托管 hosts 与 SSH 配置。无法识别或确认损坏的测试数据
 文件系统可能被清空重建，包括持久盘，详见[数据盘](../../reference/configuration/#数据盘)。
@@ -30,7 +30,7 @@ Guest 架构是部署级期望状态。省略或 `native` 跟随宿主；显式 
 因任意原生失败静默回退。
 
 实际架构与加速器保存在每个 QEMU Invocation 中，并通过 `status` 展示。执行破坏性
-recreate 前，Farrow 会证明所选 QEMU 二进制与版本、网络后端、镜像字节、启动模式与固件。
+recreate 前，Barn 会证明所选 QEMU 二进制与版本、网络后端、镜像字节、启动模式与固件。
 以后若新二进制改变运行时策略，也不能把新旧节点混跑：Runtime Drift 必须整体重建。
 
 ## 双网卡与一个固定子网

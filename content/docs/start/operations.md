@@ -6,28 +6,27 @@ icon: fa-solid fa-gears
 aliases: [/docs/start/lifecycle/, /docs/start/provisioning/]
 ---
 
-The normal lifecycle below applies to the public 0.8.0 release. Sections marked
-**0.9 candidate** describe the unreleased source tree reviewed on 2026-09-26;
-see [Status](../../about/status/) for the release boundary.
+This guide describes the **Barn 0.9.0 release candidate**. See
+[Status](../../about/status/) for the publication and validation boundary.
 
 ## Inspect and access
 
 ```bash
-farrow status
-farrow ssh meta
-farrow exec node-1 -- hostname
-farrow logs meta --source serial
+barn status
+barn ssh meta
+barn exec node-1 -- hostname
+barn logs meta --source serial
 ```
 
-Applied state is under `~/.farrow` by default (`FARROW_HOME` overrides it); these
+Applied state is under `~/.barn` by default (`BARN_HOME` overrides it); these
 commands work from any directory. Changing the working directory does not create
 a separate deployment.
 Status shows images and resources; `--verbose` adds architecture, accelerator,
 SSH ports, and PID. TCG is marked in ordinary output, and a degraded node does
 not hide its peers.
-`farrow up` rebuilds the default SSH aliases from the complete applied
+`barn up` rebuilds the default SSH aliases from the complete applied
 deployment after the selected VMs are started, so a scoped `up` never drops
-unselected peers and plain `ssh meta` just works; `farrow ssh-config --install`
+unselected peers and plain `ssh meta` just works; `barn ssh-config --install`
 rewrites it by hand if you ever need to.
 `plan`, `up`, `reload`, and `recreate` prefer `-f`, then a discovered
 Inventory, then the applied spec when no file exists. `validate` always needs
@@ -42,10 +41,10 @@ filesystems may be reset, including persistent disks; see
 ## Stop and start
 
 ```bash
-farrow stop
-farrow start
-farrow restart node-1
-farrow reload -f farrow.yml       # read/check config, stop, then converge
+barn stop
+barn start
+barn restart node-1
+barn reload -f barn.yml       # read/check config, stop, then converge
 ```
 
 `start` powers on stopped VMs and re-checks readiness of running ones. Both
@@ -53,16 +52,16 @@ farrow reload -f farrow.yml       # read/check config, stop, then converge
 reassigned automatic ports. `reload` reads the Inventory and checks drift and startup dependencies before
 stopping selected nodes and following the full `up` path.
 
-Starting commands also refresh Farrow hosts and control-node SSH entries in
+Starting commands also refresh Barn hosts and control-node SSH entries in
 running guests. `--no-wait` skips readiness, guest recovery, and this refresh; run `up` later
 to finish them.
 
 ## Change the deployment
 
 ```bash
-farrow plan
-farrow up                         # create/start selected nodes and install SSH aliases
-farrow recreate node-1            # applies a changed VM definition
+barn plan
+barn up                         # create/start selected nodes and install SSH aliases
+barn recreate node-1            # applies a changed VM definition
 ```
 
 `recreate` and `destroy` ask you to type the confirmation word on a terminal;
@@ -79,8 +78,8 @@ Inventory changes appear in these fields:
 
 | Field | Meaning | Action |
 |---|---|---|
-| `create` | desired node has no state | `farrow up` |
-| `recreate` | VM definition changed | `farrow recreate <node>` |
+| `create` | desired node has no state | `barn up` |
+| `recreate` | VM definition changed | `barn recreate <node>` |
 | `missing` | stateful node left the file | restore it, or destroy it explicitly |
 
 Deleting YAML never deletes a VM. Unconsumed Pigsty changes produce
@@ -90,7 +89,7 @@ fragment as well.
 
 ## Concurrent commands (0.9 candidate)
 
-Deployment mutations wait behind another Farrow operation for up to ten
+Deployment mutations wait behind another Barn operation for up to ten
 minutes, bounded by the command's own deadline. The waiting message identifies
 the command, PID, and start time. A lock timeout returns exit 4, JSON
 `error: conflict`, and `reason: deployment_busy`; retry after the holder finishes.
@@ -108,20 +107,20 @@ operations and [Automation](../automation/) for scriptable results.
 ## Destroy
 
 ```bash
-farrow destroy node-3
-farrow destroy
-farrow destroy --delete-persistent
-farrow destroy --purge
-farrow purge                         # discard everything without confirmation
+barn destroy node-3
+barn destroy
+barn destroy --delete-persistent
+barn destroy --purge
+barn purge                         # discard everything without confirmation
 ```
 
 `--delete-persistent` and `--purge` are valid only for whole-deployment
 destroy, not with node selectors. `--purge` removes persistent disks, keys,
 and deployment state; images remain cached. Node destroy refreshes the SSH
-fragment for remaining peers, while whole destroy removes the default Farrow
+fragment for remaining peers, while whole destroy removes the default Barn
 SSH integration. Host network removal is separate and refuses while a VM is attached.
 
-`farrow purge` is the concise disposable-lab path. It is
+`barn purge` is the concise disposable-lab path. It is
 equivalent to `destroy --force --purge` for an existing deployment, accepts no
 node selectors, and is
 idempotent when no deployment exists. It keeps the image cache and host
@@ -133,7 +132,7 @@ deployment state is gone but owned persistent disks remain, use `purge`;
 The old `rm` alias has been removed; spell out `purge`.
 
 ```bash
-farrow network uninstall --yes
+barn network uninstall --yes
 ```
 
 See [Image Repositories](../images/) for image selection, mirrors, and cache

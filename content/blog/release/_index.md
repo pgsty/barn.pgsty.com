@@ -1,7 +1,7 @@
 ---
 title: Release Notes
 linkTitle: Release
-description: Current Farrow releases plus preserved pre-rename development records.
+description: Current Barn releases plus preserved pre-rename development records.
 weight: 30
 icon: fa-solid fa-clipboard-list
 sidebar_root_menu: false
@@ -12,6 +12,6 @@ cascade:
 ---
 
 > [!IMPORTANT]
-> Farrow is pre-1.0. Versioned release notes appear alongside preserved
-> Piglet development records; historical entries do not establish support for
-> current Farrow bytes.
+> Barn is pre-1.0. Versioned release notes appear alongside preserved
+> Farrow release and Piglet development records; historical entries do not establish support for
+> current Barn bytes.

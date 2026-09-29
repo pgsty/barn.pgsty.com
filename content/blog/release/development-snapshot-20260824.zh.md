@@ -10,8 +10,8 @@ icon: fa-solid fa-flask
 ---
 
 > [!CAUTION]
-> Farrow 之前的历史记录。本页名称、命令、路径、Hash 与结论只描述前任快照；当前行为以
-> [Farrow 状态](/zh/docs/about/status/)和使用指南为准。
+> Barn 之前的历史记录。本页名称、命令、路径、Hash 与结论只描述前任快照；当前行为以
+> [Barn 状态](/zh/docs/about/status/)和使用指南为准。
 
 Piglet 的 2026-08-24 源码快照已经远不止最初的 QEMU Spike。它现在提供一套连贯本地 VM 产品：
 零配置 Quick、固定地址私有实验室、13 份 Piglet 自有 Profile、可审计 Pigsty Inventory 边界、
@@ -20,7 +20,7 @@ Piglet 的 2026-08-24 源码快照已经远不止最初的 QEMU Spike。它现�
 它仍是开发快照，不是稳定 Release。
 
 > [!NOTE]
-> 本页是 2026-08-24 历史快照。后续前任候选另行归档；两者都不是当前 Farrow Release 证据。
+> 本页是 2026-08-24 历史快照。后续前任候选另行归档；两者都不是当前 Barn Release 证据。
 
 > [!WARNING]
 > 当前没有公开 v1.0 Tag、生产签名 Artifact、Homebrew Tap 或 DEB/RPM 仓库。所有内置镜像记录

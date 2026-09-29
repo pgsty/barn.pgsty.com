@@ -1,7 +1,7 @@
 ---
-title: Farrow blog
+title: Barn blog
 linkTitle: Blog
-description: Current Farrow notes and preserved pre-Farrow records.
+description: Current Barn notes and preserved pre-Barn records.
 weight: 60
 icon: fa-solid fa-newspaper
 sidebar_root_menu: false

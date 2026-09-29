@@ -1,26 +1,24 @@
 ---
 title: 从源码构建
-description: 为开发与审查构建 Farrow，并运行完整源码检查。
+description: 为开发与审查构建 Barn，并运行完整源码检查。
 weight: 50
 icon: fa-solid fa-code-branch
 ---
 
-普通用户应优先使用公开 Release 的 Archive 或系统软件包。截至 2026-09-26，公开版本为
-**0.8.0**；由于 Farrow 仍是 pre-1.0，它在 GitHub 上标记为预发布。本次审核的本地
-`b91ec37` 是**尚未发布的 0.9 候选源码**，不能作为可安装的 0.9 Release。
-详见[当前状态](../../about/status/)。
+Barn 0.9.0 目前是**尚未发布的候选版本**。本页用于从包含改名变更的源码构建与检查；
+正式发布后的安装方式见[快速上手](../tutorial/)。
 
 ## 选择源码
 
-在新目录重现公开发行版：
+使用已经包含 Barn 改名变更的工作区。在源码推送到公开仓库后，也可以克隆：
 
 ```bash
-git clone --branch v0.8.0 --depth 1 https://github.com/pgsty/farrow.git farrow-0.8.0
-cd farrow-0.8.0
+git clone https://github.com/pgsty/barn.git
+cd barn
 ```
 
-要审核候选版行为，需要使用实际包含候选提交的工作区。审核当日，新克隆的公开 `main`
-并不包含 `b91ec37`，也不能通过获取不存在的 0.9 Tag 得到它。构建前先核对源码身份：
+尚未发布时不要假定 `v0.9.0` Tag 已存在。构建前核对源码身份与工作区变更，
+确认 `go.mod` 的模块为 `github.com/pgsty/barn`，命令目录为 `cmd/barn`：
 
 ```bash
 git log -1 --oneline
@@ -36,21 +34,21 @@ Git、Make、Bash 与标准构建工具。运行 VM 才需要 QEMU 与特权网�
 ```bash
 make build
 export PATH="$PWD/bin:$PATH"
-farrow version
+barn version
 ```
 
-`make build` 在被 Git 忽略的 `bin/` 下生成同一次构建配套的 `farrow` 与
-`farrow-hosts-helper`。不要混用来自不同 Commit 或不同 Release 的两个二进制。开发
+`make build` 在被 Git 忽略的 `bin/` 下生成同一次构建配套的 `barn` 与
+`barn-hosts-helper`。不要混用来自不同 Commit 或不同 Release 的两个二进制。开发
 构建默认显示 `dev`；Commit 字段显示干净源码的提交，工作区有变更时显示 `uncommitted`。
 不能只凭版本字符串判断是否包含候选功能。
 
-将 Inventory 保存在单独的实验目录。这不会隔离 Farrow 状态；已有 deployment 时，
+将 Inventory 保存在单独的实验目录。这不会隔离 Barn 状态；已有 deployment 时，
 应先检查该部署，再运行 `up`：
 
 ```bash
-mkdir -p ~/farrow-lab && cd ~/farrow-lab
-farrow setup
-farrow up
+mkdir -p ~/barn-lab && cd ~/barn-lab
+barn setup
+barn up
 ```
 
 ## 完整检查

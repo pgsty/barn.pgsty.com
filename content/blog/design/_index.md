@@ -1,16 +1,16 @@
 ---
 title: Design Notes
 linkTitle: Design
-description: Architecture decisions, trade-offs, and implementation boundaries behind Farrow.
+description: Architecture decisions, trade-offs, and implementation boundaries behind Barn.
 weight: 20
 icon: fa-solid fa-pen-ruler
 sidebar_root_menu: false
 sidebar_expanded: true
 blog_index: list
-lastmod: 2026-09-26
+lastmod: 2026-09-29
 ---
 
-Farrow's source repository once carried the redesign brief, implementation
+Barn's source repository once carried the redesign brief, implementation
 ADRs, and native evidence beside the code. That material was useful while the
 product was changing quickly, but many early decisions were later superseded.
 This section keeps the durable reasoning, rewritten against the current source
@@ -18,7 +18,7 @@ instead of republishing stale plans.
 
 Start with the product model, then follow the boundaries outward:
 
-1. [Why Farrow has no projects](one-deployment-no-projects/) — one Inventory,
+1. [Why Barn has no projects](one-deployment-no-projects/) — one Inventory,
    one owner-scoped deployment, and no second source of truth.
 2. [Why every node has two NICs](fixed-ip-two-nics/) — fixed identity for the
    lab, separate from management egress.
@@ -36,5 +36,6 @@ explain why those contracts exist; they do not turn a design, build, or local
 test into release evidence.
 
 These articles retain their original publication dates and were last reviewed
-against source on **2026-09-26**. Changes specific to an unreleased candidate
+against source on **2026-09-26**, with names updated for the Barn 0.9.0 candidate
+on **2026-09-29**. Changes specific to an unreleased candidate
 are marked separately; historical verification keeps its original date and scope.
