@@ -9,12 +9,20 @@ aliases: [/docs/start/installation/, /docs/start/upgrade/, /docs/start/lab/, /do
 
 ## 安装
 
-本教程以 **Barn 0.9.0 发布候选**为准。当前请先[从源码构建](../source-build/)；
-以下发行包和 Homebrew 命令在 0.9.0 发布、Formula 更新之后使用，不能把文档中的链接
-当作已经发布的证明。进度见[当前状态](../../about/status/#documentation-baseline)。
+通过 Homebrew 安装当前的 Barn 0.9.0 开发版：
 
-0.9.0 发布后，用户级安装器支持 macOS/Linux 的 arm64/amd64，校验归档摘要，
-安装自身无需 sudo：
+```bash
+brew install --HEAD pgsty/infra/barn
+barn version
+```
+
+[Homebrew Formula](https://github.com/pgsty/homebrew-infra/blob/main/Formula/barn.rb)
+会从主分支源码构建 CLI 与 hosts 文件 helper。也可以[手动从源码构建](../source-build/)。
+
+### 发行包
+
+0.9.0 发行包尚未发布。发布后，用户级安装器支持 macOS/Linux 的 arm64/amd64，
+校验归档摘要，安装自身无需 sudo：
 
 ```bash
 curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.0/install.sh
@@ -30,17 +38,9 @@ barn version
 
 下载问题见[下载与 PATH](../troubleshooting/#下载与-path-问题)。
 
-### 其他安装方式
+发布时还会提供 DEB 与 RPM 包。以下示例使用 amd64；ARM64 使用对应的 `linux_arm64` 文件。
 
-发行包与 [Homebrew Formula](https://github.com/pgsty/homebrew-infra/blob/main/Formula/barn.rb)
-就绪后，选择一种方式。以下 Linux 示例使用 amd64；ARM64 使用对应的 `linux_arm64` 文件。
-
-```bash {tab="Homebrew" group="install" value="brew"}
-brew install pgsty/infra/barn
-barn version
-```
-
-```bash {tab="Debian / Ubuntu" value="deb"}
+```bash {tab="Debian / Ubuntu" group="install" value="deb"}
 barn_release=https://github.com/pgsty/barn/releases/download/v0.9.0
 curl -fLO "$barn_release/barn_0.9.0_linux_amd64.deb"
 sudo apt install ./barn_0.9.0_linux_amd64.deb
@@ -266,4 +266,5 @@ barn destroy
 数据盘与宿主网络保留。彻底清理见[卸载与清理环境](../uninstall/)；重启、日志、显式变更与
 缩容见[日常管理](../operations/)。
 
-`barn update` 只更新镜像 Catalog。安装 Barn 程序请使用本页开头的源码构建或发行包安装方式。
+`barn update` 只更新镜像 Catalog。安装 Barn 程序请使用本页开头的 Homebrew 或源码构建方式；
+发行包将在 0.9.0 发布后提供。

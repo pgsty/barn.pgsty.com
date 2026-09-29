@@ -9,13 +9,22 @@ aliases: [/docs/start/installation/, /docs/start/upgrade/, /docs/start/lab/, /do
 
 ## Install
 
-This tutorial targets the **Barn 0.9.0 release candidate**. For now,
-[build from source](../source-build/). The package and Homebrew commands below
-apply after 0.9.0 is published and the formula is updated; these links do not
-establish publication. See [Status](../../about/status/#documentation-baseline).
+Install the current Barn 0.9.0 development version with Homebrew:
 
-After publication, the user-scoped installer supports macOS and Linux on
-arm64 and amd64, verifies the archive checksum, and needs no sudo to install:
+```bash
+brew install --HEAD pgsty/infra/barn
+barn version
+```
+
+The [Homebrew formula](https://github.com/pgsty/homebrew-infra/blob/main/Formula/barn.rb)
+builds the CLI and hosts-file helper from the main branch. You can also
+[build from source](../source-build/) manually.
+
+### Release packages
+
+The 0.9.0 release packages are not published yet. Once available, the
+user-scoped installer supports macOS and Linux on arm64 and amd64,
+verifies the archive checksum, and needs no sudo to install:
 
 ```bash
 curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.0/install.sh
@@ -32,18 +41,10 @@ excludes prereleases from `/releases/latest`, so specify `BARN_VERSION=0.9.0`.
 See [Download and PATH problems](../troubleshooting/#download-and-path-problems)
 if downloads fail.
 
-### Other installation methods
+DEB and RPM packages will also be available with the release. The examples
+below use amd64; use the corresponding `linux_arm64` asset on ARM64 Linux.
 
-Once the release assets and [Homebrew formula](https://github.com/pgsty/homebrew-infra/blob/main/Formula/barn.rb)
-are available, choose one method. The Linux examples use amd64 packages;
-use the corresponding `linux_arm64` asset on ARM64 Linux.
-
-```bash {tab="Homebrew" group="install" value="brew"}
-brew install pgsty/infra/barn
-barn version
-```
-
-```bash {tab="Debian / Ubuntu" value="deb"}
+```bash {tab="Debian / Ubuntu" group="install" value="deb"}
 barn_release=https://github.com/pgsty/barn/releases/download/v0.9.0
 curl -fLO "$barn_release/barn_0.9.0_linux_amd64.deb"
 sudo apt install ./barn_0.9.0_linux_amd64.deb
@@ -299,4 +300,5 @@ remain. See [Uninstall and Clean Up](../uninstall/) for complete disposal, or
 [Daily Operations](../operations/) for restart, logs, explicit changes, and scale-in.
 
 `barn update` refreshes the image Catalog. To install the Barn application,
-use the source build or release installation method described at the top.
+use Homebrew or the source build described at the top; release packages
+will be available after 0.9.0 is published.
