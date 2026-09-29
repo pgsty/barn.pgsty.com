@@ -55,7 +55,7 @@ the installer before the Release was made public.
 The new first-run path (`up` running `setup`) is covered by unit tests and was
 not replayed on a fresh host before this release. The dated macOS arm64/HVF and
 Ubuntu amd64/KVM evidence remains listed on the
-[Status](../../docs/about/status/) page; source, package, release, and
+[Status](../../../docs/about/status/) page; source, package, release, and
 native-host evidence remain separate gates.
 
 ## Install or upgrade

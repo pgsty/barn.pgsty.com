@@ -17,8 +17,8 @@ planning, starting, expanding, and rebuilding a local Pigsty lab.
 - **Ubuntu 24.04 by default.** New inventories and the embedded catalog use
   `u24:stable`. Catalog revision `2026090501` also includes the Debian 12/13
   and Rocky Linux 8/9 updates already available in the official repositories.
-- **Useful plans before setup.** `plan` works without QEMU or host networking
-  installed and shows exact image versions, resource totals, pending starts,
+- **Useful plans before setup.** `plan` for Catalog images works without QEMU or host networking
+  installed (registered `local-*` images still need `qemu-img` cache validation) and shows exact image versions, resource totals, pending starts,
   changed fields, disk effects, and commands that retain custom `-f` paths.
 - **Readable status and errors.** Status shows images, CPU, and memory; one
   damaged node no longer hides healthy peers. Corrupt state names the actual

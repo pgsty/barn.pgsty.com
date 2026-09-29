@@ -9,6 +9,9 @@ aliases: [/docs/start/installation/, /docs/start/upgrade/, /docs/start/lab/, /do
 
 ## 安装
 
+本教程面向公开版 **0.8.0**。命令行参考还会说明尚未发布的 0.9 变化，
+并明确标注；详见[版本基线](../../about/status/#documentation-baseline)。
+
 当前公开版本为 [Farrow 0.8.0](https://github.com/pgsty/farrow/releases/tag/v0.8.0)，
 在 GitHub 上标记为 **Pre-release**。用户态安装器支持 macOS / Linux 的 arm64 与 amd64，
 会校验归档的 Checksum，安装过程无需 sudo：
@@ -53,6 +56,8 @@ farrow version
 ```
 
 开发者可使用[从源码构建](../source-build/)。
+
+当前支持 Linux 客机。下表中的 macOS 指运行 Farrow 的宿主，不表示提供 macOS 客机镜像。
 
 ### 宿主要求
 
@@ -150,7 +155,8 @@ farrow plan
 farrow up
 ```
 
-`init`、`validate`、`plan` 都不要求先安装 QEMU 或配置宿主网络。默认 `meta` 配置为：
+对于本文使用的 Catalog 镜像，`init`、`validate`、`plan` 都不要求先安装 QEMU
+或配置宿主网络。规划已注册的 `local-*` 镜像时，则需要 `qemu-img` 校验缓存字节。默认 `meta` 配置为：
 
 ```yaml
 all:
@@ -198,6 +204,7 @@ farrow up --json
 
 `setup --yes` 本身就能生成配置，只有需要预先编辑时才必须单独 `init`。自动化环境仍需为
 必要的 sudo 操作准备凭据；`--yes` 不会提供管理员凭据。
+[自动化教程](../automation/)说明如何保存命令结果、检查客机限制后再继续。
 
 ### 使用现有 Pigsty 配置
 
@@ -210,6 +217,8 @@ farrow up -f pigsty.yml
 Farrow 读取已记录的 VM、命名与登录字段，其余 Pigsty 参数保持原样。以上步骤启动虚拟机；
 PostgreSQL 与其他 Pigsty 服务仍需通过 Pigsty 单独安装。内置模板只描述 VM 拓扑，
 不包含完整的 Pigsty 服务配置。
+衔接方式见[自动化与客机脚本](../automation/#与-pigsty-一起使用)，
+文件传输与服务连接见[存储与访问](../storage/)。
 
 ## 扩容与日常操作
 

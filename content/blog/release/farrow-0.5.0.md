@@ -9,6 +9,11 @@ tags: [Farrow 0.5.0, QEMU, Images, Supply Chain, Release]
 icon: fa-solid fa-rocket
 ---
 
+> [!NOTE]
+> This page describes 0.5.0. Official mirror failover was added in 0.7.0,
+> and the unreleased 0.9 candidate removes the `rm` alias. Use
+> [current CLI guidance](../../../docs/reference/cli/) for your installed version.
+
 Farrow 0.5.0 was the public pre-1.0 release superseded by 0.6.0. It adds an explicit command
 for disposable labs, makes repository geography an operator choice, and adds a
 reproducible path for preparing the next official guest images. The Pigsty

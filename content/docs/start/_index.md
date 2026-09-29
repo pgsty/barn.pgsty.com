@@ -34,3 +34,9 @@ Everything else is separated by task:
    PATH setup.
 5. [Uninstall and Clean Up](uninstall/) — remove the deployment, images,
    networking, and state.
+6. [Automation and Guest Scripts](automation/) — unattended setup, JSON acceptance,
+   repeatable guest commands, and the Pigsty handoff.
+7. [Storage and Access](storage/) — disk retention, file transfer, SSH tunnels,
+   and Linux directory sharing.
+8. [macOS Virtual Machines](macos/) — unreleased `farrow mac`: macOS 27 guests
+   on Apple Silicon with desktop, SSH, shared folders, and clipboard.

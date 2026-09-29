@@ -50,7 +50,7 @@ entry_points:
   columns: 3
   link_label: 打开
   items:
-    - { title: 开始使用, meta: 启动与连接, icon: fa-solid fa-rocket, desc: 快速上手，以及按需阅读的管理、排障、镜像、构建与清理。, url: docs/start/ }
+    - { title: 开始使用, meta: 启动与连接, icon: fa-solid fa-rocket, desc: 快速上手，以及管理、自动化、存储、排障、镜像与清理教程。, url: docs/start/ }
     - { title: 参考, meta: 准确契约, icon: fa-solid fa-code, desc: Inventory 变量、命令、参数、输出与退出码。, url: docs/reference/ }
     - { title: 关于, meta: 设计与证据, icon: fa-solid fa-circle-info, desc: 简化模型、真机矩阵、限制与发布门禁。, url: docs/about/ }
     - { title: 快速上手, meta: 一台扩到四台, icon: fa-solid fa-play, desc: 用 up 启动、用 ssh 进入，再通过同一份配置增量扩容。, url: docs/start/tutorial/ }

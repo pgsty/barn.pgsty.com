@@ -32,12 +32,15 @@ If you installed a custom fragment name or `/etc/hosts` entries:
 
 ```bash
 farrow ssh-config --remove --name lab
-farrow hosts uninstall
+farrow hosts uninstall --json
 farrow hosts uninstall --yes
 ```
 
-The first `hosts uninstall` only shows the marker-owned plan. Apply the second
-command after confirming its exact target.
+Without `--yes`, the `--json` command only shows the marker-owned plan. Apply
+the `--yes` command after checking its target. In the unreleased 0.9 candidate,
+ordinary terminal output asks `[y/N]` and applies removal after confirmation;
+in 0.8.0 it only plans. The candidate reads the hosts plan without sudo; applying
+the change still needs privilege.
 
 ## 3. Remove cached images
 
@@ -46,18 +49,22 @@ farrow image prune --dry-run
 farrow image prune --yes
 ```
 
-Prune removes only images not referenced by applied deployment state and stale
-staging files.
+Prune removes unreferenced cached images and stale staging files. It protects
+images referenced by deployment state, the active Catalog, and registered local
+aliases, so it is not a complete cache wipe. The optional final state-directory
+cleanup below removes the remaining cache too.
 
 ## 4. Uninstall host networking
 
 ```bash
-farrow network uninstall
+farrow network uninstall --json
 farrow network uninstall --yes
 ```
 
-The first command only shows the owned removal plan. Uninstall refuses to run
-while any VM remains attached.
+The first JSON command only shows the owned removal plan, although sudo may
+be needed to read protected network state. Uninstall refuses while any VM
+remains attached. The network is shared across users; removing your deployment
+does not establish that another user's VMs have stopped.
 
 ## 5. Clean up a source setup
 
@@ -73,14 +80,23 @@ With the default state directory, and only after every earlier step succeeds,
 remove the remaining state:
 
 ```bash
-farrow_state_root="$(cd "$HOME" && pwd -P)/.farrow"
-printf 'removing exact state root: %s\n' "$farrow_state_root"
-test "$(basename "$farrow_state_root")" = '.farrow'
-find "$farrow_state_root" -depth -delete
+(
+  set -eu
+  test -z "${FARROW_HOME:-}"
+  farrow_state_root="$(cd "$HOME" && pwd -P)/.farrow"
+  test ! -L "$farrow_state_root"
+  if test -d "$farrow_state_root"; then
+    printf 'removing exact state root: %s\n' "$farrow_state_root"
+    find "$farrow_state_root" -depth -delete
+  fi
+)
 ```
 
-Never substitute `$HOME`, `/`, a workspace root, or an unverified custom
-`FARROW_HOME` as that deletion target.
+This snippet stops if `FARROW_HOME` is set or the default path is a symlink.
+Review a custom state directory separately; never substitute `$HOME`, `/`, a
+workspace root, or an unverified path. After deletion, avoid running lifecycle
+commands just to check that the directory is gone: they may recreate lock
+directories.
 
 QEMU may be shared by other tools, so keep it by default. On macOS, remove it
 only when nothing else needs it:
@@ -89,13 +105,17 @@ only when nothing else needs it:
 brew uninstall qemu
 ```
 
-Verify the reset:
+Verify network removal and the default state directory:
 
 ```bash
-farrow st || true
-ifconfig bridge100 2>/dev/null || echo 'no Farrow bridge'
+farrow network status --json
 test ! -e "$HOME/.farrow" && echo 'no Farrow state'
 ```
+
+An uninstalled network is expected to report an absent/not-ready finding;
+inspect the result rather than requiring a zero exit code. Do not use
+`bridge100` disappearing as proof: macOS chooses its bridge name and may use
+other vmnet bridges for unrelated software.
 
 Remove an Archive, Homebrew, DEB, or RPM binary through its installation
 channel. The `bin/` directory from a source build is only a checkout artifact,

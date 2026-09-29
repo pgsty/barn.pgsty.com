@@ -9,6 +9,10 @@ aliases: [/docs/start/installation/, /docs/start/upgrade/, /docs/start/lab/, /do
 
 ## Install
 
+This tutorial targets the public **0.8.0** release. The CLI reference also
+documents explicitly marked, unreleased 0.9 changes; see the
+[version baseline](../../about/status/#documentation-baseline).
+
 The current public version is [Farrow 0.8.0](https://github.com/pgsty/farrow/releases/tag/v0.8.0),
 marked **Pre-release** on GitHub. The user-scoped installer supports macOS and
 Linux on arm64 and amd64, verifies the archive checksum, and needs no sudo:
@@ -55,6 +59,9 @@ farrow version
 ```
 
 For development, see [Build from Source](../source-build/).
+
+The supported guests are Linux images. macOS in the host table below describes
+the machine running Farrow, not a macOS guest image.
 
 ### Host requirements
 
@@ -166,7 +173,9 @@ farrow plan
 farrow up
 ```
 
-`init`, `validate`, and `plan` do not require QEMU or host-network setup.
+For the Catalog images used here, `init`, `validate`, and `plan` do not require
+QEMU or host-network setup. Planning a registered `local-*` image does require
+`qemu-img` to validate its cached bytes.
 The default `meta` inventory is:
 
 ```yaml
@@ -218,7 +227,9 @@ farrow up --json
 
 `setup --yes` can generate the inventory itself; a separate `init` is needed
 only when you want to edit it first. Automation still needs credentials for
-any required sudo operation; `--yes` does not supply them.
+any required sudo operation; `--yes` does not supply them. The
+[automation guide](../automation/) shows how to retain command results and
+check guest limitations before proceeding.
 
 ### Use an existing Pigsty inventory
 
@@ -232,6 +243,9 @@ Farrow reads the documented VM, naming, and login fields and preserves other
 Pigsty settings. This starts the virtual machines; installing PostgreSQL or
 other Pigsty services is a separate Pigsty operation. The built-in templates
 describe VM topology and do not include a complete Pigsty service configuration.
+See [Automation and Guest Scripts](../automation/#use-the-lab-with-pigsty)
+for the handoff, and [Storage and Access](../storage/) for file transfer and
+service connections.
 
 ## Scale and operate
 

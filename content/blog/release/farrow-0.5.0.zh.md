@@ -9,6 +9,10 @@ tags: [Farrow 0.5.0, QEMU, 镜像, 供应链, 发布]
 icon: fa-solid fa-rocket
 ---
 
+> [!NOTE]
+> 本页记录 0.5.0。0.7.0 已增加官方镜像源故障回退，未发布的 0.9 候选移除了
+> `rm` 别名。请按安装版本阅读[当前命令行说明](../../../docs/reference/cli/)。
+
 Farrow 0.5.0 是被 0.6.0 取代的公开 pre-1.0 发布。它为一次性实验室加入明确处置命令，让仓库地域
 成为操作者的显式选择，并提供可复现的下一代官方 Guest 镜像准备路径。Pigsty Inventory
 契约、Deployment 状态格式与内嵌 Catalog revision `2026082903` 均未变化。

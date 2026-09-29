@@ -7,7 +7,14 @@ weight: 40
 categories: [Design]
 tags: [QMP, Recovery, Safety]
 icon: fa-solid fa-fingerprint
+lastmod: 2026-09-26
 ---
+
+> [!NOTE]
+> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> below reflects the implementation reviewed on this date. See
+> [Status](/docs/about/status/) for released versus candidate behavior and
+> dated acceptance evidence.
 
 A pidfile answers one question: which integer did a process have when the file
 was written? It does not prove that the process is still alive, that the PID
@@ -58,8 +65,13 @@ close the PID-reuse window created by the bounded TERM wait.
 
 If QMP still answers but a QMP operation fails, Farrow does not bypass that
 live control plane with a signal. If QMP reports another identity, it stops. If
-the process tuple changed, it stops. “Unable to prove” is a result, not a reason
-to weaken the check.
+the process tuple cannot be verified, it stops. “Unable to prove” is a result,
+not a reason to weaken the check.
+
+**Unreleased 0.9 candidate update:** when QMP is unavailable and the recorded
+PID is positively identified as an unrelated process, Farrow treats the old VM
+as stopped and never signals that unrelated process. This differs from an
+unreadable or ambiguous identity, which still blocks the operation.
 
 ## Journals describe work before state exists
 
@@ -89,7 +101,12 @@ guess.
 An offline rollback is allowed only when no committed node state exists and no
 QMP socket or pidfile from the typed invocation remains. The node directory may
 contain only the journal and the completed allowlisted artifacts. Rollback
-then removes those entries in reverse order.
+then removes the completed artifacts in reverse order, followed by the journal
+and empty node directory.
+
+**Unreleased 0.9 candidate update:** a failed first `up` can be retried after
+the Inventory is edited. Safe cleanup follows the journal's completed artifact
+list rather than requiring the new desired spec to match the failed old spec.
 
 A committed node is never rolled back by a stale prepare journal. A pre-existing
 disk is never added to the action list. An unexpected file blocks directory

@@ -23,20 +23,19 @@ family has amd64 and arm64 artifacts. EL9 includes 9.3, 9.6, 9.7, and 9.8;
 EL10 includes 10.0, 10.1, and 10.2. `u24:stable` (Ubuntu 24.04) on the native
 architecture is the default request.
 
-The September stable versions below include both amd64 and arm64. Both official
-repository endpoints serve Catalog `2026092001`, byte-for-byte identical to the
-embedded and LAN copies; isolated `farrow update` runs against both verified the
-signatures and activated that revision. The ten new image objects are reachable
-at both endpoints with the expected content lengths; this endpoint check did not download and
-rehash every public image. See [Status](../../about/status/) for verification scope.
+The September stable versions below include both amd64 and arm64. This is the
+embedded Catalog snapshot, not a live repository listing. Run `farrow update`
+then `farrow image list` to inspect the currently selected repository. Dated
+public endpoint checks and guest point-release observations are recorded in
+[Status](../../about/status/).
 
-| Family | New stable | Upstream point release |
+| Family | Embedded stable | Distribution series |
 |---|---|---|
-| `d12` | `20260909.2596.1` | Debian 12.15 |
-| `d13` | `20260914.2601.1` | Debian 13.7 |
-| `u22` | `20260913.0.0` | Ubuntu 22.04.5 |
-| `u24` | `20260911.0.0` | Ubuntu 24.04.5 |
-| `u26` | `20260918.0.0` | Ubuntu 26.04.1 |
+| `d12` | `20260909.2596.1` | Debian 12 |
+| `d13` | `20260914.2601.1` | Debian 13 |
+| `u22` | `20260913.0.0` | Ubuntu 22.04 LTS |
+| `u24` | `20260911.0.0` | Ubuntu 24.04 LTS |
+| `u26` | `20260918.0.0` | Ubuntu 26.04 LTS |
 
 Debian retains offline-installed XFS tools and the generated `en_US.UTF-8`
 locale, with `C.UTF-8` still the default. Ubuntu retains Canonical's original
@@ -73,12 +72,13 @@ Non-`supported` entries remain runnable and print a warning.
 
 For a pull, Farrow:
 
-1. reads the active local Catalog once for the complete command: the Catalog
-   embedded in this build, or the one last activated by `farrow update` or
-   `image sync`;
+1. reads the selected repository's active local Catalog once for the complete
+   command: the Catalog embedded in this build, or the one last activated for
+   that repository by `farrow update` or `image sync`;
 2. resolves `image[:channel]` or `image@version-prefix`, defaulting to
-   `u24:stable`; standalone `image pull` uses the native architecture, while
-   lifecycle resolution honors `vm_arch`;
+   `u24:stable` with the official Catalog; standalone `image pull` defaults to
+   the native architecture and accepts `--arch`, while lifecycle resolution
+   honors `vm_arch`;
 3. reuses a local file only after size, SHA-256, and qcow2 checks pass;
 4. otherwise downloads the exact Catalog-named artifact, with retries and
    resumption; the two official repositories can fall back to one another,
@@ -88,11 +88,16 @@ For a pull, Farrow:
 Released builds use `https://repo.pigsty.io/farrow` by default. Long-only
 `--mirror` selects `https://repo.pigsty.cc/farrow`; precedence is `--repo`,
 `--mirror`, `FARROW_REPO`, then the global default. Both official roots retain
-canonical signed-Catalog trust. Farrow never refreshes the Catalog on its own,
-so a command only needs the repository when it has to download an image. Run
+canonical signed-Catalog trust. Repository selection determines both the local
+Catalog slot and the source of downloads. Keep selecting the same custom
+repository even when its image bytes are cached. Farrow never refreshes the
+Catalog on its own; ordinary image resolution can work offline with an active
+local Catalog and verified cache. Run
 `farrow update` to fetch, verify, and activate the selected repository's current
 Catalog. Catalog updates use that selected source; a failed update is an error.
 An image download fails when none of its permitted sources supplies verified bytes.
+Changing `--repo` alone does not fetch or activate that repository's Catalog;
+run `farrow update --repo <root>` before using its custom aliases.
 
 Verified writable cache files are made read-only again. A damaged, unreferenced
 cache file is preserved with a `.corrupt-<timestamp>` suffix before replacement;
@@ -108,8 +113,9 @@ preserve x86 memory ordering. TCG results are not performance evidence.
 
 EL7 is deliberately limited to native Linux/amd64. Linux setup installs only
 the native QEMU family; foreign architectures require the matching system
-emulator and UEFI firmware before `up` or `recreate` can proceed. `plan`
-resolves the intended image and runtime without requiring those tools.
+emulator and UEFI firmware before `up` or `recreate` can proceed. For Catalog images, `plan`
+resolves the intended image and runtime without requiring those tools. Named
+`local-*` imports are byte-checked during resolution and still need `qemu-img`.
 
 ```bash
 farrow image pull d13 --mirror
@@ -135,8 +141,9 @@ modify the base.
 
 ```bash
 farrow update
-farrow image sync https://repo.example/farrow/catalog.json
-farrow image sync --allow-downgrade /absolute/repo/catalog.json
+farrow image sync --repo https://repo.example/farrow \
+  https://repo.example/farrow/catalog.json
+farrow image sync --repo /absolute/repo --allow-downgrade /absolute/repo/catalog.json
 farrow image reset
 ```
 
@@ -155,8 +162,11 @@ farrow image sync --repo /srv/farrow --allow-downgrade /srv/farrow/catalog.json
 farrow image reset --repo /srv/farrow
 ```
 
-`--repo` selects the independent high-water slot. If omitted, `--mirror`,
-`FARROW_REPO`, then the global compiled default determine the repository.
+`--repo` selects the independent active-Catalog and high-water slot. The source
+argument does not change this selection. `image sync` and `image reset` accept
+`--repo`, but not `--mirror`; when `--repo` is omitted they use `FARROW_REPO`
+or the compiled default. For an unsigned custom Catalog, the exact source must
+be the selected root's `catalog.json`.
 
 ## Static repository format
 
@@ -173,11 +183,11 @@ farrow/
 
 `repo.yaml` stores author intent: defaults, aliases, channels, exact versions,
 architectures, boot mode, status, and optional provenance-only upstream URLs.
-`source_user`
-names the login account originally baked into the distribution image (for
-example `rocky`); offline normalization uses it to sanitize and lock that
-upstream account, then retains it as import provenance. It does not replace the
-deployment SSH user (`dba` by default). The file contains no generated
+`source_user` records the image's declared source login identity, for example
+`rocky` in an upstream image or `dba` after Farrow's official normalization.
+The pipeline takes the upstream account separately when sanitizing a candidate.
+Catalog/import metadata does not replace the deployment SSH user (`dba` by
+default) or itself normalize the image. The file contains no generated
 checksum or size fields. `catalog.json` uses the same logical tree but
 materializes each variant's file, SHA-256, artifact size, and virtual size.
 `repo.yaml` is `schema: 1`; the generated `catalog.json` is the schema-3
@@ -219,8 +229,11 @@ d13:stable + native
 full qcow2 inspection/checking, and atomic Catalog replacement without changing
 `repo.yaml` or QCOW bytes. `verify` requires the generated Catalog bytes to
 match a fresh materialization exactly. `build` and `verify` require local
-`qemu-img`; `scan` does not. Build on a QEMU host, then rsync artifacts first
-and the Catalog last.
+`qemu-img`; `scan` does not. Build on a QEMU host, then publish immutable
+artifacts first and the Catalog
+plus its matching signature last. Update a signed Catalog/signature pair
+together where possible; an inconsistent pair fails verification. Increase
+`revision` when changing Catalog contents.
 
 ## Local layout and imports
 
@@ -235,9 +248,18 @@ farrow image import --name local-mybase --boot uefi \
   --source-user ubuntu --sha256 <digest> /path/to/base.qcow2
 ```
 
+The expected `--sha256` is optional in the CLI; supplying an independently
+obtained trusted digest adds an explicit authenticity check to the mandatory qcow2
+inspection. Import copies and verifies the file; it does not clean credentials,
+install cloud-init, detect the guest CPU architecture, or prove that it boots.
+
 Named local aliases must begin with `local-`, so a future signed Catalog cannot
-shadow them. `--boot` and `--source-user` are required with `--name`; Farrow
-does not guess the guest bootstrap contract.
+shadow them. `--name`, `--boot`, and `--source-user` must be supplied together.
+A named import records the importing host's native architecture; there is no
+`image import --arch` option. Use a static repository with explicit variants
+for foreign-architecture artifacts. Aliases are immutable: choose a new name
+for different bytes or metadata. Use `vm_image: local-mybase` in an inventory
+to select a named import; unnamed imports only populate the cache.
 
 ## Pruning
 
@@ -246,9 +268,13 @@ farrow image prune --dry-run
 farrow image prune --yes
 ```
 
-Prune lists exact unreferenced images and stale staging files before deletion.
-An image referenced by applied deployment state is never a candidate. Images
-remain cached after `destroy`, `destroy --purge`, and `purge`.
+Bare `prune` and `--dry-run` only report candidates; `--yes` deletes them.
+Prune protects the union of all artifacts in the selected active Catalog,
+applied node image digests, and registered local aliases. Therefore a cached
+Catalog image or named import is retained even when no VM uses it. Unprotected
+images and recognized stale staging files are candidates; unsafe or damaged
+files cause an error. Use the same `--repo` when inspecting a custom Catalog's
+cache policy. Images remain cached after `destroy`, `destroy --purge`, and `purge`.
 
 The compiled schema-3 Catalog can be exported byte-for-byte with
 `go run ./tools/catalogexport /absolute/new/catalog.json`. A public Catalog at

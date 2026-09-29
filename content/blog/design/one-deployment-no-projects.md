@@ -7,7 +7,14 @@ weight: 10
 categories: [Design]
 tags: [Architecture, Inventory, State]
 icon: fa-solid fa-layer-group
+lastmod: 2026-09-26
 ---
+
+> [!NOTE]
+> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> below reflects the implementation reviewed on this date. See
+> [Status](/docs/about/status/) for released versus candidate behavior and
+> dated acceptance evidence.
 
 Farrow began with a familiar VM-manager abstraction: a working directory was
 a project, a hidden marker gave it identity, a registry found projects again,
@@ -70,10 +77,12 @@ The simplification has practical consequences:
 
 - moving or renaming the source directory does not move deployment identity;
 - losing the Inventory does not erase the applied state;
-- removing one state root removes Farrow's user-owned footprint, apart from
-  separately managed host networking and hosts-file entries;
+- cleanup follows explicit lifecycle commands; deleting the state directory
+  is not a substitute for stopping VMs or removing managed integrations;
 - image cache, keys, nodes, disks, locks, and deployment state share one
-  inspectable boundary instead of being spread across project registries.
+  inspectable home. Short QMP/pid paths, SSH client integration, and host-global
+  networking have their own managed locations; see
+  [Uninstall](/docs/start/uninstall/) for complete cleanup.
 
 ## Configuration absence is not intent
 

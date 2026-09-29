@@ -34,7 +34,7 @@ whole destroy 全部通过。在 Ubuntu 26.04 amd64/KVM 上，当前 Linux 二�
 
 本地 `make check`、源码 CI 与完整 Packaging Workflow 均通过。Tag Workflow 构建
 四平台 Archive、amd64/arm64 DEB 与 RPM、SPDX SBOM、Homebrew Formula、Installer、
-Checksum 与 Release Metadata。GitHub Actions 直接发布这些已验证 CI 产物，不附加应用
+Checksum 与 Release Metadata。GitHub Actions 将这些已验证 CI 产物上传为草稿，经检查后公开；不附加应用
 签名或 Provenance Bundle。
 
 签名镜像 Catalog 仍为 Revision `2026082903`，包含 9 个 Family 与 27 个分架构工件。

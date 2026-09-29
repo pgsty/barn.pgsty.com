@@ -7,7 +7,14 @@ weight: 20
 categories: [Design]
 tags: [Networking, QEMU, Pigsty]
 icon: fa-solid fa-network-wired
+lastmod: 2026-09-26
 ---
+
+> [!NOTE]
+> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> below reflects the implementation reviewed on this date. See
+> [Status](/docs/about/status/) for released versus candidate behavior and
+> dated acceptance evidence.
 
 A Pigsty Inventory names machines by stable addresses. PostgreSQL replication,
 etcd membership, HAProxy backends, VIPs, monitoring targets, and Ansible all
@@ -26,7 +33,7 @@ interfaces.
 | management | QEMU user-mode NAT, DHCP | DNS, default route, outbound internet, and loopback SSH fallback |
 | private, MAC-matched | fixed Inventory address | host-to-node, node-to-node, Ansible, Pigsty services, and VIP traffic |
 
-Farrow matches both physical interfaces by their deterministic MAC addresses
+Farrow matches both virtual interfaces by their deterministic MAC addresses
 and does not rename them. Guest-visible names are whatever the image's network
 stack chooses (commonly `eth0` or `enp0s4`); the MAC and address contract, not
 the display name, determines each interface's role.
@@ -35,11 +42,13 @@ The management interface is deliberately ordinary. It lets a new cloud image
 reach package repositories before any application exists, without installing
 NAT rules or a DHCP service on the host.
 
-The private interface is deliberately boring. It has one deterministic
-RFC1918 address, no default route, and no DNS. The guest ready marker is not
-written until that exact address is present and the unwanted route and DNS
-state are absent. A node that can reach the internet but is wrong on the lab
-network is not “mostly ready.”
+The private interface has one deterministic RFC1918 address, no default route,
+and no DNS. Guest setup checks those properties, but since 0.7 private-network
+checks are optional: a failure is recorded as a `private-network` warning and
+does not prevent readiness when management SSH and guest identity are usable.
+An operation can therefore succeed with limited fixed-IP connectivity. Before
+deploying a service that needs this interface, inspect the warnings and test
+the relevant host/peer connection. Repeat `up` after correcting the cause.
 
 > [!NOTE]
 > **Decision status: current.** The topology is part of Farrow's normal
@@ -56,10 +65,12 @@ All managed hosts belong to one canonical RFC1918 `/24`:
 | `.2`–`.8` | reserved boundary, including valid L2 VIP space |
 | `.9`–`.254` | fixed node addresses |
 
-There is no DHCP server on the private side. Cloud-init receives the exact
-address already declared in the Inventory. That removes a second address
-database and makes the first Ansible connection use the same identity as every
-later deployment.
+The guest private interface does not request DHCP: cloud-init receives the
+exact address already declared in the Inventory. On macOS, vmnet's configured
+DHCP range ends at `.8`; managed node addresses begin at `.9`. Linux uses a
+bridge with static guest addresses. The VM address contract therefore does not
+depend on a lease database, and Ansible uses the same address throughout the
+deployment.
 
 For generated configuration, setup can choose from a small bounded set when
 the default subnet is already occupied. An explicitly supplied Inventory is

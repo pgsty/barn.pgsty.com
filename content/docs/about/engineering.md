@@ -5,13 +5,21 @@ weight: 30
 icon: fa-solid fa-screwdriver-wrench
 ---
 
+This page describes the source tree reviewed at `b91ec37` on 2026-09-26.
+Its 0.9 changes are unreleased; the public application remains 0.8.0. Build
+commands operate on your checkout, so always record its commit.
+
 ## Repository boundary
 
 The Farrow source repository contains code, tests, build/package definitions,
-legal notices, and a short landing README. This site is the authoritative home
-for user, design, operator, and release documentation. Raw review transcripts,
-historical scratch inventories, demo directories, generated binaries, and
-release output trees are not source inputs and must not be committed.
+legal notices, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`,
+and bilingual application release notes. This site provides user, design,
+operator, and release documentation. Runtime behavior and command flags must
+be checked against the matching source and binary; an unpublished source
+change is not evidence that a public package has the same behavior.
+
+Review transcripts, scratch inventories, generated binaries, and release
+output trees are not production source inputs.
 
 Generated output is disposable:
 
@@ -26,25 +34,65 @@ Generated output is disposable:
 make check
 ```
 
-`make check` runs every source gate; the Makefile is the authoritative list of
-what that includes. A source gate is not native VM evidence;
-macOS HVF, Linux KVM/networking, package consumption, release publication, and
-the public render remain separate gates.
+`make check` runs module and shell checks, maintenance ownership, unit/race
+tests, Vet, Staticcheck, dead-code and errcheck checks, vulnerability scanning,
+four-target cross-builds, installer/image-pipeline tests, and license checks.
+The Makefile defines the exact list. CI additionally checks the pinned
+toolchain, Go formatting, whitespace, and GoReleaser configuration. Installation
+of the quality tools is covered in [Build from Source](../../start/source-build/).
+
+Packaging changes have a separate snapshot gate:
+
+```bash
+make release-check
+make release-snapshot SNAPSHOT_DIST=.goreleaser-review
+```
+
+Install the versions in `packaging/toolchain.env`, including GoReleaser, nFPM,
+and Syft. The snapshot target also needs the archive/package inspection tools
+used by the verification scripts. Choose a new output directory directly under
+the checkout; existing output is refused. A snapshot is local and does not
+upload a release.
+
+A source gate is not native VM evidence. macOS HVF, Linux KVM/networking,
+package consumption, release publication, and public website rendering remain
+separate checks. `make image-pipeline-native-test` runs the separate native
+image-pipeline gate with QEMU/libguestfs and explicit image inputs; the required
+`FARROW_IMAGE_PIPELINE_NATIVE_*` variables are documented in
+`tests/image-pipeline-native-test.sh`. It never downloads a test image.
 
 ## Release and package contract
 
 Release tooling under `packaging/`, `.goreleaser.yaml`, and `.github/workflows`
 is source, even though its generated directories are not. Archives and Linux
-packages contain the matching binaries plus `LICENSE`, the minimal source
-README, build metadata, and exact upstream license bytes reconstructed from the
-module versions pinned by `go.mod`. Those generated license texts live under
-`licenses/` in archives and are not tracked as source. Detailed documentation
-stays on this versioned site rather than being copied into every binary payload.
+packages contain the matching CLI and hosts-helper binaries, `LICENSE`, the
+source README, and exact upstream license bytes reconstructed from modules
+pinned by `go.mod`. Archives place the two binaries under `bin/` and the license
+texts under `licenses/`. Linux packages install `/usr/bin/farrow`,
+`/opt/farrow/libexec/farrow-hosts-helper`, and documentation under
+`/usr/share/doc/farrow/`.
 
-Never infer publication from a successful build. Commit, tag, archive/package,
-signature/attestation, upload, CI, and public consumption are distinct gates.
-The stable local release command additionally requires a clean tagged commit
-and its `origin` remote because GoReleaser records repository identity.
+`BUILD_INFO.json` is included in Linux packages and the older development
+archive format. Formal GoReleaser archives carry build identity in the binary,
+with release metadata alongside the published assets; do not assume every
+archive contains that file. Generated dependency license files are staged at
+build time. Detailed user documentation stays on this site.
+
+Application releases are built in GitHub Actions, with `checksums.txt`,
+release metadata, and SPDX SBOM assets. The current workflow does not produce
+a separate application-release signature or provenance/attestation bundle.
+Catalog Minisign signatures authenticate image catalogs and are a separate
+trust mechanism.
+
+Commit, tag, archive/package verification, CI, draft upload, public release,
+and anonymous consumption are separate evidence. The tag workflow creates a
+draft; it does not publish it. Pre-1.0 versions are GitHub prereleases and the
+installer requires an explicit `FARROW_VERSION`.
+
+`make release-local VERSION=<version>` builds and verifies without publishing.
+It requires a clean checkout at the matching `v<version>` tag, an `origin`
+remote, pinned tools, and unused staging/output directories. Use the snapshot
+path for reviewing an untagged candidate.
 
 ## Image normalization
 
@@ -67,12 +115,14 @@ Catalog bytes are exported with:
 go run ./tools/catalogexport /absolute/new/catalog.json
 ```
 
-The exporter is atomic and no-clobber. Catalog signing and application release
-signing use separate keys and trust domains.
+The exporter is atomic and refuses an existing output path. `make catalog-sign`
+and `make catalog-verify` use the catalog Minisign key pair; production private
+keys stay outside source and CI. Application checksums do not replace catalog
+signatures.
 
 ## Evidence policy
 
 Historical M0–M4 notes were useful during implementation but are not product
-documentation. Their durable conclusions are condensed into [Design](design/)
-and [Status](status/). A later source edit inherits no native proof; every
+documentation. Their durable conclusions are condensed into [Design](../design/)
+and [Status](../status/). A later source edit inherits no native proof; every
 status claim names its date, host, path, and remaining gates.

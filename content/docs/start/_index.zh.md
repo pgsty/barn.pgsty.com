@@ -29,3 +29,7 @@ farrow ssh
 3. [镜像仓库](images/)：选择镜像、使用镜像站、导入与清理缓存。
 4. [从源码构建](source-build/)：开发者构建、检查与本地 PATH。
 5. [卸载与清理环境](uninstall/)：移除 deployment、镜像、网络与状态。
+6. [自动化与客机脚本](automation/)：无人值守准备、JSON 验收、可重复执行的客机脚本与 Pigsty 衔接。
+7. [存储与访问](storage/)：磁盘保留、文件传输、SSH 隧道与 Linux 目录共享。
+8. [macOS 虚拟机](macos/)：尚未发布的 `farrow mac`，在 Apple 芯片上运行带桌面、SSH、
+   共享目录与剪贴板的 macOS 27 客机。

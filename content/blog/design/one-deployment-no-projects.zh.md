@@ -7,7 +7,12 @@ weight: 10
 categories: [设计]
 tags: [架构, Inventory, 状态]
 icon: fa-solid fa-layer-group
+lastmod: 2026-09-26
 ---
+
+> [!NOTE]
+> **2026-09-26 校准：** 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
+> 边界见[当前状态](/zh/docs/about/status/)，不以本文日期代替发布或验收日期。
 
 Farrow 最初采用了一套很熟悉的虚拟机管理器抽象：工作目录就是 Project，隐藏 Marker 提供
 身份，注册表负责重新发现 Project，宿主全局 Lease 防止它们争用私有网络。这种模型可以承载
@@ -57,9 +62,10 @@ Inventory 演进，而不会暗中变成第二种 Farrow 配置格式。
 
 - 移动或重命名源码目录不会改变 Deployment 身份；
 - Inventory 丢失不会擦除已经应用的状态；
-- 删除一个状态根即可移除 Farrow 的用户态足迹，宿主网络与 hosts 条目仍按各自命令管理；
-- 镜像缓存、密钥、节点、磁盘、锁与 Deployment 状态集中在一个可检查边界内，不再散落在
-  Project 注册表中。
+- 清理通过显式生命周期命令完成；删除状态目录不能替代停止 VM 或移除托管集成；
+- 镜像缓存、密钥、节点、磁盘、锁与 Deployment 状态集中在同一个可检查的 Home 中；
+  短 QMP/PID 路径、SSH 客户端集成与宿主全局网络仍有各自的托管位置，完整清理见
+  [卸载](/zh/docs/start/uninstall/)。
 
 ## 配置缺席不是操作意图
 

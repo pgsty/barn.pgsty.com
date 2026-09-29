@@ -34,7 +34,7 @@ GoReleaser 全量 Snapshot：单测与 Race、Vet、Staticcheck、`govulncheck`�
 Package 校验。Tag 工作流在公开 Release 前重复执行了这些检查。
 
 本发布不声称新增真机 VM Replay。带日期的 macOS arm64/HVF 与 Ubuntu amd64/KVM 证据
-仍列在[状态页](../../docs/about/status/)；源码、打包、发布与真机证据继续作为独立门禁。
+仍列在[状态页](../../../docs/about/status/)；源码、打包、发布与真机证据继续作为独立门禁。
 
 ## 安装或升级
 

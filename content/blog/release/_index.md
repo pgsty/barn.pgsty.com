@@ -12,6 +12,6 @@ cascade:
 ---
 
 > [!IMPORTANT]
-> Farrow is pre-1.0. Current signed release notes appear alongside preserved
+> Farrow is pre-1.0. Versioned release notes appear alongside preserved
 > Piglet development records; historical entries do not establish support for
 > current Farrow bytes.

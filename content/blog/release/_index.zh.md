@@ -12,5 +12,5 @@ cascade:
 ---
 
 > [!IMPORTANT]
-> Farrow 仍处于 pre-1.0。当前签名发布说明与保留的 Piglet 开发记录并列展示；
+> Farrow 仍处于 pre-1.0。带版本号的发布说明与保留的 Piglet 开发记录并列展示；
 > 历史条目不能作为当前 Farrow 字节的支持承诺。

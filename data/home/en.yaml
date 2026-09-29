@@ -51,7 +51,7 @@ entry_points:
   columns: 3
   link_label: Open
   items:
-    - { title: Start, meta: Start and connect, icon: fa-solid fa-rocket, desc: "Quick Start plus focused operations, troubleshooting, image, build, and cleanup guides.", url: docs/start/ }
+    - { title: Start, meta: Start and connect, icon: fa-solid fa-rocket, desc: "Quick Start, daily operations, automation, storage, troubleshooting, images, and cleanup.", url: docs/start/ }
     - { title: Reference, meta: Exact contracts, icon: fa-solid fa-code, desc: "Inventory variables, commands, flags, output, and exit codes.", url: docs/reference/ }
     - { title: About, meta: Design and evidence, icon: fa-solid fa-circle-info, desc: "The simplified model, native test matrix, limits, and release gates.", url: docs/about/ }
     - { title: Quick Start, meta: One node to four, icon: fa-solid fa-play, desc: "Boot with up, connect with ssh, then scale from the same inventory.", url: docs/start/tutorial/ }

@@ -7,6 +7,7 @@ icon: fa-solid fa-pen-ruler
 sidebar_root_menu: false
 sidebar_expanded: true
 blog_index: list
+lastmod: 2026-09-26
 ---
 
 Farrow's source repository once carried the redesign brief, implementation
@@ -33,3 +34,7 @@ Use the [documentation](/docs/) for current behavior and the
 [status page](/docs/about/status/) for dated verification. These design records
 explain why those contracts exist; they do not turn a design, build, or local
 test into release evidence.
+
+These articles retain their original publication dates and were last reviewed
+against source on **2026-09-26**. Changes specific to an unreleased candidate
+are marked separately; historical verification keeps its original date and scope.

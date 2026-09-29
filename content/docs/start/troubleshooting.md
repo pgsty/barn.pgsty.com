@@ -5,6 +5,10 @@ weight: 30
 icon: fa-solid fa-life-ring
 ---
 
+This page covers public 0.8.0 behavior and explicitly marked **0.9 candidate**
+changes from the unreleased source tree reviewed on 2026-09-26. Check
+`farrow version` before applying version-specific guidance.
+
 Start with diagnostics (`status` may reconcile interrupted runtime state):
 
 ```bash
@@ -47,8 +51,15 @@ applied state. If `status` reports `no deployment state found`, the selected
 
 The line before the prompt names the exact host mutation. Farrow attaches an
 interactive terminal directly to sudo when the privileged step begins.
-Automation needs an existing credential or a suitable NOPASSWD policy, then
-passes `--yes`.
+`--yes` accepts the setup plan; it does not bypass sudo authentication.
+Automation needs an existing credential or a suitable NOPASSWD policy. Use
+`farrow setup --dry-run` to inspect the plan first.
+
+On macOS, setup prepares the pinned socket_vmnet source before requesting
+administrator authentication. A download failure therefore does not require a
+password. **0.9 candidate:** the setup plan spells out sudo use and the
+socket_vmnet source; if an automatically selected subnet changes after the
+first confirmation, setup asks again unless `--yes` was supplied.
 
 ## Native acceleration or compatibility runtime is unavailable
 
@@ -58,7 +69,9 @@ arbitrary native failure never falls back. Homebrew QEMU contains both system
 emulators. Linux setup installs only the native family, so a foreign Guest also
 requires its matching `qemu-system-*` binary and firmware.
 
-`plan` resolves the intended runtime without QEMU installed. `up` and `recreate`
+`plan` resolves Catalog-backed images and their intended runtime without QEMU
+installed; imported `local-*` images still need `qemu-img` and a valid cache.
+`up` and `recreate`
 check the selected emulator and firmware before changing VM resources.
 Performance results from TCG are not meaningful.
 
@@ -70,12 +83,23 @@ the owned cleanup plan:
 
 ```bash
 farrow network status --json --verbose
-farrow network uninstall
+farrow network uninstall --json
 ```
 
-Apply it with `--yes` only when it names Farrow-owned paths. A failed Linux
+Without `--yes`, JSON output only plans removal. The network plan may still
+need sudo to read protected ownership state. Apply the reviewed plan with
+`farrow network uninstall --yes`. **0.9 candidate:** ordinary terminal output
+asks `[y/N]` and can apply removal immediately after confirmation; in 0.8.0
+plain `network uninstall` only displays the plan. A failed Linux
 bridge smoke test rolls the install back automatically; an explicit
 `automatic rollback failed` message means manual inspection is required.
+
+On macOS, a missing or restrictive root-owned `/var/log/farrow-vmnet` is
+repairable. Read the finding from `network status`: the expected directory is
+`root:wheel 0755`. `farrow setup` repairs a recognized installation; follow the
+exact diagnostic command if repairing manually. A symlink, wrong owner, or
+group/world-writable directory is not repaired automatically. Do not diagnose
+a route conflict from the bridge name alone.
 
 ## Linux bridge helper fails
 
@@ -92,18 +116,20 @@ have to belong to `kvm` when `/dev/kvm` access comes from a desktop ACL.
 
 `recreate` means the node's definition changed: review it with `farrow plan`,
 then run `farrow recreate <node>`. On a terminal the command asks you to type
-`recreate`; `--force` is for scripts. `missing` is only a report: restore the
+`recreate`; without a terminal it requires `--force`. `missing` is only a report: restore the
 host entry or run `farrow destroy <node>`.
 
 ## A node did not become ready
 
 Management SSH and guest instance identity are required for readiness. If a node
-cannot be created, started, or reached, the operation reports the node and stage
-and exits 5. Read its logs:
+cannot be created, started, or reached, a node-level partial result reports
+the node and stage and exits 5. A command-wide failure, such as a missing host
+capability or an inventory conflict, uses its own exit class. Read its logs:
 
 ```bash
 farrow logs <node>                  # serial console
 farrow logs <node> --source qemu    # QEMU diagnostics
+farrow logs --source events        # deployment/setup events, even before the first VM
 farrow status
 ```
 
@@ -160,6 +186,13 @@ A changed key for the same instance still fails verification.
 eligibility scan; `up` and `start` still reject a new or stopped node address
 that already accepts SSH.
 
+**0.9 candidate:** a symlinked or hard-linked `~/.ssh/config` is not rewritten.
+Farrow publishes its fragment and shows the `Include` line to add through your
+dotfile manager. If `ssh meta` fails while `farrow ssh meta` works, check that
+include before changing guest keys. Near-miss node names in `ssh`/`exec` are rejected with a suggestion when they
+contain a digit or `-` and match the typo heuristic; use `--` when
+explicitly separating a node selector from its remote command.
+
 ## Catalog or image verification fails
 
 The current binary embeds active and standby Catalog public keys. Unknown
@@ -170,13 +203,38 @@ into `~/.farrow/images`.
 
 ## A command was killed
 
-Run `farrow status`. A provably live or dead runtime is converged from its
-recorded identity; an ambiguous process remains blocked. Do not kill an
-unknown PID based only on a state file.
+First check whether another Farrow command is still running. In the **0.9
+candidate**, `status` reads published state without waiting and reports a
+`note` while another command holds the deployment lock. Wait for that command
+to finish before treating its in-progress state as an interruption.
+
+When no operation holds the lock, run `farrow status`. A provably live or dead
+runtime is reconciled using its recorded identity; an ambiguous process remains
+blocked. Never kill an unknown PID based only on a state file.
+
+The **0.9 candidate** additionally handles these recovery cases:
+
+| Interrupted operation | Recovery |
+|---|---|
+| Host reboot or recycled QEMU PID | `status` recognizes a provably unrelated PID and marks the old VM stopped; use `start` |
+| `stop` while QEMU kept running | `status` restores running state; repeat `stop` if shutdown is still intended |
+| First `up` failed during preparation | Correct the inventory and repeat `up -f /path/to/farrow.yml`; only journaled unfinished artifacts are rolled back |
+| `destroy` stopped midway | Repeat the same explicit destroy scope; interrupted transitions and previously retained persistent disks can be resumed |
+
+These fixes are not all present in 0.8.0. If that release blocks on a case above,
+retain the state and logs; do not delete node directories or rewrite PIDs to
+imitate the candidate's recovery.
 
 If a recorded QEMU process still exists but its QMP socket is absent, preserve
 the evidence and inspect serial/QEMU logs before using `stop` to converge it.
 Do not delete runtime sockets or state files by hand.
+
+**0.9 candidate:** the generic error envelope uses a stable class in `error`,
+with optional `reason`, `next`, and external-program details in `command`.
+Some commands return their own diagnostic reports. Read the cause and proposed
+next step; do not parse human text as an API. See [Automation](../automation/)
+for exit codes and result handling. Event and QEMU logs use readable records;
+`--verbose` adds QEMU arguments when those are needed.
 
 For a bug report include the exact command and exit code, `farrow version`,
 the three JSON reports above, host OS/architecture, and QEMU version.

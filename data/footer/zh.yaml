@@ -9,6 +9,8 @@ columns:
       - { label: 日常管理, url: docs/start/operations/ }
       - { label: 故障排查, url: docs/start/troubleshooting/ }
       - { label: 镜像仓库, url: docs/start/images/ }
+      - { label: 自动化, url: docs/start/automation/ }
+      - { label: 存储与访问, url: docs/start/storage/ }
       - { label: 从源码构建, url: docs/start/source-build/ }
       - { label: 卸载与清理, url: docs/start/uninstall/ }
   - title: 参考

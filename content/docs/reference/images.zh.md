@@ -20,19 +20,17 @@ Farrow 0.8.0 内置 Catalog `2026092001`，包含 9 个 Family、37 个工件，
 EL9 包含 9.3、9.6、9.7、9.8；EL10 包含 10.0、10.1、10.2。
 默认请求为本机架构的 `u24:stable`（Ubuntu 24.04）。
 
-以下九月 `stable` 均覆盖 amd64 和 arm64。两个官方镜像入口均提供 Catalog `2026092001`，
-正文与内置、本地和局域网副本逐字节一致；两端隔离的 `farrow update` 均成功验签并激活
-该 revision。十个新增镜像对象在两端均可访问，内容长度
-符合 Catalog；此次端点检查没有重新下载并计算全部公开镜像的摘要。验证范围见
-[当前状态](../../about/status/)。
+以下九月 `stable` 均覆盖 amd64 和 arm64。这是内置 Catalog 快照，不是实时仓库列表。
+运行 `farrow update`，再用 `farrow image list` 查看选定仓库当前的目录。带日期的公开
+端点检查与 Guest 小版本观测见[当前状态](../../about/status/)。
 
-| Family | 新 stable | 上游小版本 |
+| Family | 内置 stable | 发行版系列 |
 |---|---|---|
-| `d12` | `20260909.2596.1` | Debian 12.15 |
-| `d13` | `20260914.2601.1` | Debian 13.7 |
-| `u22` | `20260913.0.0` | Ubuntu 22.04.5 |
-| `u24` | `20260911.0.0` | Ubuntu 24.04.5 |
-| `u26` | `20260918.0.0` | Ubuntu 26.04.1 |
+| `d12` | `20260909.2596.1` | Debian 12 |
+| `d13` | `20260914.2601.1` | Debian 13 |
+| `u22` | `20260913.0.0` | Ubuntu 22.04 LTS |
+| `u24` | `20260911.0.0` | Ubuntu 24.04 LTS |
+| `u26` | `20260918.0.0` | Ubuntu 26.04 LTS |
 
 Debian 保留离线安装的 XFS 工具和已生成的 `en_US.UTF-8`，默认 locale 仍为
 `C.UTF-8`。Ubuntu 保留 Canonical 原始镜像，账户与网络由启动时的 cloud-init 配置。
@@ -65,20 +63,24 @@ Catalog 状态只表达支持策略，不是启动开关：`supported` 表示已
 
 拉取时 Farrow 会：
 
-1. 为整条命令读取一次当前本地 Catalog：即本次构建内置的 Catalog，或最近一次
-   `farrow update`/`image sync` 激活的 Catalog；
-2. 解析 `image[:channel]` 或 `image@version-prefix`，缺省为 `u24:stable`；独立
-   `image pull` 使用本机架构，生命周期解析遵循 `vm_arch`；
+1. 为整条命令读取一次选定仓库的本地 Catalog：即本次构建内置的 Catalog，或最近一次
+   为该仓库通过 `farrow update`/`image sync` 激活的 Catalog；
+2. 解析 `image[:channel]` 或 `image@version-prefix`，官方 Catalog 缺省为 `u24:stable`；
+   独立 `image pull` 默认使用本机架构，可通过 `--arch` 覆盖；生命周期解析遵循 `vm_arch`；
 3. 只有尺寸、SHA-256、qcow2 结构全部匹配时才复用本地文件；
 4. 否则下载 Catalog 指定的准确工件，并支持重试和断点续传；两个官方仓库可互相回退，
    自定义仓库仍为唯一来源。接受的字节始终须匹配 Catalog；不可变 Upstream URL 只用于溯源。
 
 Release 构建默认使用 `https://repo.pigsty.io/farrow`；仅有长参数的 `--mirror` 选择
 `https://repo.pigsty.cc/farrow`。优先级依次为 `--repo`、`--mirror`、`FARROW_REPO`、
-全球默认仓库，两个官方根都保持规范的签名 Catalog 信任。Farrow 不会自动刷新 Catalog，
-因此只有必须下载镜像时命令才需要仓库可达。运行 `farrow update` 可获取、校验并激活选定
+全球默认仓库，两个官方根都保持规范的签名 Catalog 信任。仓库选择同时决定本地 Catalog
+槽位和下载来源；即使字节已缓存，仍需选择相同的自定义仓库。Farrow 不会自动刷新
+Catalog，已有激活目录与已校验缓存时，普通镜像解析可以离线进行。
+运行 `farrow update` 可获取、校验并激活选定
 仓库当前的 Catalog。Catalog 更新使用该指定源，失败时直接报错；镜像下载则在所有
 允许的来源均无法提供通过校验的字节时失败。
+仅改变 `--repo` 不会获取或激活该仓库的 Catalog；使用它的自定义别名前，先运行
+`farrow update --repo <root>`。
 
 已校验但可写的缓存文件会恢复为只读；损坏且未被引用的缓存会先保留为带
 `.corrupt-<timestamp>` 后缀的文件，再重新下载。仍被 VM 引用的基础镜像保持原位并报错。
@@ -92,7 +94,8 @@ TCG。显式外来 `vm_arch` 也会使用 TCG；arm64 宿主上的 amd64 Guest �
 
 EL7 刻意仅支持 Linux/amd64 原生运行。Linux setup 只安装宿主原生 QEMU；外来架构必须
 先安装对应 System Emulator 与 UEFI 固件，`up`、`recreate` 才会继续；`plan` 无需
-这些工具就能解析目标镜像与运行时。
+这些工具就能解析 Catalog 镜像与运行时；但 `local-*` 命名导入在解析时会检查缓存字节，
+仍然需要 `qemu-img`。
 
 ```bash
 farrow image pull d13 --mirror
@@ -115,8 +118,9 @@ Base。
 
 ```bash
 farrow update
-farrow image sync https://repo.example/farrow/catalog.json
-farrow image sync --allow-downgrade /absolute/repo/catalog.json
+farrow image sync --repo https://repo.example/farrow \
+  https://repo.example/farrow/catalog.json
+farrow image sync --repo /absolute/repo --allow-downgrade /absolute/repo/catalog.json
 farrow image reset
 ```
 
@@ -134,8 +138,10 @@ farrow image sync --repo /srv/farrow --allow-downgrade /srv/farrow/catalog.json
 farrow image reset --repo /srv/farrow
 ```
 
-`--repo` 决定要操作的独立 High-water 槽；省略时依次考虑 `--mirror`、`FARROW_REPO`
-与全球编译期默认值。
+`--repo` 决定独立的活动 Catalog 与 High-water 槽，位置参数中的源不会改变这个选择。
+`image sync`、`image reset` 接受 `--repo`，不接受 `--mirror`；省略 `--repo` 时使用
+`FARROW_REPO` 或编译期默认值。未签名自定义 Catalog 的精确源必须是选定根下的
+`catalog.json`。
 
 ## 静态仓库格式
 
@@ -151,10 +157,10 @@ farrow/
 ```
 
 `repo.yaml` 保存人工意图：默认值、别名、Channel、精确版本、架构、启动模式、状态和可选、
-只用于溯源的 Upstream URL。`source_user` 表示发行版原始镜像内置的登录账号（例如
-`rocky`）；离线归一化
-会用它清理并锁定该上游账号，随后把它保留为导入溯源。它不会替换 deployment SSH 用户
-（默认 `dba`）。该文件不保存任何生成的摘要或大小；`catalog.json` 保持同一逻辑树，
+只用于溯源的 Upstream URL。`source_user` 记录镜像声明的源登录身份，例如上游镜像的
+`rocky`，或经过 Farrow 官方归一化后的 `dba`。流水线清理候选镜像时另行接收上游账号。
+Catalog/导入元数据不会替换 deployment SSH 用户（默认 `dba`），也不会自行归一化镜像。
+该文件不保存任何生成的摘要或大小；`catalog.json` 保持同一逻辑树，
 但为每个 Variant 物化文件名、SHA-256、工件大小和虚拟大小。`repo.yaml` 是 `schema: 1`；
 生成的 `catalog.json` 则是 Farrow 内嵌并签名的 Schema-3 Catalog。
 
@@ -190,7 +196,9 @@ d13:stable + native
 `farrow repo scan` 只读；`build` 执行严格 YAML 校验、完整 qcow2 inspect/check，
 并原子替换 Catalog，永不修改 `repo.yaml` 或 QCOW 字节；`verify` 要求新鲜物化结果与
 现有 Catalog 逐字节一致。`build`、`verify` 需要本机 `qemu-img`，`scan` 不需要。
-应在安装 QEMU 的机器上构建，再按“工件在前、Catalog 在后”的顺序 rsync 发布。
+应在安装 QEMU 的机器上构建，先发布不可变工件，最后发布 Catalog 与匹配签名，尽量
+一起切换两者；正文与签名不一致时验签会失败。
+修改 Catalog 内容时必须增加 `revision`。
 
 ## 本地布局与导入
 
@@ -204,8 +212,15 @@ farrow image import --name local-mybase --boot uefi \
   --source-user ubuntu --sha256 <digest> /path/to/base.qcow2
 ```
 
-命名的本地别名必须以 `local-` 开头，因此未来的签名 Catalog 无法覆盖它。使用 `--name`
-时必须同时给出 `--boot` 与 `--source-user`；Farrow 不猜 Guest Bootstrap 契约。
+CLI 中 `--sha256` 是可选参数；提供独立获得的可信摘要，才能在必做的 qcow2 检查之外加入
+显式真实性校验。导入只复制和校验文件，不会清理凭据、安装 cloud-init、识别 Guest CPU
+架构或证明镜像可启动。
+
+命名本地别名必须以 `local-` 开头，避免未来签名 Catalog 遮蔽它们。`--name`、`--boot`、
+`--source-user` 必须同时提供。命名导入记录执行导入的宿主原生架构，没有
+`image import --arch` 参数；外来架构镜像应使用声明明确 Variant 的静态仓库。
+别名不可变，镜像字节或元数据改变时应使用新名字。在 Inventory 中通过
+`vm_image: local-mybase` 选择命名导入；不指定名字的导入只填充缓存。
 
 ## 清理
 
@@ -214,8 +229,11 @@ farrow image prune --dry-run
 farrow image prune --yes
 ```
 
-Prune 会先列出准确的未引用镜像与遗留 Staging 文件。已应用 deployment 引用的镜像永远
-不是候选；`destroy`、`destroy --purge` 与 `purge` 后镜像仍保留缓存。
+不带参数的 `prune` 与 `--dry-run` 只报告候选，`--yes` 才执行删除。保护集合是选定活动
+Catalog 中的全部工件、已应用节点的镜像摘要，以及注册的本地别名。因此，即使没有 VM
+使用，当前 Catalog 镜像和命名导入仍会保留。未被保护的镜像与识别出的过期 Staging File
+才是候选；不安全或损坏的文件会导致报错。检查自定义 Catalog 的缓存策略时，要传入
+相同 `--repo`。执行 `destroy`、`destroy --purge` 与 `purge` 后镜像仍会保留。
 
 使用 `go run ./tools/catalogexport /absolute/new/catalog.json` 可逐字节导出编译期
 Schema-3 Catalog。

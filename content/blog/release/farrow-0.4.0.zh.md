@@ -45,7 +45,7 @@ Race、Vet、Staticcheck、deadcode、errcheck、`govulncheck`、Shell 与模块
 这些检查，并构建、验证了全部 Archive、原生 Package、SBOM 与 Installer。
 
 新的首次运行路径（`up` 自动执行 `setup`）有单元测试覆盖，但本次发布前未在全新宿主机上
-重放。带日期的 macOS arm64/HVF 与 Ubuntu amd64/KVM 证据仍列在[状态页](../../docs/about/status/)；
+重放。带日期的 macOS arm64/HVF 与 Ubuntu amd64/KVM 证据仍列在[状态页](../../../docs/about/status/)；
 源码、打包、发布与真机证据继续作为独立门禁。
 
 ## 安装或升级

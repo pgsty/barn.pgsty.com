@@ -12,7 +12,8 @@ Farrow boots one Pigsty Inventory as one local QEMU deployment. It deliberately
 has no project marker, project registry, lease model, provider layer, or
 second configuration format.
 
-State lives under `~/.farrow` for one Unix user. The product assumes one active
+State lives under `FARROW_HOME` (default `~/.farrow`) for one Unix user. The
+product assumes one active
 Pigsty deployment per computer; this is not a root-enforced cross-user
 singleton.
 
@@ -52,6 +53,19 @@ activation-safety scan proves existing units cannot claim a real host link.
 On Debian, the helper is temporarily and reversibly scoped to a group the
 caller actually belongs to. A real unprivileged QEMU bridge smoke must pass
 before setup accepts the network; failure rolls the install back automatically.
+
+## Storage and configuration have different lifetimes
+
+The Inventory records desired VM definitions. Applied state records what was
+created, including the exact base-image identity and runtime invocation.
+Changing a Catalog channel does not rewrite an existing root disk.
+
+Verified base images are shared read-only; each VM writes to its own root
+overlay. Data disks have a separate preservation contract: normal destroy
+retains persistent disks, while explicit disk deletion or purge removes them.
+Cache pruning has another boundary and also protects the active Catalog and
+registered local aliases. See [Storage and access](../../start/storage/) and
+[Images](../../reference/images/).
 
 ## Safety boundary
 

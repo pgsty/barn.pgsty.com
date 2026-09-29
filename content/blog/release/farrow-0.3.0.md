@@ -41,7 +41,7 @@ Linux package verification. The tag workflow repeated those checks before the
 Release was made public.
 
 This release does not claim a new native VM replay. The dated macOS arm64/HVF
-and Ubuntu amd64/KVM evidence remains listed on the [Status](../../docs/about/status/)
+and Ubuntu amd64/KVM evidence remains listed on the [Status](../../../docs/about/status/)
 page; source, package, release, and native-host evidence remain separate gates.
 
 ## Install or upgrade

@@ -11,7 +11,7 @@ aliases: [/docs/concepts/, /docs/concepts/networking/, /docs/concepts/storage/, 
 Farrow 把一份 Pigsty Inventory 启动成一套本地 QEMU deployment。它刻意不再拥有
 project marker、项目注册表、租约模型、Provider Layer 或第二种配置格式。
 
-状态位于当前 Unix 用户的 `~/.farrow`。产品假设每台电脑只有一套运行中的 Pigsty；
+状态位于当前 Unix 用户的 `FARROW_HOME`（默认 `~/.farrow`）。产品假设每台电脑只有一套运行中的 Pigsty；
 这并不是 root 强制的跨用户单例。
 
 ## 节点级收敛
@@ -42,6 +42,16 @@ Activation-safety 扫描证明现有 Unit 不会接管真实宿主链路后才�
 
 Debian helper 会临时、可逆地限制给调用者真实加入的组。setup 必须通过一次非特权
 QEMU bridge smoke；失败后自动回滚安装。
+
+## 存储与配置有不同生命周期
+
+Inventory 保存期望的 VM 定义；应用状态记录已经创建的内容，包括精确基础镜像身份与
+运行时 Invocation。Catalog Channel 移动不会改写已有根盘。
+
+通过校验的基础镜像只读共享，每台 VM 写入自己的根盘 Overlay。数据盘遵循独立的保留
+契约：普通 Destroy 保留持久盘，显式磁盘删除或 Purge 才清除它们。镜像缓存清理又有
+独立边界，还会保护活动 Catalog 与已注册本地别名。详见[存储与访问](../../start/storage/)
+和[镜像参考](../../reference/images/)。
 
 ## 安全边界
 

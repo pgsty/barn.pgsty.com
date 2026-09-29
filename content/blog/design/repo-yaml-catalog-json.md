@@ -7,7 +7,14 @@ weight: 50
 categories: [Design]
 tags: [Images, Supply Chain, Catalog]
 icon: fa-solid fa-box-archive
+lastmod: 2026-09-26
 ---
+
+> [!NOTE]
+> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> below reflects the implementation reviewed on this date. See
+> [Status](/docs/about/status/) for released versus candidate behavior and
+> dated acceptance evidence.
 
 A static image repository sounds like a directory of qcow2 files plus a JSON
 index. The difficult part is deciding which facts a maintainer may write by
@@ -32,7 +39,9 @@ The source-controlled `repo.yaml` contains author intent:
 It deliberately does **not** contain generated artifact size, SHA-256, or
 virtual size. A compact entry can say that `d13:stable` points to one exact
 version with amd64 and arm64 variants without pretending to know facts that
-belong to the files:
+belong to the files. This historical policy excerpt illustrates the format;
+see [Image Repositories](/docs/start/images/) for a complete working example
+and the reference for current versions:
 
 ```yaml
 defaults: { image: d13, channel: stable, arch: native, boot: uefi }
@@ -62,8 +71,11 @@ moved, a version was deprecated, or a provenance statement changed.
 variant it records the exact filename, byte count, SHA-256, qcow2 virtual size,
 boot contract, source user, and immutable upstream provenance.
 
-Those fields come from scanning the artifact, not from copying values out of
-the YAML. Build forces qcow2 parsing, rejects backing files, external data,
+Filename, byte count, digest, and virtual size are materialized and checked
+against the artifact. Boot mode, source user, status, and provenance are
+validated policy copied from `repo.yaml`; inspection does not independently
+prove those declarations. Build forces qcow2 parsing, rejects backing files,
+external data,
 encryption, and unknown incompatible features, and runs structural checks
 before atomically replacing the Catalog.
 
@@ -94,9 +106,9 @@ The repository CLI keeps observation, generation, and proof separate:
 change was omitted from the generated Catalog.
 
 Publication follows the same direction. Upload immutable image bytes first;
-publish the Catalog and its signature last. A client can then see either the
-old complete repository view or the new complete view, not a Catalog that
-advertises bytes still in transit.
+publish the Catalog and its matching signature last. Publish that pair
+together where possible. A client refuses a mismatched pair during a partial
+upload; the order avoids advertising image bytes that are still in transit.
 
 ## Selectors may move; artifacts may not
 
@@ -137,9 +149,12 @@ a new Farrow binary, or vice versa.
 
 Ordinary public builds default to `https://repo.pigsty.io/farrow` and expose
 `--mirror` for `https://repo.pigsty.cc/farrow`; `--repo` remains the explicit
-custom override. Once selected, that repository is the only artifact source.
-Embedded Catalog upstream URLs retain provenance but never become a hidden
-fallback. Source configuration, generated Catalog, uploaded artifacts, signing,
+custom override. **Updated since 0.7.0:** the two official repositories may
+fall back to each other for image downloads, always verifying the same
+Catalog size and SHA-256. Custom repositories remain exclusive. Catalog
+updates still use the selected source; embedded upstream URLs remain
+provenance and never become an artifact fallback. Source configuration,
+generated Catalog, uploaded artifacts, signing,
 and public availability remain separate release gates.
 
 That is the larger design principle: policy should be pleasant to review, but

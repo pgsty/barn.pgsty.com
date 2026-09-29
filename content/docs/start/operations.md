@@ -6,6 +6,10 @@ icon: fa-solid fa-gears
 aliases: [/docs/start/lifecycle/, /docs/start/provisioning/]
 ---
 
+The normal lifecycle below applies to the public 0.8.0 release. Sections marked
+**0.9 candidate** describe the unreleased source tree reviewed on 2026-09-26;
+see [Status](../../about/status/) for the release boundary.
+
 ## Inspect and access
 
 ```bash
@@ -15,7 +19,9 @@ farrow exec node-1 -- hostname
 farrow logs meta --source serial
 ```
 
-Applied state is under `~/.farrow`; these commands work from any directory.
+Applied state is under `~/.farrow` by default (`FARROW_HOME` overrides it); these
+commands work from any directory. Changing the working directory does not create
+a separate deployment.
 Status shows images and resources; `--verbose` adds architecture, accelerator,
 SSH ports, and PID. TCG is marked in ordinary output, and a degraded node does
 not hide its peers.
@@ -39,7 +45,7 @@ filesystems may be reset, including persistent disks; see
 farrow stop
 farrow start
 farrow restart node-1
-farrow reload -f farrow.yml       # stop, re-read config, converge
+farrow reload -f farrow.yml       # read/check config, stop, then converge
 ```
 
 `start` powers on stopped VMs and re-checks readiness of running ones. Both
@@ -60,10 +66,11 @@ farrow recreate node-1            # applies a changed VM definition
 ```
 
 `recreate` and `destroy` ask you to type the confirmation word on a terminal;
-pass `--force` only in scripts.
+`--force` skips that prompt and is required without a terminal.
 
-`plan` works before host setup and shows images, total resources, change reasons,
-and disk effects. CPU/memory changes still require recreate: root and ephemeral
+`plan` can inspect Catalog-backed images before host setup and shows images,
+total resources, change reasons, and disk effects. Planning an imported
+`local-*` image also validates its cache and requires `qemu-img`. CPU/memory changes still require recreate: root and ephemeral
 data disks are replaced, while persistent disks are kept. A selected recreate
 blocked by unselected peer changes refuses before deletion and names the nodes
 that need attention.
@@ -81,6 +88,23 @@ Deleting YAML never deletes a VM. Unconsumed Pigsty changes produce
 they do not begin with `vm_`. Successful recreate refreshes the complete SSH
 fragment as well.
 
+## Concurrent commands (0.9 candidate)
+
+Deployment mutations wait behind another Farrow operation for up to ten
+minutes, bounded by the command's own deadline. The waiting message identifies
+the command, PID, and start time. A lock timeout returns exit 4, JSON
+`error: conflict`, and `reason: deployment_busy`; retry after the holder finishes.
+The lock is released automatically when the holding process exits. Do not
+delete a lock file to interrupt a live operation.
+
+`status`, `ssh`, `exec`, `ssh-config`, and the deployment-state read for `hosts`
+do not queue behind this lock. They use the published state; `status` adds a
+`note` when another command owns the deployment and does not reconcile its
+transitions. A VM still starting may therefore be unavailable to SSH.
+
+See [Troubleshooting](../troubleshooting/#a-command-was-killed) for interrupted
+operations and [Automation](../automation/) for scriptable results.
+
 ## Destroy
 
 ```bash
@@ -95,13 +119,18 @@ farrow purge                         # discard everything without confirmation
 destroy, not with node selectors. `--purge` removes persistent disks, keys,
 and deployment state; images remain cached. Node destroy refreshes the SSH
 fragment for remaining peers, while whole destroy removes the default Farrow
-SSH integration. Host network removal is separate
-and refuses while a VM is attached:
+SSH integration. Host network removal is separate and refuses while a VM is attached.
 
 `farrow purge` is the concise disposable-lab path. It is
-equivalent to `destroy --force --purge`, accepts no node selectors, and is
+equivalent to `destroy --force --purge` for an existing deployment, accepts no
+node selectors, and is
 idempotent when no deployment exists. It keeps the image cache and host
 network, and it does not bypass process, ownership, or path-integrity checks.
+
+**0.9 candidate:** plain `destroy` succeeds when no deployment exists. If
+deployment state is gone but owned persistent disks remain, use `purge`;
+`destroy --delete-persistent` or `destroy --purge` points to that command.
+The old `rm` alias has been removed; spell out `purge`.
 
 ```bash
 farrow network uninstall --yes

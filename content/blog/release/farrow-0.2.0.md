@@ -1,7 +1,7 @@
 ---
 title: "Farrow 0.2.0: selected convergence and release integrity"
 linkTitle: Farrow 0.2.0
-description: VPN-aware network preflight, truly selected scale-out, committed-state integrations, signed multi-platform artifacts, and the 0.1.0 upgrade boundary.
+description: VPN-aware network preflight, truly selected scale-out, committed-state integrations, checksum-verified multi-platform artifacts, and the 0.1.0 upgrade boundary.
 date: 2026-09-01
 weight: 2
 categories: [Release]
@@ -40,9 +40,8 @@ four-node deployment and reached its control guest without mutation.
 
 Local `make check`, source CI, and the complete packaging workflow passed. The
 tag workflow built four archives, amd64/arm64 DEB and RPM packages, SPDX SBOMs,
-Homebrew formula, installer, checksums, and release metadata. GitHub Actions
-publishes those verified CI outputs without a separate application signature
-or provenance bundle.
+Homebrew formula, installer, checksums, and release metadata. GitHub Actions uploads those verified CI outputs to a draft for review before
+public release, without a separate application signature or provenance bundle.
 
 The signed image Catalog remains revision `2026082903` with 9 families and 27
 architecture artifacts. The default repository remains

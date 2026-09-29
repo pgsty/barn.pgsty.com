@@ -5,6 +5,9 @@ weight: 30
 icon: fa-solid fa-life-ring
 ---
 
+本页覆盖公开 0.8.0，以及明确标记为 **0.9 候选版**的变更；后者以 2026-09-26
+审核的未发布源码为准。使用版本特定说明前，先检查 `farrow version`。
+
 先收集诊断信息（`status` 可能收敛中断的运行时状态）：
 
 ```bash
@@ -43,7 +46,12 @@ Homebrew 或系统软件包安装应使用对应渠道的程序。CLI 与配套 
 ## setup 需要 sudo
 
 提示前一行会说明具体宿主变更；特权步骤开始时 Farrow 会直接把交互终端交给 sudo。
-自动化环境需要已有凭据或合适的 NOPASSWD，再使用 `--yes`。
+`--yes` 只接受 setup 计划，不会绕过 sudo 认证。自动化环境需要已有凭据或合适的
+NOPASSWD 策略。可以先用 `farrow setup --dry-run` 查看计划。
+
+macOS setup 会在请求管理员认证之前准备固定版本的 socket_vmnet 来源，下载失败不会
+要求密码。**0.9 候选版：**setup 计划明确说明 sudo 用途与 socket_vmnet 来源；若首次
+确认后自动选择的子网改变，会再次确认，除非已经传入 `--yes`。
 
 ## 原生加速或兼容运行时不可用
 
@@ -51,7 +59,8 @@ Homebrew 或系统软件包安装应使用对应渠道的程序。CLI 与配套 
 才会选择 TCG；任意原生失败绝不会静默回退。Homebrew QEMU 包含两个 System Emulator；
 Linux setup 只安装宿主原生家族，因此外来 Guest 还需要对应 `qemu-system-*` 与固件。
 
-`plan` 无需安装 QEMU 就能解析目标运行时；`up`、`recreate` 在变更 VM 资源前检查
+`plan` 解析 Catalog 镜像及目标运行时时无需安装 QEMU；导入的 `local-*` 镜像仍需要
+`qemu-img` 与有效缓存。`up`、`recreate` 在变更 VM 资源前检查
 所选模拟器与固件。TCG 性能结果没有参考意义。
 
 ## 网络是 partial 或 invalid
@@ -61,11 +70,19 @@ Linux setup 只安装宿主原生家族，因此外来 Guest 还需要对应 `qe
 
 ```bash
 farrow network status --json --verbose
-farrow network uninstall
+farrow network uninstall --json
 ```
 
-确认只包含 Farrow 自有路径后再加 `--yes`。Linux bridge smoke 失败会自动回滚安装；
+未加 `--yes` 的 JSON 输出只展示删除计划；网络计划仍可能需要 sudo 读取受保护的
+归属状态。核对计划后，使用 `farrow network uninstall --yes` 执行。**0.9 候选版：**
+普通终端输出会询问 `[y/N]`，确认后立即执行；0.8.0 的普通 `network uninstall`
+仍然只展示计划。Linux bridge smoke 失败会自动回滚安装；
 只有出现 `automatic rollback failed` 才表示必须人工检查。
+
+macOS 的 `/var/log/farrow-vmnet` 缺失或权限过紧时可以修复。查看 `network status`
+的诊断，预期为 `root:wheel 0755` 目录。`farrow setup` 能修复归属可确认的安装；
+手工修复时使用诊断给出的准确命令。符号链接、错误属主或组/其他用户可写目录不会自动
+修复。不要仅凭桥接接口名称判断路由冲突。
 
 ## Linux bridge helper 失败
 
@@ -81,17 +98,19 @@ Debian/Ubuntu 使用 `root:<调用者可用组> 4750`。桌面系统通过 ACL �
 ## plan 报 recreate 或 missing
 
 `recreate` 表示节点定义已改变：先用 `farrow plan` 查看，再运行 `farrow recreate <node>`。
-终端上该命令会要求输入 `recreate` 确认，`--force` 仅用于脚本。`missing` 只是报告：
+终端上该命令会要求输入 `recreate` 确认，无终端时必须传入 `--force`。`missing` 只是报告：
 恢复主机条目，或运行 `farrow destroy <node>`。
 
 ## 节点未就绪
 
-就绪要求管理 SSH 可用且客机实例身份一致。节点无法创建、启动或连接时，命令会指出
-节点和失败阶段，并以 5 退出。先查看日志：
+就绪要求管理 SSH 可用且客机实例身份一致。节点无法创建、启动或连接时，节点级部分
+失败结果会指出节点和阶段，并以 5 退出。缺少宿主能力、Inventory 冲突等全局失败则使用
+各自的退出类别。先查看日志：
 
 ```bash
 farrow logs <node>                  # 串口控制台
 farrow logs <node> --source qemu    # QEMU 诊断
+farrow logs --source events        # 部署/setup 事件，首次 VM 创建前也可读取
 farrow status
 ```
 
@@ -137,6 +156,13 @@ known-host 条目；同一实例的密钥变化仍会校验失败。
 `doctor` 的通用可用性扫描会排除已应用部署保留的固定 IP；`up` 与 `start` 仍会拒绝
 已经接受 SSH 的新增节点或已停止节点地址。
 
+**0.9 候选版：**`~/.ssh/config` 为符号链接或硬链接时不会被改写；Farrow 会生成
+fragment，并给出需要通过 dotfile 管理器添加的 `Include` 行。若 `farrow ssh meta`
+可用但 `ssh meta` 不可用，应先检查 Include，不要更换 Guest 密钥。`ssh`/`exec`
+会在含数字或 `-` 的参数匹配近似节点名规则时拒绝执行并给出建议；需要明确区分节点
+选择器与远程命令时
+使用 `--`。
+
 ## Catalog 或镜像校验失败
 
 当前二进制已内置 active 与 standby Catalog 公钥。未知签名者、版本回滚/同版本异内容、
@@ -145,11 +171,33 @@ known-host 条目；同一实例的密钥变化仍会校验失败。
 
 ## 命令被中断
 
-运行 `farrow status`。可证明存活或死亡的运行时会按完整进程身份收敛；歧义进程继续阻塞。
-不要只凭状态文件里的 PID 就杀进程。
+先确认是否仍有其他 Farrow 命令运行。**0.9 候选版**的 `status` 不排队等待，
+其他命令持有部署锁时会读取已写入状态并显示 `note`。应先等待该命令结束，再判断
+中间状态是否属于异常中断。
+
+没有操作持锁时，运行 `farrow status`。可证明存活或死亡的运行时会按记录的完整身份
+收敛；歧义进程继续阻塞。不要只凭状态文件里的 PID 就杀进程。
+
+**0.9 候选版**还支持以下恢复：
+
+| 中断场景 | 恢复步骤 |
+|---|---|
+| 宿主重启或 QEMU PID 被复用 | `status` 确认 PID 属于无关进程后将原 VM 标记为停止，再用 `start` 启动 |
+| `stop` 中断，QEMU 仍在运行 | `status` 恢复运行状态；仍需关机时再次执行 `stop` |
+| 首次 `up` 在准备阶段失败 | 修正 Inventory 后再次执行 `up -f /path/to/farrow.yml`，只回滚日志记录的未完成产物 |
+| `destroy` 执行到一半中断 | 使用相同的显式销毁范围重试；中间状态与已保留的持久盘都可继续处理 |
+
+0.8.0 不包含以上全部修复。如果该版本在这些场景受阻，应保留状态与日志，不要删除
+节点目录或改写 PID 来模拟候选版的恢复。
 
 如果记录的 QEMU 进程仍存在，但 QMP Socket 缺失，应先保留证据并查看串口/QEMU 日志，
 再决定是否用 `stop` 收敛。不要手工删除运行时 Socket 或状态文件。
+
+**0.9 候选版：**通用错误信封的 `error` 字段使用稳定类别，另有可选的 `reason`、
+`next` 与 `command` 中的外部程序详情；部分命令返回自身的诊断报告。根据原因与下一步
+提示处理，不要把人类可读文本当作
+接口解析。退出码与结果处理见[自动化](../automation/)。事件与 QEMU 日志按易读记录
+展示，需要完整 QEMU 参数时加 `--verbose`。
 
 提交问题时请包含准确命令与退出码、`farrow version`、上面三份 JSON、宿主系统/架构与
 QEMU 版本。

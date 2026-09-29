@@ -24,6 +24,7 @@ New users should install Farrow 0.8.0 with the [Quick Start](start/tutorial/).
 With the CLI installed, the normal path is `farrow up` to start the lab, then `farrow ssh` to connect.
 
 > [!IMPORTANT]
-> Farrow is pre-1.0. Current source behavior, native validation, packaging,
-> release, and publication are separate gates. Read [Status](about/status/)
-> before depending on a development build.
+> Version baseline, checked 2026-09-26: the public release is **0.8.0**;
+> the reviewed local source `b91ec37` is an **unreleased 0.9 candidate**.
+> Candidate-only changes are marked on their pages. See the
+> [baseline and validation record](about/status/#documentation-baseline).

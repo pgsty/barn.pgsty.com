@@ -22,5 +22,6 @@ Farrow 把一份 Pigsty 兼容的 Inventory 启动成固定 IP 的 QEMU 虚拟�
 启动环境，`farrow ssh` 进入虚拟机。
 
 > [!IMPORTANT]
-> Farrow 仍是 pre-1.0。当前源码、真机验证、打包、发布与线上站点是不同门禁。
-> 依赖开发构件前请阅读[当前状态](about/status/)。
+> 2026-09-26 核对的版本基线：公开版是 **0.8.0**，本次审查的本地源码
+> `b91ec37` 是**未发布的 0.9 候选**。仅候选版具备的变化会在对应页面标明。
+> 详见[基线与验证记录](about/status/#documentation-baseline)。

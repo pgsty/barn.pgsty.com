@@ -7,6 +7,7 @@ icon: fa-solid fa-pen-ruler
 sidebar_root_menu: false
 sidebar_expanded: true
 blog_index: list
+lastmod: 2026-09-26
 ---
 
 Farrow 源码仓库曾经把重构指令、实现期 ADR 与真机证据和代码放在一起。它们在产品快速变化时
@@ -25,3 +26,6 @@ Farrow 源码仓库曾经把重构指令、实现期 ADR 与真机证据和代�
 
 当前行为以[文档](/zh/docs/)为准，带日期的验证边界见[当前状态](/zh/docs/about/status/)。
 这些设计记录解释契约为何存在；它们不会把设计、构建或本地测试升级成发布证据。
+
+本组文章保留原始写作日期，最近于 **2026-09-26** 对照源码校准。涉及未发布候选的
+变化会单独标记；历史验证结果仍以原有日期和范围为准。

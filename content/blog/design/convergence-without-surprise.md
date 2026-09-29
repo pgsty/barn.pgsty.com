@@ -7,7 +7,14 @@ weight: 30
 categories: [Design]
 tags: [Lifecycle, Drift, Safety]
 icon: fa-solid fa-arrows-rotate
+lastmod: 2026-09-26
 ---
+
+> [!NOTE]
+> **Reviewed 2026-09-26:** the original publication date is retained; the text
+> below reflects the implementation reviewed on this date. See
+> [Status](/docs/about/status/) for released versus candidate behavior and
+> dated acceptance evidence.
 
 “Declarative” is often shortened to “make reality equal the file.” That is a
 useful slogan until the file is incomplete, the wrong branch is checked out,
@@ -26,11 +33,13 @@ but it must be a decision the operator can see.
 ## From Inventory to node identity
 
 Farrow does not hash the whole Pigsty Inventory. It first extracts the fields
-it owns, fills defaults, resolves image and runtime choices, and builds a
-canonical resolved spec. Each node then receives a hash of:
+it owns, fills defaults, canonicalizes image selectors and architecture, and
+builds a canonical resolved spec. Exact Catalog artifact resolution remains
+separate, so a channel update does not itself change a node's spec hash. Each
+node then receives a hash of:
 
 - the deployment envelope shared by every node, such as subnet, login user,
-  and architecture policy; and
+  architecture policy, and the deployment-level default image request; and
 - exactly that node's resolved definition.
 
 Adding a peer therefore does not change an existing node's hash. Editing an
@@ -98,9 +107,14 @@ must either restore the definition or run the explicit destroy command. This
 is deliberately more friction than automatic garbage collection—and far less
 friction than recovering an unintended disk deletion.
 
-Persistent data disks add another boundary. Normal destroy preserves them;
-purging disks and deployment keys requires the separate whole-deployment purge
-contract. One confirmation cannot silently grow into broader authority.
+Persistent data disks add another boundary. Normal destroy preserves them.
+Whole-deployment `destroy --delete-persistent` explicitly includes owned
+persistent disks, including retained disks, and accepts no node selectors;
+deleting deployment keys as well requires whole-deployment
+`destroy --purge` or `purge`. Retention is not a backup guarantee: guest
+bootstrap can reset unrecognized or confirmed damaged test filesystems, even
+on persistent disks. See [Data disks](/docs/reference/configuration/#data-disks).
+One confirmation cannot silently grow into broader authority.
 
 ## Convergence is still incremental
 

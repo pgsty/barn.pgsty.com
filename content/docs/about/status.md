@@ -1,6 +1,6 @@
 ---
 title: Status
-description: What the current tree has passed natively, what remains unverified, and what blocks 1.0.
+description: Published 0.8.0, the unreleased 0.9 source baseline, dated validation, and remaining limits.
 weight: 20
 icon: fa-solid fa-list-check
 aliases: [/docs/project/, /docs/project/status/, /docs/project/roadmap/, /docs/project/release/, /docs/project/design-history/]
@@ -10,10 +10,64 @@ Farrow is pre-1.0. Source tests, dated native replays, packages, release, CI,
 and the public site are separate gates. Install instructions are in the
 [Quick Start](../../start/tutorial/#install).
 
-The current release is [`v0.8.0`](https://github.com/pgsty/farrow/releases/tag/v0.8.0).
+As checked on **2026-09-26**, the current public release is
+[`v0.8.0`](https://github.com/pgsty/farrow/releases/tag/v0.8.0), marked Pre-release.
 It improves partial-start recovery, host preparation, cleanup reporting, and
 setup authentication, and embeds the September image Catalog. See the
 [release notes](../../../blog/release/farrow-0.8.0/) for changes and upgrade guidance.
+
+## Documentation baseline {#documentation-baseline}
+
+| Baseline | Identity | How to read these docs |
+|---|---|---|
+| Public application and Homebrew formula | `v0.8.0`, source `320a32a` | The installation and ordinary lab tutorials use this version. |
+| Source reviewed for this calibration | Local `b91ec37`, an **unreleased 0.9 candidate** | Changes to errors, confirmation, lock waiting, and recovery are explicitly marked as 0.9 candidate behavior. |
+| Embedded image Catalog | Revision `2026092001`, schema 3 | Unchanged between those application checkpoints; `farrow update` can activate another signed Catalog. |
+
+At this checkpoint, public `main` still points to `320a32a`. A fresh public
+clone does not contain the local candidate. There is no public 0.9 release or
+download to install. Check `farrow version` before applying the
+[CLI contract](../../reference/cli/) to automation.
+
+The candidate removes the `rm` alias, accepts `--version`, classifies failures
+consistently, and waits for a deployment lock for up to ten minutes. It also
+repairs several interrupted-lifecycle cases. These are source behavior, not a
+claim of public delivery or a fresh native acceptance of `b91ec37`.
+The matrix below retains its exact dated validation scope.
+
+On 2026-09-26, both official Catalog endpoints again returned revision
+`2026092001` with SHA-256
+`23e8dbf6c19bd192d56c6d71eb30901f17945b3487e427a43abe108463780306`.
+Isolated `farrow update` checks verified their signatures. This checks Catalog
+delivery, not a new download of every image or a native guest replay.
+
+Public 0.8.0 and the reviewed `b91ec37` baseline run Linux guests on macOS or
+Linux hosts; neither contains a `farrow mac` command. macOS guests are tracked
+separately below.
+
+## macOS guests {#macos-guests}
+
+`farrow mac` runs macOS 27 virtual machines on Apple Silicon; see the
+[guide](../../start/macos/) and [reference](../../reference/mac/). It is
+**unreleased**: as checked on 2026-09-29 it exists only in a local development
+tree — commit `45f931b` plus uncommitted changes — that is not on public
+`main`, in any release, or in any package. It must not be read as part of the
+public installation contract until a release includes it.
+
+That tree was validated on 2026-09-29 on an Apple Silicon Mac running macOS
+27.0 (26A428), with an ad-hoc signed development build. No macOS image was
+downloaded for the run: every test home used an APFS clone of a base prepared
+on 2026-09-26 from Apple's pinned 27.0 restore image.
+
+- **Source gates**: complete `make check`, native component tests, and the Mac bundle build with extracted-archive checksum, signature, and probe checks passed.
+- **Automated live acceptance**: all 16 phases passed in 244.9 s: creation from the base, a named machine with a shared folder, independent identities and sshd policy, disk isolation, per-machine networks isolated from each other, DNS and public HTTPS, exit codes and argument boundaries, bidirectional shared-folder writes, normal stop/start, `configure`, refusal of a third running VM, `recreate` rotating identities, desktop and two-way clipboard, repeated `up` leaving the base unchanged, and `destroy`.
+- **Manual checks**: creation to SSH-ready in 22 s from a prepared base; normal stop 6.5 s; start to SSH-ready 6–12 s; forced stop 0.7 s; macOS Recovery boot; a subnet change keeping the pinned host key; `ssh mac1` through the installed OpenSSH entries.
+
+Still open for macOS guests: Developer ID signing, notarization, and a
+published release; downloading and installing macOS through the current CLI
+(a first `up` without a prepared base, or `image update`); the desktop's
+**Restart…** and **Shut Down…** menu actions; other Apple Silicon models and
+macOS 27 updates; and physical-host reboot.
 
 ## Summary
 

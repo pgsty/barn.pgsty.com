@@ -9,6 +9,8 @@ columns:
       - { label: Daily Operations, url: docs/start/operations/ }
       - { label: Troubleshooting, url: docs/start/troubleshooting/ }
       - { label: Image Repositories, url: docs/start/images/ }
+      - { label: Automation, url: docs/start/automation/ }
+      - { label: Storage and Access, url: docs/start/storage/ }
       - { label: Build from Source, url: docs/start/source-build/ }
       - { label: Uninstall, url: docs/start/uninstall/ }
   - title: Reference

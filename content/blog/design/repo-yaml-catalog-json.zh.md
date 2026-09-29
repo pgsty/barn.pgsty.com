@@ -7,7 +7,12 @@ weight: 50
 categories: [设计]
 tags: [镜像, 供应链, Catalog]
 icon: fa-solid fa-box-archive
+lastmod: 2026-09-26
 ---
+
+> [!NOTE]
+> **2026-09-26 校准：** 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
+> 边界见[当前状态](/zh/docs/about/status/)，不以本文日期代替发布或验收日期。
 
 静态镜像仓库看起来只是一些 qcow2 文件加一个 JSON 索引。真正困难的问题是：哪些事实允许
 维护者手写，哪些事实必须从即将发布的字节中推导。
@@ -27,7 +32,9 @@ icon: fa-solid fa-box-archive
 - Immutable Upstream 与 Provenance 说明。
 
 它刻意不包含生成的 Artifact Size、SHA-256 或 Virtual Size。一条简洁配置可以表达
-`d13:stable` 指向某个准确版本，并提供 amd64/arm64 Variant，而不假装知道只属于文件本身的事实：
+`d13:stable` 指向某个准确版本，并提供 amd64/arm64 Variant，而不假装知道只属于文件本身的事实。
+下面保留的历史策略片段只演示格式；完整可用示例见[镜像仓库](/zh/docs/start/images/)，
+当前版本以镜像参考为准：
 
 ```yaml
 defaults: { image: d13, channel: stable, arch: native, boot: uefi }
@@ -55,7 +62,9 @@ images:
 `catalog.json` 把策略落实到本地仓库。每个 Variant 都包含准确文件名、字节数、SHA-256、
 qcow2 Virtual Size、Boot Contract、Source User 与 Immutable Upstream Provenance。
 
-这些字段来自扫描 Artifact，而不是从 YAML 复制。Build 会强制解析 qcow2，拒绝 Backing File、
+文件名、字节数、摘要与虚拟大小由工具物化并对照工件检查；启动模式、源用户、状态与溯源
+则来自 `repo.yaml` 中经过校验的策略，文件检查本身不能独立证明这些声明。
+Build 会强制解析 qcow2，拒绝 Backing File、
 External Data、Encryption 与未知 Incompatible Feature，执行结构检查后才原子替换 Catalog。
 
 Artifact 身份是 `(image, exact version, architecture)` 三元组，而不是选择它的 Channel。
@@ -81,8 +90,9 @@ images/d13-20260810.2566.0-arm64.qcow2
 `build` 永远不修改 `repo.yaml` 或 qcow2 字节。`verify` 比“每个 Checksum 都正确”更强：它还能
 证明没有任何源策略或工件变化被漏出生成 Catalog。
 
-发布遵循同一方向：先上传不可变镜像字节，最后发布 Catalog 与签名。客户端只能看到旧的完整
-仓库视图或新的完整视图，不会读到一份先声明了仍在传输中字节的 Catalog。
+发布遵循同一方向：先上传不可变镜像字节，最后发布 Catalog 与匹配签名，尽量一起切换
+这两个文件。部分上传造成正文与签名不匹配时，客户端会拒绝；先工件后目录则避免声明
+仍在传输中的镜像字节。
 
 ## Selector 可以移动，Artifact 不能
 
@@ -111,8 +121,10 @@ Image Catalog Key 授权镜像策略；Release Signing 证明 Farrow 应用工�
 两组 Key 刻意独立：有权发布 VM Image 不应自动获得发布 Farrow Binary 的权限，反之亦然。
 
 普通 Public Build 默认使用 `https://repo.pigsty.io/farrow`，并通过 `--mirror` 显式选择
-`https://repo.pigsty.cc/farrow`；`--repo` 仍是自定义覆盖。仓库一旦选定，它就是唯一工件源；
-Embedded Catalog 的 Upstream URL 继续提供溯源，但绝不会变成隐藏回退。源码配置、生成
+`https://repo.pigsty.cc/farrow`；`--repo` 仍是自定义覆盖。**自 0.7.0 起的更新：** 两个
+官方仓库在下载镜像时可以互相回退，始终校验同一 Catalog 的尺寸与 SHA-256。自定义仓库
+仍是唯一工件源，Catalog 更新仍使用选定来源；Embedded Catalog 的 Upstream URL
+只提供溯源，绝不会变成工件回退。源码配置、生成
 Catalog、上传 Artifact、签名与公开可用性仍是彼此独立的发布门禁。
 
 更大的设计原则是：策略应当便于人类审查，而关于已发布字节的事实必须可生成、可复现，并能

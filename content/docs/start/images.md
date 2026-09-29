@@ -31,16 +31,30 @@ the newest matching version on dot-component boundaries:
 all:
   vars:
     vm_image: el9
-    vm_version: 9.7
+    vm_version: "9.7"
 ```
 
 Here `9.7` selects the newest 9.7.x build; `9` selects the newest 9.x release.
-Use `vm_image: el9:stable` instead when the repository's movable stable channel
-is the intended policy.
+Use `vm_image: el9:stable` and remove `vm_version` when the repository's movable
+stable channel is the intended policy. A separate `vm_version` cannot be
+combined with `:channel` or `@version` in `vm_image`.
 
-Run `farrow plan` after editing the inventory. New nodes use the selected image;
-existing nodes whose resolved image changes require an explicit
-`farrow recreate <node>`. `up` reports this drift instead of rebuilding them.
+Run `farrow plan` after editing the inventory. Changing an existing node's image
+request requires an explicit `farrow recreate <node>`; `up` reports the definition
+drift instead of rebuilding it. Updating the Catalog alone does not change
+existing nodes or their stored base-image identity. Newly created or explicitly
+recreated nodes resolve the selector against the active Catalog.
+
+For a reproducible lab, pin the complete version shown by `image info`, rather
+than a movable channel or a numeric prefix:
+
+```yaml
+all:
+  vars:
+    vm_image: d13@20260914.2601.1
+```
+
+Quote numeric `vm_version` values in YAML so their original text is preserved.
 
 > [!WARNING]
 > Built-in versions are `supported` except deprecated compatibility images:
@@ -55,6 +69,7 @@ custom root with `--repo`:
 ```bash
 farrow image pull u24 --mirror
 farrow up --mirror
+farrow update --repo https://mirror.example/farrow
 farrow image pull u24 --repo https://mirror.example/farrow
 farrow up --repo https://mirror.example/farrow
 ```
@@ -63,6 +78,7 @@ Or set the default repository for the current shell:
 
 ```bash
 export FARROW_REPO=https://mirror.example/farrow
+farrow update
 farrow up
 ```
 
@@ -81,7 +97,10 @@ provenance, never an alternate download source.
 
 This fallback concerns image artifacts. `farrow update` fetches the selected
 repository's Catalog; `image sync` reads the exact URL or file you supply.
-Neither command upgrades the Farrow executable.
+Neither command upgrades the Farrow executable. The active Catalog is scoped
+to the selected repository. A new `--repo` uses the embedded Catalog until you
+activate that root's Catalog; changing the download source alone does not make
+custom aliases appear.
 
 ## Build a static repository
 
@@ -92,12 +111,34 @@ by a static HTTP server:
 farrow/
 ├── repo.yaml
 ├── catalog.json
-├── catalog.json.minisig       # optional
+├── catalog.json.minisig       # required for official and HTTP repositories
 └── images/
     └── d13-1-arm64.qcow2
 ```
 
-`repo.yaml` is the only human-maintained source. `catalog.json` is generated:
+`repo.yaml` is the only human-maintained source. For the single arm64 image
+shown above, a minimal complete source is:
+
+```yaml
+schema: 1
+revision: 1
+defaults: { image: d13, channel: stable, arch: native, boot: uefi }
+images:
+  d13:
+    channels: { stable: "1" }
+    versions:
+      "1":
+        status: testing
+        variants:
+          arm64:
+            source_user: debian
+```
+
+Place your independently verified, cloud-init-capable image at
+`/srv/farrow/images/d13-1-arm64.qcow2`. Use `amd64` in both the filename and
+variant for an x86 guest, and set `source_user` to the image's source identity.
+The repository root must be an absolute, non-symlink directory that is not
+writable by group or others. Generate `catalog.json` locally:
 
 ```bash
 farrow repo scan /srv/farrow
@@ -109,19 +150,45 @@ Scan is read-only. Build never changes `repo.yaml` or image bytes; it performs a
 full `qemu-img check` and materializes file names, SHA-256, artifact size, and
 virtual size. `build` and `verify` require local `qemu-img`; `scan` does not.
 Build on a machine with QEMU, then publish immutable QCOW files first and
-`catalog.json` last.
+`catalog.json` with its matching signature last. The local/HTTPS example may
+remain unsigned; plain HTTP and official repositories require a trusted
+signature. Increase `revision` whenever Catalog contents change.
+
+Activate and inspect this local repository before creating VMs:
+
+```bash
+farrow update --repo /srv/farrow
+farrow image info d13 --arch arm64 --repo /srv/farrow
+farrow image pull d13 --arch arm64 --repo /srv/farrow
+```
+
+Use the same `--repo /srv/farrow` for `plan`, `up`, and `recreate`, or export
+`FARROW_REPO=/srv/farrow`. In the Inventory select `vm_image: d13@1` and
+`vm_arch: arm64`; importing a Catalog does not rewrite Inventory defaults.
+`farrow image reset --repo /srv/farrow` restores the embedded Catalog for that
+root while preserving its anti-rollback history.
 
 ## Import and prune
 
-An independently obtained qcow2 requires an independently obtained digest:
+For a single custom image on the host's native architecture, import it with
+an independently obtained digest. `--sha256` is optional in the CLI but is
+recommended when you have a trusted digest:
 
 ```bash
 farrow image import --name local-mybase --boot uefi \
   --source-user ubuntu --sha256 <digest> /path/to/base.qcow2
 ```
 
-Custom aliases must begin with `local-`. Review the plan before deleting cache
-entries not referenced by the applied deployment:
+Custom aliases must begin with `local-`; `--name`, `--boot`, and `--source-user`
+are required together. Import checks the qcow2 and copies it into Farrow's
+cache without preparing its guest software. The image must already support
+Farrow's cloud-init bootstrap. Named imports record the host architecture, so
+use a static repository for foreign-architecture images. Select the alias with
+`vm_image: local-mybase`, then run `farrow plan`.
+
+Prune protects every image in the selected active Catalog, every applied node
+image, and every registered local alias. It therefore does not empty the
+cache merely because all VMs were destroyed. Inspect candidates before deletion:
 
 ```bash
 farrow image prune --dry-run
@@ -130,5 +197,5 @@ farrow image prune --yes
 
 See [Images](../../reference/images/) for signatures, rollback protection,
 cache layout, architecture, and TCG rules. See the
-[Image Pipeline](../../reference/image-pipeline/) for building and publishing
-image candidates.
+[Image Pipeline](../../reference/image-pipeline/) for preparing image candidates
+and the separate checks required before publication.

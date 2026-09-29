@@ -1,6 +1,6 @@
 ---
 title: 当前状态
-description: 当前源码已经通过哪些真机验证、哪些仍未验证、什么阻塞 1.0。
+description: 公开版 0.8.0、未发布的 0.9 源码基线、带日期的验证与已知限制。
 weight: 20
 icon: fa-solid fa-list-check
 aliases: [/docs/project/, /docs/project/status/, /docs/project/roadmap/, /docs/project/release/, /docs/project/design-history/]
@@ -9,9 +9,53 @@ aliases: [/docs/project/, /docs/project/status/, /docs/project/roadmap/, /docs/p
 Farrow 仍是 pre-1.0。源码测试、带日期的真机重放、软件包、发布、CI 与线上站点是不同门禁。
 安装方法见[快速上手](../../start/tutorial/#安装)。
 
-当前版本为 [`v0.8.0`](https://github.com/pgsty/farrow/releases/tag/v0.8.0)，
+截至 **2026-09-26** 核对，当前公开版本为
+[`v0.8.0`](https://github.com/pgsty/farrow/releases/tag/v0.8.0)，标记为 Pre-release，
 改进部分节点启动恢复、宿主准备、清理摘要和初始化认证，并内置九月镜像 Catalog。
 变化与升级方法见[发布说明](../../../blog/release/farrow-0.8.0/)。
+
+## 文档基线 {#documentation-baseline}
+
+| 基线 | 身份 | 如何阅读本站 |
+|---|---|---|
+| 公开程序与 Homebrew Formula | `v0.8.0`，源码 `320a32a` | 安装与常规实验教程以此版本为准。 |
+| 本次校准审查的源码 | 本地 `b91ec37`，**未发布的 0.9 候选** | 错误、确认、锁等待和恢复方面的变化明确标为 0.9 候选行为。 |
+| 内置镜像 Catalog | revision `2026092001`，schema 3 | 两个程序基线相同；`farrow update` 可以激活另一份已签名 Catalog。 |
+
+此时公开 `main` 仍指向 `320a32a`，新克隆公开仓库不会得到本地候选。
+目前没有可安装的公开 0.9 Release 或下载。自动化依赖[命令行契约](../../reference/cli/)
+前，请先执行 `farrow version` 核对版本。
+
+候选版移除 `rm` 别名，接受 `--version`，统一错误分类，最多等待部署锁十分钟，
+并修复若干生命周期中断后的恢复场景。这些是源码行为，不代表已经公开交付，
+也不代表本次对 `b91ec37` 重新执行了真机验收。下表保留各次验证的准确日期与范围。
+
+2026-09-26 再次检查两个官方 Catalog 入口，均返回 revision `2026092001`，
+SHA-256 为 `23e8dbf6c19bd192d56c6d71eb30901f17945b3487e427a43abe108463780306`；
+隔离的 `farrow update` 均成功验签。这是 Catalog 交付检查，不代表重新下载所有镜像
+或重放真机客机生命周期。
+
+公开版 0.8.0 与本次审查的 `b91ec37` 基线均在 macOS 或 Linux 宿主上运行 Linux
+客机，两者都不包含 `farrow mac` 命令。macOS 客机的状态单独记录如下。
+
+## macOS 客机 {#macos-guests}
+
+`farrow mac` 在 Apple 芯片上运行 macOS 27 虚拟机，见[使用教程](../../start/macos/)与
+[命令参考](../../reference/mac/)。它**尚未发布**：截至 2026-09-29，它只存在于本地开发
+源码中（提交 `45f931b` 加上尚未提交的修改），不在公开 `main`、任何发布版本或软件包中。
+在正式发布之前，不应视为公开安装契约的一部分。
+
+该源码于 2026-09-29 在运行 macOS 27.0（26A428）的 Apple 芯片 Mac 上完成验证，使用
+ad-hoc 签名的开发构建。验证期间没有下载 macOS 镜像：每个测试目录都以 APFS 克隆方式
+复用 2026-09-26 由 Apple 固定版本 27.0 恢复镜像准备的基础镜像。
+
+- **源码门禁**：完整 `make check`、原生组件测试，以及 Mac 发布包构建与解包后的校验和、签名、探测检查均通过。
+- **自动化实机验收**：16 个阶段全部通过，用时 244.9 秒：从基础镜像创建、带共享目录的命名机器、相互独立的身份与 sshd 策略、磁盘隔离、彼此隔离的每机网络、DNS 与公网 HTTPS、退出码与参数边界、共享目录双向写入、正常停启、`configure`、拒绝第三台运行中的虚拟机、`recreate` 更换身份、桌面与双向剪贴板、重复 `up` 不改变基础镜像，以及 `destroy`。
+- **人工检查**：从已准备的基础镜像创建到 SSH 就绪 22 秒；正常关机 6.5 秒；启动到 SSH 就绪 6–12 秒；强制断电 0.7 秒；macOS 恢复模式启动；更换网段后固定的主机密钥仍然有效；通过已安装的 OpenSSH 条目执行 `ssh mac1`。
+
+macOS 客机尚待完成：Developer ID 签名、公证与正式发布；用当前 CLI 下载并安装 macOS
+（在没有基础镜像时首次 `up`，或 `image update`）；桌面菜单中的 **Restart…** 与
+**Shut Down…**；其他 Apple 芯片机型与 macOS 27 后续更新；以及物理宿主重启。
 
 ## 概览
 

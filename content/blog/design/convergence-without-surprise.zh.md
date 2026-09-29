@@ -7,7 +7,12 @@ weight: 30
 categories: [设计]
 tags: [生命周期, Drift, 安全]
 icon: fa-solid fa-arrows-rotate
+lastmod: 2026-09-26
 ---
+
+> [!NOTE]
+> **2026-09-26 校准：** 保留原始写作日期；下文已按当前实现更新。公开版本与未发布候选的
+> 边界见[当前状态](/zh/docs/about/status/)，不以本文日期代替发布或验收日期。
 
 “声明式”常被简化成“让现实等于文件”。在文件完整、分支正确时，这是一句好口号；但当配置
 暂时不完整、检出了错误分支，或某个 YAML Group 被误删时，把“缺席”理解成“删除”就会让普通
@@ -22,10 +27,11 @@ Farrow 采用一条更窄的规则：
 
 ## 从 Inventory 得到节点身份
 
-Farrow 不会对整份 Pigsty Inventory 做哈希。它先提取自己拥有的字段、填入默认值、解析镜像
-与运行时选择，再构造 Canonical Resolved Spec。每个节点的哈希只包含：
+Farrow 不会对整份 Pigsty Inventory 做哈希。它先提取自己拥有的字段、填入默认值，
+规范化镜像选择器与架构，再构造 Canonical Resolved Spec。精确 Catalog 工件另行解析，
+因此 Channel 更新本身不会改变节点的 Spec Hash。每个节点的哈希只包含：
 
-- 所有节点共享的 Deployment Envelope，例如子网、登录用户与架构策略；
+- 所有节点共享的 Deployment Envelope，例如子网、登录用户、架构策略与部署级默认镜像请求；
 - 该节点自己的完整 Resolved Definition。
 
 因此，增加一个同伴不会改变已有节点的哈希；修改 Farrow 不消费的 Pigsty 字段——例如
@@ -78,8 +84,12 @@ Recreate 会先解析 Emulator、加速策略、Firmware、镜像字节、网络
 Applied State 仍包含这种节点时，`up` 会停止并点名报告。操作者必须恢复定义，或运行显式
 Destroy 命令。这比自动垃圾回收多一点摩擦，却比恢复被意外删除的磁盘少得多。
 
-Persistent Data Disk 还有独立边界：普通 Destroy 会保留它们；清除磁盘与 Deployment Key
-需要另一套整 Deployment Purge 契约。一次确认不能静默扩张成更宽的授权。
+Persistent Data Disk 还有独立边界：普通 Destroy 会保留它们；
+整套部署的 `destroy --delete-persistent` 显式包含受管持久盘和已保留的磁盘，
+不接受节点选择器；同时删除 Deployment Key
+则需要整部署的 `destroy --purge` 或 `purge`。保留不是备份保证：Guest 初始化可能重置
+无法识别或确认损坏的测试文件系统，包括持久盘，详见
+[数据盘](/zh/docs/reference/configuration/#数据盘)。一次确认不能静默扩张成更宽的授权。
 
 ## 收敛仍然是增量的
 
