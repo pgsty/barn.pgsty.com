@@ -1,103 +1,111 @@
 sections:
   - hero
-  - { type: metrics, key: facts }
-  - { type: cards, key: entry_points }
-  - { type: command-box, key: first_command }
-  - { type: principles, key: principles }
+  - { type: cards, key: workflows }
+  - { type: markdown, key: first_command, partial: landing/install.html }
+  - { type: principles, key: features }
   - faq
   - cta
 
 hero:
-  eyebrow: Barn 0.9.0 · Release candidate · Go + QEMU
+  eyebrow: Barn 0.9.0 · Apache-2.0
   title_lines:
-    - One inventory.
-    - One deployment.
-  title_size: 4.15rem
+    - Your local lab.
+    - Linux and macOS.
+  title_size: 3.8rem
   lead: >-
-    Barn boots a Pigsty-compatible inventory into fixed-IP QEMU virtual
-    machines on macOS and Linux. Use the same inventory to provision your VMs
-    with Barn and deploy services with Pigsty.
-  note: Ubuntu 24.04 by default. Repeat barn up to continue interrupted setup and retry limited guest features without restarting healthy VMs.
-  note_icon: fa-solid fa-flask
+    Bring up a Linux lab from one YAML inventory, or a clean macOS machine
+    for your next build. Fixed addresses, SSH access, and native virtualization
+    on your own hardware.
+  note: Bootstrap And Run Nodes. Open source, built for development.
+  note_icon: fa-solid fa-terminal
   image:
-    light: images/barn-hero-light.svg?v=0.9.0
-    dark: images/barn-hero-dark.svg?v=0.9.0
-    alt: One Pigsty inventory becomes one fixed-IP Barn deployment
+    src: images/barn-hero.svg
+    alt: A red Barn with servers in its doorway beside a blue Silo at dusk
   actions:
-    - { label: Quick Start, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
-    - { label: Read the reference, url: docs/reference/, icon: fa-solid fa-book-open, style: ghost }
+    - { label: Start a Linux lab, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
+    - { label: Run a macOS VM, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
   detail:
-    label: Native validation and limits
-    url: docs/about/status/
-    icon: fa-solid fa-list-check
+    label: What's new in 0.9.0
+    url: blog/release/0.9.0/
+    icon: fa-solid fa-tag
 
-facts:
-  eyebrow: The current model
-  title: Less machinery, clearer behavior
-  text: Barn targets one trusted local Pigsty lab, not a general-purpose cloud control plane.
-  animate: true
-  columns: 4
-  link_label: Details
+workflows:
+  eyebrow: Choose your environment
+  title: Virtual machines for everyday development
+  columns: 2
+  link_label: Get started
   items:
-    - { value: 2, label: commands after installation, desc: up + ssh, url: docs/start/tutorial/ }
-    - { value: 1, label: inventory, desc: barn.yml or pigsty.yml, url: docs/reference/configuration/ }
-    - { value: 1, label: deployment per user, desc: state under ~/.barn, url: docs/about/design/ }
-    - { value: 9, label: image families, desc: "Ubuntu, Debian, Rocky, CentOS", url: docs/reference/images/ }
-
-entry_points:
-  eyebrow: Two top-level sections
-  title: Documentation and blog
-  text: Documentation stays compact and current; the blog adds design reasoning, technical articles, and release updates.
-  columns: 3
-  link_label: Open
-  items:
-    - { title: Start, meta: Start and connect, icon: fa-solid fa-rocket, desc: "Quick Start, daily operations, automation, storage, troubleshooting, images, and cleanup.", url: docs/start/ }
-    - { title: Reference, meta: Exact contracts, icon: fa-solid fa-code, desc: "Inventory variables, commands, flags, output, and exit codes.", url: docs/reference/ }
-    - { title: About, meta: Design and evidence, icon: fa-solid fa-circle-info, desc: "The simplified model, native test matrix, limits, and release gates.", url: docs/about/ }
-    - { title: Quick Start, meta: One node to four, icon: fa-solid fa-play, desc: "Boot with up, connect with ssh, then scale from the same inventory.", url: docs/start/tutorial/ }
-    - { title: Configuration, meta: vm_* fields, icon: fa-solid fa-file-code, desc: "Defaults, disks, shares, naming, addressing, and drift.", url: docs/reference/configuration/ }
-    - { title: Blog, meta: Design and updates, icon: fa-solid fa-newspaper, desc: "Design notes, project articles, and release updates.", url: blog/ }
+    - title: A Linux lab, from one file
+      meta: On macOS and Linux
+      icon: fa-brands fa-linux
+      desc: >-
+        Test a PostgreSQL cluster, reproduce a bug, or try a new distribution.
+        Define up to 20 nodes in one YAML inventory, with stable IPs and SSH
+        ready to use. The same inventory works with Pigsty.
+      url: docs/start/tutorial/
+    - title: A fresh Mac for your next build
+      meta: On Apple Silicon · macOS 27+
+      icon: fa-brands fa-apple
+      desc: >-
+        Build and test in an independent macOS environment. Open its desktop,
+        connect over SSH, and share folders and text with your Mac.
+        New machines reuse a shared base; each keeps its own disk and identity.
+      url: docs/start/macos/
 
 first_command:
-  eyebrow: Normal path
-  title: Start the lab, then connect
-  text: Prepare the Barn 0.9.0 candidate from source as described in the Quick Start, then run these commands in an empty directory on a terminal for your first deployment. Interactive up prepares missing host dependencies and creates the default inventory when no deployment exists.
-  code: |-
+  eyebrow: Install → Start → Connect
+  title: Your first Linux VM
+  text: >-
+    Choose your host OS below, then install, start, and connect. On a fresh setup,
+    Barn creates a one-node Ubuntu 24.04 lab and prepares the host dependencies.
+    It shows host changes and requests administrator access when needed.
+  body: |-
+    ```bash {tab="macOS" group="barn-install" value="macos"}
+    brew install pgsty/infra/barn
+
     barn up
     barn ssh
-  lang: bash
-  note: Add host lines and run up again; new nodes are created, stopped selected nodes start, and running peers keep their processes while unfinished setup is retried. Removing a line never destroys a VM.
+    ```
 
-principles:
-  eyebrow: Product boundaries
-  title: Deliberate constraints
+    ```bash {tab="Linux" value="linux" wrap=true}
+    curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.0/install.sh
+    BARN_VERSION=0.9.0 bash install.sh
+    export PATH="$HOME/.local/bin:$PATH"
+
+    barn up
+    barn ssh
+    ```
+
+    Use Homebrew on macOS or the download installer on Linux. Already have a lab? `barn up` resumes it.
+    [Installation options and requirements](docs/start/installation/) · [macOS VM guide](docs/start/macos/)
+
+features:
+  eyebrow: Built for repeatable work
+  title: A lab you can understand and control
   columns: 4
   items:
-    - { icon: fa-solid fa-file-lines, title: One fact, desc: The Pigsty inventory is the VM specification and deployment inventory. }
-    - { icon: fa-solid fa-server, title: Incremental, desc: Add nodes with up; apply definition changes with recreate and remove nodes with destroy. }
-    - { icon: fa-solid fa-fingerprint, title: Owned, desc: "Process identity, ownership, paths, and network manifests are verified before mutation." }
-    - { icon: fa-solid fa-microchip, title: Explicit runtime, desc: Native HVF/KVM by default; catalogued or requested TCG is always visible. }
+    - { icon: fa-solid fa-network-wired, title: Stable addresses, desc: Linux nodes keep the IPs in your inventory. Reach databases and services directly from the host and other nodes. }
+    - { icon: fa-solid fa-file-code, title: One configuration, desc: Keep VM definitions in your Ansible inventory. Use it with Barn to create machines and Pigsty to deploy services. }
+    - { icon: fa-solid fa-arrows-rotate, title: Repeatable operations, desc: Repeat up to finish interrupted setup. Review changes with plan; recreate and delete machines explicitly. }
+    - { icon: fa-solid fa-clone, title: Reusable images, desc: Linux uses verified qcow2 bases. macOS machines clone a base installed from Apple's restore image, with separate writable disks. }
 
 faq:
-  eyebrow: Short answers
   title: Before you begin
   items:
-    - question: Is the working directory still a Barn project?
-      answer: No. State is one deployment under ~/.barn. An explicit or discovered Inventory supplies desired state; without one, lifecycle commands can fall back to the applied spec.
+    - question: Which host do I need?
+      answer: 'Linux guests run on macOS or Linux, on arm64 or amd64, using QEMU with HVF or KVM. macOS guests require Apple Silicon, macOS 27 or later, and the native Barn Mac component. See [platforms and limits](docs/about/status/).'
       open: true
-    - question: Can I use pigsty.yml directly?
-      answer: Yes. Barn consumes the documented VM fields plus a small naming, control-node, and node-admin whitelist; other Pigsty settings stay opaque.
-    - question: Does the first up modify the host?
-      answer: It can install missing dependencies and fixed-IP networking, requesting sudo when needed. Use setup --dry-run to inspect the host plan first. The optional hosts helper is installed only by hosts install.
-    - question: Does up install PostgreSQL or Pigsty?
-      answer: It prepares the virtual machines and guest access. Deploy PostgreSQL and other services separately with Pigsty; the built-in templates describe VM topology.
-    - question: Is Barn ready for production?
-      answer: No. It is a pre-1.0 local development runtime; read the status page for the exact verified matrix and open release gates.
+    - question: Do I need Pigsty?
+      answer: 'No. Barn works on its own for Linux and macOS development. For a PostgreSQL lab, use the same Linux inventory with [Pigsty](https://pigsty.io/). Barn prepares machines and access; Pigsty installs the services.'
+    - question: What happens when I edit the inventory?
+      answer: 'For Linux labs, plan shows the changes. Up adds new nodes; changes to existing VM definitions require recreate. Removing a host from the file leaves its VM intact until you explicitly destroy it.'
+    - question: Can I keep several macOS machines?
+      answer: 'Yes. Give them names and start the ones you need. Apple allows two macOS VMs running at a time per Mac, including other tools. Each Barn Mac machine has an independent network and state, separate from the Linux lab.'
 
 cta:
-  title: Start with two commands.
-  desc: Build the 0.9.0 candidate from source; after release, install Barn, start with up, and connect with ssh.
+  title: Make room for your next experiment.
+  desc: Install Barn 0.9.0, choose your guest, and get to work.
   actions:
-    - { label: Quick Start, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
-    - { label: Reference, url: docs/reference/, icon: fa-solid fa-book-open, style: ghost }
-    - { label: Status, url: docs/about/status/, icon: fa-solid fa-list-check, style: ghost }
+    - { label: Install Barn, url: docs/start/installation/, icon: fa-solid fa-download, style: primary }
+    - { label: Browse the docs, url: docs/, icon: fa-solid fa-book-open, style: ghost }
+    - { label: View on GitHub, url: 'https://github.com/pgsty/barn', icon: fa-brands fa-github, style: ghost, external: true }

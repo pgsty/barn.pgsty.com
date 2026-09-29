@@ -5,34 +5,33 @@ description: "为什么 Barn 把人工维护的镜像策略与必须匹配实际
 date: 2026-08-29T19:00:00+08:00
 weight: 50
 categories: [设计]
-tags: [镜像, 供应链, Catalog]
+tags: [镜像, 供应链, 镜像目录]
 icon: fa-solid fa-box-archive
 lastmod: 2026-09-29
 ---
 
-> [!NOTE]
-> 本文描述尚未发布的 **Barn 0.9.0 候选版本**。当前验证结果与发行前检查见
-> [当前状态](/zh/docs/about/status/)。
+本文介绍 Barn 0.9.0 的 Linux 镜像仓库。macOS 安装镜像由
+[Mac 命令](/zh/docs/reference/mac/)单独管理。
 
 静态镜像仓库看起来只是一些 qcow2 文件加一个 JSON 索引。真正困难的问题是：哪些事实允许
 维护者手写，哪些事实必须从即将发布的字节中推导。
 
-如果 Checksum 与 Size 放在手写源文件里，它们很容易被错误复制；如果策略只存在于生成 JSON
-中，审查 Channel 变化或弃用决定就要阅读机器输出。Barn 把这两项工作明确分开。
+如果校验和与大小放在手写源文件里，它们很容易被错误复制；如果策略只存在于生成 JSON
+中，审查通道变化或弃用决定就要阅读机器输出。Barn 把这两项工作明确分开。
 
 ## `repo.yaml`：维护者表达什么意图
 
 源码控制的 `repo.yaml` 记录作者意图：
 
-- 仓库 Revision 与默认选择；
-- Image Family 与 Alias；
-- `stable` 等可移动 Channel；
-- Exact Version 与 Architecture；
-- Boot Mode 与支持状态；
-- Immutable Upstream 与 Provenance 说明。
+- 仓库修订号与默认选择；
+- 镜像系列与别名；
+- `stable` 等可移动通道；
+- 精确版本与架构；
+- 启动模式与支持状态；
+- 不可变上游与来源记录说明。
 
-它刻意不包含生成的 Artifact Size、SHA-256 或 Virtual Size。一条简洁配置可以表达
-`d13:stable` 指向某个准确版本，并提供 amd64/arm64 Variant，而不假装知道只属于文件本身的事实。
+它刻意不包含生成的镜像文件大小、SHA-256 或虚拟磁盘容量。一条简洁配置可以表达
+`d13:stable` 指向某个准确版本，并提供 amd64/arm64 架构变体，而不假装知道只属于文件本身的事实。
 下面的策略片段演示格式；完整可用示例见[镜像仓库](/zh/docs/start/images/)，
 当前版本以镜像参考为准：
 
@@ -50,24 +49,24 @@ images:
           arm64: {}
 ```
 
-这是适合 Review 的层：Pull Request 可以清楚展示 Channel 移动、Version 弃用或 Provenance
+这是适合审核的层：拉取请求可以清楚展示通道移动、版本弃用或来源记录
 描述变化。
 
 > [!NOTE]
-> **决策状态：当前有效。** 仓库语法与客户端行为见[镜像参考](/zh/docs/reference/images/)，
-> Candidate 准备属于独立的[镜像流水线契约](/zh/docs/reference/image-pipeline/)。
+> 仓库语法与客户端行为见[镜像参考](/zh/docs/reference/images/)，
+> 候选镜像准备属于独立的[镜像流水线契约](/zh/docs/reference/image-pipeline/)。
 
 ## `catalog.json`：仓库能够证明什么
 
-`catalog.json` 把策略落实到本地仓库。每个 Variant 都包含准确文件名、字节数、SHA-256、
-qcow2 Virtual Size、Boot Contract、Source User 与 Immutable Upstream Provenance。
+`catalog.json` 记录策略对应的镜像文件。每个架构变体都包含准确文件名、字节数、SHA-256、
+qcow2 虚拟磁盘容量、启动约定、源镜像用户与不可变上游的来源记录。
 
 文件名、字节数、摘要与虚拟大小由工具物化并对照工件检查；启动模式、源用户、状态与溯源
 则来自 `repo.yaml` 中经过校验的策略，文件检查本身不能独立证明这些声明。
-Build 会强制解析 qcow2，拒绝 Backing File、
-External Data、Encryption 与未知 Incompatible Feature，执行结构检查后才原子替换 Catalog。
+构建会强制解析 qcow2，拒绝后端镜像文件、
+外部数据、加密与未知不兼容特性，执行结构检查后才原子替换镜像目录。
 
-Artifact 身份是 `(image, exact version, architecture)` 三元组，而不是选择它的 Channel。
+文件身份是 `(image, exact version, architecture)` 三元组，而不是选择它的通道。
 文件保持可读、不可变的名字：
 
 ```text
@@ -83,49 +82,49 @@ images/d13-20260810.2566.0-arm64.qcow2
 
 | 命令 | 职责 |
 | --- | --- |
-| `barn repo scan` | 只读报告 Tracked、Missing、Untracked 与 Unsafe Artifact |
-| `barn repo build` | 校验 Source 与 Artifact，再原子生成 Catalog |
-| `barn repo verify` | 在内存中重新物化，并要求与已发布 Catalog 逐字节一致 |
+| `barn repo scan` | 只读报告已跟踪、缺失、未跟踪与不安全文件 |
+| `barn repo build` | 校验仓库定义与镜像文件，再原子生成镜像目录 |
+| `barn repo verify` | 在内存中重新物化，并要求与已发布镜像目录逐字节一致 |
 
-`build` 永远不修改 `repo.yaml` 或 qcow2 字节。`verify` 比“每个 Checksum 都正确”更强：它还能
-证明没有任何源策略或工件变化被漏出生成 Catalog。
+`build` 永远不修改 `repo.yaml` 或 qcow2 字节。`verify` 比“每个校验和都正确”更强：它还能
+确认生成的镜像目录没有遗漏仓库定义或镜像文件的任何变化。
 
-发布遵循同一方向：先上传不可变镜像字节，最后发布 Catalog 与匹配签名，尽量一起切换
+发布遵循同一方向：先上传不可变镜像字节，最后发布镜像目录与匹配签名，尽量一起切换
 这两个文件。部分上传造成正文与签名不匹配时，客户端会拒绝；先工件后目录则避免声明
 仍在传输中的镜像字节。
 
-## Selector 可以移动，Artifact 不能
+## 选择器可以移动，文件不能
 
-人工配置需要方便的 Selector。随着仓库演进，`d13:stable`、`el9@9` 与 `el9@9.7` 可以解析到
+人工配置需要方便的选择器。随着仓库演进，`d13:stable`、`el9@9` 与 `el9@9.7` 可以解析到
 更新的准确版本。数字前缀按点分组件的整数比较，因此 9.10 排在 9.9 之后。
 
-解析完成后，客户端保存准确 Version、Architecture、Size 与 Digest。一个已经解析的节点不会
-因为 Channel 移动就变成另一台机器。便利只存在于选择阶段，不可变身份存在于执行阶段。
+解析完成后，客户端保存准确版本、架构、大小与摘要。一个已经解析的节点不会
+因为通道移动就变成另一台机器。便利只存在于选择阶段，不可变身份存在于执行阶段。
 
 ## 传输与信任是两个问题
 
-官方 Catalog 与普通 HTTP Catalog 必须具有受信 Detached Signature。操作者显式选择本地目录
-或 HTTPS Repository 时，可以使用 Unsigned Catalog，因为本地属主或认证传输本身就是显式
-信任决策。即使 URL 是 HTTPS，隐式 Compiled Default 仍属于签名信任域。
+官方镜像目录与普通 HTTP 镜像目录必须具有受信分离式签名。操作者显式选择本地目录
+或 HTTPS 仓库时，可以使用未签名的镜像目录，因为本地属主或认证传输本身就是显式
+信任决策。即使 URL 是 HTTPS，隐式编译时默认仓库仍属于签名信任域。
 
-Accepted Catalog State 按 Repository 独立记录。Barn 会拒绝未知 Key、低于该仓库 High-water
-Mark 的 Revision，以及同 Revision 不同字节。显式 Downgrade 可见且只影响选定 Repository；
-重置到 Embedded Catalog 也不会擦掉防回滚记录。
+已接受的镜像目录状态按仓库独立记录。Barn 会拒绝未知密钥、低于该仓库最高已接受值的修订号，以及同修订号不同字节。显式降级可见且只影响选定仓库；
+重置到内置镜像目录也不会擦掉防回滚记录。
 
-接受 Catalog 只是前半程。每次 Pull 仍会检查 Byte Count、SHA-256 与 qcow2 结构。通过验证的
-Base Image 变为只读，Node Root Disk 使用 Overlay，因此普通 VM 写入永远不会修改受信 Base。
+接受镜像目录只是前半程。每次拉取仍会检查字节数、SHA-256 与 qcow2 结构。通过验证的
+基础镜像变为只读，节点根盘使用写时复制层，因此普通 VM 写入永远不会修改受信基础镜像。
 
 ## 不同信任域保持分离
 
-Image Catalog Key 授权镜像策略；Release Signing 证明 Barn 应用工件与 Checksum Manifest。
-两组 Key 刻意独立：有权发布 VM Image 不应自动获得发布 Barn Binary 的权限，反之亦然。
+镜像目录通过 Minisign 签名认证镜像策略；应用发布提供 `checksums.txt`，用于核对下载文件，
+当前工作流不生成独立的应用发布签名或来源证明包。原生 Mac 应用的 Developer ID 签名
+与公证又是另一条流程。这些机制各有用途，不能用应用校验和替代镜像目录签名。
 
-普通 Public Build 默认使用 `https://repo.pigsty.io/barn`，并通过 `--mirror` 显式选择
+Barn 发布版本默认使用 `https://repo.pigsty.io/barn`，并通过 `--mirror` 显式选择
 `https://repo.pigsty.cc/barn`；`--repo` 仍是自定义覆盖。两个
-官方仓库在下载镜像时可以互相回退，始终校验同一 Catalog 的尺寸与 SHA-256。自定义仓库
-仍是唯一工件源，Catalog 更新仍使用选定来源；Embedded Catalog 的 Upstream URL
+官方仓库在下载镜像时可以互相回退，始终校验同一镜像目录的尺寸与 SHA-256。自定义仓库
+仍是唯一工件源，镜像目录更新仍使用选定来源；内置镜像目录的上游 URL
 只提供溯源，绝不会变成工件回退。源码配置、生成
-Catalog、上传 Artifact、签名与公开可用性仍是彼此独立的发布门禁。
+镜像目录、上传文件、签名与公开可用性仍是彼此独立的发布门禁。
 
 更大的设计原则是：策略应当便于人类审查，而关于已发布字节的事实必须可生成、可复现，并能
 被独立验证。

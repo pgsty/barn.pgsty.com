@@ -2,14 +2,9 @@
 title: macOS Virtual Machines
 linkTitle: macOS VMs
 description: Run macOS 27 virtual machines on Apple Silicon with barn mac — create, connect, share files and the clipboard, and clean up.
-weight: 38
+weight: 20
 icon: fa-brands fa-apple
 ---
-
-> [!IMPORTANT]
-> **Barn 0.9.0 release candidate; unreleased.** See
-> [Status](../../about/status/#macos-guests) for current validation and release checks.
-> Use `barn mac --help` from the binary you run.
 
 `barn mac` creates and runs macOS virtual machines on an Apple Silicon Mac.
 Each machine is a clean, disposable macOS with an administrator account,
@@ -29,36 +24,40 @@ never join a Pigsty inventory, and keep their files under `$BARN_HOME/mac`
   Apple (kept until you prune it), the 27 GiB installed base, and room to
   start. Each machine then grows with its own changes up to its disk capacity,
   100 GiB by default.
-- **Xcode 27** to build the Mac component from source, until a release
-  includes it.
+- The native **Barn Mac.app** component. Xcode 27 is needed only if you build it yourself.
 - No sudo. Every machine, its network and its desktop run as your user.
 
 Apple allows **two macOS virtual machines running at a time** on one Mac,
 including those of other tools and macOS installation itself. You can create
 more machines and start any two.
 
-## Build the Mac component
+## Install {#install}
 
-From a Barn source checkout that contains `barn mac`:
+[Install Barn 0.9.0](../installation/), then check the Mac component:
 
 ```bash
+barn version
+barn mac doctor
+```
+
+`barn mac` needs `Barn Mac.app`, the native component that runs the VM and its
+desktop. The release installer keeps it with the CLI when the arm64 archive
+includes it. Keep the packaged layout intact; copying only `barn` is not enough.
+
+The 0.9.0 release archives provide the CLI. Build the native bundle from the
+0.9.0 tag with **Xcode 27** on Apple Silicon:
+
+```bash
+git clone --branch v0.9.0 https://github.com/pgsty/barn.git
+cd barn
 make mac-build
 export PATH="$PWD/bin/mac:$PATH"
 barn mac doctor
 ```
 
-`bin/mac` holds the CLI, `Barn Mac.app` (the native component that runs the
-machines and their desktops) and the guide; keep them together. The build is
-signed ad hoc for local use. `doctor` checks macOS, the component, and free
-disk space:
-
-```text
-CHECK           RESULT  DETAIL
-component       ok      /path/to/barn/bin/mac/Barn Mac.app/Contents/MacOS/barn-mac-runner
-virtualization  ok      macOS 27.0.0 on Apple Silicon; virtualization supported
-disk            ok      549.8 GiB free
-data            ok      no Mac machines yet; barn mac up creates the first
-```
+`bin/mac` contains the CLI and `Barn Mac.app`; keep them together. This local
+build uses an ad-hoc signature. `doctor` checks the host, component, free disk
+space, and any existing machines before you start.
 
 ## Create your first machine
 
@@ -92,8 +91,9 @@ shell:     barn mac ssh mac1
 desktop:   barn mac open mac1
 ```
 
-Every later machine reuses the base and is ready in tens of seconds; a machine
-created from a prepared base on the validation host was ready in 22 seconds.
+Later machines reuse the installed base, skipping the full macOS restore.
+Startup time depends on host resources and first-boot provisioning. The build
+numbers, timings, and free-space figures above are illustrative.
 
 If you already have Apple's restore image, pass it instead of downloading.
 On the same APFS volume Barn clones it without copying; elsewhere it verifies
@@ -191,7 +191,7 @@ Share Mac folders when creating a machine. The guest mounts them under
 `/Volumes/My Shared Files/<name>`:
 
 ```bash
-barn mac up dev --share ~/src --share docs=~/Documents:ro
+barn mac up dev --cpu 8 --memory 16G --share ~/src --share docs=~/Documents:ro
 barn mac exec dev -- ls "/Volumes/My Shared Files"
 ```
 
@@ -207,8 +207,8 @@ barn mac start dev
 ```
 
 macOS guests can show stale file contents for a short while after the Mac
-changes a shared file. Use SSH or `exec` when you need an immediately
-consistent view.
+changes a shared file. If you need the latest bytes immediately, use `scp`
+or `rsync` to copy the files onto the guest's own disk.
 
 ### SSH from other tools
 
@@ -238,21 +238,21 @@ barn mac ls
 
 ```text
 NAME  STATE    ADDRESS      SSH    USER   OS          CPU  MEMORY  DISK                 SHARED
-dev   running  10.10.21.10  ready  alice  macOS 27.0    8  16 GiB  504.0 MiB / 100 GiB
-mac1  running  10.10.20.10  ready  alice  macOS 27.0    4   8 GiB  4.7 GiB / 100 GiB    src
+dev   running  10.10.21.10  ready  alice  macOS 27.0    8  16 GiB  504.0 MiB / 100 GiB    src,data
+mac1  running  10.10.20.10  ready  alice  macOS 27.0    4   8 GiB  4.7 GiB / 100 GiB
 limit:     2 of 2 macOS VMs are running; stop one before starting another
 ```
 
 Names use lowercase letters, digits and inner hyphens and start with a letter.
-A command without a name acts on the only machine, or on `mac1`, and asks you
-to choose when that is ambiguous. `DISK` shows the space the machine uses now
+A command without a name acts on the only machine, or on `mac1`, and requires an explicit name when that is ambiguous. `DISK` shows the space the machine uses now
 and its capacity. Capacity belongs to the base: a `--disk` other than the
 prepared base's installs another base first, which needs the restore image
 again.
 
-Each machine has its own private network: `mac1` gets `10.10.20.10`, later
-machines the next free `/24`, avoiding your LAN, VPNs and the Linux lab.
-Machines reach the internet and the Mac, but not each other. With two machines
+Each machine has its own private network. The first available subnet is
+`10.10.20.0/24`, with the guest at `.10`; Barn skips subnets that conflict with
+your LAN, VPNs, the Linux lab, or another Mac machine.
+Machines reach the Mac and use NAT for outbound connections; each has its own subnet. With two machines
 running, a third is refused before anything is created, naming a machine to
 stop:
 
@@ -304,10 +304,10 @@ machines. Both describe what they delete and ask you to type the command name;
 
 ```bash
 barn mac recreate dev
-barn mac destroy dev build
+barn mac destroy dev
 ```
 
-| Operation | Guest disk and apps | Settings, address, account |
+| Operation | guest disk and apps | Settings, address, account |
 |---|---|---|
 | `stop`/`start`, `restart`, repeated `up` | kept | kept |
 | `configure` | kept | changed as requested |
@@ -355,8 +355,8 @@ shutdown and Apple Virtualization errors.
 |---|---|
 | `network … overlaps route …` on start | A VPN or another tool now uses that subnet. Run `barn mac configure NAME --subnet auto`. |
 | `macOS allows 2 macOS virtual machines at a time` | Stop one of the named machines, or quit another tool's macOS VM. |
-| `ssh mac1` from a third-party client says "No route to host" | macOS Local Network privacy blocks that app from private networks. Allow it in **System Settings → Privacy & Security → Local Network**, or use `/usr/bin/ssh`. `barn mac ssh` and `exec` always use Apple's tools and are not affected. |
-| `the Barn Mac component is not installed` or `speaks protocol …` | Keep `barn` and `Barn Mac.app` from the same build together; rebuild with `make mac-build`. |
+| `ssh mac1` from a third-party client says "No route to host" | macOS Local Network privacy blocks that app from private networks. Allow it in **System Settings → Privacy & Security → Local Network**, or use `/usr/bin/ssh`. `barn mac ssh` and `exec` use Apple's tools to avoid that restriction. |
+| `the Barn Mac component is not installed` or `speaks protocol …` | Keep the installed CLI and component together; reinstall them, or use the source build above. |
 | Starting fails from an SSH session to the Mac | Run `barn mac` in a terminal of the Mac's desktop session: machines need the logged-in user's graphical session. |
 
 Apple Account sign-in inside a virtual machine is unreliable, and USB devices,
@@ -364,14 +364,19 @@ snapshots and suspending a machine are not supported.
 
 ## Clean up
 
+Inspect the remaining machines and replace the example names with those
+you want to remove:
+
 ```bash
-barn mac destroy --force mac1 dev           # delete machines
+barn mac ls                               # check the names first
+barn mac destroy mac1 dev                  # confirm deletion of these machines
 barn mac image prune --installers --yes     # delete unused images
 ```
 
 Destroying the last machine also removes its entries from `~/.ssh/config`. The
 default base stays for new machines; to remove every Mac file including it,
-destroy all machines and then delete `$BARN_HOME/mac` (default
+destroy all machines, remove the Mac SSH integration with `barn mac ssh-config --remove`,
+and then delete `$BARN_HOME/mac` (default
 `~/.barn/mac`). Outside that directory Barn writes only its
 `~/.ssh/config` entries, the desktop window positions in
 `~/Library/Preferences/io.pgsty.barn.mac-runner.plist`, and a short runtime

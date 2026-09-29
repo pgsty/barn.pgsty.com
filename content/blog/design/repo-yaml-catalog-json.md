@@ -5,14 +5,13 @@ description: "Why Barn separates human-authored image policy from generated meta
 date: 2026-08-29T19:00:00+08:00
 weight: 50
 categories: [Design]
-tags: [Images, Supply Chain, Catalog]
+tags: [Images, Supply Chain, catalog]
 icon: fa-solid fa-box-archive
 lastmod: 2026-09-29
 ---
 
-> [!NOTE]
-> This article describes the **unreleased Barn 0.9.0 candidate**. See
-> [Status](/docs/about/status/) for current validation and remaining release checks.
+This article describes Barn 0.9.0. The VM lifecycle and network design here
+apply to Linux guests; [Mac machines](/docs/start/macos/) are managed independently.
 
 A static image repository sounds like a directory of qcow2 files plus a JSON
 index. The difficult part is deciding which facts a maintainer may write by
@@ -59,7 +58,7 @@ This is the right layer for review: a pull request can show that a channel
 moved, a version was deprecated, or a provenance statement changed.
 
 > [!NOTE]
-> **Decision status: current.** Repository syntax and client behavior are
+> Repository syntax and client behavior are
 > documented in [Images](/docs/reference/images/); candidate preparation is a
 > separate [image-pipeline contract](/docs/reference/image-pipeline/).
 
@@ -75,7 +74,7 @@ validated policy copied from `repo.yaml`; inspection does not independently
 prove those declarations. Build forces qcow2 parsing, rejects backing files,
 external data,
 encryption, and unknown incompatible features, and runs structural checks
-before atomically replacing the Catalog.
+before atomically replacing the catalog.
 
 The artifact identity is the tuple `(image, exact version, architecture)`, not
 the channel that selected it. Files keep readable immutable names:
@@ -96,15 +95,15 @@ The repository CLI keeps observation, generation, and proof separate:
 | Command | Responsibility |
 | --- | --- |
 | `barn repo scan` | report tracked, missing, untracked, or unsafe artifacts without changing anything |
-| `barn repo build` | validate source and artifacts, then atomically materialize the Catalog |
-| `barn repo verify` | rebuild the materialization in memory and require byte-for-byte equality with the published Catalog |
+| `barn repo build` | validate source and artifacts, then atomically materialize the catalog |
+| `barn repo verify` | rebuild the materialization in memory and require byte-for-byte equality with the published catalog |
 
 `build` never edits `repo.yaml` or qcow2 bytes. `verify` is stronger than
 “every checksum is valid”: it also proves that no source policy or artifact
-change was omitted from the generated Catalog.
+change was omitted from the generated catalog.
 
 Publication follows the same direction. Upload immutable image bytes first;
-publish the Catalog and its matching signature last. Publish that pair
+publish the catalog and its matching signature last. Publish that pair
 together where possible. A client refuses a mismatched pair during a partial
 upload; the order avoids advertising image bytes that are still in transit.
 
@@ -124,35 +123,37 @@ identity exists at execution time.
 
 Official and plain-HTTP Catalogs require a trusted detached signature. An
 operator who explicitly selects a local directory or HTTPS repository may use
-an unsigned Catalog because local ownership or authenticated transport is the
+an unsigned catalog because local ownership or authenticated transport is the
 explicit trust decision. An implicit compiled default remains in the signed
 trust domain even if its URL is HTTPS.
 
-Accepted Catalog state is tracked independently per repository. Barn rejects
+Accepted catalog state is tracked independently per repository. Barn rejects
 unknown keys, a revision below that repository's high-water mark, and different
 bytes at the same revision. An explicit downgrade is visible and scoped to the
-selected repository; resetting to the embedded Catalog does not erase the
+selected repository; resetting to the embedded catalog does not erase the
 anti-rollback record.
 
-Catalog acceptance is only the first half. Every pull still checks byte count,
+catalog acceptance is only the first half. Every pull still checks byte count,
 SHA-256, and qcow2 structure. Verified base images become read-only, and node
 root disks are overlays, so normal VM writes never mutate the trusted base.
 
 ## Separate trust domains stay separate
 
-Image Catalog keys authorize image policy. Release signing proves the Barn
-application artifacts and checksum manifest. The two key sets are intentionally
-independent: permission to publish a VM image must not imply permission to ship
-a new Barn binary, or vice versa.
+Image catalog keys authenticate image metadata. Application archives and packages
+are distributed through GitHub Releases with SHA-256 checksums and SPDX SBOMs;
+the application workflow does not produce a separate release signature or
+attestation bundle. A bundled native Mac app has its own Developer ID signing
+and notarization process. These mechanisms have different scopes; a catalog
+signature does not authenticate the Barn executable.
 
-The Barn 0.9.0 candidate defaults to `https://repo.pigsty.io/barn` and exposes
+The Barn 0.9.0 defaults to `https://repo.pigsty.io/barn` and exposes
 `--mirror` for `https://repo.pigsty.cc/barn`; `--repo` remains the explicit
 custom override. The two official repositories may
 fall back to each other for image downloads, always verifying the same
-Catalog size and SHA-256. Custom repositories remain exclusive. Catalog
+catalog size and SHA-256. Custom repositories remain exclusive. catalog
 updates still use the selected source; embedded upstream URLs remain
 provenance and never become an artifact fallback. Source configuration,
-generated Catalog, uploaded artifacts, signing,
+generated catalog, uploaded artifacts, signing,
 and public availability remain separate release gates.
 
 That is the larger design principle: policy should be pleasant to review, but

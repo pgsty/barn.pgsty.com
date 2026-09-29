@@ -10,9 +10,8 @@ icon: fa-solid fa-fingerprint
 lastmod: 2026-09-29
 ---
 
-> [!NOTE]
-> This article describes the **unreleased Barn 0.9.0 candidate**. See
-> [Status](/docs/about/status/) for current validation and remaining release checks.
+This article describes Barn 0.9.0. The VM lifecycle and network design here
+apply to Linux guests; [Mac machines](/docs/start/macos/) are managed independently.
 
 A pidfile answers one question: which integer did a process have when the file
 was written? It does not prove that the process is still alive, that the PID
@@ -37,12 +36,12 @@ The same check guards shutdown. A QMP endpoint with a different name or UUID
 is not “probably the old VM.” It is a hard identity mismatch, and Barn sends
 no command through it.
 
-QMP also provides the clean path: request Guest powerdown, wait for the Guest,
+QMP also provides the clean path: request guest powerdown, wait for the guest,
 then ask QEMU to quit if the bounded graceful wait expires. Process signals
 are fallback tools, not the primary lifecycle API.
 
 > [!NOTE]
-> **Decision status: current.** This record explains the fail-closed lifecycle
+> This record explains the fail-closed lifecycle
 > boundary. Operational recovery starts with
 > [Troubleshooting](/docs/start/troubleshooting/), not manual deletion.
 
@@ -66,7 +65,7 @@ live control plane with a signal. If QMP reports another identity, it stops. If
 the process tuple cannot be verified, it stops. “Unable to prove” is a result,
 not a reason to weaken the check.
 
-**Unreleased 0.9 candidate update:** when QMP is unavailable and the recorded
+when QMP is unavailable and the recorded
 PID is positively identified as an unrelated process, Barn treats the old VM
 as stopped and never signals that unrelated process. This differs from an
 unreadable or ambiguous identity, which still blocks the operation.
@@ -102,8 +101,8 @@ contain only the journal and the completed allowlisted artifacts. Rollback
 then removes the completed artifacts in reverse order, followed by the journal
 and empty node directory.
 
-**Unreleased 0.9 candidate update:** a failed first `up` can be retried after
-the Inventory is edited. Safe cleanup follows the journal's completed artifact
+a failed first `up` can be retried after
+the inventory is edited. Safe cleanup follows the journal's completed artifact
 list rather than requiring the new desired spec to match the failed old spec.
 
 A committed node is never rolled back by a stale prepare journal. A pre-existing
@@ -118,7 +117,7 @@ only after the known files are gone, so an unknown entry turns into an error.
 ## Atomic state makes the evidence durable
 
 State updates use a same-directory temporary file, `fsync`, atomic rename, and
-parent-directory `fsync`; symlink targets are rejected. Deployment and node
+parent-directory `fsync`; symlink targets are rejected. deployment and node
 locks serialize mutations. The goal is not to make crashes impossible—it is
 to ensure a crash leaves either an old committed fact or a new committed fact,
 plus a journal for the bounded interval between them.

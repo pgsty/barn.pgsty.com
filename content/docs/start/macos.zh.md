@@ -2,19 +2,15 @@
 title: macOS 虚拟机
 linkTitle: macOS 虚拟机
 description: 用 barn mac 在 Apple 芯片 Mac 上运行 macOS 27 虚拟机：创建、连接、共享文件与剪贴板，以及清理。
-weight: 38
+weight: 20
 icon: fa-brands fa-apple
 ---
-
-> [!IMPORTANT]
-> **Barn 0.9.0 发布候选，尚未发布。** 当前验证结果与发行前检查见
-> [当前状态](../../about/status/#macos-guests)。请以实际运行的 `barn mac --help` 为准。
 
 `barn mac` 在 Apple 芯片 Mac 上创建并运行 macOS 虚拟机。每台机器都是干净、可随时
 丢弃的 macOS：带管理员账号、免密 sudo、固定的 SSH 密钥和固定地址，适合测试、构建与复现
 macOS 特有的问题。它直接使用 Apple 的 Virtualization 框架，全程不需要管理员权限。
 
-Mac 机器与 Linux 实验环境相互独立：不读取 `barn.yml`，不加入 Pigsty Inventory，
+Mac 机器与 Linux 实验环境相互独立：不读取 `barn.yml`，不加入 Pigsty 主机清单，
 所有文件都在 `$BARN_HOME/mac`（默认 `~/.barn/mac`）下。Linux 的 `destroy` 与
 `purge` 不会触碰它们。
 
@@ -24,32 +20,37 @@ Mac 机器与 Linux 实验环境相互独立：不读取 `barn.yml`，不加入 
 - 第一台机器约需 **65 GiB** 可用空间：从 Apple 下载的约 25 GiB 恢复镜像（清理前一直保留）、
   安装后约 27 GiB 的基础镜像，以及启动所需的余量。此后每台机器按自身改动增长，
   上限是磁盘容量，默认 100 GiB。
-- 在正式发布包含 Mac 组件之前，从源码构建需要 **Xcode 27**。
+- 原生组件 **Barn Mac.app**。只有自行构建组件时才需要 Xcode 27。
 - 不需要 sudo：每台机器、它的网络和桌面都以当前用户身份运行。
 
 Apple 规定一台 Mac 上**同时最多运行两台 macOS 虚拟机**，其他工具的虚拟机和 macOS
 安装过程也计算在内。机器可以创建多台，任意两台可以同时运行。
 
-## 构建 Mac 组件
+## 安装 {#install}
 
-在包含 `barn mac` 的 Barn 源码目录中执行：
+[安装 Barn 0.9.0](../installation/) 后，检查 Mac 组件：
 
 ```bash
+barn version
+barn mac doctor
+```
+
+`barn mac` 需要运行虚拟机及其桌面的原生组件 `Barn Mac.app`。arm64 归档包含它时，
+发行安装器会将它与 CLI 放在一起。请保留软件包的目录布局，只复制 `barn` 不够。
+
+0.9.0 发行归档提供 CLI。在 Apple Silicon 上用 **Xcode 27** 从 0.9.0
+标签构建原生组件：
+
+```bash
+git clone --branch v0.9.0 https://github.com/pgsty/barn.git
+cd barn
 make mac-build
 export PATH="$PWD/bin/mac:$PATH"
 barn mac doctor
 ```
 
-`bin/mac` 中包含命令行、`Barn Mac.app`（运行机器及其桌面的原生组件）和使用说明，
-请保持它们放在一起。本地构建使用 ad-hoc 签名。`doctor` 会检查 macOS 版本、组件与可用空间：
-
-```text
-CHECK           RESULT  DETAIL
-component       ok      /path/to/barn/bin/mac/Barn Mac.app/Contents/MacOS/barn-mac-runner
-virtualization  ok      macOS 27.0.0 on Apple Silicon; virtualization supported
-disk            ok      549.8 GiB free
-data            ok      no Mac machines yet; barn mac up creates the first
-```
+`bin/mac` 包含 CLI 与 `Barn Mac.app`，请保持它们放在一起。本地构建使用 ad-hoc
+签名。`doctor` 检查宿主、组件、可用空间与已有机器。
 
 ## 创建第一台机器
 
@@ -81,11 +82,11 @@ shell:     barn mac ssh mac1
 desktop:   barn mac open mac1
 ```
 
-之后的每台机器都复用这个基础镜像，几十秒即可就绪；在验证主机上，从已准备好的基础镜像
-创建一台机器用时 22 秒。
+之后的机器会复用已安装的基础镜像，跳过完整的 macOS 恢复安装。
+启动耗时取决于宿主资源与首次初始化；上面的系统构建号、耗时和可用空间均为示例。
 
 如果手上已有 Apple 的恢复镜像，可以直接使用，不必重新下载。它与数据在同一个 APFS
-卷上时，Barn 以克隆方式引入，不占额外空间；否则校验后原地使用：
+卷上时，Barn 通过克隆共享已有数据块；否则校验后原地使用：
 
 ```bash
 barn mac up --ipsw ~/Downloads/UniversalMac_27.0_26A428_Restore.ipsw
@@ -171,7 +172,7 @@ barn mac password --copy
 创建机器时共享 Mac 上的目录，客机把它们挂载在 `/Volumes/My Shared Files/<名称>`：
 
 ```bash
-barn mac up dev --share ~/src --share docs=~/Documents:ro
+barn mac up dev --cpu 8 --memory 16G --share ~/src --share docs=~/Documents:ro
 barn mac exec dev -- ls "/Volumes/My Shared Files"
 ```
 
@@ -184,8 +185,8 @@ barn mac configure dev --share data=/Volumes/Work/data --unshare docs
 barn mac start dev
 ```
 
-Mac 修改共享文件后，macOS 客机可能在短时间内仍看到旧内容。需要即时一致的结果时，
-请通过 SSH 或 `exec` 操作。
+Mac 修改共享文件后，macOS 客机可能在短时间内仍看到旧内容。需要立即使用最新文件时，
+可通过 `scp` 或 `rsync` 将文件复制到客机自己的磁盘。
 
 ### 在其他工具中使用 SSH
 
@@ -205,7 +206,7 @@ Barn 不会修改它，而是打印需要你手动添加的 `Include` 行。
 
 ## 多台机器
 
-为每台机器命名。创建参数只对新机器生效：
+为每台机器命名。创建参数只对新机器生效。下面沿用前面的 `dev` 示例：
 
 ```bash
 barn mac up dev --cpu 8 --memory 16G
@@ -214,8 +215,8 @@ barn mac ls
 
 ```text
 NAME  STATE    ADDRESS      SSH    USER   OS          CPU  MEMORY  DISK                 SHARED
-dev   running  10.10.21.10  ready  alice  macOS 27.0    8  16 GiB  504.0 MiB / 100 GiB
-mac1  running  10.10.20.10  ready  alice  macOS 27.0    4   8 GiB  4.7 GiB / 100 GiB    src
+dev   running  10.10.21.10  ready  alice  macOS 27.0    8  16 GiB  504.0 MiB / 100 GiB    src,data
+mac1  running  10.10.20.10  ready  alice  macOS 27.0    4   8 GiB  4.7 GiB / 100 GiB
 limit:     2 of 2 macOS VMs are running; stop one before starting another
 ```
 
@@ -223,8 +224,8 @@ limit:     2 of 2 macOS VMs are running; stop one before starting another
 `mac1`；无法确定时会请你指定。`DISK` 显示机器当前占用的空间与容量。容量属于基础镜像：
 `--disk` 与已准备的基础镜像不同时，会先安装另一个基础镜像，这需要再次使用恢复镜像。
 
-每台机器有自己的私有网络：`mac1` 使用 `10.10.20.10`，之后的机器依次使用下一个空闲的
-`/24`，并避开局域网、VPN 与 Linux 实验环境。机器可以访问互联网和 Mac，但彼此不通。
+每台机器有自己的私有网络。候选网段从 `10.10.20.0/24` 开始，客机地址为 `.10`；
+Barn 会跳过与局域网、VPN、Linux 环境或其他 Mac 虚拟机冲突的子网。机器可以访问宿主并通过 NAT 建立出站连接，各自使用独立子网。
 已有两台机器在运行时，第三台会在创建任何内容之前被拒绝，并指出可以停止哪一台：
 
 ```bash
@@ -271,7 +272,7 @@ barn mac start dev
 
 ```bash
 barn mac recreate dev
-barn mac destroy dev build
+barn mac destroy dev
 ```
 
 | 操作 | 客机磁盘与应用 | 设置、地址与账号 |
@@ -317,21 +318,24 @@ Virtualization 的错误。
 |---|---|
 | 启动时报 `network … overlaps route …` | VPN 或其他工具占用了该网段。执行 `barn mac configure NAME --subnet auto`。 |
 | `macOS allows 2 macOS virtual machines at a time` | 停止提示中的某台机器，或退出其他工具的 macOS 虚拟机。 |
-| 第三方 SSH 客户端执行 `ssh mac1` 报 "No route to host" | macOS 的“本地网络”隐私控制阻止了该应用访问私有网络。在**系统设置 → 隐私与安全性 → 本地网络**中允许它，或改用 `/usr/bin/ssh`。`barn mac ssh` 与 `exec` 始终使用 Apple 自带工具，不受影响。 |
-| `the Barn Mac component is not installed` 或 `speaks protocol …` | 同一次构建的 `barn` 与 `Barn Mac.app` 需放在一起；用 `make mac-build` 重新构建。 |
+| 第三方 SSH 客户端执行 `ssh mac1` 报 "No route to host" | macOS 的“本地网络”隐私控制阻止了该应用访问私有网络。在**系统设置 → 隐私与安全性 → 本地网络**中允许它，或改用 `/usr/bin/ssh`。`barn mac ssh` 与 `exec` 使用 Apple 自带工具，通常可以避开第三方客户端的权限问题。 |
+| `the Barn Mac component is not installed` 或 `speaks protocol …` | 保留 CLI 与组件的安装布局，重新安装匹配的组件，或按本页说明从源码构建。 |
 | 通过 SSH 登录 Mac 后启动失败 | 请在 Mac 桌面会话的终端中运行 `barn mac`：机器需要已登录用户的会话和已解锁的登录钥匙串。 |
 
 在虚拟机中登录 Apple 账户并不可靠；不支持 USB 设备、快照和挂起机器。
 
 ## 清理
 
+先检查还保留了哪些机器，再将下面的示例名称替换为实际要删除的名称：
+
 ```bash
-barn mac destroy --force mac1 dev           # 删除机器
+barn mac ls                               # 先检查机器名称
+barn mac destroy mac1 dev                  # 确认删除这些机器
 barn mac image prune --installers --yes     # 删除不再使用的镜像
 ```
 
 删除最后一台机器时，`~/.ssh/config` 中的相应条目也会一并移除。默认基础镜像会保留，
-供之后创建机器使用；如需删除包括它在内的所有 Mac 文件，先删除全部机器，再删除
-`$BARN_HOME/mac`（默认 `~/.barn/mac`）。除该目录外，Barn 只会写入
+供之后创建机器使用；如需删除包括它在内的所有 Mac 文件，先删除全部机器，用 `barn mac ssh-config --remove` 移除 Mac SSH 集成，
+再删除 `$BARN_HOME/mac`（默认 `~/.barn/mac`）。除该目录外，Barn 只会写入
 `~/.ssh/config` 中的条目、保存在 `~/Library/Preferences/io.pgsty.barn.mac-runner.plist`
 中的桌面窗口位置，以及 `/tmp` 下的一个短路径运行目录。整个过程都不需要 sudo。

@@ -1,0 +1,12 @@
+{{- $page := .page -}}
+{{- $data := .data -}}
+{{- $id := .id -}}
+<section id="{{ $id }}" class="td-landing-section td-landing-markdown-section" aria-labelledby="{{ $id }}-title">
+  <div class="td-site-container">
+    {{- partial "landing/heading.html" (dict "page" $page "data" $data "id" $id) }}
+    {{/* Code tabs share the documentation's highlighting, copy button and wrapping. */}}
+    <div class="td-landing-markdown td-content">
+      {{ partial "landing/markdown-block.html" (dict "page" $page "value" $data.body) }}
+    </div>
+  </div>
+</section>

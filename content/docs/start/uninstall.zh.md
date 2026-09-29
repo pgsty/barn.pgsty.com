@@ -1,31 +1,49 @@
 ---
-title: 卸载与清理环境
-description: 安全移除 Barn deployment、集成、镜像、宿主网络与默认状态目录。
-weight: 60
+title: 卸载与清理
+description: 分别移除 Linux 与 macOS 虚拟机，再清理集成、镜像、网络和程序。
+weight: 90
 icon: fa-solid fa-trash-can
 ---
 
-本页会删除虚拟机与本地数据。先确认当前状态，不要在仍需保留 Barn VM 时继续：
+Barn 分别管理 Linux 和 macOS 虚拟机。**`barn purge` 只删除 Linux 部署，不删除
+Mac 虚拟机。** 完成机器与宿主清理之前，请保留 Barn 程序。
 
-```bash
-barn st
-```
+## 选择清理范围
 
-## 1. 删除 deployment
+| 目标 | 操作 |
+|---|---|
+| 释放运行资源，保留磁盘 | `barn stop`；Mac 使用 `barn mac stop --all` |
+| 删除某个 Linux 节点 | `barn destroy <node>` |
+| 删除 Linux 环境，保留持久盘 | `barn destroy` |
+| 删除 Linux 环境、持久盘和密钥 | `barn purge`，无需确认 |
+| 删除指定 Mac 虚拟机 | `barn mac destroy <name...>`，需要确认 |
 
-彻底删除节点、持久盘、密钥与 deployment 状态：
+Linux 节点名以 `barn status` 为准，Mac 机器名以 `barn mac ls` 为准。
+删除之前备份需要保留的文件。
+
+## 1. 删除机器
+
+丢弃整套 Linux 环境，包括之前保留的持久盘：
 
 ```bash
 barn purge
 ```
 
-这条整套处置命令无需确认；镜像缓存与宿主网络仍然保留。若要保留
-持久盘或只删除选中节点，继续使用粒度更细且带确认的 `barn destroy`。
+镜像缓存和宿主网络会保留。对于 Mac 虚拟机，先查看列表，再明确指定要删除的名称。
+下面的示例删除 `mac1` 和 `dev`：
+
+```bash
+barn mac ls
+barn mac destroy mac1 dev
+```
+
+Mac 销毁会删除机器的磁盘、凭据和设置，保留共享基础镜像与宿主文件夹。
+没有使用 Mac 客机时，跳过 Mac 命令。
 
 ## 2. 移除可选集成
 
-整体 destroy 已自动移除默认 `barn` SSH integration。如果使用过自定义 fragment 名称或
-`/etc/hosts` 条目：
+整体销毁 Linux 部署时会移除默认 SSH 集成。若另外安装过自定义配置片段或 hosts 条目，
+按实际使用情况移除：
 
 ```bash
 barn ssh-config --remove --name lab
@@ -33,75 +51,70 @@ barn hosts uninstall --json
 barn hosts uninstall --yes
 ```
 
-未加 `--yes` 的 `--json` 命令只展示 Barn 标记范围内的计划。确认目标正确后再执行
-带 `--yes` 的命令。Barn 0.9.0 的普通终端输出会询问 `[y/N]`，同意后立即卸载。
-读取 hosts 计划无需 sudo，实际修改仍需要权限。
+`lab` 是自定义片段名称的示例。JSON 命令预览 hosts 删除计划，`--yes` 执行计划。
+移除 Mac SSH 条目：
 
-## 3. 删除镜像缓存
+```bash
+barn mac ssh-config --remove
+```
+
+这些命令只移除 Barn 管理的条目，保留用户自己的 SSH 配置和 hosts 内容。
+
+## 3. 清理镜像缓存
 
 ```bash
 barn image prune --dry-run
 barn image prune --yes
 ```
 
-Prune 删除未引用的缓存镜像与遗留 staging 文件，但会保护已应用 deployment、当前
-Catalog 和已注册本地别名引用的镜像，因此不等于清空全部缓存。后面的可选状态目录
-清理会一并删除剩余缓存。
+Linux 清理会保护当前镜像目录、已有 VM 和已注册本地别名引用的镜像，
+所以删除 VM 后，缓存不一定清空。Mac 镜像使用独立命令：
 
-## 4. 卸载宿主网络
+```bash
+barn mac image prune --installers
+barn mac image prune --installers --yes
+```
+
+Mac 清理会保留仍被机器使用的基础镜像，以及默认基础镜像。
+
+## 4. 移除 Linux 宿主网络
 
 ```bash
 barn network uninstall --json
 barn network uninstall --yes
 ```
 
-第一条 JSON 命令只展示归属明确的删除计划，但可能需要 sudo 读取受保护的网络状态。
-只要仍有 VM 接入，网络卸载就会拒绝执行。宿主网络由用户共享；清理自己的部署不代表
-其他用户的 VM 也已停止。
+JSON 命令预览计划，读取受保护宿主状态时可能需要 sudo。核对后再执行带 `--yes` 的命令。
+网络由多个用户共享，有 VM 接入时不能卸载。Mac 的私有网络会随机器停止而消失，无需单独卸载。
 
-## 5. 清理源码安装残留
+## 5. 移除程序与剩余文件
 
-宿主网络卸载会保留可独立使用的 hosts helper。仅在确认不再使用 Barn 后，删除下面的准确路径：
+通过包管理器安装时，使用对应命令：
 
-```bash
-sudo rm -f -- /opt/barn/libexec/barn-hosts-helper
-sudo rmdir /opt/barn/libexec /opt/barn
+```bash {tab="Homebrew" group="uninstall" value="brew"}
+brew uninstall barn
 ```
 
-若使用默认状态目录，并且前面所有步骤均已完成，可最后删除空余状态：
-
-```bash
-(
-  set -eu
-  test -z "${BARN_HOME:-}"
-  barn_state_root="$(cd "$HOME" && pwd -P)/.barn"
-  test ! -L "$barn_state_root"
-  if test -d "$barn_state_root"; then
-    printf 'removing exact state root: %s\n' "$barn_state_root"
-    find "$barn_state_root" -depth -delete
-  fi
-)
+```bash {tab="Debian / Ubuntu" value="deb"}
+sudo apt remove barn
 ```
 
-此段命令在设置了 `BARN_HOME` 或默认路径为符号链接时停止。自定义状态目录必须
-另行核对，不要把目标替换为 `$HOME`、`/`、工作区根目录或未经确认的路径。删除后不要
-再次运行生命周期命令来验证目录不存在，因为命令可能重新创建锁目录。
-
-QEMU 可能被其他工具共用，默认不要卸载。只有确定没有其他用途时，macOS 才执行：
-
-```bash
-brew uninstall qemu
+```bash {tab="RHEL / Fedora" value="rpm"}
+sudo dnf remove barn
 ```
 
-检查网络与默认状态目录：
+使用用户级安装器时，检查安装目录，默认为 `~/.local/bin`。其中 Barn 管理的文件包括
+`barn`、`barn-hosts-helper` 两个符号链接，以及 `.barn-current`、`.barn-releases/`
+和 `.barn-install.lock`。全部 VM 停止、集成移除后，再删除这些明确的文件与目录。
+手动归档或源码安装则移除对应目录或 PATH 设置。
 
-```bash
-barn network status --json
-test ! -e "$HOME/.barn" && echo 'no Barn state'
-```
+手动安装的 hosts helper 若仍存在，其路径为 `/opt/barn/libexec/barn-hosts-helper`。
+仅在 hosts 集成已卸载、其他 Barn 用户也不再需要时移除。
 
-卸载后的网络预期报告缺失或未就绪，应检查具体结果，不应要求退出码为零。不要把
-`bridge100` 是否消失当作依据：macOS 决定桥接名称，其他软件也可能使用 vmnet 桥。
+**只有 Linux 和 Mac 虚拟机都已删除，才能删除 `~/.barn`。** 该目录同时保存两类机器
+的状态、凭据、持久盘与镜像缓存，仅执行 Linux `purge` 并不足够。设置了 `BARN_HOME`
+时应检查实际路径。机器目录仍存在或 destroy 失败时，先排查原因，不要递归强删。
+即使只删除 `~/.barn/mac`，也必须先销毁全部 Mac 虚拟机。
 
-Archive、Homebrew、DEB 或 RPM 安装的 Barn 二进制应使用对应安装渠道移除；源码构建生成的
-`bin/` 只是工作区构件，与上述宿主状态无关。
+Mac 窗口偏好单独保存在 `~/Library/Preferences/io.pgsty.barn.mac-runner.plist`，
+移除它只会重置窗口位置。QEMU 可能被其他工具共用，确认不再需要之前请保留。

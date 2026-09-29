@@ -1,20 +1,22 @@
 ---
 title: 参考
 linkTitle: 参考
-description: Barn 读取的 Pigsty Inventory 与命令行的准确契约。
+description: Barn 0.9.0 的配置字段、命令参数、输出格式与镜像仓库说明。
 weight: 20
 icon: fa-solid fa-book-open
 cascade:
   type: docs
 ---
 
-本参考描述 **Barn 0.9.0 发布候选**。编写脚本前先核对 `barn version`，
-发布进度见[当前状态](../about/status/#documentation-baseline)。
+在这里查找 **Barn 0.9.0** 的字段、参数和命令结果。需要按步骤操作时，先看[使用指南](../start/)。
 
-- [配置](configuration/)：发现顺序、变量、默认值、磁盘、共享、命名与漂移。
-- [命令行](cli/)：命令、关键参数、输出模式与退出码。
-- [Mac 命令](mac/)：尚未发布的 `barn mac` 的命令、JSON 结果与失败原因。
-- [镜像](images/)：签名 Catalog、别名、本地缓存、拉取、导入与清理。
-- [镜像流水线](image-pipeline/)：Candidate 校验与离线归一化。
+| 参考 | 内容 |
+|---|---|
+| [Linux 配置](configuration/) | 配置发现、变量、默认值、磁盘、共享与变更规则 |
+| [命令行](cli/) | 通用参数、Linux 命令、结构化结果与退出码 |
+| [Mac 命令](mac/) | macOS 虚拟机命令、设置、JSON 结果与文件布局 |
+| [Linux 镜像](images/) | 镜像版本、仓库、签名、导入与缓存管理 |
+| [镜像流水线](image-pipeline/) | 供贡献者使用的 Linux 镜像构建与检查工具 |
 
-Barn 不提供受支持的 Go Library API；`internal/` 下的包都是实现细节。
+使用其他版本时，请核对 `barn version` 与 `barn <command> --help`。
+Barn 对外提供命令行接口，Go `internal/` 下的包属于实现细节。

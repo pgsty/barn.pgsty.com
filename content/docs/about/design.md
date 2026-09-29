@@ -1,20 +1,33 @@
 ---
 title: Design
-description: Barn's one-deployment architecture, networking, state, and safety boundaries.
-weight: 10
+description: How Barn models Linux labs and macOS guests, with predictable state and explicit lifecycle changes.
+weight: 20
 icon: fa-solid fa-compass-drafting
 aliases: [/docs/concepts/, /docs/concepts/networking/, /docs/concepts/storage/, /docs/concepts/safety/, /docs/architecture/, /docs/architecture/overview/, /docs/architecture/networking/, /docs/architecture/security/]
 ---
 
-## One useful abstraction
+Barn provides two workflows that share a CLI but keep their configuration and
+lifecycle separate.
 
-Barn boots one Pigsty Inventory as one local QEMU deployment. It deliberately
+| | Linux labs | macOS guests |
+| --- | --- | --- |
+| Virtualization | QEMU with HVF or KVM; TCG for selected compatibility cases | Apple Virtualization.framework |
+| Desired state | A Pigsty-compatible YAML inventory | Named machines configured with `barn mac` |
+| State directory | `~/.barn` | `~/.barn/mac` |
+| Networking | Management NIC plus a fixed-IP lab subnet | One NAT subnet and DHCP reservation per machine |
+| Typical work | Database clusters, Linux development and automation | macOS builds, desktop tools and isolated development |
+
+The sections below explain the Linux lab model. For the native macOS workflow,
+see [macOS guests](../../start/macos/) and the [Mac reference](../../reference/mac/).
+
+## One Linux lab per user
+
+Barn boots one Pigsty-compatible inventory as one local QEMU deployment. It deliberately
 has no project marker, project registry, lease model, provider layer, or
 second configuration format.
 
 State lives under `BARN_HOME` (default `~/.barn`) for one Unix user. The
-product assumes one active
-Pigsty deployment per computer; this is not a root-enforced cross-user
+Linux workflow is designed for one lab per user; this is not a root-enforced cross-user
 singleton.
 
 ## Node-level convergence
@@ -30,8 +43,8 @@ test data filesystems may be reset, including persistent disks; see
 
 ## Runtime selection
 
-Guest architecture is deployment-wide desired state. Omitted/`native` follows
-the host; explicit `amd64` or `arm64` selects that Catalog artifact exactly.
+guest architecture is deployment-wide desired state. Omitted/`native` follows
+the host; explicit `amd64` or `arm64` selects that catalog artifact exactly.
 Native HVF/KVM remains the default. A foreign architecture or one catalogued
 image/host incompatibility selects a fixed TCG profile; there is no user
 accelerator argument and no arbitrary failure fallback.
@@ -56,14 +69,14 @@ before setup accepts the network; failure rolls the install back automatically.
 
 ## Storage and configuration have different lifetimes
 
-The Inventory records desired VM definitions. Applied state records what was
+The inventory records desired VM definitions. Applied state records what was
 created, including the exact base-image identity and runtime invocation.
-Changing a Catalog channel does not rewrite an existing root disk.
+Changing a catalog channel does not rewrite an existing root disk.
 
 Verified base images are shared read-only; each VM writes to its own root
 overlay. Data disks have a separate preservation contract: normal destroy
 retains persistent disks, while explicit disk deletion or purge removes them.
-Cache pruning has another boundary and also protects the active Catalog and
+Cache pruning has another boundary and also protects the active catalog and
 registered local aliases. See [Storage and access](../../start/storage/) and
 [Images](../../reference/images/).
 

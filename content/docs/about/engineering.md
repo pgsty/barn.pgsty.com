@@ -1,127 +1,110 @@
 ---
-title: Engineering
-description: Source layout, build and test gates, image normalization, release outputs, and evidence policy.
+title: Contributing
+description: Work on Barn's source, documentation, packages, and image catalog.
 weight: 30
 icon: fa-solid fa-screwdriver-wrench
 ---
 
-This page describes the **Barn 0.9.0 release candidate**. Build commands use
-your current checkout; record its commit and uncommitted changes. Source builds
-and local checks do not establish a published release.
+Barn is an Apache-2.0 project. Contributions to the CLI, native macOS
+component, documentation, and image tooling are welcome.
 
-## Repository boundary
+## Choose a repository
 
-The Barn source repository contains code, tests, build/package definitions,
-legal notices, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`,
-and bilingual application release notes. This site provides user, design,
-operator, and release documentation. Runtime behavior and command flags must
-be checked against the matching source and binary; an unpublished source
-change is not evidence that a public package has the same behavior.
+| What you want to change | Where to work |
+| --- | --- |
+| CLI behavior, VM lifecycle, native macOS component, installer, packages | [pgsty/barn](https://github.com/pgsty/barn) |
+| This website, tutorials, command reference, translations | [pgsty/barn.pgsty.com](https://github.com/pgsty/barn.pgsty.com) |
+| An image definition or normalization step | `packaging/image-repository/` and `packaging/image-pipeline/` in the Barn source repository |
 
-Review transcripts, scratch inventories, generated binaries, and release
-output trees are not production source inputs.
+For a bug report, include `barn version`, the host OS and architecture, the
+command you ran, and the relevant error. Remove private keys, passwords, and
+other secrets from logs and inventories. Report security issues using the
+[security policy](https://github.com/pgsty/barn/blob/main/SECURITY.md).
 
-Generated output is disposable:
+Before a substantial implementation change, open an issue describing the
+problem and expected behavior. The source repository's
+[contribution guide](https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md)
+covers coding conventions, ownership boundaries, and pull requests.
 
-- `bin/` — development builds;
-- `dist/` and `.goreleaser-*` — release/snapshot staging;
-- root `barn`, `barn-hosts-helper`, and `catalogsign` binaries;
-- Hugo `public/` and `resources/`.
+## Build and test
 
-## Build and source gates
+Follow [Build from Source](../../start/source-build/) to install the pinned
+toolchain, then run:
 
 ```bash
 make check
 ```
 
-`make check` runs module and shell checks, maintenance ownership, unit/race
-tests, Vet, Staticcheck, dead-code and errcheck checks, vulnerability scanning,
-four-target cross-builds, installer/image-pipeline tests, and license checks.
-The Makefile defines the exact list. CI additionally checks the pinned
-toolchain, Go formatting, whitespace, and GoReleaser configuration. Installation
-of the quality tools is covered in [Build from Source](../../start/source-build/).
+This runs module and shell checks, unit and race tests, static analysis,
+vulnerability scanning, four-target cross-builds, installer and image-pipeline
+tests, and license checks. The Makefile defines the complete list. CI also
+checks formatting, whitespace, and release configuration.
 
-Packaging changes have a separate snapshot gate:
+VM behavior needs a relevant host test as well: a successful cross-build does
+not exercise macOS HVF, Linux KVM and networking, or the native macOS component.
+Describe which environment and behavior you tested in the pull request.
+
+For packaging changes, use a local snapshot:
 
 ```bash
 make release-check
 make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 ```
 
-Install the versions in `packaging/toolchain.env`, including GoReleaser, nFPM,
-and Syft. The snapshot target also needs the archive/package inspection tools
-used by the verification scripts. Choose a new output directory directly under
-the checkout; existing output is refused. A snapshot is local and does not
-upload a release.
+Install the versions in `packaging/toolchain.env` and the archive/package
+inspection tools required by the verification scripts. Use a new output
+directory directly under the checkout; the snapshot target refuses existing
+output and does not upload it.
 
-A source gate is not native VM evidence. macOS HVF, Linux KVM/networking,
-package consumption, release publication, and public website rendering remain
-separate checks. `make image-pipeline-native-test` runs the separate native
-image-pipeline gate with QEMU/libguestfs and explicit image inputs; the required
-`BARN_IMAGE_PIPELINE_NATIVE_*` variables are documented in
-`tests/image-pipeline-native-test.sh`. It never downloads a test image.
+## Edit the documentation
 
-## Release and package contract
+English and Chinese pages live beside each other as `page.md` and `page.zh.md`.
+Keep commands, defaults, links, and warnings aligned. Explain the user's task
+before the implementation, and keep Linux and macOS guest workflows distinct.
 
-Release tooling under `packaging/`, `.goreleaser.yaml`, and `.github/workflows`
-is source, even though its generated directories are not. Archives and Linux
-packages contain the matching CLI and hosts-helper binaries, `LICENSE`, the
-source README, and exact upstream license bytes reconstructed from modules
-pinned by `go.mod`. Archives place the two binaries under `bin/` and the license
-texts under `licenses/`. Linux packages install `/usr/bin/barn`,
-`/opt/barn/libexec/barn-hosts-helper`, and documentation under
-`/usr/share/doc/barn/`.
+In the website repository, run:
 
-`BUILD_INFO.json` is included in Linux packages. GoReleaser archives carry
-build identity in the binary,
-with release metadata alongside the published assets; do not assume every
-archive contains that file. Generated dependency license files are staged at
-build time. Detailed user documentation stays on this site.
+```bash
+make check
+```
 
-Application releases are built in GitHub Actions, with `checksums.txt`,
-release metadata, and SPDX SBOM assets. The current workflow does not produce
-a separate application-release signature or provenance/attestation bundle.
-Catalog Minisign signatures authenticate image catalogs and are a separate
-trust mechanism.
+This builds with the pinned Hugo theme and checks internal links, assets, and
+anchors. Preview changes in both languages and both color themes before
+submitting a layout change.
 
-Commit, tag, archive/package verification, CI, draft upload, public release,
-and anonymous consumption are separate evidence. The tag workflow creates a
-draft; it does not publish it. Pre-1.0 versions are GitHub prereleases and the
-installer requires an explicit `BARN_VERSION`.
+## Understand release outputs
 
-`make release-local VERSION=<version>` builds and verifies without publishing.
-It requires a clean checkout at the matching `v<version>` tag, an `origin`
-remote, pinned tools, and unused staging/output directories. Use the snapshot
-path for reviewing an untagged candidate.
+Barn 0.9.0 provides macOS and Linux archives, Linux packages, checksums,
+release metadata, and SPDX software bills of materials. The CLI and
+`barn-hosts-helper` travel together. Archives place binaries under `bin/` and
+license texts under `licenses/`; Linux packages install `/usr/bin/barn` and
+`/opt/barn/libexec/barn-hosts-helper`.
 
-## Image normalization
+`Barn Mac.app` is an additional component for macOS guests. Its build and
+signing requirements are documented in
+[the native release guide](https://github.com/pgsty/barn/blob/main/docs/mac-release.md).
+A CLI-only build remains usable for Linux guests.
 
-The low-level `packaging/image-pipeline/build.sh` accepts an explicit local
-qcow2 source and never downloads or uploads. It copies and hashes the source,
-forces qcow2 parsing, rejects backing/external/encrypted/unknown features, runs
-`qemu-img check`, and can perform a no-network offline Guest mutation in an
-explicit QEMU sandbox. UID/GID 88 collisions are rejected rather than rewritten
-ambiguously.
+Application checksums, native app signatures, and image-catalog signatures
+serve different purposes. The application workflow provides checksums but no
+separate release-signature or provenance bundle. The native app has its own
+Developer ID and notarization process. Minisign authenticates image catalogs.
 
-`build-official.py` adds a fixed digest-pinned wrapper for Debian 12/13 and
-Rocky Linux 8/9 on amd64/arm64. It may fetch only the locked source and offline
-package inputs, then emits unsigned `testing` candidates and can assemble a
-separate candidate repository. Native smoke, repeat-build comparison,
-production signing, upload, and Catalog activation remain later gates.
+## Maintain the image catalog
 
-Catalog bytes are exported with:
+Start with the [image pipeline reference](../../reference/image-pipeline/).
+The low-level builder accepts a local qcow2 image, validates it, and optionally
+normalizes it in an offline QEMU sandbox. The official wrapper uses pinned
+inputs for Debian 12/13 and Rocky Linux 8/9 on amd64/arm64. It emits unsigned
+`testing` entries for review before native smoke tests, signing, and publication.
+
+Export the built-in catalog to a new path with:
 
 ```bash
 go run ./tools/catalogexport /absolute/new/catalog.json
 ```
 
-The exporter is atomic and refuses an existing output path. `make catalog-sign`
-and `make catalog-verify` use the catalog Minisign key pair; production private
-keys stay outside source and CI. Application checksums do not replace catalog
-signatures.
-
-## Evidence policy
-
-[Design](../design/) explains the implementation choices; [Status](../status/)
-records validation. Each status claim names its date, host, path, and remaining
-checks. Source changes need their own validation.
+The exporter writes atomically and refuses an existing output path.
+`make catalog-sign` and `make catalog-verify` use a separate Minisign key pair;
+production private keys stay outside source and CI. See the
+[image reference](../../reference/images/) for the catalog's user-facing contract.

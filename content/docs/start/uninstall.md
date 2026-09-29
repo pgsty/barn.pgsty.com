@@ -1,34 +1,50 @@
 ---
 title: Uninstall and Clean Up
-description: Safely remove the Barn deployment, integrations, images, host network, and default state directory.
-weight: 60
+description: Remove Linux and macOS VMs deliberately, then clean up integrations, images, networking, and the application.
+weight: 90
 icon: fa-solid fa-trash-can
 ---
 
-This page deletes VMs and local data. Inspect the current state and stop if any
-Barn VM must remain:
+Barn manages Linux and macOS machines separately. **`barn purge` deletes only
+the Linux deployment; it does not remove Mac machines.** Keep Barn installed
+until you have finished VM and host cleanup.
 
-```bash
-barn st
-```
+## Choose what to remove
 
-## 1. Remove the deployment
+| Goal | Operation |
+|---|---|
+| Free running resources, keep disks | `barn stop`; `barn mac stop --all` for Mac machines |
+| Delete a Linux node | `barn destroy <node>` |
+| Delete the Linux lab, keep persistent disks | `barn destroy` |
+| Delete the Linux lab, including persistent disks and keys | `barn purge` — no confirmation |
+| Delete named Mac machines | `barn mac destroy <name...>` — asks for confirmation |
 
-Delete nodes, persistent disks, keys, and deployment state:
+Use actual names from `barn status` and, if you use Mac guests, `barn mac ls`.
+Back up files you need before deleting machines.
+
+## 1. Remove the machines
+
+To discard the complete Linux lab, including retained persistent disks:
 
 ```bash
 barn purge
 ```
 
-This whole-deployment command asks for no confirmation. The image cache and
-host network remain. Use the granular,
-confirmed `barn destroy` command instead when preserving persistent disks or
-removing selected nodes.
+Images and host networking remain. For Mac machines, inspect the list and
+explicitly name those to delete; the following example deletes `mac1` and `dev`:
+
+```bash
+barn mac ls
+barn mac destroy mac1 dev
+```
+
+Mac destruction removes disks, credentials, and settings, while keeping the
+shared base and host folders. Skip Mac commands if you have not used Mac guests.
 
 ## 2. Remove optional integrations
 
-Whole-deployment destroy already removes the default `barn` SSH integration.
-If you installed a custom fragment name or `/etc/hosts` entries:
+Whole-deployment Linux destruction removes its default SSH integration.
+Remove any custom fragment and optional hosts-file entries you installed:
 
 ```bash
 barn ssh-config --remove --name lab
@@ -36,86 +52,80 @@ barn hosts uninstall --json
 barn hosts uninstall --yes
 ```
 
-Without `--yes`, the `--json` command only shows the marker-owned plan. Apply
-the `--yes` command after checking its target. In Barn 0.9.0, ordinary terminal output asks `[y/N]` and applies removal
-after confirmation. Barn reads the hosts plan without sudo; applying
-the change still needs privilege.
+`lab` is an example custom fragment name. The JSON command previews the
+hosts-file removal; `--yes` applies it. For Mac SSH entries:
 
-## 3. Remove cached images
+```bash
+barn mac ssh-config --remove
+```
+
+These commands remove only Barn's managed entries, preserving your own SSH
+configuration and hosts-file content.
+
+## 3. Prune cached images
 
 ```bash
 barn image prune --dry-run
 barn image prune --yes
 ```
 
-Prune removes unreferenced cached images and stale staging files. It protects
-images referenced by deployment state, the active Catalog, and registered local
-aliases, so it is not a complete cache wipe. The optional final state-directory
-cleanup below removes the remaining cache too.
+Linux prune protects the active catalog, applied VMs, and registered local
+aliases. It will not necessarily empty the cache after VM deletion.
+For Mac images:
 
-## 4. Uninstall host networking
+```bash
+barn mac image prune --installers
+barn mac image prune --installers --yes
+```
+
+Mac prune keeps bases still used by a machine and the default base.
+
+## 4. Remove Linux host networking
 
 ```bash
 barn network uninstall --json
 barn network uninstall --yes
 ```
 
-The first JSON command only shows the owned removal plan, although sudo may
-be needed to read protected network state. Uninstall refuses while any VM
-remains attached. The network is shared across users; removing your deployment
-does not establish that another user's VMs have stopped.
+The JSON command previews removal; it may need sudo to inspect protected
+host state. Apply it after reviewing the plan. The network is shared across
+users and cannot be uninstalled while a VM is attached. Mac private networks
+disappear when their machines stop and need no separate uninstall.
 
-## 5. Clean up a source setup
+## 5. Remove the application and remaining files
 
-Network uninstall preserves the independently useful hosts helper. Only after
-confirming Barn is no longer needed, remove these exact paths:
+For package-manager installations, use the matching command:
 
-```bash
-sudo rm -f -- /opt/barn/libexec/barn-hosts-helper
-sudo rmdir /opt/barn/libexec /opt/barn
+```bash {tab="Homebrew" group="uninstall" value="brew"}
+brew uninstall barn
 ```
 
-With the default state directory, and only after every earlier step succeeds,
-remove the remaining state:
-
-```bash
-(
-  set -eu
-  test -z "${BARN_HOME:-}"
-  barn_state_root="$(cd "$HOME" && pwd -P)/.barn"
-  test ! -L "$barn_state_root"
-  if test -d "$barn_state_root"; then
-    printf 'removing exact state root: %s\n' "$barn_state_root"
-    find "$barn_state_root" -depth -delete
-  fi
-)
+```bash {tab="Debian / Ubuntu" value="deb"}
+sudo apt remove barn
 ```
 
-This snippet stops if `BARN_HOME` is set or the default path is a symlink.
-Review a custom state directory separately; never substitute `$HOME`, `/`, a
-workspace root, or an unverified path. After deletion, avoid running lifecycle
-commands just to check that the directory is gone: they may recreate lock
-directories.
-
-QEMU may be shared by other tools, so keep it by default. On macOS, remove it
-only when nothing else needs it:
-
-```bash
-brew uninstall qemu
+```bash {tab="RHEL / Fedora" value="rpm"}
+sudo dnf remove barn
 ```
 
-Verify network removal and the default state directory:
+For the user-scoped installer, inspect the installation directory (default
+`~/.local/bin`). Its Barn-owned files are the `barn` and `barn-hosts-helper`
+symlinks, `.barn-current`, `.barn-releases/`, and `.barn-install.lock`.
+Remove those exact items after all VMs have stopped and integrations are removed.
+For a manual archive or source bundle, remove its directory or PATH entry instead.
 
-```bash
-barn network status --json
-test ! -e "$HOME/.barn" && echo 'no Barn state'
-```
+If a manually installed hosts helper remains, its path is
+`/opt/barn/libexec/barn-hosts-helper`. Remove it only after uninstalling the
+hosts integration and confirming no other Barn user needs it.
 
-An uninstalled network is expected to report an absent/not-ready finding;
-inspect the result rather than requiring a zero exit code. Do not use
-`bridge100` disappearing as proof: macOS chooses its bridge name and may use
-other vmnet bridges for unrelated software.
+**Delete `~/.barn` only after removing both Linux and Mac machines.** It contains
+both kinds of VM state, credentials, persistent disks, and image caches. Linux
+`purge` alone is not sufficient. If you set `BARN_HOME`, inspect that exact path
+instead. A remaining machine directory or failed destroy needs investigation,
+not recursive deletion. Deleting just `~/.barn/mac` also requires all Mac
+machines to have been destroyed first.
 
-Remove an Archive, Homebrew, DEB, or RPM binary through its installation
-channel. The `bin/` directory from a source build is only a checkout artifact,
-separate from the host state above.
+The Mac window preferences are stored separately at
+`~/Library/Preferences/io.pgsty.barn.mac-runner.plist`; removing them only resets
+window positions. QEMU may be used by other tools, so keep it unless you know
+it is no longer needed.

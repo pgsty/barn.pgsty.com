@@ -5,11 +5,6 @@ weight: 25
 icon: fa-brands fa-apple
 ---
 
-> [!IMPORTANT]
-> **Barn 0.9.0 release candidate; unreleased.** See
-> [Status](../../about/status/#macos-guests) for current validation and release checks.
-> Use `barn mac --help` from the binary you run.
-
 ```text
 barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 ```
@@ -95,7 +90,7 @@ need another machine. A different macOS comes from `image update`, then
 - **Account**: an administrator with passwordless sudo, SSH key login, desktop
   automatic login and Remote Login. SSH password login is disabled. The login
   password is random and stored in the machine's `password` file.
-- **Guest names**: the computer name is the machine name; the local host name is
+- **guest names**: the computer name is the machine name; the local host name is
   `barn-<name>`, so the guest answers as `barn-<name>.local`.
 - **Shares**: one VirtioFS device mounted by macOS under
   `/Volumes/My Shared Files/<name>`. Shares must be existing directories, not
@@ -116,8 +111,11 @@ starts and disappears when it stops. No daemon and no root is involved.
 |---|---|
 | Subnet | first free private `/24` from `10.10.20.0/24` to `10.10.59.0/24`, avoiding host routes and other machines; `--subnet` selects one |
 | Gateway | `.1`, the Mac |
-| Guest address | `.10`, by DHCP reservation for the machine's MAC address |
-| Reachability | the Mac and the internet through NAT; not other machines, not the LAN |
+| guest address | `.10`, by DHCP reservation for the machine's MAC address |
+| Reachability | host access and outbound NAT; separate subnets, no LAN bridge or incoming port forwards |
+
+Barn uses Apple's [shared-mode vmnet network](https://developer.apple.com/documentation/vmnet/vmnet_network_configuration_create(_:_:)).
+A separate subnet describes the topology; it is not a firewall policy.
 
 `start` refuses a subnet that a host route now overlaps, such as a VPN, with
 reason `mac_subnet_in_use`. SSH host keys are pinned to the machine instance,
@@ -210,7 +208,7 @@ stable `reason` and a `next` command:
 |---|---|---|
 | `mac_host_unsupported` | 3 | not Apple Silicon, or older than macOS 27 |
 | `mac_runner_missing` | 3 | the Mac component is not installed next to the CLI |
-| `mac_runner_protocol` | 3 | CLI and component come from different builds; install them together |
+| `mac_runner_protocol` | 3 | the component speaks an incompatible runner protocol; reinstall matching components |
 | `mac_root` | 2 | run as your normal login user, not with sudo |
 | `mac_download_consent` | 2 | downloading macOS needs `--yes` without a terminal, or use `--ipsw` |
 | `mac_machine_absent` | 4 | no machine by that name; `barn mac up NAME` |

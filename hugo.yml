@@ -24,7 +24,7 @@ languages:
     weight: 1
     title: Barn
     params:
-      description: Native QEMU virtual machines for Pigsty development
+      description: Local Linux labs and native macOS virtual machines
     menus:
       main:
         - identifier: docs
@@ -33,12 +33,12 @@ languages:
           weight: 10
         - identifier: docs-start
           parent: docs
-          name: Start
+          name: Guides
           pageRef: /docs/start
           weight: 10
           params:
             icon: fa-solid fa-rocket
-            description: Two-command quick start, operations, images, builds, and cleanup
+            description: Install Barn, create a VM, and manage your environment
         - identifier: docs-reference
           parent: docs
           name: Reference
@@ -46,27 +46,19 @@ languages:
           weight: 20
           params:
             icon: fa-solid fa-code
-            description: Configuration, command-line, and image contracts
+            description: Commands, configuration, images, and native macOS options
         - identifier: docs-about
           parent: docs
-          name: About
+          name: Project
           pageRef: /docs/about
           weight: 30
           params:
             icon: fa-solid fa-circle-info
-            description: Simplified design, validation, limits, and release gates
+            description: Supported platforms, design, and contributing
         - identifier: blog
           name: Blog
           pageRef: /blog
           weight: 20
-        - identifier: blog-article
-          parent: blog
-          name: Article
-          pageRef: /blog/article
-          weight: 10
-          params:
-            icon: fa-solid fa-newspaper
-            description: Project articles and long-form technical notes
         - identifier: blog-design
           parent: blog
           name: Design
@@ -77,19 +69,19 @@ languages:
             description: Architecture decisions, trade-offs, and implementation boundaries
         - identifier: blog-release
           parent: blog
-          name: Release
+          name: Releases
           pageRef: /blog/release
-          weight: 30
+          weight: 10
           params:
             icon: fa-solid fa-clipboard-list
-            description: Release notes and current publication status
+            description: What is new, upgrade instructions, and compatibility notes
   zh:
     label: 简体中文
     locale: zh-CN
     weight: 2
     title: Barn
     params:
-      description: 面向 Pigsty 开发环境的原生 QEMU 虚拟机运行时
+      description: 本地 Linux 实验室与原生 macOS 虚拟机
     menus:
       main:
         - identifier: docs
@@ -98,12 +90,12 @@ languages:
           weight: 10
         - identifier: docs-start
           parent: docs
-          name: 开始使用
+          name: 使用指南
           pageRef: /docs/start
           weight: 10
           params:
             icon: fa-solid fa-rocket
-            description: 两条命令快速上手，以及管理、镜像、构建与清理
+            description: 安装 Barn、创建虚拟机与管理开发环境
         - identifier: docs-reference
           parent: docs
           name: 参考
@@ -111,27 +103,19 @@ languages:
           weight: 20
           params:
             icon: fa-solid fa-code
-            description: 配置、命令行与镜像准确契约
+            description: 命令、配置、镜像与 macOS 原生选项
         - identifier: docs-about
           parent: docs
-          name: 关于
+          name: 项目
           pageRef: /docs/about
           weight: 30
           params:
             icon: fa-solid fa-circle-info
-            description: 简化设计、真机验证、限制与发布门禁
+            description: 平台支持、设计原理与参与贡献
         - identifier: blog
           name: 博客
           pageRef: /blog
           weight: 20
-        - identifier: blog-article
-          parent: blog
-          name: 文章
-          pageRef: /blog/article
-          weight: 10
-          params:
-            icon: fa-solid fa-newspaper
-            description: 项目文章与长篇技术记录
         - identifier: blog-design
           parent: blog
           name: 设计
@@ -142,12 +126,12 @@ languages:
             description: 架构决策、方案取舍与实现边界
         - identifier: blog-release
           parent: blog
-          name: 发布
+          name: 发布说明
           pageRef: /blog/release
-          weight: 30
+          weight: 10
           params:
             icon: fa-solid fa-clipboard-list
-            description: 发布注记与当前发行状态
+            description: 版本更新、升级方法与兼容性说明
 
 taxonomies:
   categories: categories
@@ -183,8 +167,14 @@ outputs:
   section: [HTML, RSS, print, markdown]
 
 params:
-  description: Native Go and QEMU runtime for reproducible Pigsty development virtual machines on macOS and Linux.
+  description: Local Linux labs and native macOS virtual machines. Reproducible development environments from one CLI.
   logo: images/barn-mark.svg
+  wordmark: images/barn-wordmark.svg
+  images:
+    - images/barn-hero.png
+  github_repo: https://github.com/pgsty/barn.pgsty.com
+  github_project_repo: https://github.com/pgsty/barn
+  github_branch: main
   version: 0.9.0
   copyright:
     authors: '[PGSTY](https://pgsty.com/) and Barn contributors'
@@ -201,8 +191,8 @@ params:
   reading_width: normal
   ui:
     typography: technical
-    theme_color: '#9f2448'
-    theme_color_dark: '#ff8ca8'
+    theme_color: '#a9573b'
+    theme_color_dark: '#dca579'
     landing_search: true
     navbar_autohide: false
     section_index: cards

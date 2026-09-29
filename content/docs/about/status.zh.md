@@ -1,63 +1,67 @@
 ---
-title: 当前状态
-description: Barn 0.9.0 发布候选、当前验证结果与发行前检查。
-weight: 20
-icon: fa-solid fa-list-check
+title: 平台与限制
+linkTitle: 平台与限制
+description: Barn 0.9.0 的宿主要求、Linux 镜像兼容性、macOS 运行条件与存储限制。
+weight: 10
+icon: fa-solid fa-laptop-code
 ---
 
-Barn 0.9.0 是**尚未发布的候选版本**。源码检查、本地构建、软件包、CI、发行和线上文档
-分别核验。安装方式见[快速上手](../../start/tutorial/#安装)。
+Barn 面向**本地开发与测试**。本页帮助你选择宿主，并了解两类客机各自的支持范围。
 
-## 文档基线 {#documentation-baseline}
+## 版本 {#documentation-baseline}
 
-| 对象 | 当前身份 | 使用方式 |
-|---|---|---|
-| 程序与当前文档 | Barn 0.9.0 发布候选 | 安装 Homebrew HEAD 或从源码构建；发行包尚未发布。 |
-| CLI 与配置 | `barn`、`barn.yml`、`BARN_*` | 使用版本相关说明前先检查 `barn version`。 |
-| 状态与宿主资源 | `~/.barn`、Barn 网络与 helper | 每个用户一套 Linux 部署；macOS 客机使用独立状态。 |
-| 镜像仓库 | 官方入口的 `/barn` 前缀 | 已于 2026-09-29 发布签名 Catalog `2026092902` 并完成公网核验，见下方镜像记录。 |
+本文档适用于 **Barn 0.9.0**。请[安装发行版本](../../start/installation/)，用
+`barn version` 核对版本，通过[发布说明](/zh/blog/release/0.9.0/)了解变化。
+Linux 镜像目录通过 `barn update` 独立更新。
 
-最终发布提交、制品摘要与安装渠道将在完成发布和下载核验后记录。
+## Linux 客机
+
+| 宿主 | 架构 | 原生加速 | 最低 QEMU 版本 |
+|---|---|---|---|
+| macOS | arm64（Apple Silicon）、amd64（Intel） | HVF | 8.2.1 |
+| Linux | amd64、arm64 | KVM | 6.2 |
+{.platform-table}
+
+Barn 为以上四个目标提供构建。主要原生测试路径为 macOS arm64 和 Linux amd64，
+Intel macOS 与 Linux arm64 的验证覆盖相对较少。Linux 还需要可用的 `/dev/kvm`，
+以及 NetworkManager 或 systemd-networkd。`barn doctor` 检查宿主，
+`barn setup --dry-run` 展示当前机器需要的依赖和网络变更。
+
+内置镜像目录包含 **9 个系列、41 个镜像文件**：Ubuntu 22.04/24.04/26.04、
+Debian 12/13、Rocky Linux 8/9/10 与 CentOS 7。准确版本与兼容范围见[镜像参考](../../reference/images/)。
+
+- 每个用户管理一套 Linux 部署，在同一个私有 `/24` 网段中支持 1–20 个节点。
+- 跨架构客机使用 QEMU TCG 模拟。Rocky Linux 8 arm64 的 64 KiB 内核不兼容 HVF，
+  因此在 Apple Silicon 上也使用 TCG。
+- CentOS 7 是已弃用的兼容镜像，仅支持 Linux/amd64 原生运行。
+- `vm_shares` 支持 Linux 宿主。在 macOS 宿主上运行 Linux 客机时，请使用 SSH
+  传输文件；受路径保护的 QEMU 9p 共享方式会阻止这些节点启动。
 
 ## macOS 客机 {#macos-guests}
 
-`barn mac` 在 Apple 芯片上运行 macOS 27 虚拟机，见[教程](../../start/macos/)与
-[命令参考](../../reference/mac/)。组件名称为 `Barn Mac.app`，签名标识为
-`io.pgsty.barn.mac-runner`，状态独立保存在 `$BARN_HOME/mac`。
+`barn mac` 需要 **Apple Silicon、macOS 27 或更高版本、已登录的桌面会话，以及
+Barn Mac 原生组件**。客机运行 macOS 27，无需 QEMU 或 Linux 宿主网络。
+具体操作见 [Mac 教程](../../start/macos/)。
 
-2026-09-29，本地 CLI/hosts-helper 测试、原生 Bridge/镜像/退出提示/菜单测试、runner 编译、
-ad-hoc 签名验证与 `probe` 通过。这些检查没有启动 VM，不代表完整 Mac 实机生命周期验收。
+- 首台机器约需 65 GiB 可用空间，用于恢复镜像、已安装的基础系统与初始写入。
+  下载支持断点续传，也可以使用本地 IPSW。
+- 每台 Mac 最多同时运行两台 macOS 虚拟机，包含其他工具与 macOS 安装过程。
+  可以保留更多已停止的机器。
+- 每台机器有独立的私有子网、SSH 密钥、登录密码与磁盘。共享目录使用 VirtioFS，
+  与 Linux 的 `vm_shares` 相互独立。
+- 剪贴板只共享纯文本，不共享图片或文件。
+- 不支持 USB 透传、快照与挂起恢复。虚拟机中的 Apple 账户登录可能不稳定。
 
-## 发行前仍需核验
+使用 `barn mac doctor` 诊断 Mac 环境，使用 `barn mac ls` 查看机器。
+`barn status`、`destroy` 与 `purge` 只操作 Linux 部署。
 
-- 最终 Barn 提交的完整源码、归档、DEB/RPM、安装器与跨平台检查；
-- 全新宿主准备、Linux/macOS VM 生命周期与清理；
-- Mac Developer ID 签名与公证；
-- Barn 0.9.0 的发布与下载核验，包括 Homebrew。
+## 数据与生命周期
 
-## Linux 镜像 Catalog：2026-09-29
+请在实验环境之外备份重要文件。Linux 的 `recreate` 会替换根盘与非持久数据盘，
+`destroy` 会删除它们。持久盘可在普通销毁后保留，但客机恢复仍可能清空重建损坏或无法
+识别的数据文件系统。完整规则见[存储与访问](../../start/storage/)。
 
-两个官方 `/barn` 入口均已发布签名 Catalog `2026092902`：9 个系列、39 个工件。
-经过规范化的 Debian 与 Rocky Linux 镜像，其内部配置与元数据统一使用 Barn。
+Mac 的 `recreate` 用新的克隆磁盘替换客机磁盘，`destroy` 删除机器的磁盘、凭据与设置；
+宿主上的共享目录保持原样。
 
-| 系列 | 稳定版本 | 架构 |
-|---|---|---|
-| Debian 12 | `20260923.2610.1` | amd64、arm64 |
-| Debian 13 | `20260914.2601.2` | amd64、arm64 |
-| Rocky Linux 8 | `8.10.20240528.2` | amd64、arm64 |
-| Rocky Linux 9 | `9.8.20260525.2` | amd64、arm64 |
-| Ubuntu 22.04 / 24.04 | `20260926.0.0` | amd64、arm64 |
-| Ubuntu 26.04 | `20260927.0.0` | amd64、arm64 |
-
-6 个 Debian 13、Rocky Linux 镜像通过 UEFI 启动、SSH、双网卡、UID/GID 88、Python、
-cloud-init 与 XFS 数据盘检查。amd64 使用 KVM，Debian 13 和 Rocky Linux 9 arm64 使用
-HVF；Rocky Linux 8 arm64 因上游 64 KiB 内核不兼容 Apple HVF，使用 TCG。
-Rocky Linux 8 使用自带的 RHEL chrony 模板和 `chronyd` 服务。
-
-Debian 12 与 Ubuntu 镜像通过原生 KVM/HVF 启动、SSH、双网卡、UID/GID 88、locale
-和 XFS 数据盘检查。Debian 镜像包含锁定版本的 XFS 工具与 `en_US.UTF-8`，默认 locale
-保持 `C.UTF-8`；Ubuntu 保留 Canonical 原始字节。镜像检查采用隔离的 QEMU user 网络，
-完整宿主网络及 VM 生命周期仍需独立验收。
-
-内嵌与公开 Catalog 字节一致，两个官方入口均通过签名校验，新镜像通过公网下载检查。
-版本选择与更新行为见[镜像参考](../../reference/images/)。
+操作问题见[故障排查](../../start/troubleshooting/)；源码与发布验证流程见[参与贡献](../engineering/)。

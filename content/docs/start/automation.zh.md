@@ -2,12 +2,12 @@
 title: 自动化与客机脚本
 linkTitle: 自动化
 description: 准备无人值守实验环境，检查 JSON 结果，并在选定客机内运行可重复执行的脚本。
-weight: 35
+weight: 60
 icon: fa-solid fa-terminal
 ---
 
-本文示例以 **Barn 0.9.0 发布候选**为准。
-宿主命令应由拥有部署的普通 Unix 用户运行。每次调用使用同一份 Inventory 和
+本文示例以 **Barn 0.9.0** 为准。
+宿主命令应由拥有部署的普通 Unix 用户运行。每次调用使用同一份主机清单和
 `BARN_HOME`；切换工作目录不会创建独立实验环境。
 
 ## 准备可预测的实验环境
@@ -25,8 +25,8 @@ barn plan -f barn.yml
 barn setup -f barn.yml --dry-run
 ```
 
-将选定的配置纳入版本管理。显式设置 `vm_image`；如果更新 Catalog 后创建的新节点
-也必须使用同一镜像，可固定为 `vm_image: u24@20260911.0.0`。
+将选定的配置纳入版本管理。显式设置 `vm_image`；如果更新镜像目录后创建的新节点
+也必须使用同一镜像，可固定为 `vm_image: u24@20260926.0.0`。
 显式 `-f` 还会禁止首次 setup 自动把未编辑的默认模板迁移到其他子网。
 
 审查宿主计划后，执行一次宿主准备：
@@ -41,7 +41,7 @@ barn up -f barn.yml --json > up.json
 `up` 也没有 `--yes` 参数。
 
 使用自定义镜像仓库时，setup 与 up 应传入相同的 `--repo`；规划前先用
-`barn update --repo URL` 显式激活该仓库的 Catalog，详见[镜像仓库](../images/)。
+`barn update --repo URL` 显式激活该仓库的镜像目录，详见[镜像仓库](../images/)。
 
 ## 不只检查退出码
 
@@ -81,7 +81,7 @@ fi
 结合[命令行退出码](../../reference/cli/#退出码)与具体命令的结果结构判断。
 部分失败可能保留已经成功的节点；重试前查看结果中存在的 `nodes` 或 `failures`。
 
-**0.9 候选**调整了一些错误分类。例如首次缺少配置、未知镜像均为 usage/2；
+Barn 0.9.0调整了一些错误分类。例如首次缺少配置、未知镜像均为 usage/2；
 `recreate_required` 与 `nodes_removed` 是 conflict/4 下的 `reason`。
 它还使用有上限的锁等待，超时报 `deployment_busy`。
 
@@ -145,5 +145,5 @@ barn ssh
 ```
 
 Barn 准备客机管理员与控制节点 SSH 访问。检查配置和客机连通性后，再通过
-Pigsty 部署服务。[验证记录](../../about/status/)区分了 Ansible 连通性检查与
-完整 Pigsty 安装。宿主文件传输与端口隧道见[存储与访问](../storage/)。
+Pigsty 部署服务，具体步骤见 [Pigsty 文档](https://pigsty.cc/docs/)。
+宿主文件传输与端口隧道见[存储与访问](../storage/)。

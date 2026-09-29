@@ -1,38 +1,30 @@
 ---
 title: Build from Source
-description: Build Barn for development and review, then run the complete source gate.
-weight: 50
+description: Build Barn 0.9.0 or the development branch, including the native Mac component, and run the contributor checks.
+weight: 80
 icon: fa-solid fa-code-branch
 ---
 
-Barn 0.9.0 is an **unreleased candidate**. Use this page to build and check the
-source. Installation commands for the eventual release are in the
-[Quick Start](../tutorial/).
+Use a source build to develop Barn, inspect a change, or build the native Mac
+component. For a packaged CLI, use [installation](../installation/).
 
-## Choose the source
+## Select the version
 
-Clone the Barn repository:
+Clone the documented release:
 
 ```bash
-git clone https://github.com/pgsty/barn.git
+git clone --branch v0.9.0 https://github.com/pgsty/barn.git
 cd barn
 ```
 
-Do not assume a `v0.9.0` tag exists before publication. Check the source identity
-and working-tree changes first; `go.mod` must name `github.com/pgsty/barn` and
-the command source must live in `cmd/barn`:
+For the development branch, omit `--branch v0.9.0`. Check `git log -1 --oneline`
+and `git status --short` to identify your source before comparing behavior.
 
-```bash
-git log -1 --oneline
-git status --short
-```
+## Build the CLI
 
-## Build
-
-The reviewed candidate tree pins Go 1.27.1 in `go.mod` and
-`packaging/toolchain.env`. You also need Git, Make, Bash, and standard build
-tools. QEMU and privileged network setup are needed to run VMs, not to compile
-the CLI. From the selected checkout:
+Barn 0.9.0 pins **Go 1.27.1** in `go.mod` and `packaging/toolchain.env`.
+You also need Git, Make, Bash, and standard build tools. Compiling the CLI
+does not require QEMU or host-network setup.
 
 ```bash
 make build
@@ -40,27 +32,32 @@ export PATH="$PWD/bin:$PATH"
 barn version
 ```
 
-`make build` writes the matching `barn` and `barn-hosts-helper` binaries
-under the Git-ignored `bin/` directory. Do not mix the two binaries across
-commits or releases. Development builds report `dev` by default; their commit
-field identifies a clean source revision or says `uncommitted` for a dirty
-checkout. The version string alone does not prove candidate behavior.
+The `bin/` directory contains the CLI and matching `barn-hosts-helper`.
+Keep them together. Development builds report `dev` by default; the commit
+field identifies the revision, or `uncommitted` for a modified checkout.
 
-Keep the inventory in a separate lab directory. This does not isolate Barn
-state: if you already have a deployment, inspect it before running `up`:
+Build the native component below to run macOS guests.
+Keep lab inventories outside the source tree, and remember
+that working directories all use the same `BARN_HOME`.
+
+## Build the Mac component {#mac-component}
+
+On Apple Silicon with macOS 27 and **Xcode 27**:
 
 ```bash
-mkdir -p ~/barn-lab && cd ~/barn-lab
-barn setup
-barn up
+make mac-build
+export PATH="$PWD/bin/mac:$PATH"
+barn mac doctor
 ```
 
-## Complete checks
+This creates a CLI and native `Barn Mac.app` bundle under `bin/mac`, signed
+ad hoc for local use. It creates no VM. Continue with the [Mac guide](../macos/).
+`make mac-native-test` runs the native component tests.
 
-The complete checks also need Python 3, jq, a working C toolchain for race
-tests, and the pinned quality tools. Install the versions used by the reviewed
-candidate's CI (check `CONTRIBUTING.md` and `packaging/toolchain.env` again when
-using another revision):
+## Check a change
+
+The complete checks also need Python 3, jq, a C toolchain for race tests, and
+the versions pinned in `packaging/toolchain.env`:
 
 ```bash
 go install honnef.co/go/tools/cmd/staticcheck@v0.8.1
@@ -69,24 +66,15 @@ go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
 ```
 
-Ensure the Go tools installation directory (`GOBIN`, or `$(go env GOPATH)/bin`
-when unset) is in `PATH`. Before submitting a source change, run:
+Add the Go tools directory (`GOBIN`, or `$(go env GOPATH)/bin` when unset) to PATH.
 
 ```bash
+make test
 make check
 ```
 
-This gate includes module verification, shell syntax, maintenance ownership,
-unit and race tests, Vet, Staticcheck, four-target dead-code checks, errcheck,
-vulnerability checks, cross-builds, image-pipeline and installer tests, and
-dependency-license verification. CI separately checks formatting, whitespace,
-pinned tool versions, and GoReleaser configuration. Changes to packaging also
-need a verified packaging snapshot.
-
-A passing source gate is not package publication or a native VM lifecycle
-replay; `make image-pipeline-native-test` is a separate native image gate.
-That gate requires the explicit image inputs documented at the top of
-`tests/image-pipeline-native-test.sh`; it does not download a test image.
-
-See [Engineering](../../about/engineering/) for release tooling, dependency
-licenses, and validation boundaries.
+`make check` includes module verification, shell syntax, maintenance checks,
+unit and race tests, Vet, Staticcheck, dead-code and errcheck checks,
+vulnerability checks, four-target builds, image-pipeline and installer tests,
+and dependency licenses. Packaging changes also need a verified snapshot.
+See [contributing and releases](../../about/engineering/) for that workflow.

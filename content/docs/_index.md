@@ -1,27 +1,31 @@
 ---
 title: Barn documentation
 linkTitle: Docs
-description: Start Barn with two commands, then look up operations, configuration, and CLI contracts as needed.
+description: Install Barn 0.9.0, create your first Linux or macOS VM, and find the guides and reference for your next task.
 weight: 10
 icon: fa-solid fa-book
 cascade:
   type: docs
 ---
 
-Barn turns one Pigsty-compatible Inventory into fixed-IP QEMU virtual
-machines. It manages one deployment per Unix user; state lives under
-`~/.barn`, so lifecycle and SSH commands work from any directory.
+Barn creates local virtual machines for development and testing. These docs cover
+**Barn 0.9.0**. Start with [installation](start/installation/), then choose your guest:
 
-Choose the shortest path for your task:
+| I want to… | Start here | What I need |
+|---|---|---|
+| Run a Linux VM or a multi-node lab | [Linux quick start](start/tutorial/) | A macOS or Linux host; Barn prepares QEMU and networking |
+| Run macOS with a desktop and SSH | [macOS virtual machines](start/macos/) | Apple Silicon, macOS 27+, and the Barn Mac component |
 
-- **[Start](start/)** — boot the first lab with two commands, then operate and troubleshoot it.
-- **[Reference](reference/)** — exact Inventory fields, commands, flags,
-  output, and exit codes.
-- **[About](about/)** — design, native validation, limits, and
-  release gates.
+The Linux path uses an Ansible-compatible YAML inventory, such as `barn.yml` or
+`pigsty.yml`, and manages one lab per user. The `barn mac` path manages named
+macOS machines independently. Both keep state under `~/.barn` by default;
+changing directories does not create a new lab.
 
-Start with the [Quick Start](start/tutorial/) to prepare the **Barn 0.9.0 release candidate**
-from source. Once the CLI is ready, run `barn up` to start the lab, then `barn ssh` to connect.
+## After your first VM
 
-> [!IMPORTANT]
-> Barn 0.9.0 is not yet published. See [release and validation status](about/status/#documentation-baseline).
+- **Work with it:** [daily operations](start/operations/), [files and service access](start/storage/), [images](start/images/), and [automation](start/automation/).
+- **Look something up:** [Linux configuration](reference/configuration/), [CLI options](reference/cli/), and [Mac commands](reference/mac/).
+- **Get help:** [troubleshooting](start/troubleshooting/), [platforms and limits](about/status/), or [report an issue](https://github.com/pgsty/barn/issues).
+
+Read [what changed in 0.9.0](../blog/release/0.9.0/) or explore the
+[design](about/design/) and [contributor guide](start/source-build/) when you want to go deeper.

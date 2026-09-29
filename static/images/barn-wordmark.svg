@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="341" height="100" viewBox="0 0 341 100" role="img" aria-labelledby="title">
+  <title id="title">Barn</title>
+  <path d="M0 0H51L70 17V39L59 50 70 61V83L51 100H0Z M18 17V42H44L52 35V24L44 17Z M18 59V83H44L52 76V66L44 59Z" fill="#344F60" fill-rule="evenodd" transform="translate(0 0)" />
+  <path d="M35 0L59 15 73 43V100H55V69H18V100H0V43L14 15Z M35 22L27 27 18 48V52H55V48L45 27Z" fill="#AF8250" fill-rule="evenodd" transform="translate(89 0)" />
+  <path d="M0 0H50L70 18V43L52 60 76 100H54L31 61H18V100H0Z M18 18V43H43L52 35V26L43 18Z" fill="#344F60" fill-rule="evenodd" transform="translate(178 0)" />
+  <path d="M0 100V0H18L56 66V0H74V100H56L18 34V100Z" fill="#344F60" fill-rule="evenodd" transform="translate(267 0)" />
+</svg>

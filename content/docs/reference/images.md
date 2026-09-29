@@ -5,9 +5,9 @@ weight: 30
 icon: fa-solid fa-hard-drive
 ---
 
-Barn uses a materialized static-file Catalog plus immutable qcow2 artifacts.
+Barn uses a materialized static-file catalog plus immutable qcow2 artifacts.
 Official and HTTP Catalogs are signed; explicitly selected local and HTTPS
-repositories may be unsigned. A Catalog update does not require a new Barn
+repositories may be unsigned. A catalog update does not require a new Barn
 binary, but the binary decides which signing keys and image safety rules are
 trusted.
 
@@ -17,22 +17,21 @@ trusted.
 
 ## Aliases and pull order
 
-Barn 0.9.0 embeds Catalog `2026092902`: 9 families and 39 artifacts. `el7` is
+Barn 0.9.0 embeds catalog `2026093001`: 9 families and 41 artifacts. `el7` is
 amd64-only; every other family has amd64 and arm64 artifacts. EL9 includes 9.3, 9.6, 9.7, and 9.8;
 EL10 includes 10.0, 10.1, and 10.2. `u24:stable` (Ubuntu 24.04) on the native
 architecture is the default request.
 
 The stable versions below include both amd64 and arm64. This is the
-embedded Catalog snapshot, not a live repository listing. Run `barn update`
-then `barn image list` to inspect the currently selected repository. Dated
-public endpoint checks and guest point-release observations are recorded in
-[Status](../../about/status/).
+embedded catalog snapshot, not a live repository listing. Run `barn update`
+then `barn image list` to inspect the currently selected repository. For host compatibility and restrictions, see
+[Platforms and Limits](../../about/status/).
 
 | Family | Embedded stable | Distribution series |
 |---|---|---|
 | `d12` | `20260923.2610.1` | Debian 12 |
 | `d13` | `20260914.2601.2` | Debian 13 |
-| `el8` | `8.10.20240528.2` | Rocky Linux 8.10 |
+| `el8` | `8.10.20240528.3` | Rocky Linux 8.10 |
 | `el9` | `9.8.20260525.2` | Rocky Linux 9.8 |
 | `u22` | `20260926.0.0` | Ubuntu 22.04 LTS |
 | `u24` | `20260926.0.0` | Ubuntu 24.04 LTS |
@@ -41,11 +40,7 @@ public endpoint checks and guest point-release observations are recorded in
 Debian retains offline-installed XFS tools and the generated `en_US.UTF-8`
 locale, with `C.UTF-8` still the default. Ubuntu retains Canonical's original
 image bytes; cloud-init configures accounts and networking at startup.
-The Debian 12 upstream build dated September 23 still lacks XFS tools and
-`en_US.UTF-8`, so those adjustments remain necessary. The Ubuntu builds above
-already include both; their amd64 and arm64 guests passed locale and XFS
-data-disk checks on September 29.
-A Catalog refresh changes newly resolved `stable` requests. Existing VMs and
+A catalog refresh changes newly resolved `stable` requests. Existing VMs and
 explicitly pinned versions continue using their original base images.
 
 | Alias | Distribution | Architectures | Boot | Status |
@@ -69,7 +64,7 @@ barn image pull d13 --arch arm64
 barn update
 ```
 
-Catalog status values are advisory rather than an activation switch:
+catalog status values are advisory rather than an activation switch:
 `supported` has passed the declared support gate; `testing` is available for
 explicit test/risk acceptance but is not supported; `deprecated` is retained
 only for EOL compatibility; and `unknown` has no support classification.
@@ -77,31 +72,31 @@ Non-`supported` entries remain runnable and print a warning.
 
 For a pull, Barn:
 
-1. reads the selected repository's active local Catalog once for the complete
-   command: the Catalog embedded in this build, or the one last activated for
+1. reads the selected repository's active local catalog once for the complete
+   command: the catalog embedded in this build, or the one last activated for
    that repository by `barn update` or `image sync`;
 2. resolves `image[:channel]` or `image@version-prefix`, defaulting to
-   `u24:stable` with the official Catalog; standalone `image pull` defaults to
+   `u24:stable` with the official catalog; standalone `image pull` defaults to
    the native architecture and accepts `--arch`, while lifecycle resolution
    honors `vm_arch`;
 3. reuses a local file only after size, SHA-256, and qcow2 checks pass;
-4. otherwise downloads the exact Catalog-named artifact, with retries and
+4. otherwise downloads the exact catalog-named artifact, with retries and
    resumption; the two official repositories can fall back to one another,
    while custom repositories remain exclusive. All accepted bytes must match
-   the Catalog. An immutable upstream URL is provenance, not a fallback.
+   the catalog. An immutable upstream URL is provenance, not a fallback.
 
 Released builds use `https://repo.pigsty.io/barn` by default. Long-only
 `--mirror` selects `https://repo.pigsty.cc/barn`; precedence is `--repo`,
 `--mirror`, `BARN_REPO`, then the global default. Both official roots retain
-canonical signed-Catalog trust. Repository selection determines both the local
-Catalog slot and the source of downloads. Keep selecting the same custom
+canonical signed-catalog trust. Repository selection determines both the local
+catalog slot and the source of downloads. Keep selecting the same custom
 repository even when its image bytes are cached. Barn never refreshes the
-Catalog on its own; ordinary image resolution can work offline with an active
-local Catalog and verified cache. Run
+catalog on its own; ordinary image resolution can work offline with an active
+local catalog and verified cache. Run
 `barn update` to fetch, verify, and activate the selected repository's current
-Catalog. Catalog updates use that selected source; a failed update is an error.
+catalog. catalog updates use that selected source; a failed update is an error.
 An image download fails when none of its permitted sources supplies verified bytes.
-Changing `--repo` alone does not fetch or activate that repository's Catalog;
+Changing `--repo` alone does not fetch or activate that repository's catalog;
 run `barn update --repo <root>` before using its custom aliases.
 
 Verified writable cache files are made read-only again. A damaged, unreferenced
@@ -118,7 +113,7 @@ preserve x86 memory ordering. TCG results are not performance evidence.
 
 EL7 is deliberately limited to native Linux/amd64. Linux setup installs only
 the native QEMU family; foreign architectures require the matching system
-emulator and UEFI firmware before `up` or `recreate` can proceed. For Catalog images, `plan`
+emulator and UEFI firmware before `up` or `recreate` can proceed. For catalog images, `plan`
 resolves the intended image and runtime without requiring those tools. Named
 `local-*` imports are byte-checked during resolution and still need `qemu-img`.
 
@@ -129,12 +124,12 @@ BARN_REPO=/absolute/local/repository barn up
 ```
 
 Unsigned repositories must be local paths or HTTPS. HTTP repositories require a
-Catalog signed by a trusted key. Immutable upstream artifact URLs must be HTTPS.
+catalog signed by a trusted key. Immutable upstream artifact URLs must be HTTPS.
 
 ## Trust and verification
 
 Current ordinary builds embed both production public verification keys. The
-private signing keys are external to the source repository. Catalog activation
+private signing keys are external to the source repository. catalog activation
 rejects unknown keys, malformed content, equivocation, and revisions below the
 repository-scoped high-water mark unless the operator explicitly allows a
 downgrade.
@@ -152,11 +147,11 @@ barn image sync --repo /absolute/repo --allow-downgrade /absolute/repo/catalog.j
 barn image reset
 ```
 
-`image reset` restores the embedded Catalog but keeps the anti-rollback
+`image reset` restores the embedded catalog but keeps the anti-rollback
 high-water mark.
 
-`barn update` checks the repository now and activates a newer Catalog. Barn
-never refreshes the Catalog on its own; the Catalog embedded in each release is
+`barn update` checks the repository now and activates a newer catalog. Barn
+never refreshes the catalog on its own; the catalog embedded in each release is
 used until you update. `image sync` is the recovery path for an exact URL or
 file, including a downgrade.
 
@@ -167,10 +162,10 @@ barn image sync --repo /srv/barn --allow-downgrade /srv/barn/catalog.json
 barn image reset --repo /srv/barn
 ```
 
-`--repo` selects the independent active-Catalog and high-water slot. The source
+`--repo` selects the independent active-catalog and high-water slot. The source
 argument does not change this selection. `image sync` and `image reset` accept
 `--repo`, but not `--mirror`; when `--repo` is omitted they use `BARN_REPO`
-or the compiled default. For an unsigned custom Catalog, the exact source must
+or the compiled default. For an unsigned custom catalog, the exact source must
 be the selected root's `catalog.json`.
 
 ## Static repository format
@@ -191,12 +186,12 @@ architectures, boot mode, status, and optional provenance-only upstream URLs.
 `source_user` records the image's declared source login identity, for example
 `rocky` in an upstream image or `dba` after Barn's official normalization.
 The pipeline takes the upstream account separately when sanitizing a candidate.
-Catalog/import metadata does not replace the deployment SSH user (`dba` by
+catalog/import metadata does not replace the deployment SSH user (`dba` by
 default) or itself normalize the image. The file contains no generated
 checksum or size fields. `catalog.json` uses the same logical tree but
 materializes each variant's file, SHA-256, artifact size, and virtual size.
 `repo.yaml` is `schema: 1`; the generated `catalog.json` is the schema-3
-Catalog that Barn embeds and signs.
+catalog that Barn embeds and signs.
 
 ```yaml
 schema: 1
@@ -231,20 +226,20 @@ d13:stable + native
 ```
 
 `barn repo scan` is read-only. `build` performs strict YAML validation,
-full qcow2 inspection/checking, and atomic Catalog replacement without changing
-`repo.yaml` or QCOW bytes. `verify` requires the generated Catalog bytes to
+full qcow2 inspection/checking, and atomic catalog replacement without changing
+`repo.yaml` or QCOW bytes. `verify` requires the generated catalog bytes to
 match a fresh materialization exactly. `build` and `verify` require local
 `qemu-img`; `scan` does not. Build on a QEMU host, then publish immutable
-artifacts first and the Catalog
-plus its matching signature last. Update a signed Catalog/signature pair
+artifacts first and the catalog
+plus its matching signature last. Update a signed catalog/signature pair
 together where possible; an inconsistent pair fails verification. Increase
-`revision` when changing Catalog contents.
+`revision` when changing catalog contents.
 
 ## Local layout and imports
 
 Images live under `BARN_HOME/images` (default `~/.barn/images`): family
 directories contain downloaded artifacts, `manifests/` stores the active
-Catalog with an independent high-water entry per repository, and `local/` plus
+catalog with an independent high-water entry per repository, and `local/` plus
 `local-images.json` hold imports.
 
 ```bash
@@ -258,7 +253,7 @@ obtained trusted digest adds an explicit authenticity check to the mandatory qco
 inspection. Import copies and verifies the file; it does not clean credentials,
 install cloud-init, detect the guest CPU architecture, or prove that it boots.
 
-Named local aliases must begin with `local-`, so a future signed Catalog cannot
+Named local aliases must begin with `local-`, so a future signed catalog cannot
 shadow them. `--name`, `--boot`, and `--source-user` must be supplied together.
 A named import records the importing host's native architecture; there is no
 `image import --arch` option. Use a static repository with explicit variants
@@ -274,15 +269,15 @@ barn image prune --yes
 ```
 
 Bare `prune` and `--dry-run` only report candidates; `--yes` deletes them.
-Prune protects the union of all artifacts in the selected active Catalog,
+Prune protects the union of all artifacts in the selected active catalog,
 applied node image digests, and registered local aliases. Therefore a cached
-Catalog image or named import is retained even when no VM uses it. Unprotected
+catalog image or named import is retained even when no VM uses it. Unprotected
 images and recognized stale staging files are candidates; unsafe or damaged
-files cause an error. Use the same `--repo` when inspecting a custom Catalog's
+files cause an error. Use the same `--repo` when inspecting a custom catalog's
 cache policy. Images remain cached after `destroy`, `destroy --purge`, and `purge`.
 
-The compiled schema-3 Catalog can be exported byte-for-byte with
-`go run ./tools/catalogexport /absolute/new/catalog.json`. A public Catalog at
+The compiled schema-3 catalog can be exported byte-for-byte with
+`go run ./tools/catalogexport /absolute/new/catalog.json`. A public catalog at
 the embedded version must use those exact bytes; same-version different bytes
-are rejected as equivocation. Release signing and image Catalog signing remain
-separate trust domains.
+are rejected as equivocation. Application checksums and image catalog signatures serve different purposes;
+see [release engineering](../../about/engineering/).

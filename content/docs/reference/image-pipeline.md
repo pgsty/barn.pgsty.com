@@ -19,7 +19,7 @@ from the dependencies that `barn setup` installs for running VMs.
 
 - `validate`: copy/re-hash, force qcow2 inspection, validate the single backing
   chain, run `qemu-img check`, and emit an explicitly unpublishable evidence
-  bundle. Guest credentials are not changed.
+  bundle. guest credentials are not changed.
 - `offline`: additionally use libguestfs `virt-customize --no-network` and
   `virt-cat` on the staged copy. It rejects unrelated UID/GID 88 occupants,
   normalizes the locked `dba`/`admin` identity, disables password/root SSH,
@@ -61,7 +61,7 @@ Each result remains an unsigned `testing` candidate. To build the complete
 matrix, omit `--target`; repeat it to select several targets. `--list` shows
 the exact releases pinned by this checkout. The matrix currently contains
 Debian `20260923.2610.1`/`20260914.2601.2` and Rocky Linux
-`8.10.20240528.2`/`9.8.20260525.2`.
+`8.10.20240528.3`/`9.8.20260525.2`.
 
 Assembly takes **parent directories containing the named bundles**, not the
 individual bundle directories. If all eight builds were written below one
@@ -79,7 +79,7 @@ repository, and runs `barn repo build` plus `verify` using `barn` on PATH
 (or `--barn /absolute/path/to/barn`). Unlike build mode's existing output
 root, the assembly destination must not exist. Its channels are `candidate`,
 not `stable`: use `d13:candidate`, for example. This does not perform native
-smoke, signing, upload, or Catalog publication.
+smoke, signing, upload, or catalog publication.
 
 ## Validate one downloaded image
 
@@ -116,6 +116,6 @@ byte-reproducible for fixed inputs/tools; offline mutation must be built twice
 and compared before release evidence is accepted.
 
 A release still needs runtime smoke on each declared host/guest path, explicit
-review of support status and provenance, a new Catalog revision, production
+review of support status and provenance, a new catalog revision, production
 signing, and public artifact verification. Build success alone does not
 authorize a `supported` status or prove that a candidate is publicly available.

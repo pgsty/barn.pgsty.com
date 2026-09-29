@@ -1,36 +1,33 @@
 brand:
   name: BARN
-  tagline: One inventory, one local deployment
-  slogan: Native QEMU virtual machines for Pigsty development on macOS and Linux.
+  tagline: Bootstrap And Run Nodes
+  slogan: Local Linux and macOS virtual machines for development and testing.
 columns:
-  - title: Start
+  - title: Guides
     links:
-      - { label: Quick Start, url: docs/start/tutorial/ }
-      - { label: Daily Operations, url: docs/start/operations/ }
-      - { label: Troubleshooting, url: docs/start/troubleshooting/ }
-      - { label: Image Repositories, url: docs/start/images/ }
-      - { label: Automation, url: docs/start/automation/ }
-      - { label: Storage and Access, url: docs/start/storage/ }
-      - { label: Build from Source, url: docs/start/source-build/ }
-      - { label: Uninstall, url: docs/start/uninstall/ }
+      - { label: Installation, url: "docs/start/installation/" }
+      - { label: Linux Quick Start, url: "docs/start/tutorial/" }
+      - { label: macOS VMs, url: "docs/start/macos/" }
+      - { label: Daily Operations, url: "docs/start/operations/" }
+      - { label: Troubleshooting, url: "docs/start/troubleshooting/" }
   - title: Reference
     links:
-      - { label: Configuration, url: docs/reference/configuration/ }
-      - { label: CLI, url: docs/reference/cli/ }
-      - { label: Images, url: docs/reference/images/ }
-      - { label: Image Pipeline, url: docs/reference/image-pipeline/ }
-  - title: "Project"
+      - { label: Linux Configuration, url: "docs/reference/configuration/" }
+      - { label: CLI, url: "docs/reference/cli/" }
+      - { label: Mac Commands, url: "docs/reference/mac/" }
+      - { label: Linux Images, url: "docs/reference/images/" }
+      - { label: Platforms and Limits, url: "docs/about/status/" }
+  - title: Project
     links:
-      - { label: Design, url: docs/about/design/ }
-      - { label: Status, url: docs/about/status/ }
-      - { label: Engineering, url: docs/about/engineering/ }
-      - { label: "Articles", url: "blog/article/" }
-      - { label: "Design posts", url: "blog/design/" }
-      - { label: "Release notes", url: "blog/release/" }
-  - title: "Development ecosystem"
+      - { label: Release Notes, url: "blog/release/" }
+      - { label: Design Articles, url: "blog/design/" }
+      - { label: GitHub, url: "https://github.com/pgsty/barn", external: true }
+      - { label: Contributing, url: "https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md", external: true }
+      - { label: Security, url: "https://github.com/pgsty/barn/blob/main/SECURITY.md", external: true }
+  - title: Ecosystem
     links:
-      - { label: "Pigsty", url: "https://pigsty.io/", external: true }
-      - { label: "Piglet", url: "https://piglet.run/", external: true }
-      - { label: "PIG", url: "https://pig.pgsty.com/", external: true }
-      - { label: "PG Center", url: "https://pg.center/docs/reference/", external: true }
-      - { label: "PGSQL.CC", url: "https://pgsql.cc/docs/", external: true }
+      - { label: Pigsty, url: "https://pigsty.io/", external: true }
+      - { label: PIG, url: "https://pig.pgsty.com/", external: true }
+      - { label: Silo, url: "https://silo.pgsty.com/", external: true }
+      - { label: Piglet, url: "https://piglet.run/", external: true }
+      - { label: PG Center, url: "https://pg.center/docs/reference/", external: true }

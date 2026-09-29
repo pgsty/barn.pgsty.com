@@ -2,11 +2,11 @@
 title: 存储、文件与服务访问
 linkTitle: 存储与访问
 description: 配置测试数据盘，理解保留规则，传输文件，并通过 OpenSSH 访问客机服务。
-weight: 36
+weight: 40
 icon: fa-solid fa-hard-drive
 ---
 
-本教程使用 **Barn 0.9.0 发布候选**的接口。执行客机内检查之前，
+本教程使用 **Barn 0.9.0** 的接口。执行客机内检查之前，
 先完成[快速上手](../tutorial/)。示例使用 `meta` 节点与默认子网；调整已有配置时，
 请沿用实际节点名称与地址。
 
@@ -22,7 +22,7 @@ icon: fa-solid fa-hard-drive
 all:
   vars:
     admin_ip: 10.10.10.10
-    vm_image: u24@20260911.0.0
+    vm_image: u24@20260926.0.0
   children:
     nodes:
       hosts:
@@ -86,8 +86,8 @@ barn start meta
 barn exec meta -- cat /data/barn-retention.txt
 ```
 
-这只检查 VM stop/start，不是物理宿主重启后的持久性验证。
-原生验证范围见[当前状态](../../about/status/)。
+这个示例检查 VM 停止和启动后的数据保留。请在实验环境之外保存备份。
+macOS 客机的文件夹共享见 [Mac 教程](../macos/#共享目录)。
 
 ## 使用管理 SSH 连接传输文件
 
@@ -122,7 +122,7 @@ ssh -F ./barn-ssh.conf -N \
 客机服务必须已经监听 5432。Ctrl-C 关闭隧道；如果宿主 15432 已占用，请换一个本地端口。
 显式绑定回环地址，使此示例仅供本机访问。
 
-Inventory 没有 `vm_ports` 或 `vm_forwards` 字段，未知 `vm_*` 会被拒绝。
+主机清单没有 `vm_ports` 或 `vm_forwards` 字段，未知 `vm_*` 会被拒绝。
 请使用固定 IP 网络或 OpenSSH 转发。管理 SSH 使用独立的回环连接，固定 IP
 网络报告限制时，管理连接仍可能可用。
 
@@ -143,7 +143,7 @@ vm_shares:
 源文件共享可以从显式只读开始；可写共享还取决于客机用户权限，Barn 可能回退到
 只读并报告限制，不会修改宿主目录属主。
 
-**不要在当前文档所述运行时的 macOS 环境中添加 `vm_shares`。** 已测 macOS/QEMU
+**在 macOS 宿主上运行 Linux 客机时，请省略 `vm_shares`。** 已测 macOS/QEMU
 路径无法重新打开安全持有的目录描述符，受影响节点无法启动；这里应使用 SSH 文件传输。
 宿主源目录或挂载丢失时，恢复原目录/挂载后再重试 `up`；Barn 不会新建空目录替代。
 修改已有节点的共享定义需要显式重建。完整磁盘与共享约束见[配置参考](../../reference/configuration/)。

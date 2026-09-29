@@ -1,17 +1,33 @@
 :root {
-  --td-brand-copper: #9f2448;
-  --td-brand-copper-dim: #bd5874;
-  --td-brand-mark-from: #70203b;
-  --td-brand-mark-to: #dc5678;
-  --td-brand-line-strong: #c9a3ad;
+  --td-brand-copper: #a9573b;
+  --td-brand-copper-dim: #af8250;
+  --td-brand-mark-from: #344f60;
+  --td-brand-mark-to: #a9573b;
+  --td-brand-line-strong: #cfb49a;
 }
 
 [data-bs-theme='dark'] {
-  --td-brand-copper: #ff8ca8;
-  --td-brand-copper-dim: #d96783;
-  --td-brand-mark-from: #ffb3c5;
-  --td-brand-mark-to: #ff6f96;
-  --td-brand-line-strong: #754352;
+  --td-brand-copper: #dca579;
+  --td-brand-copper-dim: #af8250;
+  --td-brand-mark-from: #fff9eb;
+  --td-brand-mark-to: #dca579;
+  --td-brand-line-strong: #755642;
+}
+
+// Follow the site's theme toggle as well as the system preference.
+[data-bs-theme='dark'] {
+  .td-nav-wordmark,
+  .td-shell-brand-logo--wordmark,
+  .td-site-footer__logo--wordmark img {
+    content: url('/images/barn-wordmark-dark.svg');
+  }
+}
+
+.td-landing-hero__media {
+  aspect-ratio: 5 / 3;
+  transform: none;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .td-landing-hero code {
@@ -24,4 +40,15 @@
 
 .evidence-table code {
   overflow-wrap: anywhere;
+}
+
+// Platform names and requirements should stay readable inside the theme's
+// horizontal table scroller on narrow screens.
+.td-content table.platform-table {
+  min-width: 560px;
+
+  th:first-child,
+  td:first-child {
+    white-space: nowrap;
+  }
 }

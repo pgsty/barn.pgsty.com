@@ -1,12 +1,15 @@
 ---
 title: Troubleshooting
 description: Short, safe runbooks for setup, networking, images, drift, interrupted state, and SSH.
-weight: 30
+weight: 70
 icon: fa-solid fa-life-ring
 ---
 
-This page describes the **Barn 0.9.0 release candidate**. Check `barn version`
+This page covers **Barn 0.9.0**. Check `barn version`
 before applying version-specific guidance.
+
+For macOS guests, use `barn mac doctor` and the [Mac troubleshooting guide](../macos/#troubleshooting).
+The diagnostics below apply to Linux labs.
 
 Start with diagnostics (`status` may reconcile interrupted runtime state):
 
@@ -56,7 +59,7 @@ Automation needs an existing credential or a suitable NOPASSWD policy. Use
 
 On macOS, setup prepares the pinned socket_vmnet source before requesting
 administrator authentication. A download failure therefore does not require a
-password. **0.9 candidate:** the setup plan spells out sudo use and the
+password. the setup plan spells out sudo use and the
 socket_vmnet source; if an automatically selected subnet changes after the
 first confirmation, setup asks again unless `--yes` was supplied.
 
@@ -65,10 +68,10 @@ first confirmation, setup asks again unless `--yes` was supplied.
 Native paths require HVF on macOS or KVM on Linux. TCG is selected only for an
 explicit foreign `vm_arch` or a built-in image/host compatibility rule; an
 arbitrary native failure never falls back. Homebrew QEMU contains both system
-emulators. Linux setup installs only the native family, so a foreign Guest also
+emulators. Linux setup installs only the native family, so a foreign guest also
 requires its matching `qemu-system-*` binary and firmware.
 
-`plan` resolves Catalog-backed images and their intended runtime without QEMU
+`plan` resolves catalog-backed images and their intended runtime without QEMU
 installed; imported `local-*` images still need `qemu-img` and a valid cache.
 `up` and `recreate`
 check the selected emulator and firmware before changing VM resources.
@@ -87,7 +90,7 @@ barn network uninstall --json
 
 Without `--yes`, JSON output only plans removal. The network plan may still
 need sudo to read protected ownership state. Apply the reviewed plan with
-`barn network uninstall --yes`. **0.9 candidate:** ordinary terminal output
+`barn network uninstall --yes`. ordinary terminal output
 asks `[y/N]` and can apply removal immediately after confirmation. A failed Linux
 bridge smoke test rolls the install back automatically; an explicit
 `automatic rollback failed` message means manual inspection is required.
@@ -140,7 +143,7 @@ expose them as `nodes[].warnings`. Internet access is not a readiness requiremen
 |---|---|
 | Data disk unavailable | Correct a missing device, probe, tool, busy mount, or I/O problem, then run `up` |
 | Shared directory is read-only | Correct host permissions, then run `up` to retry writes |
-| Guest hosts or control-node SSH incomplete | Run `up` to refresh the managed files |
+| guest hosts or control-node SSH incomplete | Run `up` to refresh the managed files |
 | Private interface unavailable | Check `barn network status`, then run `up`; management SSH can still work |
 
 Repeat `up` after fixing the underlying issue. It retries unfinished stages,
@@ -177,7 +180,7 @@ A changed key for the same instance still fails verification.
 eligibility scan; `up` and `start` still reject a new or stopped node address
 that already accepts SSH.
 
-**0.9 candidate:** a symlinked or hard-linked `~/.ssh/config` is not rewritten.
+a symlinked or hard-linked `~/.ssh/config` is not rewritten.
 Barn publishes its fragment and shows the `Include` line to add through your
 dotfile manager. If `ssh meta` fails while `barn ssh meta` works, check that
 include before changing guest keys. Near-miss node names in `ssh`/`exec` are rejected with a suggestion when they
@@ -186,7 +189,7 @@ explicitly separating a node selector from its remote command.
 
 ## Catalog or image verification fails
 
-The current binary embeds active and standby Catalog public keys. Unknown
+The current binary embeds active and standby catalog public keys. Unknown
 signers, version rollback/equivocation, artifact size/SHA mismatch, and unsafe
 qcow2 structure are distinct integrity failures. Use a correctly signed
 repository or `barn image import --sha256 ...`; do not copy bytes directly
@@ -194,8 +197,7 @@ into `~/.barn/images`.
 
 ## A command was killed
 
-First check whether another Barn command is still running. In the **0.9
-candidate**, `status` reads published state without waiting and reports a
+First check whether another Barn command is still running. In Barn 0.9.0, `status` reads published state without waiting and reports a
 `note` while another command holds the deployment lock. Wait for that command
 to finish before treating its in-progress state as an interruption.
 
@@ -203,7 +205,7 @@ When no operation holds the lock, run `barn status`. A provably live or dead
 runtime is reconciled using its recorded identity; an ambiguous process remains
 blocked. Never kill an unknown PID based only on a state file.
 
-The **0.9 candidate** additionally handles these recovery cases:
+Barn 0.9.0 additionally handles these recovery cases:
 
 | Interrupted operation | Recovery |
 |---|---|
@@ -219,7 +221,7 @@ If a recorded QEMU process still exists but its QMP socket is absent, preserve
 the evidence and inspect serial/QEMU logs before using `stop` to converge it.
 Do not delete runtime sockets or state files by hand.
 
-**0.9 candidate:** the generic error envelope uses a stable class in `error`,
+the generic error envelope uses a stable class in `error`,
 with optional `reason`, `next`, and external-program details in `command`.
 Some commands return their own diagnostic reports. Read the cause and proposed
 next step; do not parse human text as an API. See [Automation](../automation/)

@@ -1,36 +1,33 @@
 brand:
   name: BARN
-  tagline: 一份 Inventory，一套本地 Deployment
-  slogan: 面向 macOS 与 Linux Pigsty 开发环境的原生 QEMU 虚拟机。
+  tagline: Bootstrap And Run Nodes
+  slogan: 为本地开发与测试准备 Linux 和 macOS 虚拟机。
 columns:
-  - title: 开始使用
+  - title: 使用指南
     links:
-      - { label: 快速上手, url: docs/start/tutorial/ }
-      - { label: 日常管理, url: docs/start/operations/ }
-      - { label: 故障排查, url: docs/start/troubleshooting/ }
-      - { label: 镜像仓库, url: docs/start/images/ }
-      - { label: 自动化, url: docs/start/automation/ }
-      - { label: 存储与访问, url: docs/start/storage/ }
-      - { label: 从源码构建, url: docs/start/source-build/ }
-      - { label: 卸载与清理, url: docs/start/uninstall/ }
+      - { label: 安装, url: "docs/start/installation/" }
+      - { label: Linux 快速上手, url: "docs/start/tutorial/" }
+      - { label: macOS 虚拟机, url: "docs/start/macos/" }
+      - { label: 日常管理, url: "docs/start/operations/" }
+      - { label: 故障排查, url: "docs/start/troubleshooting/" }
   - title: 参考
     links:
-      - { label: 配置, url: docs/reference/configuration/ }
-      - { label: 命令行, url: docs/reference/cli/ }
-      - { label: 镜像, url: docs/reference/images/ }
-      - { label: 镜像流水线, url: docs/reference/image-pipeline/ }
-  - title: "项目"
+      - { label: Linux 配置, url: "docs/reference/configuration/" }
+      - { label: 命令行, url: "docs/reference/cli/" }
+      - { label: Mac 命令, url: "docs/reference/mac/" }
+      - { label: Linux 镜像, url: "docs/reference/images/" }
+      - { label: 平台与限制, url: "docs/about/status/" }
+  - title: 项目
     links:
-      - { label: 设计, url: docs/about/design/ }
-      - { label: 当前状态, url: docs/about/status/ }
-      - { label: 工程与发布, url: docs/about/engineering/ }
-      - { label: 文章, url: blog/article/ }
-      - { label: "设计文章", url: "blog/design/" }
-      - { label: "发布记录", url: "blog/release/" }
-  - title: "开发生态"
+      - { label: 发布说明, url: "blog/release/" }
+      - { label: 设计文章, url: "blog/design/" }
+      - { label: GitHub, url: "https://github.com/pgsty/barn", external: true }
+      - { label: 参与贡献, url: "https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md", external: true }
+      - { label: 安全政策, url: "https://github.com/pgsty/barn/blob/main/SECURITY.md", external: true }
+  - title: 开发生态
     links:
-      - { label: "Pigsty", url: "https://pigsty.cc/", external: true }
-      - { label: "Piglet", url: "https://piglet.run/zh/", external: true }
-      - { label: "PIG", url: "https://pig.pgsty.com/zh/", external: true }
-      - { label: "PG 中文文档", url: "https://pgsql.cc/docs/", external: true }
-      - { label: "PG 知识图谱", url: "https://pg.center/docs/reference/", external: true }
+      - { label: Pigsty, url: "https://pigsty.cc/", external: true }
+      - { label: PIG, url: "https://pig.pgsty.com/zh/", external: true }
+      - { label: Silo, url: "https://silo.pgsty.com/zh/", external: true }
+      - { label: Piglet, url: "https://piglet.run/zh/", external: true }
+      - { label: PGSQL.CC, url: "https://pgsql.cc/docs/", external: true }

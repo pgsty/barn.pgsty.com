@@ -1,84 +1,22 @@
 ---
-title: Quick Start
-linkTitle: Quick Start
-description: Install Barn 0.9.0, start an Ubuntu lab with up, connect with ssh, and scale from the same inventory.
+title: Linux Quick Start
+linkTitle: Linux Quick Start
+description: Start an Ubuntu VM, connect over SSH, and expand it into a fixed-IP Linux lab with one inventory.
 weight: 10
-icon: fa-solid fa-play
-aliases: [/docs/start/installation/, /docs/start/upgrade/, /docs/start/lab/, /docs/start/pigsty/, /docs/features/]
+icon: fa-brands fa-linux
+aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 ---
 
-## Install
+Create an Ubuntu 24.04 VM on your Mac or Linux host, then expand it into a lab.
+For macOS guests, use the separate [Mac guide](../macos/).
 
-Install the current Barn 0.9.0 development version with Homebrew:
+## Before you start {#install}
 
-```bash
-brew install --HEAD pgsty/infra/barn
-barn version
-```
+[Install Barn 0.9.0](../installation/) and reserve at least 4 GiB of guest memory
+plus room for the host. Run these commands as your normal user in a terminal.
+Barn can prepare QEMU and the private network; host changes may require sudo.
 
-The [Homebrew formula](https://github.com/pgsty/homebrew-infra/blob/main/Formula/barn.rb)
-builds the CLI and hosts-file helper from the main branch. You can also
-[build from source](../source-build/) manually.
-
-### Release packages
-
-The 0.9.0 release packages are not published yet. Once available, the
-user-scoped installer supports macOS and Linux on arm64 and amd64,
-verifies the archive checksum, and needs no sudo to install:
-
-```bash
-curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.0/install.sh
-chmod +x install.sh
-BARN_VERSION=0.9.0 ./install.sh
-export PATH="$HOME/.local/bin:$PATH"
-barn version
-```
-
-The default installation directory is `~/.local/bin`; add the same PATH line
-to your shell configuration. A release build should report `0.9.0`. GitHub
-excludes prereleases from `/releases/latest`, so specify `BARN_VERSION=0.9.0`.
-
-See [Download and PATH problems](../troubleshooting/#download-and-path-problems)
-if downloads fail.
-
-DEB and RPM packages will also be available with the release. The examples
-below use amd64; use the corresponding `linux_arm64` asset on ARM64 Linux.
-
-```bash {tab="Debian / Ubuntu" group="install" value="deb"}
-barn_release=https://github.com/pgsty/barn/releases/download/v0.9.0
-curl -fLO "$barn_release/barn_0.9.0_linux_amd64.deb"
-sudo apt install ./barn_0.9.0_linux_amd64.deb
-barn version
-```
-
-```bash {tab="RHEL / Fedora" value="rpm"}
-barn_release=https://github.com/pgsty/barn/releases/download/v0.9.0
-curl -fLO "$barn_release/barn_0.9.0_linux_amd64.rpm"
-sudo dnf install ./barn_0.9.0_linux_amd64.rpm
-barn version
-```
-
-The host requirements below apply to Linux guests. macOS guests use the
-independent [barn mac](../macos/) command.
-
-### Host requirements
-
-| Host | Native acceleration | Minimum QEMU |
-|---|---|---|
-| macOS arm64 / amd64 | HVF | 8.2.1 |
-| Linux amd64 / arm64 | KVM | 6.2 |
-
-The host also needs `qemu-img`, OpenSSH, and firmware for the selected guest.
-Interactive `up` can prepare missing dependencies through Homebrew on macOS
-or apt/dnf on supported Linux distributions, and install the fixed-IP network.
-Host package and network changes may require sudo; run Barn itself as your
-normal user. Linux needs usable KVM and NetworkManager or systemd-networkd.
-The dated native validation covers macOS arm64 and Ubuntu amd64; other build
-platforms have narrower evidence. See [Status](../../about/status/).
-
-## Boot the first lab
-
-For a first deployment, open a terminal in an empty directory:
+## Start and connect
 
 ```bash
 mkdir -p ~/barn-lab && cd ~/barn-lab
@@ -86,219 +24,130 @@ barn up
 barn ssh
 ```
 
-Use `exit` to return from the guest to your host terminal before running more
-Barn commands.
-
-When no inventory or applied deployment exists, interactive `up` creates
-`barn.yml` with one `meta` node. It prepares missing host dependencies and
-networking, downloads and verifies the image, starts QEMU, and waits for
-management SSH. Host changes are displayed; sudo may ask for your password.
-To review the full host plan before applying it, use `barn setup --dry-run`.
-
-> [!NOTE]
-> A new directory is not a new lab. State lives in `$BARN_HOME` (default
-> `~/.barn`). If a deployment already exists and no inventory is found,
-> `up` continues that deployment. Use `barn status` to inspect it first.
-
-The default template resolves to:
-
-| Setting | Default |
-|---|---|
-| Node / fixed IP | `meta` / `10.10.10.10` |
-| Guest image | Ubuntu 24.04, `u24:stable`, native host architecture |
-| Login | `dba`, with SSH key authentication |
-| CPU / memory | 2 vCPUs / 4 GiB per node |
-| Root / data disk | 64 GiB root + 128 GiB at `/data`, not persistent |
-
-Disk sizes are virtual capacities; qcow2 files grow as data is written.
-A four-node lab uses 8 vCPUs and 16 GiB of guest memory, in addition to host
-resources. Use `barn plan` to inspect totals before starting.
-
-A fresh, unedited built-in template on the default subnet may be moved to an available private `/24`
-when setup finds a subnet conflict. An existing template is backed up as
-`barn.yml.before-network-change`. Check the resulting `barn.yml` and
-`barn status` for actual addresses; explicit `-f` files, edited templates,
-and existing deployments keep their selected subnet.
-
-A healthy first start ends with a result such as:
+On first use, when no inventory or deployment exists, `up` creates `barn.yml`
+with one `meta` node. It prepares host dependencies, downloads and verifies the
+image, and waits for SSH. A healthy start ends with a connection command:
 
 ```text
   ✓  1 node ready
 connect:   barn ssh meta
 ```
 
-`barn ssh` selects the control node, `meta` in this template. You can also
-name it or run a command directly:
+You are now in the guest as `dba`, with key-based SSH and passwordless sudo.
+Run `exit` to return to the host before running more Barn commands.
+
+| Default | Value |
+|---|---|
+| Node and address | `meta`, `10.10.10.10` |
+| Image | Ubuntu 24.04, `u24:stable`, native host architecture |
+| CPU and memory | 2 vCPUs, 4 GiB |
+| Disks | 64 GiB root, 128 GiB test data disk at `/data` |
+
+Disk files grow as data is written. On a fresh, unedited default template,
+setup can select another private `/24` if the default is occupied; check the
+resulting `barn.yml` and `barn status` for the actual addresses. An existing
+template is backed up as `barn.yml.before-network-change`. Explicit `-f` files,
+edited templates, and existing deployments retain their subnet.
+
+Barn keeps one Linux deployment per user under `~/.barn`. A different working
+directory does not create a second lab: with no local inventory, `up` resumes
+the applied deployment. Use `barn status` to see what already exists.
+
+## Inspect and use the VM
 
 ```bash
-barn ssh meta
+barn status
 barn exec meta -- hostname
-barn st
+barn exec meta -- df -h / /data
+barn ssh meta
 ```
 
-`st` is the alias of `status`; its `running` state describes the VM
-process, not a fresh guest-readiness check.
-
-### Continue interrupted setup
-
-Repeat `barn up` to continue interrupted work, retry unfinished guest setup,
-or update older guest helpers. Healthy running VMs keep their process and
-root disk. A guest with usable management SSH can finish with limitations,
-such as a read-only share or unavailable private networking. Review those
-messages; automation should inspect `nodes[].warnings` and `nodes[].repairs`
-in `barn up --json`, as these limitations still return exit 0.
+`status` describes the VM process. `up` waits for working management SSH and
+reports any limited guest features, such as an unavailable data disk or private
+network. Repeat `barn up` after fixing a problem or interrupting setup; healthy
+VMs keep running. For China-region image downloads, use `barn up --mirror`.
 
 > [!WARNING]
-> Data disks are disposable test storage. `up` can reset an unrecognized or
-> confirmed damaged filesystem, **including a persistent disk**, and reports
-> discarded data. `persistent` retains disks across destroy/recreate; it does
-> not protect corrupt contents during recovery. See [Data disks](../../reference/configuration/#data-disks).
+> Data disks are disposable test storage. During guest setup, Barn may reset an
+> unrecognized or confirmed damaged filesystem, including a persistent disk.
+> Keep valuable data elsewhere. [Disk retention and recovery](../storage/)
+> explains the difference between preserving a disk and protecting its contents.
 
-`--no-wait` skips guest readiness, recovery, and metadata refresh; a later
-`barn up` completes them. Image downloads support retries and resumption.
-Use `barn up --mirror` to prefer the official China repository; see
-[Image Repositories](../images/) for image selection and fallback behavior.
+## Customize before the first start
 
-## Choose an inventory before booting
-
-This is an alternative to the automatic first run above. In a fresh lab
-directory, generate and inspect the configuration before starting:
+To choose resources before creating a new lab, generate the file first:
 
 ```bash
 barn init
+# Edit barn.yml.
 barn validate
 barn plan
 barn up
 ```
 
-For the Catalog images used here, `init`, `validate`, and `plan` do not require
-QEMU or host-network setup. Planning a registered `local-*` image does require
-`qemu-img` to validate its cached bytes.
-The default `meta` inventory is:
+A complete one-node example:
 
 ```yaml
 all:
   vars:
     admin_ip: 10.10.10.10
+    vm_image: u24
+    vm_cpu: 2
+    vm_mem: 4GiB
   children:
     nodes:
       hosts:
         10.10.10.10: { nodename: meta }
 ```
 
-There are four built-in templates:
+`barn init dual`, `trio`, or `full` generates two, three, or four nodes.
+`barn init full -c 10.20.30.0/24` chooses a different subnet. Existing files
+are preserved unless you explicitly use `--force`. Configuration and catalog
+planning need no host setup; planning an imported `local-*` image also needs
+`qemu-img`. See [configuration](../../reference/configuration/) for all fields.
 
-| Template | Nodes | Default addresses |
-|---|---:|---|
-| `meta` | 1 | `10.10.10.10` |
-| `dual` | 2 | `10.10.10.10`–`10.10.10.11` |
-| `trio` | 3 | `10.10.10.10`–`10.10.10.12` |
-| `full` | 4 | `10.10.10.10`–`10.10.10.13` |
+## Add more nodes
 
-For example, `barn init full` writes four nodes;
-`barn init full -c 10.20.30.0/24` selects another subnet. Existing files are
-preserved unless `--force` is explicit. Set `vm_cpu`, `vm_mem`, `vm_image`,
-and other fields before the first `up`; see [Configuration](../../reference/configuration/).
-
-### Prepare the host explicitly
-
-`setup` prepares dependencies and networking without starting VMs:
-
-```bash
-barn setup --dry-run
-barn setup
-```
-
-Unlike the preparation performed by `up`, standalone `setup` asks for
-confirmation before applying a mutating plan. It reuses the discovered
-inventory, or generates `meta` if no file exists. The optional `/etc/hosts`
-helper is installed only when `barn hosts install --yes` needs it;
-ordinary startup and `barn ssh` do not need that integration.
-
-Downloads honor `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, and `NO_PROXY`,
-including lowercase forms. For unattended first setup in an empty directory:
-
-```bash
-barn setup --yes
-barn up --json
-```
-
-`setup --yes` can generate the inventory itself; a separate `init` is needed
-only when you want to edit it first. Automation still needs credentials for
-any required sudo operation; `--yes` does not supply them. The
-[automation guide](../automation/) shows how to retain command results and
-check guest limitations before proceeding.
-
-### Use an existing Pigsty inventory
-
-```bash
-barn validate -f pigsty.yml
-barn plan -f pigsty.yml
-barn up -f pigsty.yml
-```
-
-Barn reads the documented VM, naming, and login fields and preserves other
-Pigsty settings. This starts the virtual machines; installing PostgreSQL or
-other Pigsty services is a separate Pigsty operation. The built-in templates
-describe VM topology and do not include a complete Pigsty service configuration.
-See [Automation and Guest Scripts](../automation/#use-the-lab-with-pigsty)
-for the handoff, and [Storage and Access](../storage/) for file transfer and
-service connections.
-
-## Scale and operate
-
-To expand the default one-node lab, preserve the existing settings and add
-three hosts to `barn.yml`:
+In your existing `barn.yml`, add hosts under the same `hosts` mapping:
 
 ```yaml
-all:
-  vars:
-    admin_ip: 10.10.10.10
-  children:
-    nodes:
-      hosts:
         10.10.10.10: { nodename: meta }
         10.10.10.11: { nodename: node-1 }
         10.10.10.12: { nodename: node-2 }
         10.10.10.13: { nodename: node-3 }
 ```
 
-This example assumes the default subnet; if setup chose another, use that
-subnet for every address, including `admin_ip`. Do not overwrite a customized
-inventory with `init --force` to expand it.
+Keep your actual subnet and other settings. This is an excerpt, not a replacement
+for the entire file. A four-node lab at the defaults needs 16 GiB of guest memory.
 
 ```bash
 barn plan
 barn up
-barn st
 ```
 
-With only these additions, the plan lists three nodes to create. `up` creates
-them, keeps a running `meta` process, and refreshes guest hosts and control-node
-SSH entries. A healthy result is `4 nodes ready`. The embedded 0.9.0 Catalog
-resolves `u24:stable` to `u24@20260926.0.0`; a manually updated Catalog may
-resolve another version, which appears in `plan` and `status`.
+With only these additions, the plan lists three new nodes. Barn creates them
+without restarting `meta`. Changing an existing node's CPU, memory, or other VM
+definition requires an explicit `barn recreate <node>`, which replaces its root
+disk. Removing a host from YAML leaves its VM intact until `barn destroy <node>`.
 
-Changing CPU, memory, or other consumed VM fields requires an explicit
-`barn recreate <node>`. Removing a YAML entry never deletes its VM. Stop
-and resume the lab without recreating disks:
+## Stop, resume, and clean up
 
 ```bash
 barn stop
 barn start
 ```
 
-When finished, destroy the deployment:
+Both retain the disks. When the lab is no longer needed, run `barn destroy`
+and type `destroy` to confirm. It deletes root and non-persistent data disks,
+while keeping persistent disks, image cache, keys, and host networking.
+[Complete cleanup](../uninstall/) is a separate workflow.
 
-```bash
-barn destroy
-```
+## Next steps
 
-On a terminal, type `destroy` to confirm. Root and non-persistent data disks
-are deleted; cached images, keys, declared persistent disks, and host networking
-remain. See [Uninstall and Clean Up](../uninstall/) for complete disposal, or
-[Daily Operations](../operations/) for restart, logs, explicit changes, and scale-in.
+- [Daily operations](../operations/) — access, logs, restart, changes, and removal.
+- [Storage and access](../storage/) — transfer files and connect to guest services.
+- [Images](../images/) — choose Debian, Rocky Linux, Ubuntu, or a local image.
+- [Automation](../automation/) — `setup --yes`, JSON results, guest scripts, and using an existing `pigsty.yml` with Pigsty.
 
-`barn update` refreshes the image Catalog. To install the Barn application,
-use Homebrew or the source build described at the top; release packages
-will be available after 0.9.0 is published.
+Barn prepares VMs and access. Deploy PostgreSQL or other services separately
+with Pigsty; the built-in templates describe machines, not a complete service configuration.

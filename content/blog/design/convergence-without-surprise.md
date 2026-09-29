@@ -10,9 +10,8 @@ icon: fa-solid fa-arrows-rotate
 lastmod: 2026-09-29
 ---
 
-> [!NOTE]
-> This article describes the **unreleased Barn 0.9.0 candidate**. See
-> [Status](/docs/about/status/) for current validation and remaining release checks.
+This article describes Barn 0.9.0. The VM lifecycle and network design here
+apply to Linux guests; [Mac machines](/docs/start/macos/) are managed independently.
 
 “Declarative” is often shortened to “make reality equal the file.” That is a
 useful slogan until the file is incomplete, the wrong branch is checked out,
@@ -28,11 +27,11 @@ The distinction is central to a VM runtime because roots, data disks, SSH keys,
 and local evidence are not stateless replicas. Recreating them may be correct,
 but it must be a decision the operator can see.
 
-## From Inventory to node identity
+## From inventory to node identity
 
-Barn does not hash the whole Pigsty Inventory. It first extracts the fields
+Barn does not hash the whole Pigsty inventory. It first extracts the fields
 it owns, fills defaults, canonicalizes image selectors and architecture, and
-builds a canonical resolved spec. Exact Catalog artifact resolution remains
+builds a canonical resolved spec. Exact catalog artifact resolution remains
 separate, so a channel update does not itself change a node's spec hash. Each
 node then receives a hash of:
 
@@ -51,7 +50,7 @@ inside the owned namespace fail. Everything outside the documented boundary
 is opaque rather than partially interpreted.
 
 > [!NOTE]
-> **Decision status: current.** Barn converges additions automatically, but
+> Barn converges additions automatically, but
 > definition changes and removal require explicit commands. See
 > [Daily Operations](/docs/start/operations/) for the command workflow.
 
@@ -65,7 +64,7 @@ node state. The result is intentionally small:
 | create | desired node has no committed state | `barn up` creates it |
 | unchanged | definition and runtime still match | running peer stays untouched; stopped peer may start |
 | recreate | node definition changed | explicit `barn recreate --force <node>` |
-| missing | applied node is absent or skipped in the Inventory | explicit `barn destroy <node> --force`, or restore it to the file |
+| missing | applied node is absent or skipped in the inventory | explicit `barn destroy <node> --force`, or restore it to the file |
 | envelope drift | subnet, login identity, architecture, or runtime policy changed | whole-deployment recreate |
 
 Plan is read-only. It reports the exact node sets and, in text mode, the command
@@ -74,13 +73,13 @@ that applies the required explicit transition.
 ## Why `up` stops at drift
 
 Barn could decide that changing CPU or memory is harmless enough to apply,
-or that a new image should silently rebuild a root disk. Pre-1.0 intentionally
+or that a new image should silently rebuild a root disk. Barn 0.9.0 intentionally
 does neither. A changed VM definition is classified as recreate and `up`
 returns a typed conflict.
 
 That conservative boundary has two advantages:
 
-1. all changes that can invalidate Guest state share one visible operation;
+1. all changes that can invalidate guest state share one visible operation;
 2. Barn can finish every prerequisite check before touching the current
    node.
 
@@ -94,7 +93,7 @@ the existing VM remains intact.
 A node can disappear from desired state for many reasons that do not express
 deletion intent:
 
-- the operator opened a reduced Inventory while debugging;
+- the operator opened a reduced inventory while debugging;
 - a group was renamed or filtered;
 - `vm_skip` temporarily marks a real or external host;
 - a merge conflict dropped a YAML branch;

@@ -1,102 +1,110 @@
 sections:
   - hero
-  - { type: metrics, key: facts }
-  - { type: cards, key: entry_points }
-  - { type: command-box, key: first_command }
-  - { type: principles, key: principles }
+  - { type: cards, key: workflows }
+  - { type: markdown, key: first_command, partial: landing/install.html }
+  - { type: principles, key: features }
   - faq
   - cta
 
 hero:
-  eyebrow: Barn 0.9.0 · 发布候选 · Go + QEMU
+  eyebrow: Barn 0.9.0 · Apache-2.0
   title_lines:
-    - 一份 Inventory，
-    - 一套 Deployment。
-  title_size: 4.15rem
+    - 你的本地实验室，
+    - Linux 与 macOS。
+  title_size: 3.8rem
   lead: >-
-    Barn 在 macOS 与 Linux 上，把 Pigsty 兼容的 Inventory 启动成固定 IP 的
-    QEMU 虚拟机。用同一份配置，通过 Barn 准备虚拟机，再通过 Pigsty 部署服务。
-  note: 默认 Ubuntu 24.04。重复 barn up 可接续初始化、重试受限功能，健康 VM 保持运行。
-  note_icon: fa-solid fa-flask
+    用一份 YAML 启动 Linux 集群，或为下一次构建准备一台干净的 macOS。
+    固定地址、SSH 访问、原生虚拟化，让开发与测试回到你自己的机器上。
+  note: Bootstrap And Run Nodes，为开发而生的开源虚拟机工具。
+  note_icon: fa-solid fa-terminal
   image:
-    light: images/barn-hero-light.svg?v=0.9.0
-    dark: images/barn-hero-dark.svg?v=0.9.0
-    alt: 一份 Pigsty Inventory 变成一套固定 IP 的 Barn deployment
+    src: images/barn-hero.svg
+    alt: 黄昏时的红色 Barn，门内亮着服务器，旁边是蓝色 Silo
   actions:
-    - { label: 快速上手, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
-    - { label: 查阅参考, url: docs/reference/, icon: fa-solid fa-book-open, style: ghost }
+    - { label: 启动 Linux 环境, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
+    - { label: 运行 macOS 虚拟机, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
   detail:
-    label: 真机验证与限制
-    url: docs/about/status/
-    icon: fa-solid fa-list-check
+    label: 了解 0.9.0 的新变化
+    url: blog/release/0.9.0/
+    icon: fa-solid fa-tag
 
-facts:
-  eyebrow: 当前模型
-  title: 更少的机制，更清楚的行为
-  text: Barn 面向一套可信的本地 Pigsty 实验环境，不是通用云控制平面。
-  animate: true
-  columns: 4
-  link_label: 查看详情
+workflows:
+  eyebrow: 选择你的环境
+  title: 为日常开发准备虚拟机
+  columns: 2
+  link_label: 开始使用
   items:
-    - { value: 2, label: 条上手命令, desc: 安装后 up + ssh, url: docs/start/tutorial/ }
-    - { value: 1, label: 份 Inventory, desc: barn.yml 或 pigsty.yml, url: docs/reference/configuration/ }
-    - { value: 1, label: 套用户 Deployment, desc: 状态位于 ~/.barn, url: docs/about/design/ }
-    - { value: 9, label: 个镜像家族, desc: Ubuntu、Debian、Rocky、CentOS, url: docs/reference/images/ }
-
-entry_points:
-  eyebrow: 两个顶级栏目
-  title: 文档与博客
-  text: 文档保持紧凑并描述当前行为；博客补充设计理由、技术文章与发布动态。
-  columns: 3
-  link_label: 打开
-  items:
-    - { title: 开始使用, meta: 启动与连接, icon: fa-solid fa-rocket, desc: 快速上手，以及管理、自动化、存储、排障、镜像与清理教程。, url: docs/start/ }
-    - { title: 参考, meta: 准确契约, icon: fa-solid fa-code, desc: Inventory 变量、命令、参数、输出与退出码。, url: docs/reference/ }
-    - { title: 关于, meta: 设计与证据, icon: fa-solid fa-circle-info, desc: 简化模型、真机矩阵、限制与发布门禁。, url: docs/about/ }
-    - { title: 快速上手, meta: 一台扩到四台, icon: fa-solid fa-play, desc: 用 up 启动、用 ssh 进入，再通过同一份配置增量扩容。, url: docs/start/tutorial/ }
-    - { title: 配置, meta: vm_* 字段, icon: fa-solid fa-file-code, desc: 默认值、磁盘、共享、命名、地址与漂移。, url: docs/reference/configuration/ }
-    - { title: 博客, meta: 设计与动态, icon: fa-solid fa-newspaper, desc: 设计注记、项目文章与发布动态。, url: blog/ }
+    - title: 一份配置，一套 Linux 环境
+      meta: 支持 macOS 与 Linux 宿主
+      icon: fa-brands fa-linux
+      desc: >-
+        测试 PostgreSQL 集群、复现问题，或试用新的发行版。
+        在一份 YAML 主机清单中定义最多 20 个节点，启动后即可通过固定 IP 和 SSH 访问，
+        同一份配置还可以交给 Pigsty 部署服务。
+      url: docs/start/tutorial/
+    - title: 为下一次构建准备一台新 Mac
+      meta: Apple Silicon · macOS 27+
+      icon: fa-brands fa-apple
+      desc: >-
+        在独立的 macOS 环境中构建与测试。打开原生桌面，通过 SSH 执行命令，
+        与宿主共享文件夹和文本剪贴板。新虚拟机复用已安装的基础镜像，
+        各自保有独立的磁盘与身份。
+      url: docs/start/macos/
 
 first_command:
-  eyebrow: 正常路径
-  title: 启动环境，然后进入
-  text: 先按快速上手从源码准备 Barn 0.9.0 候选；首次部署时，在终端的空目录执行以下命令。交互式 up 会准备缺少的宿主依赖，在尚无部署时生成默认配置。
-  code: |-
+  eyebrow: 安装 → 启动 → 连接
+  title: 启动第一台 Linux 虚拟机
+  text: >-
+    按宿主操作系统选择安装命令，然后启动并连接。首次使用时，Barn 会创建一个
+    Ubuntu 24.04 单节点环境，并准备宿主依赖。涉及宿主变更时会显示操作内容，
+    在需要时请求管理员权限。
+  body: |-
+    ```bash {tab="macOS" group="barn-install" value="macos"}
+    brew install pgsty/infra/barn
+
     barn up
     barn ssh
-  lang: bash
-  note: 增加主机行后再次 up：创建新节点、启动选中的已停止节点，运行中节点保留进程，同时重试未完成的初始化；删掉一行永远不会删除 VM。
+    ```
 
-principles:
-  eyebrow: 产品边界
-  title: 刻意保留的约束
+    ```bash {tab="Linux" value="linux" wrap=true}
+    curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.0/install.sh
+    BARN_VERSION=0.9.0 bash install.sh
+    export PATH="$HOME/.local/bin:$PATH"
+
+    barn up
+    barn ssh
+    ```
+
+    macOS 使用 Homebrew；Linux 使用下载安装脚本。已有环境时，`barn up` 会继续该部署。
+    [安装方式与系统要求](docs/start/installation/) · [macOS 虚拟机教程](docs/start/macos/)
+
+features:
+  eyebrow: 让实验可以重复
+  title: 配置清楚，操作可控
   columns: 4
   items:
-    - { icon: fa-solid fa-file-lines, title: 一份事实, desc: Pigsty Inventory 同时是 VM 规格与部署清单。 }
-    - { icon: fa-solid fa-server, title: 增量操作, desc: up 添加节点，recreate 应用定义变更，destroy 删除节点。 }
-    - { icon: fa-solid fa-fingerprint, title: 可归属, desc: 变更前核验进程身份、属主、路径与网络 manifest。 }
-    - { icon: fa-solid fa-microchip, title: 显式运行时, desc: 默认使用原生 HVF/KVM；Catalog 规则或显式请求的 TCG 始终可见。 }
+    - { icon: fa-solid fa-network-wired, title: 固定地址, desc: Linux 节点使用配置中的 IP，宿主与其他节点可以直接连接数据库和服务。 }
+    - { icon: fa-solid fa-file-code, title: 一份配置, desc: 将虚拟机定义放进 Ansible 主机清单，用 Barn 创建机器，再用 Pigsty 部署服务。 }
+    - { icon: fa-solid fa-arrows-rotate, title: 可重复操作, desc: 重复 up 接续未完成的初始化，用 plan 查看差异，显式重建或删除虚拟机。 }
+    - { icon: fa-solid fa-clone, title: 复用基础镜像, desc: Linux 使用经过校验的 qcow2 镜像；macOS 从 Apple 恢复镜像安装基础系统，再克隆出独立的可写磁盘。 }
 
 faq:
-  eyebrow: 简短回答
   title: 开始之前
   items:
-    - question: 工作目录还是 Barn 项目吗？
-      answer: 不是。状态是 ~/.barn 下唯一的一套 deployment；显式或当前目录发现的 Inventory 提供期望状态，没有文件时生命周期命令可回退到已应用规格。
+    - question: 需要什么样的宿主？
+      answer: 'Linux 客机支持 macOS 和 Linux 宿主的 arm64、amd64 架构，通过 QEMU 使用 HVF 或 KVM。macOS 客机需要 Apple Silicon、macOS 27 或更高版本，以及 Barn Mac 原生组件。详见[平台与限制](docs/about/status/)。'
       open: true
-    - question: 可以直接使用 pigsty.yml 吗？
-      answer: 可以。Barn 读取已记录的 VM 字段，以及用于命名、控制节点和管理员身份的一小组 Pigsty 字段；其余参数保持不透明。
-    - question: 第一次 up 会修改宿主吗？
-      answer: 可能安装缺少的依赖与固定 IP 网络，并在需要时调用 sudo。可先用 setup --dry-run 查看宿主计划；可选 hosts helper 仅在 hosts install 时安装。
-    - question: up 会安装 PostgreSQL 或 Pigsty 吗？
-      answer: 它准备虚拟机与客机访问环境。PostgreSQL 和其他服务由 Pigsty 单独部署；内置模板只描述 VM 拓扑。
-    - question: Barn 可以用于生产吗？
-      answer: 不可以。它仍是 pre-1.0 的本地开发运行时；请在状态页查看准确验证矩阵与开放门禁。
+    - question: 必须搭配 Pigsty 吗？
+      answer: '不需要。Barn 可以独立用于 Linux 与 macOS 开发。如果要搭建 PostgreSQL 实验环境，可以把同一份 Linux 主机清单交给 [Pigsty](https://pigsty.cc/)：Barn 准备机器与访问环境，Pigsty 安装服务。'
+    - question: 修改主机清单后会发生什么？
+      answer: '对于 Linux 环境，plan 会展示变更，up 会添加新节点；已有虚拟机的定义变化需要显式 recreate。从配置中删除主机行会保留对应虚拟机，只有 destroy 才会删除它。'
+    - question: 可以保留多台 macOS 虚拟机吗？
+      answer: '可以。为它们分别命名，再按需启动。Apple 允许每台 Mac 同时运行两台 macOS 虚拟机，这个限制也包含其他工具启动的机器。每台 Barn Mac 虚拟机都有独立网络与状态，与 Linux 实验环境分开管理。'
 
 cta:
-  title: 从两条命令开始。
-  desc: 当前从源码构建 0.9.0 候选；正式发布后安装 Barn，用 up 启动、ssh 进入。
+  title: 为下一次实验，准备好环境。
+  desc: 安装 Barn 0.9.0，选择客机，开始工作。
   actions:
-    - { label: 快速上手, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
-    - { label: 参考, url: docs/reference/, icon: fa-solid fa-book-open, style: ghost }
-    - { label: 状态, url: docs/about/status/, icon: fa-solid fa-list-check, style: ghost }
+    - { label: 安装 Barn, url: docs/start/installation/, icon: fa-solid fa-download, style: primary }
+    - { label: 阅读文档, url: docs/, icon: fa-solid fa-book-open, style: ghost }
+    - { label: 查看 GitHub, url: 'https://github.com/pgsty/barn', icon: fa-brands fa-github, style: ghost, external: true }

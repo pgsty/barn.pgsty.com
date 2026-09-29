@@ -2,11 +2,11 @@
 title: Automation and Guest Scripts
 linkTitle: Automation
 description: Prepare an unattended lab, check JSON results, and run repeatable scripts inside selected guests.
-weight: 35
+weight: 60
 icon: fa-solid fa-terminal
 ---
 
-These examples target the **Barn 0.9.0 release candidate**. Run host commands as the Unix user who owns the deployment.
+These examples target the **Barn 0.9.0**. Run host commands as the Unix user who owns the deployment.
 Use the same inventory and `BARN_HOME` on every invocation; a new working
 directory does not create an independent lab.
 
@@ -26,8 +26,8 @@ barn setup -f barn.yml --dry-run
 ```
 
 Keep the selected inventory in version control. Set `vm_image` explicitly;
-use a version such as `vm_image: u24@20260911.0.0` when new nodes must use the
-same base after a Catalog update. Explicit `-f` also prevents first-run setup
+use a version such as `vm_image: u24@20260926.0.0` when new nodes must use the
+same base after a catalog update. Explicit `-f` also prevents first-run setup
 from automatically moving an untouched default template to another subnet.
 
 After reviewing the host plan, prepare the machine once:
@@ -43,7 +43,7 @@ and privilege policy. Noninteractive `up` does not perform the interactive
 first-run host preparation. `up` has no `--yes` flag.
 
 For a custom repository, use the same `--repo` value for setup and up, and
-explicitly activate its Catalog with `barn update --repo URL` before
+explicitly activate its catalog with `barn update --repo URL` before
 planning. See [Image Repositories](../images/).
 
 ## Check more than the exit code
@@ -89,7 +89,7 @@ Use [CLI exit codes](../../reference/cli/#exit-codes) together with the payload
 for the command you ran. Partial operations can retain successful nodes;
 inspect `nodes` and/or `failures` when present before retrying.
 
-The **0.9 candidate** moves some failures to different classes. For example,
+The Barn 0.9.0 moves some failures to different classes. For example,
 a missing first inventory is usage/2 and an unknown image is usage/2;
 `recreate_required` and `nodes_removed` are `reason` values under conflict/4.
 It also uses bounded lock waiting and `deployment_busy` on timeout.
@@ -161,6 +161,5 @@ barn ssh
 
 Barn prepares the guest administrator and control-node SSH access. Deploy
 services through Pigsty after checking the inventory and guest connectivity.
-The [validation record](../../about/status/) distinguishes Ansible connectivity
-checks from a complete Pigsty installation. For host-side file transfer or
-port tunneling, see [Storage and Access](../storage/).
+Follow [Pigsty documentation](https://pigsty.io/docs/) for service installation.
+For host-side file transfer or port tunneling, see [Storage and Access](../storage/).

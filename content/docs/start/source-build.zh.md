@@ -1,35 +1,29 @@
 ---
 title: 从源码构建
-description: 为开发与审查构建 Barn，并运行完整源码检查。
-weight: 50
+description: 构建 Barn 0.9.0 或开发分支，准备 Mac 原生组件，并运行贡献者检查。
+weight: 80
 icon: fa-solid fa-code-branch
 ---
 
-Barn 0.9.0 目前是**尚未发布的候选版本**。本页用于从源码构建与检查；
-正式发布后的安装方式见[快速上手](../tutorial/)。
+开发 Barn、检查代码变更或构建 Mac 原生组件时，可以使用源码构建。
+安装打包好的 CLI 请看[安装指南](../installation/)。
 
-## 选择源码
+## 选择版本
 
-克隆 Barn 源码仓库：
+克隆本文档对应的发行版本：
 
 ```bash
-git clone https://github.com/pgsty/barn.git
+git clone --branch v0.9.0 https://github.com/pgsty/barn.git
 cd barn
 ```
 
-尚未发布时不要假定 `v0.9.0` Tag 已存在。构建前核对源码身份与工作区变更，
-确认 `go.mod` 的模块为 `github.com/pgsty/barn`，命令目录为 `cmd/barn`：
+开发主分支时省略 `--branch v0.9.0`。比较行为前，用 `git log -1 --oneline`
+和 `git status --short` 确认源码版本与工作区变更。
 
-```bash
-git log -1 --oneline
-git status --short
-```
+## 构建 CLI
 
-## 构建
-
-已审核候选源码的 `go.mod` 与 `packaging/toolchain.env` 固定 Go 1.27.1；此外需要
-Git、Make、Bash 与标准构建工具。运行 VM 才需要 QEMU 与特权网络准备，编译 CLI
-本身不需要。进入选定源码工作区执行：
+Barn 0.9.0 的 `go.mod` 与 `packaging/toolchain.env` 固定使用 **Go 1.27.1**。
+此外需要 Git、Make、Bash 和标准构建工具。编译 CLI 本身不需要 QEMU 或宿主网络。
 
 ```bash
 make build
@@ -37,25 +31,30 @@ export PATH="$PWD/bin:$PATH"
 barn version
 ```
 
-`make build` 在被 Git 忽略的 `bin/` 下生成同一次构建配套的 `barn` 与
-`barn-hosts-helper`。不要混用来自不同 Commit 或不同 Release 的两个二进制。开发
-构建默认显示 `dev`；Commit 字段显示干净源码的提交，工作区有变更时显示 `uncommitted`。
-不能只凭版本字符串判断是否包含候选功能。
+`bin/` 包含 CLI 与配套的 `barn-hosts-helper`，请保留两者。
+开发构建默认显示 `dev`，提交字段标明源码版本，工作区有变更时显示 `uncommitted`。
 
-将 Inventory 保存在单独的实验目录。这不会隔离 Barn 状态；已有 deployment 时，
-应先检查该部署，再运行 `up`：
+运行 macOS 客机所需的原生组件请按下方步骤构建。
+建议将实验配置保存在源码树之外；所有工作目录仍使用同一个 `BARN_HOME`。
+
+## 构建 Mac 原生组件 {#mac-component}
+
+在运行 macOS 27 的 Apple Silicon 上，使用 **Xcode 27**：
 
 ```bash
-mkdir -p ~/barn-lab && cd ~/barn-lab
-barn setup
-barn up
+make mac-build
+export PATH="$PWD/bin/mac:$PATH"
+barn mac doctor
 ```
 
-## 完整检查
+该命令在 `bin/mac` 中生成 CLI 与原生 `Barn Mac.app`，采用供本地使用的 ad-hoc
+签名，不会创建虚拟机。之后继续 [Mac 教程](../macos/)。
+`make mac-native-test` 运行原生组件测试。
 
-完整检查还需要 Python 3、jq、供 Race 测试使用的 C 工具链，以及固定版本的质量工具。
-安装已审核候选版 CI 所用版本；换用其他源码版本时，重新核对其 `CONTRIBUTING.md`
-与 `packaging/toolchain.env`：
+## 检查变更
+
+完整检查还需要 Python 3、jq、供竞态测试使用的 C 工具链，以及
+`packaging/toolchain.env` 固定版本的工具：
 
 ```bash
 go install honnef.co/go/tools/cmd/staticcheck@v0.8.1
@@ -64,20 +63,13 @@ go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
 ```
 
-确保 Go 工具安装目录（`GOBIN`，未设置时为 `$(go env GOPATH)/bin`）位于 `PATH`。
-提交源码改动前运行：
+将 Go 工具目录加入 PATH：优先使用 `GOBIN`，未设置时为 `$(go env GOPATH)/bin`。
 
 ```bash
+make test
 make check
 ```
 
-该门禁包含模块验证、Shell 语法、维护脚本归属、单元与 Race 测试、Vet、Staticcheck、
-四目标死代码交集、errcheck、漏洞检查、跨平台构建、镜像流水线和安装器测试、依赖许可证
-验证。CI 还单独检查格式、空白、工具准确版本与 GoReleaser 配置；修改打包逻辑还需通过
-完整的打包 Snapshot 验证。
-
-通过源码检查不等于已经发布软件包，也不等于完成真机生命周期验证；
-`make image-pipeline-native-test` 是独立的真机镜像门禁，需要显式提供
-`tests/image-pipeline-native-test.sh` 开头说明的镜像输入，不会下载测试镜像。
-
-发布工程、依赖许可证与边界说明见[工程说明](../../about/engineering/)。
+`make check` 包含模块验证、Shell 语法、维护脚本检查、单元与竞态测试、Vet、
+Staticcheck、死代码与 errcheck 检查、漏洞检查、四目标构建、镜像流水线与安装器测试，
+以及依赖许可证检查。打包变更还需要验证快照制品，具体流程见[参与贡献](../../about/engineering/)。

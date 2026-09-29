@@ -5,10 +5,6 @@ weight: 25
 icon: fa-brands fa-apple
 ---
 
-> [!IMPORTANT]
-> **Barn 0.9.0 发布候选，尚未发布。** 当前验证结果与发行前检查见
-> [当前状态](../../about/status/#macos-guests)。请以实际运行的 `barn mac --help` 为准。
-
 ```text
 barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 ```
@@ -106,7 +102,10 @@ root 权限。
 | 网段 | 在 `10.10.20.0/24` 到 `10.10.59.0/24` 之间选择第一个空闲的私有 `/24`，避开宿主路由和其他机器；也可用 `--subnet` 指定 |
 | 网关 | `.1`，即 Mac |
 | 客机地址 | `.10`，通过对机器 MAC 地址的 DHCP 保留分配 |
-| 可达性 | 经 NAT 访问 Mac 与互联网；不能访问其他机器与局域网 |
+| 可达性 | 访问宿主并通过 NAT 建立出站连接；各自使用独立子网，不桥接到局域网，也不配置入站端口转发 |
+
+Barn 使用 Apple 的[共享模式 vmnet 网络](https://developer.apple.com/documentation/vmnet/vmnet_network_configuration_create(_:_:))。
+独立子网描述网络拓扑，并不表示配置了防火墙隔离策略。
 
 宿主路由（例如 VPN）与机器网段重叠时，`start` 会以 `mac_subnet_in_use` 拒绝启动。
 SSH 主机密钥绑定到机器实例而不是地址，因此 `configure --subnet` 后信任关系不变。
@@ -190,11 +189,11 @@ Apple 的 `/usr/bin/nc` 与 `/usr/bin/ssh` 连接，不受该限制。
 退出码与 [Barn 命令行](../cli/#退出码)一致；远程命令自身的退出码经 `ssh` 与
 `exec` 原样返回。JSON 失败结果带有稳定的 `reason` 与 `next` 命令：
 
-| Reason | 退出码 | 含义与下一步 |
+| 原因标识 | 退出码 | 含义与下一步 |
 |---|---|---|
 | `mac_host_unsupported` | 3 | 不是 Apple 芯片，或 macOS 低于 27 |
 | `mac_runner_missing` | 3 | 命令行旁边没有安装 Mac 组件 |
-| `mac_runner_protocol` | 3 | 命令行与组件来自不同构建，请一起安装 |
+| `mac_runner_protocol` | 3 | 组件使用不兼容的 runner 协议，请重新安装匹配的组件 |
 | `mac_root` | 2 | 请以普通登录用户运行，不要使用 sudo |
 | `mac_download_consent` | 2 | 没有终端时下载 macOS 需要 `--yes`，或改用 `--ipsw` |
 | `mac_machine_absent` | 4 | 没有该名称的机器；执行 `barn mac up NAME` |

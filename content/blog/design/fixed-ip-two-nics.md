@@ -10,11 +10,10 @@ icon: fa-solid fa-network-wired
 lastmod: 2026-09-29
 ---
 
-> [!NOTE]
-> This article describes the **unreleased Barn 0.9.0 candidate**. See
-> [Status](/docs/about/status/) for current validation and remaining release checks.
+This article describes Barn 0.9.0. The VM lifecycle and network design here
+apply to Linux guests; [Mac machines](/docs/start/macos/) are managed independently.
 
-A Pigsty Inventory names machines by stable addresses. PostgreSQL replication,
+A Pigsty inventory names machines by stable addresses. PostgreSQL replication,
 etcd membership, HAProxy backends, VIPs, monitoring targets, and Ansible all
 assume that `10.10.10.11` continues to mean the same node. A loopback port
 forward can expose SSH or PostgreSQL to the host, but it cannot provide that
@@ -29,10 +28,10 @@ interfaces.
 | Interface | Addressing | Responsibility |
 | --- | --- | --- |
 | management | QEMU user-mode NAT, DHCP | DNS, default route, outbound internet, and loopback SSH fallback |
-| private, MAC-matched | fixed Inventory address | host-to-node, node-to-node, Ansible, Pigsty services, and VIP traffic |
+| private, MAC-matched | fixed inventory address | host-to-node, node-to-node, Ansible, Pigsty services, and VIP traffic |
 
 Barn matches both virtual interfaces by their deterministic MAC addresses
-and does not rename them. Guest-visible names are whatever the image's network
+and does not rename them. guest-visible names are whatever the image's network
 stack chooses (commonly `eth0` or `enp0s4`); the MAC and address contract, not
 the display name, determines each interface's role.
 
@@ -41,7 +40,7 @@ reach package repositories before any application exists, without installing
 NAT rules or a DHCP service on the host.
 
 The private interface has one deterministic RFC1918 address, no default route,
-and no DNS. Guest setup checks those properties, but since 0.7 private-network
+and no DNS. guest setup checks those properties, but since 0.7 private-network
 checks are optional: a failure is recorded as a `private-network` warning and
 does not prevent readiness when management SSH and guest identity are usable.
 An operation can therefore succeed with limited fixed-IP connectivity. Before
@@ -49,11 +48,11 @@ deploying a service that needs this interface, inspect the warnings and test
 the relevant host/peer connection. Repeat `up` after correcting the cause.
 
 > [!NOTE]
-> **Decision status: current.** The topology is part of Barn's normal
+> The topology is part of Barn's normal
 > lifecycle, not an optional “private mode.” See the
 > [design reference](/docs/about/design/) for the current platform boundary.
 
-## The Inventory owns the address plan
+## The inventory owns the address plan
 
 All managed hosts belong to one canonical RFC1918 `/24`:
 
@@ -64,14 +63,14 @@ All managed hosts belong to one canonical RFC1918 `/24`:
 | `.9`–`.254` | fixed node addresses |
 
 The guest private interface does not request DHCP: cloud-init receives the
-exact address already declared in the Inventory. On macOS, vmnet's configured
+exact address already declared in the inventory. On macOS, vmnet's configured
 DHCP range ends at `.8`; managed node addresses begin at `.9`. Linux uses a
 bridge with static guest addresses. The VM address contract therefore does not
 depend on a lease database, and Ansible uses the same address throughout the
 deployment.
 
 For generated configuration, setup can choose from a small bounded set when
-the default subnet is already occupied. An explicitly supplied Inventory is
+the default subnet is already occupied. An explicitly supplied inventory is
 never silently rewritten to escape a collision. The whole lab—host interface,
 nodes, Pigsty addresses, and aliases—must agree on one subnet.
 
@@ -114,7 +113,7 @@ reason to stop, not permission to delete whatever appears to be in the way.
 
 ## The accepted trade-off
 
-Guest internet traffic uses QEMU's user-mode network. That is not the fastest
+guest internet traffic uses QEMU's user-mode network. That is not the fastest
 possible forwarding path, but it keeps ordinary egress unprivileged and
 portable. The traffic that matters to a Pigsty lab—host-to-guest, replication,
 service calls, and package distribution from a local control node—stays on the

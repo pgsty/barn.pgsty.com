@@ -6,8 +6,9 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-This reference describes the **Barn 0.9.0 release candidate**. Check
-`barn version` before scripting against these contracts. See the [release status](../../about/status/#documentation-baseline).
+This reference covers common options and Linux lab commands in **Barn 0.9.0**.
+For macOS guests, see [Mac commands](../mac/). Check
+`barn version` when using another version.
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -37,13 +38,13 @@ Use `barn --version` or `barn version` to inspect the build identity.
 | Access | `ssh`, `exec`, `logs`, `provision`, `ssh-config`, `hosts install/uninstall` |
 | Images | `update`, `image list/info/pull/import/sync/prune/reset`, `repo scan/build/verify` |
 | Host network | `network status/install/uninstall` |
-| macOS guests (unreleased) | `mac …`; see [Mac Commands](../mac/) |
+| macOS guests | `mac …`; see [Mac Commands](../mac/) |
 | Misc | `version`, `completion` |
 
-No command refreshes the Catalog implicitly. `update` fetches the configured
-repository's Catalog, verifies it, and activates it; `image sync` is the
+No command refreshes the catalog implicitly. `update` fetches the configured
+repository's catalog, verifies it, and activates it; `image sync` is the
 explicit recovery path for an exact URL or file. Ordinary commands use the
-active local Catalog. Neither operation updates the Barn executable.
+active local catalog. Neither operation updates the Barn executable.
 
 Frequently used commands have scoped aliases:
 
@@ -90,13 +91,13 @@ is optional when no inventory exists.
 | `--json`, `--yaml` | machine-readable stdout; progress remains on stderr; intentionally no shorthand |
 | `-v`, `--verbose` | bounded diagnostics on stderr |
 | `-c`, `--cidr` | select the RFC1918 `/24` for generated `init`/`setup` templates or host-network inspection/install |
-| `-f`, `--file` | select an Inventory for commands that read desired state |
-| `-r`, `--repo` | select a repository where exposed; overrides `--mirror` and `BARN_REPO`; `validate` gains this flag in the **0.9 candidate** |
-| `--mirror` | use the China official repository for setup, Catalog, and image-resolving lifecycle commands |
+| `-f`, `--file` | select an inventory for commands that read desired state |
+| `-r`, `--repo` | select a repository where exposed; overrides `--mirror` and `BARN_REPO`; `validate` gains this flag in Barn 0.9.0 |
+| `--mirror` | use the China official repository for setup, catalog, and image-resolving lifecycle commands |
 | `-m`, `--mode` | select `host` or `shared` where the command exposes the macOS network mode |
 | `-d`, `--dry-run` | show a setup/image plan without changing state |
 | `-y`, `--yes` | apply a displayed host/setup/image plan |
-| `--force` (`init`, `destroy`, `recreate`) | overwrite generated output or skip the typed confirmation; long-only because `-f` selects the Inventory |
+| `--force` (`init`, `destroy`, `recreate`) | overwrite generated output or skip the typed confirmation; long-only because `-f` selects the inventory |
 | `-n`, `--no-wait` | return once QEMU is running, without readiness or guest recovery checks |
 | `--rollback` (`up`, `reload`) | remove the prepare artifacts of nodes that failed to prepare in this run |
 | `--delete-persistent` | during whole destroy, also delete retained data disks; invalid with node selectors |
@@ -122,35 +123,36 @@ Flags belong to commands; the following table lists the less obvious scopes:
 
 `setup --dry-run` and `setup --yes` are mutually exclusive. `--cidr` rebases a
 generated template; it does not rewrite an explicitly selected inventory.
-`validate --repo` is available in the **0.9 candidate** and has no `--mirror`;
+`validate --repo` is available in Barn 0.9.0 and has no `--mirror`;
 use `--repo https://repo.pigsty.cc/barn` when checking that catalog.
 
-In the **0.9 candidate**, `network` and `hosts` install/uninstall show a plan and
+In Barn 0.9.0, `network` and `hosts` install/uninstall show a plan and
 ask on a terminal (install defaults to yes, uninstall to no); without a terminal
 they only show the plan unless `--yes` is supplied. For a fresh
-macOS network, use `setup`; the candidate's `network install` directs you there
+macOS network, use `setup`; `network install` directs you there
 before asking for sudo. `--yes` accepts Barn's plan but cannot supply a sudo password.
 
 Rare, selection, or safety-widening controls such as `--mirror`, `--force`,
 `--rollback`, `--remove`, `--allow-downgrade`, `--sudo`,
 `--delete-persistent`, and `--purge` are
-long-only. On commands that read an Inventory, `-f` always selects a file;
+long-only. On commands that read an inventory, `-f` always selects a file;
 `logs -f` retains the conventional `--follow`. `-n` always means `--no-wait`,
-and `-d` always means a dry run.
+and `-d` means a dry run. These shorthand rules apply to Linux commands;
+`barn mac logs -n` sets the number of log lines.
 
 With a deployment, `barn purge` performs the same disposal as
-`barn destroy --force --purge`, without confirmation. It accepts no nodes or Inventory, removes the
+`barn destroy --force --purge`, without confirmation. It accepts no nodes or inventory, removes the
 complete deployment plus persistent disks, keys, state, and the default SSH
 fragment, and keeps images and the host network. With no deployment it succeeds
 without changing the image cache, and can remove provably owned retained disks.
 Missing state never authorizes deletion of residual node artifacts whose identity
-cannot be proven. In the **0.9 candidate**, plain whole-deployment `destroy`
+cannot be proven. In Barn 0.9.0, plain whole-deployment `destroy`
 without a deployment also succeeds; `destroy --force --delete-persistent` and
 `destroy --force --purge` without state instead fail with a hint to use `purge`.
 
-## Structured failures (0.9 candidate)
+## Structured failures
 
-The following unified failure contract describes the **Barn 0.9.0 release candidate**.
+The following unified failure contract describes the **Barn 0.9.0**.
 
 Ordinary failures print `error: <message>` on stderr, the failing program's last
 stderr lines when an external tool failed, and a `next:` line when there is one
@@ -178,7 +180,7 @@ Always preserve the process exit code and interpret the payload for that command
 `start`, `missing`, and `blocked` fields. For catalog images, plans read local
 configuration and catalog data without requiring QEMU or host networking.
 A registered `local-*` image also undergoes cache validation and requires
-`qemu-img`. Plans download no images. They show exact images, total resources, change reasons, and disk effects. The **0.9 candidate**
+`qemu-img`. Plans download no images. They show exact images, total resources, change reasons, and disk effects. The Barn 0.9.0
 also lists each data disk, including the implicit 128 GiB `/data`. `up` checks
 host capabilities and address availability before applying changes. `up` creates missing nodes, starts stopped ones,
 re-checks readiness of running ones, and rewrites the SSH client configuration
@@ -192,10 +194,10 @@ terminal those commands ask you to type the confirmation word; `--force` is for
 scripts. If VM lifecycle succeeds but the SSH client configuration cannot be
 written, the command reports a warning and remains successful; `barn ssh`
 still works. Structured output carries integration warnings in `warnings[]`.
-The **0.9 candidate** leaves symlinked or hard-linked `~/.ssh/config` untouched,
+The Barn 0.9.0 leaves symlinked or hard-linked `~/.ssh/config` untouched,
 publishes its fragment, and reports the `Include` line to add manually.
 
-Guest management SSH is the readiness boundary. Optional setup failures are
+guest management SSH is the readiness boundary. Optional setup failures are
 reported in `nodes[].warnings`; completed recovery actions, including data resets,
 are in `nodes[].repairs`. A usable guest with these limitations exits 0. Repeat
 `up` to retry unfinished stages without restarting running VMs. Inspect the
@@ -208,7 +210,7 @@ node failed; it reports
 or `bootstrap` failures add
 `run \`barn logs <node>\` for the guest console`. Structured output carries
 `failures[]` with `node`, `stage`, and `error` (and optional `reason` in the
-**0.9 candidate**), plus `rolled_back` when
+Barn 0.9.0), plus `rolled_back` when
 `--rollback` removed the prepare artifacts of nodes that never committed. See
 [A node did not become ready](../../start/troubleshooting/#a-node-did-not-become-ready).
 
@@ -250,9 +252,9 @@ pinned-archive download before requesting administrator authentication. Homebrew
 can invalidate an earlier sudo credential; the new order avoids that failure
 without widening the privileged operation. Failed downloads do not prompt.
 
-## Interrupted operations (0.9 candidate)
+## Interrupted operations
 
-The candidate recognizes a recorded QEMU PID reused by an unrelated process as
+Barn recognizes a recorded QEMU PID reused by an unrelated process as
 a stopped node. An interrupted stop whose VM still runs is reconciled to running;
 other unfinished transitions name the command that can finish them. `destroy`
 settles interrupted transitions itself. A failed first `up` can be retried after
@@ -264,7 +266,7 @@ journal.
 `logs` defaults to the guest serial console; `--source qemu` reads QEMU diagnostics,
 and `--source events` reads the deployment-wide bounded event log. With `--follow`,
 text output streams bytes and JSON emits NDJSON records (YAML emits a document
-stream). The **0.9 candidate** renders ordinary event/QEMU log reads as readable
+stream). The Barn 0.9.0 renders ordinary event/QEMU log reads as readable
 records, showing a QEMU argv only with `--verbose`.
 
 | Environment variable | Purpose |
@@ -287,7 +289,7 @@ shell, like plain SSH. `exec` preserves argument boundaries; explicitly use
 retains the shell shorthand. Before `--`, only zero or one known node is accepted.
 For convenience, omitting `--` uses a known first argument as the node, or
 runs all arguments as a command on the default node with a warning.
-In the **0.9 candidate**, a first argument containing a digit or `-` is checked
+In Barn 0.9.0, a first argument containing a digit or `-` is checked
 for a near-miss node name: at most one edit for words of four characters or fewer,
 or two edits for longer words. Such a typo is refused; ordinary commands such as
 `ls`, `df`, and `wc` still run. Use an explicit `--` in scripts.
@@ -295,11 +297,11 @@ or two edits for longer words. Such a typo is refused; ordinary commands such as
 Load `barn completion bash|zsh|fish|powershell` for command and scoped-flag
 completion. It also provides command aliases, templates, image aliases, closed
 flag choices, and best-effort node names from the desired or applied
-specification. In the **0.9 candidate**, `-f` completion filters for YAML files.
+specification. In Barn 0.9.0, `-f` completion filters for YAML files.
 
 ## Exit codes
 
-This table gives the **Barn 0.9.0 release candidate** exit-code contract.
+This table gives the **Barn 0.9.0** exit-code contract.
 Missing inventory and unknown images are usage errors (2); setup and network
 failures use runtime (1) or capability (3), according to their cause.
 
@@ -315,7 +317,7 @@ failures use runtime (1) or capability (3), according to their cause.
 | 7 | `integrity` | a verified digest, signature, identity, or ownership did not match |
 | 130 | `cancelled` | interrupted (SIGINT/SIGTERM) or confirmation declined |
 
-In the **0.9 candidate**, a modifying command that finds another Barn command
+In Barn 0.9.0, a modifying command that finds another Barn command
 holding the deployment waits up to 10 minutes and names it; timeout is exit 4
 with `reason: "deployment_busy"`. `status`, `ssh`, `exec`, `ssh-config`, and
 `hosts` do not wait. `status` reports the concurrent operation in `note` while

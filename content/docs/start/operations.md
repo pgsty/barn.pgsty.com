@@ -1,13 +1,13 @@
 ---
 title: Daily Operations
 description: "The normal lifecycle for the one deployment: inspect, access, scale, change, stop, and destroy."
-weight: 20
+weight: 30
 icon: fa-solid fa-gears
 aliases: [/docs/start/lifecycle/, /docs/start/provisioning/]
 ---
 
-This guide describes the **Barn 0.9.0 release candidate**. See
-[Status](../../about/status/) for the publication and validation boundary.
+This guide covers Linux labs in **Barn 0.9.0**. For Mac machines, use the
+[macOS guide](../macos/#everyday-lifecycle).
 
 ## Inspect and access
 
@@ -29,7 +29,7 @@ deployment after the selected VMs are started, so a scoped `up` never drops
 unselected peers and plain `ssh meta` just works; `barn ssh-config --install`
 rewrites it by hand if you ever need to.
 `plan`, `up`, `reload`, and `recreate` prefer `-f`, then a discovered
-Inventory, then the applied spec when no file exists. `validate` always needs
+inventory, then the applied spec when no file exists. `validate` always needs
 a file.
 
 Repeat `up` to retry unfinished guest setup and refresh older guest helpers
@@ -49,7 +49,7 @@ barn reload -f barn.yml       # read/check config, stop, then converge
 
 `start` powers on stopped VMs and re-checks readiness of running ones. Both
 `start` and `restart` use applied state and refresh SSH aliases, including any
-reassigned automatic ports. `reload` reads the Inventory and checks drift and startup dependencies before
+reassigned automatic ports. `reload` reads the inventory and checks drift and startup dependencies before
 stopping selected nodes and following the full `up` path.
 
 Starting commands also refresh Barn hosts and control-node SSH entries in
@@ -67,14 +67,14 @@ barn recreate node-1            # applies a changed VM definition
 `recreate` and `destroy` ask you to type the confirmation word on a terminal;
 `--force` skips that prompt and is required without a terminal.
 
-`plan` can inspect Catalog-backed images before host setup and shows images,
+`plan` can inspect catalog-backed images before host setup and shows images,
 total resources, change reasons, and disk effects. Planning an imported
 `local-*` image also validates its cache and requires `qemu-img`. CPU/memory changes still require recreate: root and ephemeral
 data disks are replaced, while persistent disks are kept. A selected recreate
 blocked by unselected peer changes refuses before deletion and names the nodes
 that need attention.
 
-Inventory changes appear in these fields:
+inventory changes appear in these fields:
 
 | Field | Meaning | Action |
 |---|---|---|
@@ -87,9 +87,9 @@ Deleting YAML never deletes a VM. Unconsumed Pigsty changes produce
 they do not begin with `vm_`. Successful recreate refreshes the complete SSH
 fragment as well.
 
-## Concurrent commands (0.9 candidate)
+## Concurrent commands
 
-Deployment mutations wait behind another Barn operation for up to ten
+deployment mutations wait behind another Barn operation for up to ten
 minutes, bounded by the command's own deadline. The waiting message identifies
 the command, PID, and start time. A lock timeout returns exit 4, JSON
 `error: conflict`, and `reason: deployment_busy`; retry after the holder finishes.
@@ -126,7 +126,7 @@ node selectors, and is
 idempotent when no deployment exists. It keeps the image cache and host
 network, and it does not bypass process, ownership, or path-integrity checks.
 
-**0.9 candidate:** plain `destroy` succeeds when no deployment exists. If
+plain `destroy` succeeds when no deployment exists. If
 deployment state is gone but owned persistent disks remain, use `purge`;
 `destroy --delete-persistent` or `destroy --purge` points to that command.
 The old `rm` alias has been removed; spell out `purge`.

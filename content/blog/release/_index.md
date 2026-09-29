@@ -1,16 +1,16 @@
 ---
 title: Release Notes
-linkTitle: Release
-description: Barn release notes and current publication status.
-weight: 30
+linkTitle: Releases
+description: Changes and upgrade notes for Barn releases.
+weight: 10
 icon: fa-solid fa-clipboard-list
 sidebar_root_menu: false
 cascade:
   type: blog
-  theme_color: '#9f1239'
-  theme_color_dark: '#fda4af'
+  theme_color: '#a9573b'
+  theme_color_dark: '#dca579'
 ---
 
-Barn 0.9.0 is an **unreleased candidate**. Release notes will appear here when
-a version is published. For now, [build from source](/docs/start/source-build/)
-and see [Status](/docs/about/status/) for validation and remaining release checks.
+Changes, upgrade notes, and installation links for each Barn release.
+
+Current release: **[Barn 0.9.0](0.9.0/)**.

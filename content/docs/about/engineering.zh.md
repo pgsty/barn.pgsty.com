@@ -1,103 +1,89 @@
 ---
-title: 工程与发布
-description: 源码边界、构建测试门禁、镜像归一化、发布输出与证据纪律。
+title: 参与贡献
+description: 参与 Barn 源码、文档、软件包与镜像目录的维护。
 weight: 30
 icon: fa-solid fa-screwdriver-wrench
 ---
 
-本页描述 **Barn 0.9.0 发布候选**。构建命令使用当前工作区，请同时记录提交与
-未提交变更。源码构建和本地检查通过不代表已经正式发布。
+Barn 采用 Apache-2.0 许可证，欢迎参与命令行工具、macOS 原生组件、文档和镜像工具的改进。
 
-## 仓库边界
+## 选择仓库
 
-Barn 源码仓库包含代码、测试、构建/打包定义、法律声明、`README.md`、`CHANGELOG.md`、
-`CONTRIBUTING.md`、`SECURITY.md` 与双语应用发布说明。本网站提供用户、设计、运维
-与发布文档。运行行为和命令参数需要以匹配的源码及二进制核对；未发布源码的行为不能
-代表公开软件包。
+| 想改进什么 | 在哪里修改 |
+| --- | --- |
+| 命令行行为、虚拟机生命周期、macOS 原生组件、安装器与软件包 | [pgsty/barn](https://github.com/pgsty/barn) |
+| 本网站、教程、命令参考与翻译 | [pgsty/barn.pgsty.com](https://github.com/pgsty/barn.pgsty.com) |
+| 镜像定义或镜像归一化步骤 | Barn 源码仓库中的 `packaging/image-repository/` 与 `packaging/image-pipeline/` |
 
-Review 记录、临时 Inventory、生成二进制与 Release 输出树不是生产源码输入。
+报告问题时，请附上 `barn version` 的输出、宿主操作系统与架构、执行的命令和相关报错。
+分享日志与主机清单前，请移除私钥、密码等敏感信息。安全问题请按
+[安全策略](https://github.com/pgsty/barn/blob/main/SECURITY.md)中的方式报告。
 
-以下输出随时可重建：
+较大的实现改动，建议先通过 Issue 说明问题与预期行为。代码约定、模块职责与拉取请求要求见
+[贡献指南](https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md)。
 
-- `bin/`：开发构建；
-- `dist/` 与 `.goreleaser-*`：Release/Snapshot Staging；
-- 根目录 `barn`、`barn-hosts-helper`、`catalogsign` 二进制；
-- Hugo 的 `public/` 与 `resources/`。
+## 构建与测试
 
-## 构建与源码门禁
+按[从源码构建](../../start/source-build/)安装固定版本的工具链后，运行：
 
 ```bash
 make check
 ```
 
-`make check` 包含模块与 Shell 检查、维护脚本归属、单元/Race 测试、Vet、Staticcheck、
-死代码与 errcheck 检查、漏洞扫描、四目标跨平台构建、安装器/镜像流水线测试及许可证
-检查，准确清单以 Makefile 为准。CI 还单独检查固定工具链、Go 格式、空白与 GoReleaser
-配置。质量工具安装步骤见[从源码构建](../../start/source-build/)。
+这项检查涵盖模块与 Shell 检查、单元与竞态测试、静态分析、漏洞扫描、四个目标平台的交叉构建、
+安装器与镜像流水线测试，以及许可证检查。完整清单以 Makefile 为准。CI 还会检查代码格式、
+空白字符与发布配置。
 
-打包逻辑变更还需要独立 Snapshot 门禁：
+涉及虚拟机行为的改动，还需要在相应宿主上验证。交叉构建通过，并不能验证 macOS HVF、
+Linux KVM 与网络，或 macOS 原生组件。请在拉取请求中说明测试环境和实际验证的行为。
+
+修改打包逻辑时，使用本地快照检查：
 
 ```bash
 make release-check
 make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 ```
 
-安装 `packaging/toolchain.env` 指定的 GoReleaser、nFPM、Syft 等版本；Snapshot 还需要
-验证脚本使用的归档与系统软件包检查工具。输出必须是工作区根目录下尚不存在的新目录，
-已有目录会被拒绝。Snapshot 仅在本地生成，不上传 Release。
+安装 `packaging/toolchain.env` 中指定版本的工具，以及验证脚本所需的归档与软件包检查工具。
+输出路径必须是工作区根目录下尚不存在的新目录；快照目标会拒绝覆盖已有输出，也不会上传构建结果。
 
-源码检查不等于真机验证。macOS HVF、Linux KVM/网络、软件包消费、Release 发布与
-线上网站渲染需要分别验证。`make image-pipeline-native-test` 是独立真机镜像流水线
-门禁，需要 QEMU/libguestfs 与显式镜像输入。必填的
-`BARN_IMAGE_PIPELINE_NATIVE_*` 变量见 `tests/image-pipeline-native-test.sh`，
-该测试不会下载镜像。
+## 修改文档
 
-## Release 与软件包契约
+英文与中文页面相邻存放，分别命名为 `page.md` 与 `page.zh.md`。请保持命令、默认值、链接与
+注意事项一致，先解释用户要完成的任务，再介绍实现细节，并区分 Linux 与 macOS 客机的使用方式。
 
-`packaging/`、`.goreleaser.yaml` 与 `.github/workflows` 属于源码；它们生成的目录不是。
-Archive 与 Linux Package 携带配套 CLI 和 hosts-helper 二进制、`LICENSE`、源码
-README，以及根据 `go.mod` 锁定模块版本重建的准确上游许可证字节。Archive 的二进制
-位于 `bin/`、许可证位于 `licenses/`；Linux Package 安装 `/usr/bin/barn`、
-`/opt/barn/libexec/barn-hosts-helper`，文档位于 `/usr/share/doc/barn/`。
+在网站仓库中运行：
 
-Linux Package 包含 `BUILD_INFO.json`。GoReleaser Archive 的构建身份在二进制中，发布元数据随资产单独提供，不能假定每种 Archive 都包含
-该文件。依赖许可证在构建时生成暂存，详细用户文档保留在本网站。
+```bash
+make check
+```
 
-应用 Release 由 GitHub Actions 构建，提供 `checksums.txt`、发布元数据与 SPDX SBOM
-资产。当前工作流不生成单独的应用发布签名或 provenance/attestation 包。用于认证镜像
-Catalog 的 Minisign 签名属于另一套信任机制。
+这会使用固定版本的 Hugo 主题构建网站，并检查内部链接、资源和页面锚点。修改布局后，请预览
+中英文页面及浅色、深色主题。
 
-Commit、Tag、归档/软件包验证、CI、草稿上传、公开发行与匿名下载验证应分别记录。
-Tag 工作流创建草稿，不会直接发布。pre-1.0 版本在 GitHub 标记为预发布，安装器需要
-显式指定 `BARN_VERSION`。
+## 了解发布产物
 
-`make release-local VERSION=<version>` 在本地构建并验证，不执行发布。它要求干净
-工作区正好位于对应 `v<version>` Tag，配置 `origin`，使用固定工具，并且暂存/输出
-目录尚不存在。未打标签的候选版应使用 Snapshot 路径审核。
+Barn 0.9.0 提供 macOS 与 Linux 压缩包、Linux 软件包、校验和、发布元数据及 SPDX 软件物料清单。
+CLI 与 `barn-hosts-helper` 配套分发。压缩包中的二进制位于 `bin/`，许可证位于 `licenses/`；
+Linux 软件包安装 `/usr/bin/barn` 与 `/opt/barn/libexec/barn-hosts-helper`。
 
-## 镜像归一化
+`Barn Mac.app` 是运行 macOS 客机所需的附加组件，构建与签名要求见
+[原生组件发布指南](https://github.com/pgsty/barn/blob/main/docs/mac-release.md)。只包含 CLI 的构建仍可用于 Linux 客机。
 
-底层 `packaging/image-pipeline/build.sh` 只接受显式本地 qcow2，不下载也不上传。它复制并
-哈希源文件，强制 qcow2 解析，拒绝 Backing/External/Encryption/未知 Feature，运行
-`qemu-img check`，并可在显式 QEMU Sandbox 中做无网络 Offline Guest Mutation。
-UID/GID 88 冲突会拒绝，不会含糊改写。
+应用校验和、原生应用签名与镜像目录签名各有用途。应用发布流程提供校验和，不生成单独的发布签名
+或来源证明包；原生应用有独立的 Developer ID 签名与公证流程；Minisign 则用于认证镜像目录。
 
-`build-official.py` 为 Debian 12/13、Rocky Linux 8/9 的 amd64/arm64 目标增加固定、
-摘要锁定的 Wrapper。它只允许获取锁定的源镜像与离线软件包输入，输出未签名的 `testing`
-Candidate，并可组装独立候选仓库。真机 Smoke、双构建比较、生产签名、上传与 Catalog
-激活仍是后续门禁。
+## 维护镜像目录
 
-Catalog 逐字节导出命令：
+从[镜像流水线参考](../../reference/image-pipeline/)开始。底层构建器接受本地 qcow2 镜像，完成校验，
+并可在离线 QEMU 沙箱中执行归一化。官方构建入口为 amd64/arm64 的 Debian 12/13、Rocky Linux 8/9
+使用锁定的输入，生成未签名的 `testing` 条目，供真机启动测试、签名和发布前审核。
+
+将内置镜像目录导出到新路径：
 
 ```bash
 go run ./tools/catalogexport /absolute/new/catalog.json
 ```
 
-导出器原子写入，拒绝已存在的输出路径。`make catalog-sign` 与 `make catalog-verify`
-使用 Catalog Minisign 密钥对，生产私钥不进入源码或 CI。应用 checksum 不能替代
-Catalog 签名。
-
-## 证据纪律
-
-[设计](../design/)说明实现取舍，[当前状态](../status/)记录验证结果。每条状态结论应说明
-日期、宿主、路径与剩余检查；源码变更需要相应验证。
+导出器原子写入，并拒绝已存在的输出路径。`make catalog-sign` 与 `make catalog-verify`
+使用独立的 Minisign 密钥对；生产私钥不进入源码或 CI。用户侧的镜像行为见[镜像参考](../../reference/images/)。

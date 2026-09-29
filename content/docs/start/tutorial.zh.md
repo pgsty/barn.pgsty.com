@@ -1,77 +1,21 @@
 ---
-title: 快速上手
-linkTitle: 快速上手
-description: 安装 Barn 0.9.0，用 up 启动 Ubuntu 实验环境，用 ssh 进入，再通过同一份配置增量扩容。
+title: Linux 快速上手
+linkTitle: Linux 快速上手
+description: 启动 Ubuntu 虚拟机，通过 SSH 连接，再用同一份主机清单扩展为固定 IP 的 Linux 实验环境。
 weight: 10
-icon: fa-solid fa-play
-aliases: [/docs/start/installation/, /docs/start/upgrade/, /docs/start/lab/, /docs/start/pigsty/, /docs/features/]
+icon: fa-brands fa-linux
+aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 ---
 
-## 安装
+先在 Mac 或 Linux 宿主上创建一台 Ubuntu 24.04 虚拟机，再将它扩展为多节点实验环境。
+macOS 客机请使用独立的 [Mac 教程](../macos/)。
 
-通过 Homebrew 安装当前的 Barn 0.9.0 开发版：
+## 开始之前 {#install}
 
-```bash
-brew install --HEAD pgsty/infra/barn
-barn version
-```
+[安装 Barn 0.9.0](../installation/)，为客机预留至少 4 GiB 内存，并为宿主保留余量。
+在终端中以普通用户执行以下命令。Barn 可以准备 QEMU 和私有网络；宿主变更可能需要 sudo。
 
-[Homebrew Formula](https://github.com/pgsty/homebrew-infra/blob/main/Formula/barn.rb)
-会从主分支源码构建 CLI 与 hosts 文件 helper。也可以[手动从源码构建](../source-build/)。
-
-### 发行包
-
-0.9.0 发行包尚未发布。发布后，用户级安装器支持 macOS/Linux 的 arm64/amd64，
-校验归档摘要，安装自身无需 sudo：
-
-```bash
-curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.0/install.sh
-chmod +x install.sh
-BARN_VERSION=0.9.0 ./install.sh
-export PATH="$HOME/.local/bin:$PATH"
-barn version
-```
-
-默认安装目录为 `~/.local/bin`；请把相同 PATH 设置写入 Shell 配置。
-发行构建应显示 `0.9.0`。预发布版本不会出现在 GitHub 的 `/releases/latest`，
-请显式设置 `BARN_VERSION=0.9.0`。
-
-下载问题见[下载与 PATH](../troubleshooting/#下载与-path-问题)。
-
-发布时还会提供 DEB 与 RPM 包。以下示例使用 amd64；ARM64 使用对应的 `linux_arm64` 文件。
-
-```bash {tab="Debian / Ubuntu" group="install" value="deb"}
-barn_release=https://github.com/pgsty/barn/releases/download/v0.9.0
-curl -fLO "$barn_release/barn_0.9.0_linux_amd64.deb"
-sudo apt install ./barn_0.9.0_linux_amd64.deb
-barn version
-```
-
-```bash {tab="RHEL / Fedora" value="rpm"}
-barn_release=https://github.com/pgsty/barn/releases/download/v0.9.0
-curl -fLO "$barn_release/barn_0.9.0_linux_amd64.rpm"
-sudo dnf install ./barn_0.9.0_linux_amd64.rpm
-barn version
-```
-
-下面的宿主要求针对 Linux 客机。macOS 客机使用独立的 [barn mac](../macos/)。
-
-### 宿主要求
-
-| 宿主 | 原生加速 | 最低 QEMU 版本 |
-|---|---|---|
-| macOS arm64 / amd64 | HVF | 8.2.1 |
-| Linux amd64 / arm64 | KVM | 6.2 |
-
-宿主还需要 `qemu-img`、OpenSSH 与所选客机对应的固件。交互式 `up` 可以通过 macOS 的
-Homebrew，或受支持 Linux 发行版的 apt/dnf 补齐依赖，并安装固定 IP 网络。宿主软件包与
-网络变更可能需要 sudo；Barn 本身应以普通用户运行。Linux 需要可用的 KVM，以及
-NetworkManager 或 systemd-networkd。带日期的真机验证覆盖 macOS arm64 与 Ubuntu amd64，
-其他构建平台的验证范围较窄，详见[当前状态](../../about/status/)。
-
-## 启动第一个实验环境
-
-首次部署时，在终端中进入一个空目录：
+## 启动并连接
 
 ```bash
 mkdir -p ~/barn-lab && cd ~/barn-lab
@@ -79,192 +23,121 @@ barn up
 barn ssh
 ```
 
-用 `exit` 从客机返回宿主终端后，再执行后续 Barn 命令。
-
-没有配置文件、也没有已应用部署时，交互式 `up` 会生成只有一个 `meta` 节点的
-`barn.yml`，准备缺少的宿主依赖与网络，下载并校验镜像，启动 QEMU，然后等待管理 SSH
-就绪。宿主变更会显示出来，sudo 可能要求输入密码。如果希望先查看完整宿主计划，运行
-`barn setup --dry-run`。
-
-> [!NOTE]
-> 换目录不会新建一套实验环境。状态位于 `$BARN_HOME`，默认是 `~/.barn`。
-> 如果已有部署且当前目录没有配置文件，`up` 会继续该部署；可先用 `barn status` 查看。
-
-默认模板解析为：
-
-| 配置项 | 默认值 |
-|---|---|
-| 节点 / 固定 IP | `meta` / `10.10.10.10` |
-| 客机镜像 | Ubuntu 24.04，`u24:stable`，与宿主相同的架构 |
-| 登录用户 | `dba`，使用 SSH 密钥认证 |
-| CPU / 内存 | 每节点 2 vCPU / 4 GiB |
-| 根盘 / 数据盘 | 64 GiB 根盘 + 挂载到 `/data` 的 128 GiB 非持久数据盘 |
-
-磁盘大小是虚拟容量，qcow2 文件随写入增长。四节点环境共配置 8 vCPU、16 GiB 客机内存，
-还需为宿主保留资源；启动前可用 `barn plan` 查看总量。
-
-首次使用、尚未编辑且采用默认网段的内置模板遇到子网冲突时，setup 可以改用可用的私有 `/24`；若模板文件
-已经存在，会备份为 `barn.yml.before-network-change`。请以生成后的 `barn.yml` 和
-`barn status` 为准。显式 `-f` 文件、编辑过的模板与已有部署会保留选定网段。
-
-健康的首次启动会以类似结果结束：
+首次使用且没有配置文件或已有部署时，`up` 会生成只有一个 `meta` 节点的 `barn.yml`，
+准备宿主依赖，下载并校验镜像，最后等待 SSH 就绪。成功后会显示连接命令：
 
 ```text
   ✓  1 node ready
 connect:   barn ssh meta
 ```
 
-`barn ssh` 默认连接控制节点，在此模板中就是 `meta`。也可以显式指定节点，或直接执行命令：
+此时你已通过密钥以 `dba` 登录客机，可以使用免密 sudo。
+执行 `exit` 返回宿主后，再运行其他 Barn 命令。
+
+| 默认配置 | 值 |
+|---|---|
+| 节点与地址 | `meta`，`10.10.10.10` |
+| 镜像 | Ubuntu 24.04，`u24:stable`，与宿主相同的架构 |
+| CPU 与内存 | 2 vCPU、4 GiB |
+| 磁盘 | 64 GiB 根盘，挂载到 `/data` 的 128 GiB 测试数据盘 |
+
+磁盘文件随写入增长。如果全新、未编辑的默认模板遇到子网冲突，setup 可以选择其他私有
+`/24`；实际地址以生成后的 `barn.yml` 和 `barn status` 为准。已存在的模板会备份为
+`barn.yml.before-network-change`。显式 `-f` 文件、编辑过的模板和已有部署保留原网段。
+
+Barn 在 `~/.barn` 中为每个用户管理一套 Linux 部署。换工作目录不会新建另一套环境；
+当前目录没有配置文件时，`up` 会继续已有部署。用 `barn status` 查看现有机器。
+
+## 查看并使用虚拟机
 
 ```bash
-barn ssh meta
+barn status
 barn exec meta -- hostname
-barn st
+barn exec meta -- df -h / /data
+barn ssh meta
 ```
 
-`st` 是 `status` 的别名；
-其中的 `running` 表示 VM 进程在运行，不代表刚刚重新检查了客机就绪状态。
-
-### 继续未完成的初始化
-
-重复 `barn up` 可以接续中断的操作、重试未完成的客机初始化、更新旧的客机脚本。
-健康的运行中 VM 会保留进程与根盘。管理 SSH 可用时，即使共享目录只读、私网不可用等功能
-受限，客机仍可完成启动。请查看这些提示；自动化应检查 `barn up --json` 的
-`nodes[].warnings` 与 `nodes[].repairs`，因为这些限制仍返回退出码 0。
+`status` 展示 VM 进程状态。`up` 等待管理 SSH 可用，并报告数据盘、私网等客机功能的
+限制。修正问题或中断初始化后，再次执行 `barn up` 即可继续，健康 VM 保持运行。
+中国地区可使用 `barn up --mirror` 优先从中国官方仓库下载镜像。
 
 > [!WARNING]
-> 数据盘是可丢弃的测试存储。`up` 可能清空重建无法识别或确认损坏的文件系统，
-> **包括持久盘**，并报告旧数据已丢弃。`persistent` 只控制 destroy/recreate 时保留磁盘，
-> 不保证恢复时保留损坏的内容。详见[数据盘说明](../../reference/configuration/#数据盘)。
+> 数据盘用于可丢弃的测试数据。客机初始化时，Barn 可能清空重建无法识别或确认损坏的
+> 文件系统，包括持久盘。请将有价值的数据另行保存。[存储与恢复说明](../storage/)
+> 解释了保留磁盘与保护磁盘内容之间的区别。
 
-`--no-wait` 会跳过客机就绪、恢复与元数据刷新，后续执行 `barn up` 补齐。
-镜像下载支持重试与断点续传；使用 `barn up --mirror` 优先访问中国官方仓库。
-镜像选择与回退规则见[镜像仓库](../images/)。
+## 首次启动前定制配置
 
-## 启动前选择配置
-
-这是前面自动启动流程的另一种入口。在新的实验目录中，先生成并检查配置，再启动：
+如果想先选择资源规格，再创建新环境，可以先生成配置：
 
 ```bash
 barn init
+# 编辑 barn.yml。
 barn validate
 barn plan
 barn up
 ```
 
-对于本文使用的 Catalog 镜像，`init`、`validate`、`plan` 都不要求先安装 QEMU
-或配置宿主网络。规划已注册的 `local-*` 镜像时，则需要 `qemu-img` 校验缓存字节。默认 `meta` 配置为：
+以下是一份完整的单节点配置：
 
 ```yaml
 all:
   vars:
     admin_ip: 10.10.10.10
+    vm_image: u24
+    vm_cpu: 2
+    vm_mem: 4GiB
   children:
     nodes:
       hosts:
         10.10.10.10: { nodename: meta }
 ```
 
-内置四种模板：
+`barn init dual`、`trio`、`full` 分别生成双节点、三节点和四节点配置。
+`barn init full -c 10.20.30.0/24` 指定其他子网。已有文件会保留，除非显式使用
+`--force`。配置校验和目录镜像规划不要求先准备宿主；规划导入的 `local-*` 镜像
+还需要 `qemu-img`。全部字段见[配置参考](../../reference/configuration/)。
 
-| 模板 | 节点数 | 默认地址 |
-|---|---:|---|
-| `meta` | 1 | `10.10.10.10` |
-| `dual` | 2 | `10.10.10.10`–`10.10.10.11` |
-| `trio` | 3 | `10.10.10.10`–`10.10.10.12` |
-| `full` | 4 | `10.10.10.10`–`10.10.10.13` |
+## 添加更多节点
 
-例如 `barn init full` 生成四节点配置，`barn init full -c 10.20.30.0/24` 指定另一网段。
-现有文件不会被覆盖，除非显式传入 `--force`。在第一次 `up` 前调整 `vm_cpu`、`vm_mem`、
-`vm_image` 等字段，全部字段见[配置参考](../../reference/configuration/)。
-
-### 显式准备宿主
-
-`setup` 只准备依赖与网络，不启动 VM：
-
-```bash
-barn setup --dry-run
-barn setup
-```
-
-与 `up` 内部的准备流程不同，单独执行 `setup` 会在应用有变更的计划前请求确认。
-它会复用当前目录发现的配置，没有文件时生成 `meta`。可选的 `/etc/hosts` helper
-仅在 `barn hosts install --yes` 需要时安装；普通启动与 `barn ssh` 不依赖这项集成。
-
-下载尊重 `HTTP_PROXY`、`HTTPS_PROXY`、`ALL_PROXY`、`NO_PROXY` 及其小写形式。
-无人值守的首次部署可在空目录执行：
-
-```bash
-barn setup --yes
-barn up --json
-```
-
-`setup --yes` 本身就能生成配置，只有需要预先编辑时才必须单独 `init`。自动化环境仍需为
-必要的 sudo 操作准备凭据；`--yes` 不会提供管理员凭据。
-[自动化教程](../automation/)说明如何保存命令结果、检查客机限制后再继续。
-
-### 使用现有 Pigsty 配置
-
-```bash
-barn validate -f pigsty.yml
-barn plan -f pigsty.yml
-barn up -f pigsty.yml
-```
-
-Barn 读取已记录的 VM、命名与登录字段，其余 Pigsty 参数保持原样。以上步骤启动虚拟机；
-PostgreSQL 与其他 Pigsty 服务仍需通过 Pigsty 单独安装。内置模板只描述 VM 拓扑，
-不包含完整的 Pigsty 服务配置。
-衔接方式见[自动化与客机脚本](../automation/#与-pigsty-一起使用)，
-文件传输与服务连接见[存储与访问](../storage/)。
-
-## 扩容与日常操作
-
-扩展默认单节点环境时，保留已有设置，在 `barn.yml` 中增加三台主机：
+在现有 `barn.yml` 的同一个 `hosts` 下补充主机行：
 
 ```yaml
-all:
-  vars:
-    admin_ip: 10.10.10.10
-  children:
-    nodes:
-      hosts:
         10.10.10.10: { nodename: meta }
         10.10.10.11: { nodename: node-1 }
         10.10.10.12: { nodename: node-2 }
         10.10.10.13: { nodename: node-3 }
 ```
 
-此例假定使用默认网段；如果 setup 选择了其他网段，所有地址及 `admin_ip` 都应沿用该网段。
-不要为了扩容而用 `init --force` 覆盖已经定制的配置。
+沿用实际网段和其他已有设置。这只是配置片段，不要用它替换整个文件。
+四节点环境按默认规格需要 16 GiB 客机内存。
 
 ```bash
 barn plan
 barn up
-barn st
 ```
 
-仅增加这三行时，计划应列出三个待创建节点。`up` 会创建它们，保留正在运行的 `meta`
-进程，并刷新客机 hosts 与控制节点 SSH 配置。健康的结果为 `4 nodes ready`。
-0.9.0 内置 Catalog 将 `u24:stable` 解析为 `u24@20260926.0.0`；手动更新 Catalog 后
-可能解析为其他版本，准确版本显示在 `plan` 和 `status` 中。
+仅有这些新增行时，计划会列出三台新节点；Barn 创建它们时不重启 `meta`。
+修改已有节点的 CPU、内存或其他 VM 定义，需要显式执行 `barn recreate <node>`，
+这会替换根盘。从 YAML 删除主机行会保留虚拟机，直到你执行 `barn destroy <node>`。
 
-修改 CPU、内存或其他被读取的 VM 字段，需要显式执行 `barn recreate <node>`；
-删除 YAML 条目不会删除 VM。停止并恢复环境，不重建磁盘：
+## 停止、恢复与清理
 
 ```bash
 barn stop
 barn start
 ```
 
-使用完毕后销毁部署：
+两条命令都会保留磁盘。环境不再需要时，执行 `barn destroy`，输入 `destroy` 确认。
+它会删除根盘与非持久数据盘，保留持久盘、镜像缓存、密钥和宿主网络。
+[彻底清理](../uninstall/)有独立的操作步骤。
 
-```bash
-barn destroy
-```
+## 接下来
 
-在终端输入 `destroy` 确认。根盘与非持久数据盘会被删除，镜像缓存、密钥、声明为持久的
-数据盘与宿主网络保留。彻底清理见[卸载与清理环境](../uninstall/)；重启、日志、显式变更与
-缩容见[日常管理](../operations/)。
+- [日常管理](../operations/)：连接、日志、重启、配置变更与删除。
+- [存储与访问](../storage/)：传输文件，访问客机服务。
+- [镜像](../images/)：选择 Debian、Rocky Linux、Ubuntu 或本地镜像。
+- [自动化](../automation/)：`setup --yes`、JSON 结果、客机脚本，以及与 Pigsty 共用 `pigsty.yml`。
 
-`barn update` 只更新镜像 Catalog。安装 Barn 程序请使用本页开头的 Homebrew 或源码构建方式；
-发行包将在 0.9.0 发布后提供。
+Barn 准备虚拟机与访问环境。PostgreSQL 等服务需要另行通过 Pigsty 部署；
+内置模板描述机器拓扑，不包含完整的服务配置。

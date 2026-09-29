@@ -1,19 +1,19 @@
 ---
 title: Configuration
-description: The Pigsty-compatible Inventory fields Barn reads, their defaults, and node-level drift behavior.
+description: The Pigsty-compatible inventory fields Barn reads, their defaults, and node-level drift behavior.
 weight: 10
 icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-This reference describes the **Barn 0.9.0 release candidate**. Check
-`barn version` before scripting against these contracts. See the [release status](../../about/status/#documentation-baseline).
+This reference covers **Barn 0.9.0**. Check
+`barn version` when using another version.
 
 ## Discovery
 
 Configuration lookup order is explicit `-f`, then `barn.yml`,
 `barn.yaml`, `pigsty.yml`, and `pigsty.yaml` in the current directory. Every
-name uses the same Pigsty-compatible YAML Inventory format.
+name uses the same Pigsty-compatible YAML inventory format.
 
 For `plan`, `up`, `reload`, and `recreate`, absence of a file falls back to
 the applied spec when a deployment exists. `validate` has no fallback. A
@@ -53,7 +53,7 @@ barn plan -f barn.yml
 ```
 
 The JSON validation result includes `valid`, `source`, `spec_hash`, and `resolved`.
-In the **0.9 candidate**, `validate` also resolves catalog image references and
+In Barn 0.9.0, `validate` also resolves catalog image references and
 accepts `--repo`; an unreadable catalog adds a warning instead of a false success
 claim about images, and `local-*` image-byte checks remain the responsibility of
 `up`. Validation does not prove host resources, share access, networking, image
@@ -87,7 +87,7 @@ do not consume the 20-node budget or determine the managed subnet, but the
 inventory must still contain at least one managed host. Skipping an already
 applied node marks it as removed; it does not destroy that VM.
 
-The **0.9 candidate** improves errors with the offending rule, value, and line
+Barn 0.9.0 improves errors with the offending rule, value, and line
 where available, and suggests a nearby `vm_*` spelling. Those diagnostics do
 not add new inventory variables.
 
@@ -98,7 +98,7 @@ not add new inventory variables.
 | `vm_skip` | `false` | do not virtualize this real/external host |
 | `vm_image` | `u24` | image family, channel reference, or `image@version` selector |
 | `vm_version` | unset | newest numeric version matching this prefix, such as `9` or `9.7` |
-| `vm_arch` | `native` | deployment-wide Guest architecture: `native`, `amd64`, or `arm64` |
+| `vm_arch` | `native` | deployment-wide guest architecture: `native`, `amd64`, or `arm64` |
 | `vm_cpu` | `2` | vCPU count |
 | `vm_mem` | `4096` | MiB integer, or a size such as `8GiB` |
 | `vm_disk` | `64` | root disk: GiB integer or an explicit size such as `64GiB` |
@@ -122,10 +122,10 @@ changes to an existing Barn inventory.
 
 ```yaml
 vm_image: el9
-vm_version: 9.7
+vm_version: "9.7"
 ```
 
-An exact Catalog version wins first. Otherwise Barn matches only on a dot
+An exact catalog version wins first. Otherwise Barn matches only on a dot
 component boundary and selects the numerically newest match: `9.7` resolves to
 the newest `9.7.*` build, while `9` resolves to the newest 9.x release. Numeric
 components are compared as integers, so 9.10 sorts after 9.9. Do not combine
@@ -149,7 +149,7 @@ vm_disks:
 
 `path` is the disk identity and mount point. `fs` is `auto` (the default), `xfs`,
 or `ext4`. A blank `auto` disk is formatted XFS when the guest has `mkfs.xfs`
-and ext4 otherwise, which matches what the Vagrant flow did. Explicit `xfs` and
+and ext4 otherwise, as determined by the tools in the image. Explicit `xfs` and
 `ext4` never fall back. Healthy existing filesystems are reused.
 `persistent: true` keeps the disk across an ordinary destroy; `vm_disks: []`
 means no extra disk. `size` defaults to 128 GiB for each entry; integer sizes
@@ -172,9 +172,10 @@ shares are outside this recovery path.
 
 ## Shares
 
-**macOS limitation:** Barn's guarded directory
-sharing is not supported on macOS; a node with `vm_shares` cannot start. The
-candidate also warns during `validate` and `plan`. Omit shares in new macOS labs; full macOS sharing support remains pending.
+**Linux guests on macOS:** `vm_shares` uses QEMU 9p and is not supported on
+macOS hosts; a node configured with it cannot start. `validate` and `plan`
+warn about this. Use SSH file transfer for these guests. The independent
+`barn mac --share` path supports macOS guests through VirtioFS.
 Changing an existing node's shares requires `recreate`, which replaces the root
 disk. Preserve needed data before considering that operation. Barn does not
 fall back to unchecked host paths.
@@ -190,10 +191,10 @@ vm_shares:
 guest paths must be clean absolute paths; `~` and relative paths are not expanded.
 Host directories must already exist, be caller-owned, have no symlink path
 components, and not overlap `BARN_HOME`. On Linux, prefer the real path (`realpath /path/to/source`). The
-**0.9 candidate** includes that replacement path in a symlink diagnostic.
+Barn 0.9.0 includes that replacement path in a symlink diagnostic.
 
 Within one node, host sources and guest targets must not overlap. Across nodes,
-overlapping host sources are allowed only when all are read-only. Guest targets
+overlapping host sources are allowed only when all are read-only. guest targets
 must not overlap data-disk mounts, reserved system paths, or the login user's
 `.ssh` directory. Shares are for trusted development files, not PostgreSQL data. If a requested writable share
 cannot support guest writes, Barn tries read-only access and reports the
@@ -225,7 +226,7 @@ address (`ip -br addr`); its name is not a Barn contract.
 Barn hashes each resolved node. Added hosts are created by `up`; selected
 existing stopped nodes are started; running peers keep their processes while unfinished guest setup is retried. Changed VM
 definitions require per-node recreate; removed hosts are reported but never
-destroyed. Deployment architecture, user, or subnet changes require whole-deployment
+destroyed. deployment architecture, user, or subnet changes require whole-deployment
 recreation. Image selectors are resolved to exact image identities by `plan`/`up`;
 review the plan after a catalog update, even if the inventory text is unchanged.
 Changing a field used to derive a node name appears as a missing

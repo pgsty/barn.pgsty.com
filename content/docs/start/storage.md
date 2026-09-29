@@ -2,11 +2,11 @@
 title: Storage, Files, and Service Access
 linkTitle: Storage and Access
 description: Configure test data disks, understand retention, transfer files, and reach guest services through OpenSSH.
-weight: 36
+weight: 40
 icon: fa-solid fa-hard-drive
 ---
 
-This guide uses the **Barn 0.9.0 release candidate** interface. Start with the [Quick Start](../tutorial/) before running the
+This guide uses the **Barn 0.9.0** interface. Start with the [Quick Start](../tutorial/) before running the
 guest-side checks. The examples use node `meta` and the default subnet; retain
 your actual names and addresses when adapting an existing inventory.
 
@@ -22,7 +22,7 @@ For a new single-node lab, save this as `storage.yml`:
 all:
   vars:
     admin_ip: 10.10.10.10
-    vm_image: u24@20260911.0.0
+    vm_image: u24@20260926.0.0
   children:
     nodes:
       hosts:
@@ -92,8 +92,8 @@ barn start meta
 barn exec meta -- cat /data/barn-retention.txt
 ```
 
-This checks a VM stop/start, not persistence after a physical-host reboot.
-See [Status](../../about/status/) for the native validation boundary.
+This checks retention across a VM stop/start. Keep backups outside the lab.
+For macOS guest folders, see the [Mac guide](../macos/#shared-folders).
 
 ## Copy files with the managed SSH connection
 
@@ -157,7 +157,7 @@ An explicit read-only share is a useful starting point for source files.
 For writable shares, guest-user permissions also matter; Barn can fall back
 to read-only and report a limitation without changing host ownership.
 
-**Do not add `vm_shares` to a macOS lab using the currently documented runtime.**
+**For Linux guests on a macOS host, omit `vm_shares`.**
 The tested macOS/QEMU path cannot reopen the secure directory descriptor and
 the affected node cannot start. Use SSH file transfer there. Restoring a missing
 host directory or mount lets you retry `up`; Barn never creates an empty

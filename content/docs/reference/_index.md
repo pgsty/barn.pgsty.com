@@ -1,21 +1,24 @@
 ---
 title: Reference
 linkTitle: Reference
-description: Exact contracts for the Pigsty-compatible Inventory and Barn command line.
+description: Barn 0.9.0 configuration, command options, output formats, and image repositories.
 weight: 20
 icon: fa-solid fa-book-open
 cascade:
   type: docs
 ---
 
-This reference describes the **Barn 0.9.0 release candidate**. Check
-`barn version` before scripting against these contracts. See the [release status](../about/status/#documentation-baseline).
+Use these pages to look up a field, flag, or result in **Barn 0.9.0**.
+For a walkthrough, start with the [guides](../start/).
 
-- [Configuration](configuration/) — discovery, accepted variables, defaults, disks, shares, naming, and drift.
-- [CLI](cli/) — commands, important flags, output modes, and exit codes.
-- [Mac Commands](mac/) — the unreleased `barn mac`: commands, JSON results, and failure reasons.
-- [Images](images/) — signed catalogs, aliases, cache layout, pulls, imports, and pruning.
-- [Image Pipeline](image-pipeline/) — candidate validation and offline normalization.
+| Reference | Contents |
+|---|---|
+| [Linux configuration](configuration/) | inventory discovery, variables, defaults, disks, shares, and changes |
+| [CLI](cli/) | Common options, Linux commands, structured results, and exit codes |
+| [Mac commands](mac/) | macOS machine commands, settings, JSON results, and files |
+| [Linux images](images/) | Image versions, repositories, signatures, imports, and cache management |
+| [Image pipeline](image-pipeline/) | Contributor tools for preparing and checking Linux images |
 
-Barn exposes no supported Go library API. Packages under `internal/` are
-implementation details.
+Check `barn version` and `barn <command> --help` when working with another
+version. Barn's supported interface is the command line; the Go `internal/`
+packages are implementation details.

@@ -1,13 +1,20 @@
 ---
-title: 关于 Barn
-linkTitle: 关于
-description: 产品模型、实现边界、真机证据、当前限制与发布门禁。
+title: 项目
+linkTitle: 项目
+description: Barn 的适用平台、设计思路、贡献方式与发布工程。
 weight: 30
 icon: fa-solid fa-circle-info
 cascade:
   type: docs
 ---
 
-- [设计](design/)：为什么 Barn 只有一份 Inventory、一套 deployment 与一个固定 IP 网络。
-- [当前状态](status/)：严格区分已实现、真机验证与剩余发布门禁。
-- [工程与发布](engineering/)：源码、生成输出、软件包、镜像流水线与证据边界。
+Barn 是面向本地开发与测试的 Apache-2.0 开源项目，名字来自
+**Bootstrap And Run Nodes**。
+
+- [平台与限制](status/)：查看宿主要求，选择适合的客机。
+- [设计说明](design/)：理解 Linux 实验环境与独立的 Mac 虚拟机。
+- [参与贡献](engineering/)：了解源码、测试、打包与镜像工具。
+
+通过[发布说明](/zh/blog/release/)了解版本变化，通过[设计文章](/zh/blog/design/)理解实现取舍。
+欢迎在 [GitHub](https://github.com/pgsty/barn) 提交贡献与问题报告。
+安全漏洞请按[安全政策](https://github.com/pgsty/barn/blob/main/SECURITY.md)私下报告。

@@ -10,12 +10,11 @@ blog_index: list
 lastmod: 2026-09-29
 ---
 
-This section explains the architecture and implementation choices in the
-Barn 0.9.0 candidate.
+This section explains the architecture and implementation choices in Barn 0.9.0.
 
 Start with the product model, then follow the boundaries outward:
 
-1. [Why Barn has no projects](one-deployment-no-projects/) — one Inventory,
+1. [Why Barn has no projects](one-deployment-no-projects/) — one inventory,
    one owner-scoped deployment, and no second source of truth.
 2. [Why every node has two NICs](fixed-ip-two-nics/) — fixed identity for the
    lab, separate from management egress.
@@ -27,7 +26,5 @@ Start with the product model, then follow the boundaries outward:
    — a static image repository whose generated metadata is checked against the
    actual qcow2 bytes.
 
-Use the [documentation](/docs/) for current behavior and the
-[status page](/docs/about/status/) for dated verification. These design records
-explain why those contracts exist; they do not turn a design, build, or local
-test into release evidence.
+Use the [documentation](/docs/) for commands and configuration, and
+[Platforms and Limits](/docs/about/status/) to check whether Barn fits your host.
