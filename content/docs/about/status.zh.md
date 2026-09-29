@@ -12,10 +12,10 @@ Barn 0.9.0 是**尚未发布的候选版本**。源码检查、本地构建、�
 
 | 对象 | 当前身份 | 使用方式 |
 |---|---|---|
-| 程序与当前文档 | Barn 0.9.0 发布候选 | 从源码构建；发行包命令在发布后使用。 |
+| 程序与当前文档 | Barn 0.9.0 发布候选 | 安装 Homebrew HEAD 或从源码构建；发行包尚未发布。 |
 | CLI 与配置 | `barn`、`barn.yml`、`BARN_*` | 使用版本相关说明前先检查 `barn version`。 |
 | 状态与宿主资源 | `~/.barn`、Barn 网络与 helper | 每个用户一套 Linux 部署；macOS 客机使用独立状态。 |
-| 镜像仓库 | 官方入口的 `/barn` 前缀 | 已于 2026-09-29 发布签名 Catalog `2026092901` 并完成公网核验，见下方镜像记录。 |
+| 镜像仓库 | 官方入口的 `/barn` 前缀 | 已于 2026-09-29 发布签名 Catalog `2026092902` 并完成公网核验，见下方镜像记录。 |
 
 最终发布提交、制品摘要与安装渠道将在完成发布和下载核验后记录。
 
@@ -37,18 +37,27 @@ ad-hoc 签名验证与 `probe` 通过。这些检查没有启动 VM，不代表�
 
 ## Linux 镜像 Catalog：2026-09-29
 
-两个官方 `/barn` 入口均已发布 Catalog `2026092901`：9 个系列、45 个工件，完整保留
-原有 37 个工件。Debian 12 为 `20260923.2610.1`，Ubuntu 22.04/24.04 为
-`20260926.0.0`，Ubuntu 26.04 为 `20260927.0.0`，均覆盖 amd64、arm64。
-Debian 13 保持现版。
+两个官方 `/barn` 入口均已发布签名 Catalog `2026092902`：9 个系列、39 个工件。
+经过规范化的 Debian 与 Rocky Linux 镜像，其内部配置与元数据统一使用 Barn。
 
-8 个新镜像使用当前 Barn cloud-init，通过原生 KVM/HVF 的 UEFI 启动、SSH、双网卡、
-UID/GID 88、locale 与 XFS 数据盘读写检查。Debian 12 上游原版仍需离线补齐 XFS 工具
-和 `en_US.UTF-8`；Ubuntu 保留 Canonical 原始字节。此次采用隔离的 QEMU user 网络，
-完整宿主网络及生命周期验收仍按上文范围独立执行。
+| 系列 | 稳定版本 | 架构 |
+|---|---|---|
+| Debian 12 | `20260923.2610.1` | amd64、arm64 |
+| Debian 13 | `20260914.2601.2` | amd64、arm64 |
+| Rocky Linux 8 | `8.10.20240528.2` | amd64、arm64 |
+| Rocky Linux 9 | `9.8.20260525.2` | amd64、arm64 |
+| Ubuntu 22.04 / 24.04 | `20260926.0.0` | amd64、arm64 |
+| Ubuntu 26.04 | `20260927.0.0` | amd64、arm64 |
 
-内嵌、本地、LAN 与公网 Catalog 字节一致。两个公开入口均通过签名校验，以及隔离
-客户端从 `2026092001` 的实际升级。每端 8 个新对象通过尺寸和首尾 Range/If-Range
-检查；COS CRC64、R2 分片 ETag 与本地完整文件重算结果一致。R2 首轮 Range 返回
-200 的记录保留为证据；刷新新对象缓存后，全部复测返回预期的 206 和正确字节。
-版本与更新行为见[镜像参考](../../reference/images/)。
+6 个 Debian 13、Rocky Linux 镜像通过 UEFI 启动、SSH、双网卡、UID/GID 88、Python、
+cloud-init 与 XFS 数据盘检查。amd64 使用 KVM，Debian 13 和 Rocky Linux 9 arm64 使用
+HVF；Rocky Linux 8 arm64 因上游 64 KiB 内核不兼容 Apple HVF，使用 TCG。
+Rocky Linux 8 使用自带的 RHEL chrony 模板和 `chronyd` 服务。
+
+Debian 12 与 Ubuntu 镜像通过原生 KVM/HVF 启动、SSH、双网卡、UID/GID 88、locale
+和 XFS 数据盘检查。Debian 镜像包含锁定版本的 XFS 工具与 `en_US.UTF-8`，默认 locale
+保持 `C.UTF-8`；Ubuntu 保留 Canonical 原始字节。镜像检查采用隔离的 QEMU user 网络，
+完整宿主网络及 VM 生命周期仍需独立验收。
+
+内嵌与公开 Catalog 字节一致，两个官方入口均通过签名校验，新镜像通过公网下载检查。
+版本选择与更新行为见[镜像参考](../../reference/images/)。

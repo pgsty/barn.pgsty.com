@@ -46,7 +46,7 @@ Stable Channel，则改用 `vm_image: el9:stable` 并删除 `vm_version`。独�
 ```yaml
 all:
   vars:
-    vm_image: d13@20260914.2601.1
+    vm_image: d13@20260914.2601.2
 ```
 
 YAML 中的数值 `vm_version` 建议加引号，以保留完整原文。
@@ -81,7 +81,7 @@ barn up
 `BARN_REPO` 也可以是绝对本地目录。显式本地或 HTTPS 仓库可使用未签名 Catalog；HTTP
 仓库必须提供可信密钥签名。文件大小、SHA-256 与 qcow2 结构始终校验。
 
-镜像下载会重试临时故障，并接续中断的传输。自 0.7.0 起，选定官方端点无法提供镜像时，
+镜像下载会重试临时故障，并接续中断的传输。选定官方端点无法提供镜像时，
 两个官方仓库可以互相回退，仍须匹配同一 Catalog 中的尺寸与摘要。自定义仓库不会回退
 到其他站点；Catalog Upstream URL 只用于溯源，始终不是备用下载源。
 

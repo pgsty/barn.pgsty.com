@@ -15,19 +15,20 @@ Barn 使用物化的静态 Catalog 与不可变 qcow2 工件。官方与 HTTP Ca
 
 ## 别名与拉取顺序
 
-Barn 0.9.0 内置 Catalog `2026092901`，包含 9 个 Family、45 个工件，保留前一版的
-全部 37 个工件。`el7` 只有 amd64，其余 Family 均有 amd64 与 arm64。
+Barn 0.9.0 内置 Catalog `2026092902`，包含 9 个 Family、39 个工件。`el7` 只有 amd64，其余 Family 均有 amd64 与 arm64。
 EL9 包含 9.3、9.6、9.7、9.8；EL10 包含 10.0、10.1、10.2。
 默认请求为本机架构的 `u24:stable`（Ubuntu 24.04）。
 
-以下九月 `stable` 均覆盖 amd64 和 arm64。这是内置 Catalog 快照，不是实时仓库列表。
+以下 `stable` 均覆盖 amd64 和 arm64。这是内置 Catalog 快照，不是实时仓库列表。
 运行 `barn update`，再用 `barn image list` 查看选定仓库当前的目录。带日期的公开
 端点检查与 Guest 小版本观测见[当前状态](../../about/status/)。
 
 | Family | 内置 stable | 发行版系列 |
 |---|---|---|
 | `d12` | `20260923.2610.1` | Debian 12 |
-| `d13` | `20260914.2601.1` | Debian 13 |
+| `d13` | `20260914.2601.2` | Debian 13 |
+| `el8` | `8.10.20240528.2` | Rocky Linux 8.10 |
+| `el9` | `9.8.20260525.2` | Rocky Linux 9.8 |
 | `u22` | `20260926.0.0` | Ubuntu 22.04 LTS |
 | `u24` | `20260926.0.0` | Ubuntu 24.04 LTS |
 | `u26` | `20260927.0.0` | Ubuntu 26.04 LTS |
@@ -55,7 +56,7 @@ barn image list
 barn image info d13
 barn image info d13:stable
 barn image info el9@9.7
-barn image pull d13@20260810.2566.1
+barn image pull d13@20260914.2601.2
 barn image pull d13 --arch arm64
 barn update
 ```
@@ -127,8 +128,7 @@ barn image sync --repo /absolute/repo --allow-downgrade /absolute/repo/catalog.j
 barn image reset
 ```
 
-`image reset` 恢复二进制内置的 Catalog，但不会清除防回滚 High-water Mark；
-`reset-manifest` 作为兼容别名保留。
+`image reset` 恢复二进制内置的 Catalog，但不会清除防回滚 High-water Mark。
 
 `barn update` 立即检查仓库并激活更新的 Catalog。Barn 不会自动刷新 Catalog；每个版本
 内嵌的 Catalog 会一直使用到你运行 update。`image sync` 是指定精确 URL 或文件（含降级）的
@@ -192,8 +192,8 @@ Channel 与数值前缀都是可移动 Selector。存在精确 Key 时优先精�
 
 ```text
 d13:stable + native
-  -> d13@20260914.2601.1 + arm64
-  -> images/d13-20260914.2601.1-arm64.qcow2
+  -> d13@20260914.2601.2 + arm64
+  -> images/d13-20260914.2601.2-arm64.qcow2
 ```
 
 `barn repo scan` 只读；`build` 执行严格 YAML 校验、完整 qcow2 inspect/check，

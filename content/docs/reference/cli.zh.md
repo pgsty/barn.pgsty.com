@@ -57,7 +57,7 @@ JSON/YAML 输出 `actions[]`。`barn image` 这样的裸命名空间仍以 2
 `completion` 没有别名。请使用明确的 `barn purge` 拼写；`rm` 不是命令别名。
 命名空间内部，`hosts` 与 `network` 的 install/uninstall 使用
 `i`/`u`，`network status` 使用 `st`；`image` 使用 `list=ls`、`info=in`、`pull=p`、
-`prune=pr`、`sync=sy`、`import=i`。`image reset` 保留 `reset-manifest` 作为兼容别名。
+`prune=pr`、`sync=sy`、`import=i`。
 
 Barn 在选定的 `BARN_HOME`（默认 `~/.barn`）中管理一套部署，其身份与
 Inventory 所在目录无关。使用已应用状态的命令可在任意目录运行。配置来源由命令决定，`-f` 刻意不做全局参数：

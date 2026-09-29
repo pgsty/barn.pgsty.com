@@ -41,17 +41,17 @@ Source Epoch 都锁定在 `official-v1.json`。
 不加 `--fetch` 时，全部锁定输入必须已经位于两个 Canonical Cache 目录；加上后，Wrapper
 也只下载固定 HTTPS URL，并在调用离线归一化前拒绝任何 Digest 不匹配。Debian 12/13
 安装锁定的 XFS 用户态闭包；Rocky Linux 8 安装锁定的 `python36` 与 `python3-pip`
-RPM；Rocky Linux 9 不需要额外软件包输入。SELinux 标签恢复属于归一化步骤，不是另一组
-软件包输入。
+RPM，并在 cloud-init 启用 NTP 时使用镜像已有的 RHEL chrony 模板与 `chronyd` 服务；
+Rocky Linux 9 不需要额外软件包输入。SELinux 标签恢复属于归一化步骤，不是另一组软件包输入。
 
 Debian 同时生成 `en_US.UTF-8`，并保留 `C.UTF-8` 作为默认 locale；归一化脚本和
-宿主端 Marker 校验都会检查这两项。镜像更新不能丢失这项历史调整。Ubuntu 使用固定
+宿主端 Marker 校验都会检查这两项。镜像更新也会保留这两项客机要求。Ubuntu 使用固定
 日期的官方原始镜像，不经过这套离线定制流程。
 
 每份结果仍是未签名的 `testing` Candidate。不传 `--target` 时构建全部八个目标，重复
 该参数可以选择多个目标。`--list` 显示当前源码锁定的精确版本；目前包含 Debian
-`20260923.2610.1`/`20260914.2601.1` 与 Rocky Linux
-`8.10.20240528.1`/`9.8.20260525.1`。
+`20260923.2610.1`/`20260914.2601.2` 与 Rocky Linux
+`8.10.20240528.2`/`9.8.20260525.2`。
 
 组装接收的是**包含按名称命名的 Bundle 的父目录**，不是各 Bundle 自身目录。若八个
 构建都放在同一个输出根下，执行：

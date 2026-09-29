@@ -61,7 +61,7 @@ Frequently used commands have scoped aliases:
 Inside a namespace, `hosts` and
 `network` use `i`/`u` for install/uninstall; `network status` uses `st`; and
 `image` maps `list=ls`, `info=in`, `pull=p`, `prune=pr`, `sync=sy`,
-and `import=i`. `image reset` keeps `reset-manifest` as a compatibility alias.
+and `import=i`.
 
 Barn manages one deployment in the selected `BARN_HOME` (default
 `~/.barn`), independently of the inventory directory. Commands using applied

@@ -17,13 +17,12 @@ trusted.
 
 ## Aliases and pull order
 
-Barn 0.9.0 embeds Catalog `2026092901`: 9 families and 45 artifacts, retaining
-all 37 artifacts from the previous Catalog. `el7` is amd64-only; every other
-family has amd64 and arm64 artifacts. EL9 includes 9.3, 9.6, 9.7, and 9.8;
+Barn 0.9.0 embeds Catalog `2026092902`: 9 families and 39 artifacts. `el7` is
+amd64-only; every other family has amd64 and arm64 artifacts. EL9 includes 9.3, 9.6, 9.7, and 9.8;
 EL10 includes 10.0, 10.1, and 10.2. `u24:stable` (Ubuntu 24.04) on the native
 architecture is the default request.
 
-The September stable versions below include both amd64 and arm64. This is the
+The stable versions below include both amd64 and arm64. This is the
 embedded Catalog snapshot, not a live repository listing. Run `barn update`
 then `barn image list` to inspect the currently selected repository. Dated
 public endpoint checks and guest point-release observations are recorded in
@@ -32,7 +31,9 @@ public endpoint checks and guest point-release observations are recorded in
 | Family | Embedded stable | Distribution series |
 |---|---|---|
 | `d12` | `20260923.2610.1` | Debian 12 |
-| `d13` | `20260914.2601.1` | Debian 13 |
+| `d13` | `20260914.2601.2` | Debian 13 |
+| `el8` | `8.10.20240528.2` | Rocky Linux 8.10 |
+| `el9` | `9.8.20260525.2` | Rocky Linux 9.8 |
 | `u22` | `20260926.0.0` | Ubuntu 22.04 LTS |
 | `u24` | `20260926.0.0` | Ubuntu 24.04 LTS |
 | `u26` | `20260927.0.0` | Ubuntu 26.04 LTS |
@@ -63,7 +64,7 @@ barn image list
 barn image info d13
 barn image info d13:stable
 barn image info el9@9.7
-barn image pull d13@20260810.2566.1
+barn image pull d13@20260914.2601.2
 barn image pull d13 --arch arm64
 barn update
 ```
@@ -152,7 +153,7 @@ barn image reset
 ```
 
 `image reset` restores the embedded Catalog but keeps the anti-rollback
-high-water mark; `reset-manifest` remains as a compatibility alias.
+high-water mark.
 
 `barn update` checks the repository now and activates a newer Catalog. Barn
 never refreshes the Catalog on its own; the Catalog embedded in each release is
@@ -225,8 +226,8 @@ numerically newest version (`el9@9.7` selects the newest 9.7 build, while
 
 ```text
 d13:stable + native
-  -> d13@20260914.2601.1 + arm64
-  -> images/d13-20260914.2601.1-arm64.qcow2
+  -> d13@20260914.2601.2 + arm64
+  -> images/d13-20260914.2601.2-arm64.qcow2
 ```
 
 `barn repo scan` is read-only. `build` performs strict YAML validation,

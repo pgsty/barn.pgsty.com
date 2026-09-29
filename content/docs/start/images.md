@@ -51,7 +51,7 @@ than a movable channel or a numeric prefix:
 ```yaml
 all:
   vars:
-    vm_image: d13@20260914.2601.1
+    vm_image: d13@20260914.2601.2
 ```
 
 Quote numeric `vm_version` values in YAML so their original text is preserved.
@@ -89,8 +89,8 @@ an absolute local directory. Explicit local and HTTPS repositories may use an
 unsigned Catalog; HTTP repositories require a Catalog signed by a trusted key.
 Artifact size, SHA-256, and qcow2 structure are always verified.
 
-Image downloads retry transient failures and resume interrupted transfers. Since
-0.7.0, the two official repositories can fall back to one another if the selected
+Image downloads retry transient failures and resume interrupted transfers. The
+two official repositories can fall back to one another if the selected
 endpoint cannot supply an image; the same Catalog size and digest must still
 match. Custom repositories remain exclusive. Catalog upstream URLs are
 provenance, never an alternate download source.

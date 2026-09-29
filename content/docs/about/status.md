@@ -13,10 +13,10 @@ Installation instructions are in the [Quick Start](../../start/tutorial/#install
 
 | Object | Current identity | How to use it |
 |---|---|---|
-| Application and current docs | Barn 0.9.0 release candidate | Build from source; package commands apply after publication. |
+| Application and current docs | Barn 0.9.0 release candidate | Install Homebrew HEAD or build from source; release packages are not yet published. |
 | CLI and configuration | `barn`, `barn.yml`, `BARN_*` | Check `barn version` before applying version-specific guidance. |
 | State and host resources | `~/.barn`, Barn networking and helpers | One Linux deployment per user; macOS guests use separate state. |
-| Image repository | `/barn` at the official endpoints | Signed Catalog `2026092901` published and publicly verified on 2026-09-29; see the image record below. |
+| Image repository | `/barn` at the official endpoints | Signed Catalog `2026092902` published and publicly verified on 2026-09-29; see the image record below. |
 
 The final release commit, artifact digests, and installation channels will be
 recorded after publication and download verification.
@@ -40,23 +40,31 @@ These checks started no VM and do not establish complete Mac lifecycle acceptanc
 
 ## Linux image Catalog: 2026-09-29
 
-Catalog `2026092901` is published at both official `/barn` endpoints: nine
-families and 45 artifacts, retaining all 37 earlier artifacts. Debian 12 is
-`20260923.2610.1`, Ubuntu 22.04/24.04 are `20260926.0.0`, and Ubuntu 26.04 is
-`20260927.0.0`, each on amd64 and arm64. Debian 13 keeps its existing version.
+Signed Catalog `2026092902` is published at both official `/barn` endpoints:
+nine families and 39 artifacts. The normalized Debian and Rocky Linux images
+use Barn configuration and metadata throughout.
 
-All eight new images passed native KVM/HVF UEFI boot, SSH, dual-NIC,
-UID/GID 88, locale and XFS data-disk read/write checks using the current Barn
-cloud-init. The Debian 12 upstream images still need the offline XFS and
-`en_US.UTF-8` adjustments; Ubuntu retains the original Canonical bytes.
-These checks used isolated QEMU user networks and do not replace the full
-host networking and lifecycle checks above.
+| Family | Stable version | Architectures |
+|---|---|---|
+| Debian 12 | `20260923.2610.1` | amd64, arm64 |
+| Debian 13 | `20260914.2601.2` | amd64, arm64 |
+| Rocky Linux 8 | `8.10.20240528.2` | amd64, arm64 |
+| Rocky Linux 9 | `9.8.20260525.2` | amd64, arm64 |
+| Ubuntu 22.04 / 24.04 | `20260926.0.0` | amd64, arm64 |
+| Ubuntu 26.04 | `20260927.0.0` | amd64, arm64 |
 
-The embedded, local, LAN and public Catalog bytes match. Both public
-signatures and isolated-client upgrades from `2026092001` passed. The eight
-new objects at each endpoint passed size and first/last Range/If-Range checks;
-COS CRC64 and R2 multipart ETags matched checksums recomputed from the full
-local files. Initial R2 Range responses that returned 200 were retained as
-evidence; after refreshing the new objects' cache, every check returned the
-expected 206 and bytes. See [Images](../../reference/images/) for versions and
-update behavior.
+The six Debian 13 and Rocky Linux images passed UEFI boot, SSH, dual-NIC,
+UID/GID 88, Python, cloud-init, and XFS data-disk checks. The amd64 images used
+KVM; Debian 13 and Rocky Linux 9 arm64 used HVF. Rocky Linux 8 arm64 used TCG
+because its upstream 64 KiB kernel is incompatible with Apple HVF. Rocky Linux
+8 uses its shipped RHEL chrony template and `chronyd` service.
+
+The Debian 12 and Ubuntu images passed native KVM/HVF boot, SSH, dual-NIC,
+UID/GID 88, locale, and XFS data-disk checks. Debian images include the locked
+XFS tools and `en_US.UTF-8`, retaining `C.UTF-8` as the default; Ubuntu keeps the
+original Canonical bytes. These image checks used isolated QEMU user networks;
+full host networking and VM lifecycle acceptance remains a separate release check.
+
+The embedded and published Catalog bytes match. Both official endpoints pass
+signature verification, and the new objects pass public download checks.
+See [Images](../../reference/images/) for version selection and update behavior.

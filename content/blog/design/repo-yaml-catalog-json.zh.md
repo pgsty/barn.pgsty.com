@@ -121,7 +121,7 @@ Image Catalog Key 授权镜像策略；Release Signing 证明 Barn 应用工件�
 两组 Key 刻意独立：有权发布 VM Image 不应自动获得发布 Barn Binary 的权限，反之亦然。
 
 普通 Public Build 默认使用 `https://repo.pigsty.io/barn`，并通过 `--mirror` 显式选择
-`https://repo.pigsty.cc/barn`；`--repo` 仍是自定义覆盖。**自 0.7.0 起的更新：** 两个
+`https://repo.pigsty.cc/barn`；`--repo` 仍是自定义覆盖。两个
 官方仓库在下载镜像时可以互相回退，始终校验同一 Catalog 的尺寸与 SHA-256。自定义仓库
 仍是唯一工件源，Catalog 更新仍使用选定来源；Embedded Catalog 的 Upstream URL
 只提供溯源，绝不会变成工件回退。源码配置、生成

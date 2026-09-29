@@ -48,19 +48,20 @@ cache directories. With it, the wrapper downloads only the pinned HTTPS URLs
 and rejects any digest mismatch before invoking offline normalization. Debian
 12/13 install the locked XFS userspace closure; Rocky Linux 8 installs the
 locked `python36` and `python3-pip` RPMs, and Rocky Linux 9 needs no extra
-package input. SELinux label restoration belongs to normalization, not an
-additional package set.
+package input. Rocky Linux 8 uses its shipped RHEL chrony template and
+`chronyd` service when cloud-init enables NTP. SELinux label restoration
+belongs to normalization, not an additional package set.
 
 Debian also generates `en_US.UTF-8` while retaining `C.UTF-8` as the default.
 Both the guest normalization script and host-side marker validation check these
-postconditions so a base-image refresh cannot lose the earlier customization.
+postconditions so a base-image refresh preserves these guest requirements.
 Ubuntu uses dated, unmodified official images outside this offline matrix.
 
 Each result remains an unsigned `testing` candidate. To build the complete
 matrix, omit `--target`; repeat it to select several targets. `--list` shows
 the exact releases pinned by this checkout. The matrix currently contains
-Debian `20260923.2610.1`/`20260914.2601.1` and Rocky Linux
-`8.10.20240528.1`/`9.8.20260525.1`.
+Debian `20260923.2610.1`/`20260914.2601.2` and Rocky Linux
+`8.10.20240528.2`/`9.8.20260525.2`.
 
 Assembly takes **parent directories containing the named bundles**, not the
 individual bundle directories. If all eight builds were written below one

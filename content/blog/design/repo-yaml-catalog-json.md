@@ -145,9 +145,9 @@ application artifacts and checksum manifest. The two key sets are intentionally
 independent: permission to publish a VM image must not imply permission to ship
 a new Barn binary, or vice versa.
 
-The Barn 0.9.0 candidate defaults to `https://repo.pigsty.io/barn` and expose
+The Barn 0.9.0 candidate defaults to `https://repo.pigsty.io/barn` and exposes
 `--mirror` for `https://repo.pigsty.cc/barn`; `--repo` remains the explicit
-custom override. **Updated since 0.7.0:** the two official repositories may
+custom override. The two official repositories may
 fall back to each other for image downloads, always verifying the same
 Catalog size and SHA-256. Custom repositories remain exclusive. Catalog
 updates still use the selected source; embedded upstream URLs remain
