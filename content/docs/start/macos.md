@@ -7,11 +7,9 @@ icon: fa-brands fa-apple
 ---
 
 > [!IMPORTANT]
-> **Barn 0.9.0 release candidate; unreleased.** This page describes the renamed
-> `barn mac`, which uses fresh Barn state and provides no development-state
-> migration. Earlier native records are retained in [Status](../../about/status/#macos-guests)
-> and do not establish the same acceptance for the renamed build. Check the
-> `barn mac --help` of the binary you run.
+> **Barn 0.9.0 release candidate; unreleased.** See
+> [Status](../../about/status/#macos-guests) for current validation and release checks.
+> Use `barn mac --help` from the binary you run.
 
 `barn mac` creates and runs macOS virtual machines on an Apple Silicon Mac.
 Each machine is a clean, disposable macOS with an administrator account,

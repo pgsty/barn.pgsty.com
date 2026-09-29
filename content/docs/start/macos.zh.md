@@ -7,10 +7,8 @@ icon: fa-brands fa-apple
 ---
 
 > [!IMPORTANT]
-> **Barn 0.9.0 发布候选，尚未发布。** 本页描述改名后的 `barn mac`，
-> 使用全新 Barn 状态，不提供旧开发环境迁移。改名前的实机记录保留在
-> [当前状态](../../about/status/#macos-guests)，不代表改名后已经完成同等验收。
-> 请以实际运行的 `barn mac --help` 为准。
+> **Barn 0.9.0 发布候选，尚未发布。** 当前验证结果与发行前检查见
+> [当前状态](../../about/status/#macos-guests)。请以实际运行的 `barn mac --help` 为准。
 
 `barn mac` 在 Apple 芯片 Mac 上创建并运行 macOS 虚拟机。每台机器都是干净、可随时
 丢弃的 macOS：带管理员账号、免密 sudo、固定的 SSH 密钥和固定地址，适合测试、构建与复现

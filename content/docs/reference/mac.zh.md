@@ -6,10 +6,8 @@ icon: fa-brands fa-apple
 ---
 
 > [!IMPORTANT]
-> **Barn 0.9.0 发布候选，尚未发布。** 本页描述改名后的 `barn mac`，
-> 使用全新 Barn 状态，不提供旧开发环境迁移。改名前的实机记录保留在
-> [当前状态](../../about/status/#macos-guests)，不代表改名后已经完成同等验收。
-> 请以实际运行的 `barn mac --help` 为准。
+> **Barn 0.9.0 发布候选，尚未发布。** 当前验证结果与发行前检查见
+> [当前状态](../../about/status/#macos-guests)。请以实际运行的 `barn mac --help` 为准。
 
 ```text
 barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]

@@ -5,14 +5,13 @@ weight: 50
 icon: fa-solid fa-code-branch
 ---
 
-Barn 0.9.0 is an **unreleased candidate**. Use this page to build and check a
-checkout containing the rename. Installation commands for the eventual release
-are in the [Quick Start](../tutorial/).
+Barn 0.9.0 is an **unreleased candidate**. Use this page to build and check the
+source. Installation commands for the eventual release are in the
+[Quick Start](../tutorial/).
 
 ## Choose the source
 
-Use a checkout containing the Barn changes. Once that source is pushed to the
-public repository, it can also be cloned with:
+Clone the Barn repository:
 
 ```bash
 git clone https://github.com/pgsty/barn.git

@@ -24,6 +24,4 @@ Start with the [Quick Start](start/tutorial/) to prepare the **Barn 0.9.0 releas
 from source. Once the CLI is ready, run `barn up` to start the lab, then `barn ssh` to connect.
 
 > [!IMPORTANT]
-> 0.9.0 is the first Barn release and is not yet published. It uses the new
-> commands, environment variables and fresh state, without compatibility or
-> migration for earlier development builds. See [release and validation status](about/status/#documentation-baseline).
+> Barn 0.9.0 is not yet published. See [release and validation status](about/status/#documentation-baseline).

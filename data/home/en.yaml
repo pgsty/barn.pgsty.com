@@ -20,8 +20,8 @@ hero:
   note: Ubuntu 24.04 by default. Repeat barn up to continue interrupted setup and retry limited guest features without restarting healthy VMs.
   note_icon: fa-solid fa-flask
   image:
-    light: images/barn-hero-light.svg?v=0.9.0-rename
-    dark: images/barn-hero-dark.svg?v=0.9.0-rename
+    light: images/barn-hero-light.svg?v=0.9.0
+    dark: images/barn-hero-dark.svg?v=0.9.0
     alt: One Pigsty inventory becomes one fixed-IP Barn deployment
   actions:
     - { label: Quick Start, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
@@ -47,7 +47,7 @@ facts:
 entry_points:
   eyebrow: Two top-level sections
   title: Documentation and blog
-  text: Documentation stays compact and current; the blog adds design reasoning, technical articles, and release history.
+  text: Documentation stays compact and current; the blog adds design reasoning, technical articles, and release updates.
   columns: 3
   link_label: Open
   items:
@@ -56,7 +56,7 @@ entry_points:
     - { title: About, meta: Design and evidence, icon: fa-solid fa-circle-info, desc: "The simplified model, native test matrix, limits, and release gates.", url: docs/about/ }
     - { title: Quick Start, meta: One node to four, icon: fa-solid fa-play, desc: "Boot with up, connect with ssh, then scale from the same inventory.", url: docs/start/tutorial/ }
     - { title: Configuration, meta: vm_* fields, icon: fa-solid fa-file-code, desc: "Defaults, disks, shares, naming, addressing, and drift.", url: docs/reference/configuration/ }
-    - { title: Blog, meta: Design and history, icon: fa-solid fa-newspaper, desc: "Accepted design records, project articles, development snapshots, and release notes.", url: blog/ }
+    - { title: Blog, meta: Design and updates, icon: fa-solid fa-newspaper, desc: "Design notes, project articles, and release updates.", url: blog/ }
 
 first_command:
   eyebrow: Normal path

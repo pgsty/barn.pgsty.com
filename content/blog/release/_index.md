@@ -1,7 +1,7 @@
 ---
 title: Release Notes
 linkTitle: Release
-description: Current Barn releases plus preserved pre-rename development records.
+description: Barn release notes and current publication status.
 weight: 30
 icon: fa-solid fa-clipboard-list
 sidebar_root_menu: false
@@ -11,7 +11,6 @@ cascade:
   theme_color_dark: '#fda4af'
 ---
 
-> [!IMPORTANT]
-> Barn is pre-1.0. Versioned release notes appear alongside preserved
-> Farrow release and Piglet development records; historical entries do not establish support for
-> current Barn bytes.
+Barn 0.9.0 is an **unreleased candidate**. Release notes will appear here when
+a version is published. For now, [build from source](/docs/start/source-build/)
+and see [Status](/docs/about/status/) for validation and remaining release checks.

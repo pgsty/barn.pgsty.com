@@ -19,8 +19,8 @@ hero:
   note: 默认 Ubuntu 24.04。重复 barn up 可接续初始化、重试受限功能，健康 VM 保持运行。
   note_icon: fa-solid fa-flask
   image:
-    light: images/barn-hero-light.svg?v=0.9.0-rename
-    dark: images/barn-hero-dark.svg?v=0.9.0-rename
+    light: images/barn-hero-light.svg?v=0.9.0
+    dark: images/barn-hero-dark.svg?v=0.9.0
     alt: 一份 Pigsty Inventory 变成一套固定 IP 的 Barn deployment
   actions:
     - { label: 快速上手, url: docs/start/tutorial/, icon: fa-solid fa-rocket, style: primary }
@@ -46,7 +46,7 @@ facts:
 entry_points:
   eyebrow: 两个顶级栏目
   title: 文档与博客
-  text: 文档保持紧凑并描述当前行为；博客补充设计理由、技术文章与发布历史。
+  text: 文档保持紧凑并描述当前行为；博客补充设计理由、技术文章与发布动态。
   columns: 3
   link_label: 打开
   items:
@@ -55,7 +55,7 @@ entry_points:
     - { title: 关于, meta: 设计与证据, icon: fa-solid fa-circle-info, desc: 简化模型、真机矩阵、限制与发布门禁。, url: docs/about/ }
     - { title: 快速上手, meta: 一台扩到四台, icon: fa-solid fa-play, desc: 用 up 启动、用 ssh 进入，再通过同一份配置增量扩容。, url: docs/start/tutorial/ }
     - { title: 配置, meta: vm_* 字段, icon: fa-solid fa-file-code, desc: 默认值、磁盘、共享、命名、地址与漂移。, url: docs/reference/configuration/ }
-    - { title: 博客, meta: 设计与历史, icon: fa-solid fa-newspaper, desc: 已接受的设计记录、项目文章、开发快照与发布注记。, url: blog/ }
+    - { title: 博客, meta: 设计与动态, icon: fa-solid fa-newspaper, desc: 设计注记、项目文章与发布动态。, url: blog/ }
 
 first_command:
   eyebrow: 正常路径

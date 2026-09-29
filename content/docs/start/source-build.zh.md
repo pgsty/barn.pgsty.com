@@ -5,12 +5,12 @@ weight: 50
 icon: fa-solid fa-code-branch
 ---
 
-Barn 0.9.0 目前是**尚未发布的候选版本**。本页用于从包含改名变更的源码构建与检查；
+Barn 0.9.0 目前是**尚未发布的候选版本**。本页用于从源码构建与检查；
 正式发布后的安装方式见[快速上手](../tutorial/)。
 
 ## 选择源码
 
-使用已经包含 Barn 改名变更的工作区。在源码推送到公开仓库后，也可以克隆：
+克隆 Barn 源码仓库：
 
 ```bash
 git clone https://github.com/pgsty/barn.git

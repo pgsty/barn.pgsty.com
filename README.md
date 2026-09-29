@@ -40,5 +40,7 @@ English and Chinese pages live beside each other as `page.md` and
 `page.zh.md`. Keep them aligned, concise, and grounded in the current checkout.
 Blog posts live under `content/blog/article`, `content/blog/design`, or
 `content/blog/release`; do not put regular posts directly under `content/blog`.
-Historical Piglet release and evidence records retain their original identity
-and must not be presented as post-rename Barn validation.
+
+Keep product pages focused on the current Barn candidate and verified release
+status. Build and validation records must not imply that a release has been
+published.

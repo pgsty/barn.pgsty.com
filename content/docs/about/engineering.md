@@ -72,8 +72,8 @@ texts under `licenses/`. Linux packages install `/usr/bin/barn`,
 `/opt/barn/libexec/barn-hosts-helper`, and documentation under
 `/usr/share/doc/barn/`.
 
-`BUILD_INFO.json` is included in Linux packages and the older development
-archive format. Formal GoReleaser archives carry build identity in the binary,
+`BUILD_INFO.json` is included in Linux packages. GoReleaser archives carry
+build identity in the binary,
 with release metadata alongside the published assets; do not assume every
 archive contains that file. Generated dependency license files are staged at
 build time. Detailed user documentation stays on this site.
@@ -122,7 +122,6 @@ signatures.
 
 ## Evidence policy
 
-Historical M0–M4 notes were useful during implementation but are not product
-documentation. Their durable conclusions are condensed into [Design](../design/)
-and [Status](../status/). A later source edit inherits no native proof; every
-status claim names its date, host, path, and remaining gates.
+[Design](../design/) explains the implementation choices; [Status](../status/)
+records validation. Each status claim names its date, host, path, and remaining
+checks. Source changes need their own validation.

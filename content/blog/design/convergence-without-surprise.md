@@ -11,11 +11,8 @@ lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **Renamed 2026-09-29:** names now follow the unreleased Barn 0.9.0 candidate.
-> The prior source review was on 2026-09-26: the original publication date is retained; the text
-> below reflects the implementation reviewed on this date. See
-> [Status](/docs/about/status/) for released versus candidate behavior and
-> dated acceptance evidence.
+> This article describes the **unreleased Barn 0.9.0 candidate**. See
+> [Status](/docs/about/status/) for current validation and remaining release checks.
 
 “Declarative” is often shortened to “make reality equal the file.” That is a
 useful slogan until the file is incomplete, the wrong branch is checked out,

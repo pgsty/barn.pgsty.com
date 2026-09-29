@@ -10,11 +10,8 @@ blog_index: list
 lastmod: 2026-09-29
 ---
 
-Barn's source repository once carried the redesign brief, implementation
-ADRs, and native evidence beside the code. That material was useful while the
-product was changing quickly, but many early decisions were later superseded.
-This section keeps the durable reasoning, rewritten against the current source
-instead of republishing stale plans.
+This section explains the architecture and implementation choices in the
+Barn 0.9.0 candidate.
 
 Start with the product model, then follow the boundaries outward:
 
@@ -34,8 +31,3 @@ Use the [documentation](/docs/) for current behavior and the
 [status page](/docs/about/status/) for dated verification. These design records
 explain why those contracts exist; they do not turn a design, build, or local
 test into release evidence.
-
-These articles retain their original publication dates and were last reviewed
-against source on **2026-09-26**, with names updated for the Barn 0.9.0 candidate
-on **2026-09-29**. Changes specific to an unreleased candidate
-are marked separately; historical verification keeps its original date and scope.

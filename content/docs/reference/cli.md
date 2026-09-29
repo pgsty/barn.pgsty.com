@@ -6,10 +6,8 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-This reference describes the **Barn 0.9.0 release candidate**. Barn uses only
-the new names and fresh Barn state; it has no compatibility or migration layer
-for earlier development builds. Check `barn version` before scripting against
-these contracts. See the [release status](../../about/status/#documentation-baseline).
+This reference describes the **Barn 0.9.0 release candidate**. Check
+`barn version` before scripting against these contracts. See the [release status](../../about/status/#documentation-baseline).
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]

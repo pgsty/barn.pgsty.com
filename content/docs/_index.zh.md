@@ -22,5 +22,4 @@ Barn 把一份 Pigsty 兼容的 Inventory 启动成固定 IP 的 QEMU 虚拟机�
 CLI 就绪后，用 `barn up` 启动实验环境，用 `barn ssh` 进入虚拟机。
 
 > [!IMPORTANT]
-> 0.9.0 是 Barn 的首次发行，当前尚未发布。只使用新命令、新环境变量与全新状态，
-> 不保留旧开发版本兼容或状态迁移。详见[发布与验证记录](about/status/#documentation-baseline)。
+> Barn 0.9.0 尚未发布。详见[发行与验证状态](about/status/#documentation-baseline)。

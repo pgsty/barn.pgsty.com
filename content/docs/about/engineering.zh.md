@@ -60,8 +60,7 @@ README，以及根据 `go.mod` 锁定模块版本重建的准确上游许可证�
 位于 `bin/`、许可证位于 `licenses/`；Linux Package 安装 `/usr/bin/barn`、
 `/opt/barn/libexec/barn-hosts-helper`，文档位于 `/usr/share/doc/barn/`。
 
-Linux Package 与旧开发 Archive 格式包含 `BUILD_INFO.json`。正式 GoReleaser
-Archive 的构建身份在二进制中，发布元数据随资产单独提供，不能假定每种 Archive 都包含
+Linux Package 包含 `BUILD_INFO.json`。GoReleaser Archive 的构建身份在二进制中，发布元数据随资产单独提供，不能假定每种 Archive 都包含
 该文件。依赖许可证在构建时生成暂存，详细用户文档保留在本网站。
 
 应用 Release 由 GitHub Actions 构建，提供 `checksums.txt`、发布元数据与 SPDX SBOM
@@ -100,6 +99,5 @@ Catalog 签名。
 
 ## 证据纪律
 
-历史 M0–M4 记录在实现期有价值，但不是产品文档。可长期保留的结论已收敛到[设计](../design/)
-与[当前状态](../status/)。后续源码修改不会自动继承真机证明；每条状态结论都应说明日期、宿主、
-路径与剩余门禁。
+[设计](../design/)说明实现取舍，[当前状态](../status/)记录验证结果。每条状态结论应说明
+日期、宿主、路径与剩余检查；源码变更需要相应验证。

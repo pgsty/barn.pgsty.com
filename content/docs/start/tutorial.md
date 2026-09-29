@@ -14,11 +14,6 @@ This tutorial targets the **Barn 0.9.0 release candidate**. For now,
 apply after 0.9.0 is published and the formula is updated; these links do not
 establish publication. See [Status](../../about/status/#documentation-baseline).
 
-Barn has no compatibility layer for earlier development builds. It uses
-`barn.yml`, `BARN_*`, and fresh `~/.barn` state, with no old command aliases or
-state migration. Stop internal old environments, preserve needed data, and
-create a fresh Barn installation. Renaming an old state directory is unsupported.
-
 After publication, the user-scoped installer supports macOS and Linux on
 arm64 and amd64, verifies the archive checksum, and needs no sudo to install:
 
@@ -280,7 +275,7 @@ barn st
 With only these additions, the plan lists three nodes to create. `up` creates
 them, keeps a running `meta` process, and refreshes guest hosts and control-node
 SSH entries. A healthy result is `4 nodes ready`. The embedded 0.9.0 Catalog
-resolves `u24:stable` to `u24@20260911.0.0`; a manually updated Catalog may
+resolves `u24:stable` to `u24@20260926.0.0`; a manually updated Catalog may
 resolve another version, which appears in `plan` and `status`.
 
 Changing CPU, memory, or other consumed VM fields requires an explicit
@@ -303,10 +298,5 @@ are deleted; cached images, keys, declared persistent disks, and host networking
 remain. See [Uninstall and Clean Up](../uninstall/) for complete disposal, or
 [Daily Operations](../operations/) for restart, logs, explicit changes, and scale-in.
 
-## Fresh installation for 0.9.0
-
-Barn 0.9.0 is the first release under the new name. Stop earlier internal labs,
-preserve needed data, and create a fresh Barn lab. There is no in-place upgrade,
-old command alias, or state migration. Build from source before publication;
-the installation commands at the top apply after release. `barn update`
-refreshes the image Catalog, not the Barn executable.
+`barn update` refreshes the image Catalog. To install the Barn application,
+use the source build or release installation method described at the top.

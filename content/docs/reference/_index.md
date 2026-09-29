@@ -8,10 +8,8 @@ cascade:
   type: docs
 ---
 
-This reference describes the **Barn 0.9.0 release candidate**. Barn uses only
-the new names and fresh Barn state; it has no compatibility or migration layer
-for earlier development builds. Check `barn version` before scripting against
-these contracts. See the [release status](../about/status/#documentation-baseline).
+This reference describes the **Barn 0.9.0 release candidate**. Check
+`barn version` before scripting against these contracts. See the [release status](../about/status/#documentation-baseline).
 
 - [Configuration](configuration/) — discovery, accepted variables, defaults, disks, shares, naming, and drift.
 - [CLI](cli/) — commands, important flags, output modes, and exit codes.

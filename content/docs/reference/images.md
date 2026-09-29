@@ -17,8 +17,8 @@ trusted.
 
 ## Aliases and pull order
 
-Barn 0.9.0 embeds Catalog `2026092001`: 9 families and 37 artifacts, retaining
-all 27 artifacts from the previous Catalog. `el7` is amd64-only; every other
+Barn 0.9.0 embeds Catalog `2026092901`: 9 families and 45 artifacts, retaining
+all 37 artifacts from the previous Catalog. `el7` is amd64-only; every other
 family has amd64 and arm64 artifacts. EL9 includes 9.3, 9.6, 9.7, and 9.8;
 EL10 includes 10.0, 10.1, and 10.2. `u24:stable` (Ubuntu 24.04) on the native
 architecture is the default request.
@@ -31,15 +31,19 @@ public endpoint checks and guest point-release observations are recorded in
 
 | Family | Embedded stable | Distribution series |
 |---|---|---|
-| `d12` | `20260909.2596.1` | Debian 12 |
+| `d12` | `20260923.2610.1` | Debian 12 |
 | `d13` | `20260914.2601.1` | Debian 13 |
-| `u22` | `20260913.0.0` | Ubuntu 22.04 LTS |
-| `u24` | `20260911.0.0` | Ubuntu 24.04 LTS |
-| `u26` | `20260918.0.0` | Ubuntu 26.04 LTS |
+| `u22` | `20260926.0.0` | Ubuntu 22.04 LTS |
+| `u24` | `20260926.0.0` | Ubuntu 24.04 LTS |
+| `u26` | `20260927.0.0` | Ubuntu 26.04 LTS |
 
 Debian retains offline-installed XFS tools and the generated `en_US.UTF-8`
 locale, with `C.UTF-8` still the default. Ubuntu retains Canonical's original
 image bytes; cloud-init configures accounts and networking at startup.
+The Debian 12 upstream build dated September 23 still lacks XFS tools and
+`en_US.UTF-8`, so those adjustments remain necessary. The Ubuntu builds above
+already include both; their amd64 and arm64 guests passed locale and XFS
+data-disk checks on September 29.
 A Catalog refresh changes newly resolved `stable` requests. Existing VMs and
 explicitly pinned versions continue using their original base images.
 

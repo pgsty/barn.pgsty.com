@@ -59,7 +59,7 @@ Ubuntu uses dated, unmodified official images outside this offline matrix.
 Each result remains an unsigned `testing` candidate. To build the complete
 matrix, omit `--target`; repeat it to select several targets. `--list` shows
 the exact releases pinned by this checkout. The matrix currently contains
-Debian `20260909.2596.1`/`20260914.2601.1` and Rocky Linux
+Debian `20260923.2610.1`/`20260914.2601.1` and Rocky Linux
 `8.10.20240528.1`/`9.8.20260525.1`.
 
 Assembly takes **parent directories containing the named bundles**, not the

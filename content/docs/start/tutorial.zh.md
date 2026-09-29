@@ -13,10 +13,6 @@ aliases: [/docs/start/installation/, /docs/start/upgrade/, /docs/start/lab/, /do
 以下发行包和 Homebrew 命令在 0.9.0 发布、Formula 更新之后使用，不能把文档中的链接
 当作已经发布的证明。进度见[当前状态](../../about/status/#documentation-baseline)。
 
-Barn 不兼容旧开发版本：只识别 `barn.yml`、`BARN_*` 与 `~/.barn` 等新名称，
-不读取或迁移旧状态，不提供旧命令别名。内部旧环境应先停机并保留需要的数据，
-然后按新安装重新创建；不要把旧状态目录直接改名后继续使用。
-
 0.9.0 发布后，用户级安装器支持 macOS/Linux 的 arm64/amd64，校验归档摘要，
 安装自身无需 sudo：
 
@@ -249,7 +245,7 @@ barn st
 
 仅增加这三行时，计划应列出三个待创建节点。`up` 会创建它们，保留正在运行的 `meta`
 进程，并刷新客机 hosts 与控制节点 SSH 配置。健康的结果为 `4 nodes ready`。
-0.9.0 内置 Catalog 将 `u24:stable` 解析为 `u24@20260911.0.0`；手动更新 Catalog 后
+0.9.0 内置 Catalog 将 `u24:stable` 解析为 `u24@20260926.0.0`；手动更新 Catalog 后
 可能解析为其他版本，准确版本显示在 `plan` 和 `status` 中。
 
 修改 CPU、内存或其他被读取的 VM 字段，需要显式执行 `barn recreate <node>`；
@@ -270,8 +266,4 @@ barn destroy
 数据盘与宿主网络保留。彻底清理见[卸载与清理环境](../uninstall/)；重启、日志、显式变更与
 缩容见[日常管理](../operations/)。
 
-## 0.9.0 的新安装边界
-
-Barn 0.9.0 是新名称下的首次发行。旧内部环境需要先停机，保留必要数据，然后重新创建
-Barn 实验环境；不提供原位升级、旧命令别名或状态迁移。发行前从源码构建，发行后的安装
-命令见本页开头。`barn update` 只更新镜像 Catalog，不更新 Barn 程序。
+`barn update` 只更新镜像 Catalog。安装 Barn 程序请使用本页开头的源码构建或发行包安装方式。

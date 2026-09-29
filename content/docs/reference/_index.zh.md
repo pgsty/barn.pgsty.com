@@ -8,8 +8,7 @@ cascade:
   type: docs
 ---
 
-本参考描述 **Barn 0.9.0 发布候选**。Barn 只使用新名称与全新的 Barn 状态，
-不提供旧开发版本的兼容或迁移层。编写脚本前先核对 `barn version`，
+本参考描述 **Barn 0.9.0 发布候选**。编写脚本前先核对 `barn version`，
 发布进度见[当前状态](../about/status/#documentation-baseline)。
 
 - [配置](configuration/)：发现顺序、变量、默认值、磁盘、共享、命名与漂移。

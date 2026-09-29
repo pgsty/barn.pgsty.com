@@ -11,11 +11,8 @@ lastmod: 2026-09-29
 ---
 
 > [!NOTE]
-> **Renamed 2026-09-29:** names now follow the unreleased Barn 0.9.0 candidate.
-> The prior source review was on 2026-09-26: the original publication date is retained; the text
-> below reflects the implementation reviewed on this date. See
-> [Status](/docs/about/status/) for released versus candidate behavior and
-> dated acceptance evidence.
+> This article describes the **unreleased Barn 0.9.0 candidate**. See
+> [Status](/docs/about/status/) for current validation and remaining release checks.
 
 A static image repository sounds like a directory of qcow2 files plus a JSON
 index. The difficult part is deciding which facts a maintainer may write by
@@ -40,7 +37,7 @@ The source-controlled `repo.yaml` contains author intent:
 It deliberately does **not** contain generated artifact size, SHA-256, or
 virtual size. A compact entry can say that `d13:stable` points to one exact
 version with amd64 and arm64 variants without pretending to know facts that
-belong to the files. This historical policy excerpt illustrates the format;
+belong to the files. This policy excerpt illustrates the format;
 see [Image Repositories](/docs/start/images/) for a complete working example
 and the reference for current versions:
 
