@@ -4,13 +4,13 @@ THEME_REPLACEMENT ?= github.com/pgsty/oink -> $(abspath ../oink)
 .PHONY: dev build build-local check check-local clean
 
 dev:
-	HUGO_MODULE_REPLACEMENTS='$(THEME_REPLACEMENT)' $(HUGO) server --renderToMemory
+	GOWORK=off HUGO_MODULE_WORKSPACE=off HUGO_MODULE_REPLACEMENTS='$(THEME_REPLACEMENT)' $(HUGO) server --renderToMemory
 
 build:
 	$(HUGO) build --minify --cleanDestinationDir
 
 build-local:
-	HUGO_MODULE_REPLACEMENTS='$(THEME_REPLACEMENT)' $(HUGO) build --minify --cleanDestinationDir
+	GOWORK=off HUGO_MODULE_WORKSPACE=off HUGO_MODULE_REPLACEMENTS='$(THEME_REPLACEMENT)' $(HUGO) build --minify --cleanDestinationDir
 
 check:
 	go mod verify
@@ -18,7 +18,7 @@ check:
 	python3 bin/check_internal_links.py public
 
 check-local:
-	HUGO_MODULE_REPLACEMENTS='$(THEME_REPLACEMENT)' $(HUGO) build --minify --cleanDestinationDir --printPathWarnings --printI18nWarnings --panicOnWarning
+	GOWORK=off HUGO_MODULE_WORKSPACE=off HUGO_MODULE_REPLACEMENTS='$(THEME_REPLACEMENT)' $(HUGO) build --minify --cleanDestinationDir --printPathWarnings --printI18nWarnings --panicOnWarning
 	python3 bin/check_internal_links.py public
 
 clean:

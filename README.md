@@ -19,7 +19,7 @@
 
 This directory contains the bilingual documentation site for Barn. English
 is served at `/`; Simplified Chinese is served at `/zh/`. The site uses Hugo
-Extended and Oink 1.1.0.
+Extended and Oink 1.3.0.
 
 The documentation targets **Barn 0.9.0**. Product pages describe the released
 version in the present tense; stage these updates with the corresponding
@@ -73,7 +73,7 @@ The production target is `https://barn.pgsty.com/` and its build is warning-
 strict. Pages settings and DNS must authorize that domain before publication.
 
 The source-controlled `wrangler.toml` defines the Pages project, output
-directory, `HUGO_VERSION=0.165.0`, and `GO_VERSION=1.27.1` for both Production
+directory, `HUGO_VERSION=0.166.0`, and `GO_VERSION=1.27.1` for both Production
 and Preview. Keep Go aligned with `go.mod` so Pages installs it before Hugo
 resolves modules. Cloudflare's default Hugo can be older than Oink requires;
 `HUGO_SERVER` is not a recognized version selector.

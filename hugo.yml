@@ -13,7 +13,7 @@ capitalizeListTitles: false
 module:
   hugoVersion:
     extended: true
-    min: "0.160.1"
+    min: "0.166.0"
   imports:
     - path: github.com/pgsty/oink
 
@@ -190,6 +190,8 @@ params:
   page_width: normal
   reading_width: normal
   ui:
+    preset: paper
+    preset_menu: [paper, slate, ink, terminal]
     typography: technical
     theme_color: '#a9573b'
     theme_color_dark: '#dca579'
