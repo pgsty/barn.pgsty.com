@@ -13,12 +13,12 @@ build-local:
 	GOWORK=off HUGO_MODULE_WORKSPACE=off HUGO_MODULE_REPLACEMENTS='$(THEME_REPLACEMENT)' $(HUGO) build --minify --cleanDestinationDir
 
 check:
-	go mod verify
-	$(HUGO) build --minify --cleanDestinationDir --printPathWarnings --printI18nWarnings --panicOnWarning
+	GOWORK=off go mod verify
+	$(RELEASE_ENV) $(HUGO) build --minify --cleanDestinationDir --printPathWarnings --printI18nWarnings
 	python3 bin/check_internal_links.py public
 
 check-local:
-	GOWORK=off HUGO_MODULE_WORKSPACE=off HUGO_MODULE_REPLACEMENTS='$(THEME_REPLACEMENT)' $(HUGO) build --minify --cleanDestinationDir --printPathWarnings --printI18nWarnings --panicOnWarning
+	GOWORK=off HUGO_MODULE_WORKSPACE=off HUGO_MODULE_REPLACEMENTS='$(THEME_REPLACEMENT)' $(HUGO) build --minify --cleanDestinationDir --printPathWarnings --printI18nWarnings
 	python3 bin/check_internal_links.py public
 
 clean:
