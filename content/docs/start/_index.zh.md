@@ -8,9 +8,11 @@ cascade:
   type: docs
 ---
 
+这些指南面向 **Barn 0.9.1**。可以安装发行包，或参考[源码构建](source-build/)
+构建 CLI 与 Mac 原生组件。
+
 从[安装](installation/)开始，再选择 [Linux 快速上手](tutorial/)或
-[macOS 虚拟机教程](macos/)。两条路径可以在同一台 Apple Silicon Mac 上使用，
-各自管理独立的机器。
+[macOS 虚拟机教程](macos/)。两种流程可以在同一台 Apple Silicon Mac 上使用。每种流程管理独立的虚拟机。
 
 Linux 环境可以继续阅读[日常管理](operations/)、[存储与访问](storage/)、
 [镜像选择](images/)和[自动化](automation/)。macOS 教程中包含对应的 Mac 操作流程。

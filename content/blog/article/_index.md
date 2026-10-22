@@ -10,5 +10,5 @@ build:
   list: never
 ---
 
-Project articles and long-form technical notes about Barn live in this
-section. For current product behavior, use the [documentation](/docs/).
+This section contains project articles and detailed technical notes about Barn.
+For current product behavior, use the [documentation](/docs/).

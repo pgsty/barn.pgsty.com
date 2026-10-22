@@ -4,8 +4,8 @@ compatibility_date = "2026-09-29"
 
 [vars]
 HUGO_VERSION = "0.168.0"
-GO_VERSION = "1.27.1"
+GO_VERSION = "1.27.3"
 
 [env.preview.vars]
 HUGO_VERSION = "0.168.0"
-GO_VERSION = "1.27.1"
+GO_VERSION = "1.27.3"

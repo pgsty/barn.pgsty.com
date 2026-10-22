@@ -6,7 +6,7 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-This reference covers common options and Linux lab commands in **Barn 0.9.0**.
+This reference covers common options and Linux lab commands in **Barn 0.9.1**.
 For macOS guests, see [Mac commands](../mac/). Check
 `barn version` when using another version.
 
@@ -14,8 +14,7 @@ For macOS guests, see [Mac commands](../mac/). Check
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
 ```
 
-The installed binary is the authoritative reference for its own version. Every
-visible command includes its operational boundary and copyable examples:
+For the options available in your installed version, use command help. Each visible command describes its scope and provides examples:
 
 ```bash
 barn --help
@@ -23,11 +22,11 @@ barn setup --help
 barn image pull --help
 ```
 
-Bare `barn` prints a short welcome with next commands, exits 0, and exposes
-`actions[]` in JSON/YAML. A bare namespace
-such as `barn image` still exits 2 (human help in text mode, a structured usage
-error in JSON/YAML). Explicit `--help` always renders human help and exits 0.
-Use `barn --version` or `barn version` to inspect the build identity.
+Without a command, `barn` prints a welcome and suggested commands, then exits 0. JSON/YAML output includes `actions[]`.
+A namespace without a subcommand, such as `barn image`, exits 2.
+Text mode prints help. JSON/YAML mode returns a structured usage error.
+Explicit `--help` always prints human-readable help and exits 0.
+To inspect the build identity, use `barn --version` or `barn version`.
 
 ## Commands
 
@@ -41,12 +40,12 @@ Use `barn --version` or `barn version` to inspect the build identity.
 | macOS guests | `mac …`; see [Mac Commands](../mac/) |
 | Misc | `version`, `completion` |
 
-No command refreshes the catalog implicitly. `update` fetches the configured
-repository's catalog, verifies it, and activates it; `image sync` is the
-explicit recovery path for an exact URL or file. Ordinary commands use the
-active local catalog. Neither operation updates the Barn executable.
+No command refreshes the image catalog implicitly.
+`update` fetches, verifies, and activates the configured repository's image catalog.
+`image sync` recovers an image catalog from an exact URL or file.
+Ordinary commands use the active local image catalog. Neither operation updates the Barn executable.
 
-Frequently used commands have scoped aliases:
+Frequently used commands have aliases within their command scope:
 
 | Command | Aliases | Command | Aliases |
 |---|---|---|---|
@@ -64,10 +63,9 @@ Inside a namespace, `hosts` and
 `image` maps `list=ls`, `info=in`, `pull=p`, `prune=pr`, `sync=sy`,
 and `import=i`.
 
-Barn manages one deployment in the selected `BARN_HOME` (default
-`~/.barn`), independently of the inventory directory. Commands using applied
-state work from any directory. Configuration selection
-is command-scoped; `-f` is deliberately not a global flag:
+Barn manages one deployment in the selected `BARN_HOME` (default `~/.barn`).
+The inventory directory does not determine deployment identity. Commands that use applied state work from any directory.
+Each command determines its configuration source. `-f` is not a global flag:
 
 | Commands | Desired-state source |
 |---|---|
@@ -77,12 +75,15 @@ is command-scoped; `-f` is deliberately not a global flag:
 | `plan`, `up`, `reload`, `recreate` | explicit `-f`, then discovery, then the applied resolved specification |
 | other lifecycle/access commands | no desired-state inventory; they use applied state |
 
-When neither an inventory nor an applied deployment exists, interactive `up`
-can generate the default inventory. It can also prepare missing host dependencies
-and restore an intact inactive Barn network. This implicit preparation accepts
-the setup plan; sudo may still request credentials. Use `setup --dry-run` to
-review the host plan first. Scripts should run `setup --yes` explicitly; `init`
-is optional when no inventory exists.
+If neither an inventory nor an applied deployment exists, interactive `up` can generate the default inventory.
+It can also prepare missing host dependencies and restore an intact inactive Barn network.
+This automatic preparation proceeds without a separate Barn confirmation, but sudo can still request credentials.
+To review the host plan first, use `setup --dry-run`. Scripts should run `setup --yes` explicitly.
+If no inventory exists, `init` is optional.
+
+If the default subnet is occupied, setup can select another private `/24` for a fresh, unedited default template.
+It backs up an existing template as `barn.yml.before-network-change`.
+Explicit `-f` files, edited templates, and existing deployments retain their subnet.
 
 ## Important flags
 
@@ -93,7 +94,7 @@ is optional when no inventory exists.
 | `-c`, `--cidr` | select the RFC1918 `/24` for generated `init`/`setup` templates or host-network inspection/install |
 | `-f`, `--file` | select an inventory for commands that read desired state |
 | `-r`, `--repo` | select a repository where exposed; overrides `--mirror` and `BARN_REPO`; `validate` gains this flag in Barn 0.9.0 |
-| `--mirror` | use the China official repository for setup, catalog, and image-resolving lifecycle commands |
+| `--mirror` | use the China official repository for setup, image catalog commands, and lifecycle commands that resolve images |
 | `-m`, `--mode` | select `host` or `shared` where the command exposes the macOS network mode |
 | `-d`, `--dry-run` | show a setup/image plan without changing state |
 | `-y`, `--yes` | apply a displayed host/setup/image plan |
@@ -101,15 +102,22 @@ is optional when no inventory exists.
 | `-n`, `--no-wait` | return once QEMU is running, without readiness or guest recovery checks |
 | `--rollback` (`up`, `reload`) | remove the prepare artifacts of nodes that failed to prepare in this run |
 | `--delete-persistent` | during whole destroy, also delete retained data disks; invalid with node selectors |
-| `--purge` | whole-deployment disposal: delete disks, keys, and deployment state; keep images |
+| `--purge` | whole-deployment deletion: delete disks, keys, and deployment state; keep images |
 
 Flags belong to commands; the following table lists the less obvious scopes:
 
 | Command | Local controls |
 |---|---|
 | `init` | `--output/-o` (default `./barn.yml`; `-` prints), `--cidr/-c`, `--force` |
+| `setup [meta\|dual\|trio\|full]` | `--file/-f`, `--cidr/-c`, `--repo/-r`, `--mirror`, `--mode/-m`, `--dry-run/-d`, `--yes/-y`; default template is `meta` |
+| `validate` | `--file/-f`, `--repo/-r`; accepts no nodes |
 | `plan` | `--file/-f`, `--repo/-r`; no `--mirror` or `--dry-run` |
+| `up`, `reload` | `--file/-f`, `--repo/-r`, `--mirror`, `--no-wait/-n`, `--rollback` |
+| `recreate` | `--file/-f`, `--repo/-r`, `--mirror`, `--force`, `--no-wait/-n`; no `--rollback` |
 | `start`, `restart` | `--no-wait/-n`; no `--file` or repository selection |
+| `stop`, `status` | node selectors and common presentation flags only |
+| `destroy` | `--force`, `--delete-persistent`, `--purge`; the last two require whole-deployment scope |
+| `purge`, `doctor`, `version` | no local flags or positional arguments |
 | `provision` | required `--script/-s`; `--sudo` uses guest `sudo -n`; `--parallel/-p` is 1–4 (default 1); `--timeout/-t` is positive, at most 24h (default 1h) |
 | `ssh-config` | `--install/-i` or `--remove` (exclusive); `--name` defaults to `barn`; removal accepts no nodes and requires no deployment |
 | `logs` | `--source/-s serial\|qemu\|events` (default `serial`); `--follow/-f`; events accept no node |
@@ -117,157 +125,173 @@ Flags belong to commands; the following table lists the less obvious scopes:
 | `image import` | `--sha256/-s`; `--name local-*` also requires `--boot/-b bios\|uefi` and `--source-user/-u` |
 | `image prune` | `--dry-run/-d` or `--yes/-y` (exclusive); `--repo/-r` |
 | `image sync` | URL or path, `--repo/-r`, and explicit `--allow-downgrade` |
+| `update` | `--repo/-r`, `--mirror`; no image selector |
+| `image list`, `image reset` | `--repo/-r`; no selector, `--arch`, or `--mirror` |
+| `repo scan/build/verify` | exactly one absolute repository directory; no local flags |
 | `network install` | `--cidr/-c` (default `10.10.10.0/24`), `--mode/-m` (default `host`), `--yes/-y`; macOS-only `--archive/-a`, `--interface-id/-i` |
 | `network status` | optional `--cidr/-c`; no `--file` |
 | `network uninstall`, `hosts install/uninstall` | `--yes/-y` |
 
-`setup --dry-run` and `setup --yes` are mutually exclusive. `--cidr` rebases a
-generated template; it does not rewrite an explicitly selected inventory.
-`validate --repo` is available in Barn 0.9.0 and has no `--mirror`;
-use `--repo https://repo.pigsty.cc/barn` when checking that catalog.
+`setup --dry-run` and `setup --yes` are mutually exclusive. `--cidr` changes the subnet of a
+generated template. It does not rewrite an explicitly selected inventory.
+`validate --repo` is available in Barn 0.9.1 and has no `--mirror`;
+use `--repo https://repo.pigsty.cc/barn` when checking that image catalog.
 
-In Barn 0.9.0, `network` and `hosts` install/uninstall show a plan and
-ask on a terminal (install defaults to yes, uninstall to no); without a terminal
-they only show the plan unless `--yes` is supplied. For a fresh
-macOS network, use `setup`; `network install` directs you there
-before asking for sudo. `--yes` accepts Barn's plan but cannot supply a sudo password.
+In Barn 0.9.1, `network` and `hosts` install/uninstall show a plan.
+On a terminal, they ask for confirmation. Installation defaults to yes; uninstallation defaults to no.
+Without a terminal, they show the plan but do not apply it unless you supply `--yes`.
+For a new macOS network, use `setup`. `network install` directs you to that command before requesting sudo.
+`--yes` accepts Barn's plan but cannot supply a sudo password.
+While nodes are running, `network uninstall` refuses removal.
+Stopping or destroying a deployment does not uninstall the host-wide network.
 
-Rare, selection, or safety-widening controls such as `--mirror`, `--force`,
-`--rollback`, `--remove`, `--allow-downgrade`, `--sudo`,
-`--delete-persistent`, and `--purge` are
-long-only. On commands that read an inventory, `-f` always selects a file;
-`logs -f` retains the conventional `--follow`. `-n` always means `--no-wait`,
-and `-d` means a dry run. These shorthand rules apply to Linux commands;
-`barn mac logs -n` sets the number of log lines.
+The following selection and safety controls have long forms only: `--mirror`, `--force`,
+`--rollback`, `--remove`, `--allow-downgrade`, `--sudo`, `--delete-persistent`, and `--purge`.
+On commands that read an inventory, `-f` selects a file. `logs -f` means `--follow`.
+`-n` means `--no-wait`. `-d` means a dry run.
+These shorthand rules apply to Linux commands. `barn mac logs -n` sets the number of log lines.
 
-With a deployment, `barn purge` performs the same disposal as
-`barn destroy --force --purge`, without confirmation. It accepts no nodes or inventory, removes the
-complete deployment plus persistent disks, keys, state, and the default SSH
-fragment, and keeps images and the host network. With no deployment it succeeds
-without changing the image cache, and can remove provably owned retained disks.
-Missing state never authorizes deletion of residual node artifacts whose identity
-cannot be proven. In Barn 0.9.0, plain whole-deployment `destroy`
-without a deployment also succeeds; `destroy --force --delete-persistent` and
-`destroy --force --purge` without state instead fail with a hint to use `purge`.
+When a deployment exists, `barn purge` performs the same deletion as `barn destroy --force --purge`, without confirmation.
+It accepts no nodes or inventory. It removes the complete deployment, persistent disks, keys, state, and default SSH fragment, while keeping images and the host network.
+When no deployment exists, it succeeds without changing the image cache. It can also remove retained disks whose ownership it can verify.
+If state is missing, Barn does not delete residual node artifacts whose identity it cannot verify.
+In Barn 0.9.1, ordinary whole-deployment `destroy` also succeeds when no deployment exists.
+Without state, `destroy --force --delete-persistent` and `destroy --force --purge` fail and suggest `purge`.
 
 ## Structured failures
 
-The following unified failure contract describes the **Barn 0.9.0**.
+The following failure format applies to **Barn 0.9.1**. Check the process exit code first, then interpret the output for the command you ran.
 
-Ordinary failures print `error: <message>` on stderr, the failing program's last
-stderr lines when an external tool failed, and a `next:` line when there is one
-clear action. SSH child exit failures are silent because the child has its own
-output. If a failing command supplies no richer typed result, structured mode
-writes a generic failure object before returning the exit code:
-`error` (the class below), `message`, and where they apply a stable `reason`,
-`next`, `operation_id`, and `command` (`name`, `argv`, `exit_status`, `signal`, `timed_out`,
-`stderr`) for a failed external program. Existing typed failure results are
-never followed by a second JSON/YAML document. The closed generic `error` classes
-are listed below. `recreate_required` and `nodes_removed` are now `reason` values
-under `error: "conflict"`, and the old `resource_conflict` class is now `resource`.
+For ordinary failures, Barn prints `error: <message>` on stderr.
+If an external program failed, Barn includes its last stderr lines. If one clear action exists, Barn also prints a `next:` line.
+Barn does not add an error message for an SSH child exit failure, because the child provides its own output.
+If a failed command has no command-specific result, structured mode writes a generic failure object before returning the exit code.
+The object contains `error` (the class below) and `message`.
+Where applicable, it also contains a stable `reason`, `next`, `operation_id`, and failed-program details in `command`.
+Those details are `name`, `argv`, `exit_status`, `signal`, `timed_out`, and `stderr`.
+Barn never appends a second JSON/YAML document after a command-specific failure result. The generic `error` classes are listed below.
+`recreate_required` and `nodes_removed` are now `reason` values under `error: "conflict"`.
+The former `resource_conflict` class is now `resource`.
 
-**A nonzero exit does not guarantee that stdout has this generic envelope.**
-`doctor`, `network`, `provision`, lifecycle operations, and remote commands can
-return their own report schemas. SSH child exits are internally classified as
-`remote_exit`, but their public result has fields such as `success`, `exit_code`,
-`stdout`, and `stderr`; its optional `error` is not the generic class contract.
-Always preserve the process exit code and interpret the payload for that command.
+**A nonzero exit does not guarantee this generic failure object on stdout.**
+`doctor`, `network`, `provision`, lifecycle operations, and remote commands can return their own report formats.
+Barn internally classifies SSH child exits as `remote_exit`.
+Their public result instead contains fields such as `success`, `exit_code`, `stdout`, and `stderr`.
+Its optional `error` field does not use the generic error classes.
+Retain the process exit code alongside the parsed result.
 
 ## Lifecycle results
 
-`plan` is read-only and returns success even when its action is `recreate` or
-`blocked-removal`; automation must inspect the action and `create`, `recreate`,
-`start`, `missing`, and `blocked` fields. For catalog images, plans read local
-configuration and catalog data without requiring QEMU or host networking.
-A registered `local-*` image also undergoes cache validation and requires
-`qemu-img`. Plans download no images. They show exact images, total resources, change reasons, and disk effects. The Barn 0.9.0
-also lists each data disk, including the implicit 128 GiB `/data`. `up` checks
-host capabilities and address availability before applying changes. `up` creates missing nodes, starts stopped ones,
-re-checks readiness of running ones, and rewrites the SSH client configuration
-Barn installed from the complete applied deployment. `recreate` performs the
-same full refresh; node destroy removes stale entries, and whole destroy
-removes that configuration. `start` powers on stopped nodes and re-checks
-readiness of running ones; `start` and `restart` also refresh SSH aliases.
-Destructive drift returns a conflict that names the next commands:
-`barn plan`, then `barn recreate <node>` or `barn destroy <node>`. On a
-terminal those commands ask you to type the confirmation word; `--force` is for
-scripts. If VM lifecycle succeeds but the SSH client configuration cannot be
-written, the command reports a warning and remains successful; `barn ssh`
-still works. Structured output carries integration warnings in `warnings[]`.
-The Barn 0.9.0 leaves symlinked or hard-linked `~/.ssh/config` untouched,
-publishes its fragment, and reports the `Include` line to add manually.
+Without node selectors, lifecycle operations address all nodes.
+`ssh`, `exec`, and node logs default to the committed control node.
+If the control node has not been prepared, they select the first committed node.
+Selectors are node names such as `meta`. Inventory IPs, group names, and `vm_alias` values are not selectors.
 
-guest management SSH is the readiness boundary. Optional setup failures are
-reported in `nodes[].warnings`; completed recovery actions, including data resets,
-are in `nodes[].repairs`. A usable guest with these limitations exits 0. Repeat
-`up` to retry unfinished stages without restarting running VMs. Inspect the
-warning fields when automation requires every configured feature.
+`restart` restarts applied nodes without reading an inventory.
+Before stopping selected nodes, `reload` checks the desired inventory. It then runs `up`.
+It can add nodes, but refuses changed definitions or removals.
+`recreate` applies changed node definitions by replacing root and non-persistent data disks. It preserves compatible persistent disks.
+First review the effects with [`barn plan` and the disk policy](../configuration/#data-disks).
 
-A lifecycle batch with isolated node failures can exit 5 even when every selected
-node failed; it reports
-`N of M node(s) failed: <node> (<stage>: <error>); ...`. Common stages include `prepare`,
-`start`, `readiness`, `bootstrap`, `guest-setup`, `stop`, and `status`; `readiness`
-or `bootstrap` failures add
-`run \`barn logs <node>\` for the guest console`. Structured output carries
-`failures[]` with `node`, `stage`, and `error` (and optional `reason` in the
-Barn 0.9.0), plus `rolled_back` when
-`--rollback` removed the prepare artifacts of nodes that never committed. See
-[A node did not become ready](../../start/troubleshooting/#a-node-did-not-become-ready).
+Recreating selected nodes is blocked if unselected nodes still have conflicting configuration changes.
+Barn checks this before stopping nodes or deleting disks and tells you which nodes to select together.
 
-`status` shows node, state, IP, exact image, and CPU/memory. Use `--verbose` for
-SSH ports, architecture, accelerator, and PID. TCG is marked in ordinary text
-as well. One degraded node does not hide its peers; status exits 5 and retains
-per-node errors and `failures[]`. Running means the VM process is running;
-status does not claim to have checked guest readiness.
+When configuration changes require a destructive operation, Barn returns a conflict with the next commands: `barn plan`, then `barn recreate <node>` or `barn destroy <node>`.
+On a terminal, those commands request a confirmation word. Use `--force` when a script must skip that prompt.
 
-Starting commands also refresh Barn hosts and control-node SSH entries in
-running guests. Stopped guests catch up when started. `--no-wait` skips guest
-readiness, guest recovery, and that refresh; a later `up` completes them. Selected recreate
-refuses remaining peer drift before stopping or deleting disks; select the
-required nodes together as directed.
+### Planning
 
-The control guest's Barn-managed SSH entries accept replacement host keys
-without recording them in known_hosts, so recreated lab nodes remain reachable.
-User-added SSH entries are preserved.
+`plan` is read-only and returns success even when its action is `recreate` or `blocked-removal`.
+Automation must inspect the action and the `create`, `recreate`, `start`, `missing`, and `blocked` fields.
+
+For image catalog entries, plans read local configuration and image catalog data without requiring QEMU or host networking.
+For a registered `local-*` image, plans also validate the cache and require `qemu-img`.
+Plans do not download images. They show exact images, total resources, change reasons, and disk effects.
+Barn 0.9.1 also lists each data disk, including the implicit 128 GiB `/data`.
+
+### Starting and SSH configuration
+
+Before applying changes, `up` checks host capabilities and address availability.
+`up` creates missing nodes, starts stopped nodes, and checks running nodes for readiness.
+It rewrites Barn's installed SSH client configuration from the complete applied deployment.
+`recreate` performs the same full refresh. Node destroy removes stale entries; whole-deployment destroy removes the configuration.
+`start` starts stopped nodes and checks running nodes for readiness. `start` and `restart` also refresh SSH aliases.
+
+If the VM operation succeeds but writing SSH client configuration fails, the command reports a warning and remains successful.
+`barn ssh` still works. Structured output reports integration warnings in `warnings[]`.
+
+Barn 0.9.1 does not modify a symlinked or hard-linked `~/.ssh/config`.
+It writes its fragment and shows the `Include` line to add manually.
+
+Starting commands refresh Barn hosts and control-node SSH entries in running guests.
+Stopped guests receive these updates when they start.
+
+The control node's Barn-managed SSH entries accept replacement host keys without recording them in known_hosts.
+This keeps recreated lab nodes reachable. Barn preserves user-added SSH entries.
+
+### Readiness
+
+Barn considers a guest ready when its management SSH connection works.
+It reports optional setup failures in `nodes[].warnings`. It reports completed recovery actions, including data resets, in `nodes[].repairs`.
+A usable guest with these limitations exits 0.
+To retry unfinished stages without restarting running VMs, repeat `up`.
+If automation requires every configured feature, inspect the warning fields.
+
+`--no-wait` skips guest readiness, guest recovery, and guest SSH/hosts updates. A later `up` completes them.
+
+### Node failures
+
+A lifecycle batch can exit 5 for isolated node failures, even when every selected node fails.
+It reports `N of M node(s) failed: <node> (<stage>: <error>); ...`.
+Common stages include `prepare`, `start`, `readiness`, `bootstrap`, `guest-setup`, `stop`, and `status`.
+For `readiness` or `bootstrap` failures, Barn suggests `barn logs <node>` to read the guest console.
+Structured output includes `failures[]` with `node`, `stage`, and `error`, plus optional `reason` in Barn 0.9.1.
+It also includes `rolled_back` when `--rollback` removed preparation artifacts for nodes that never committed.
+See [A node did not become ready](../../start/troubleshooting/#a-node-did-not-become-ready).
+
+### Status
+
+`status` shows node, state, IP, exact image, and CPU/memory.
+For SSH ports, architecture, accelerator, and PID, use `--verbose`. Ordinary text output also identifies TCG.
+If one node is degraded, status still shows its peers. It exits 5 and retains per-node errors and `failures[]`.
+Running means the VM process is running. Status does not check guest readiness.
 
 ## Recovery
 
-`up` and `start` isolate missing host-share failures by node; `up` also
-continues existing stopped peers when a new node fails to prepare. Partial
-results keep exit code 5 and preserve successful nodes. Retry hints retain the
-inventory, repository and applicable flags; a `start` retry remains `start`.
+`up` and `start` limit missing host-share failures to the affected nodes.
+If a new node fails to prepare, `up` still starts independent existing stopped nodes.
+Partial results use exit code 5 and preserve successful nodes.
+Retry suggestions retain the inventory, repository, and applicable flags. A `start` retry remains `start`.
 
-Setup and its lifecycle retry share one `operation_id`. Even before deployment
-state exists, `barn logs --source events --json` can read the bounded phase
-trace after failed setup. Setup traces omit command arguments and authentication
-data; retain the command output for its detailed cause. `setup --dry-run` writes
-no trace. Successful `destroy --delete-persistent` and `purge` summaries describe
-the final deletion/retention result; purge leaves the image cache and host network.
-Owned persistent disks left by a previously removed node no longer block
-destroying the remaining nodes. Ordinary destroy retains those disks; explicit
-persistent deletion or purge is still required to remove them.
+Setup and its lifecycle retry share one `operation_id`.
+After failed setup, `barn logs --source events --json` can read the size-limited phase log even before deployment state exists.
+Setup traces omit command arguments and authentication data. Keep the command output for the detailed cause.
+`setup --dry-run` writes no trace.
 
-On macOS, fresh network setup finishes Homebrew discovery/installation or the
-pinned-archive download before requesting administrator authentication. Homebrew
-can invalidate an earlier sudo credential; the new order avoids that failure
-without widening the privileged operation. Failed downloads do not prompt.
+Successful `destroy --delete-persistent` and `purge` summaries describe the final deletion and retention results.
+Purge preserves the image cache and host network.
+
+Owned persistent disks from a previously removed node do not block destruction of the remaining nodes.
+Ordinary destroy retains those disks. Explicit persistent deletion or purge is required to remove them.
+
+On macOS, new network setup completes Homebrew discovery or installation, or the pinned-archive download, before requesting administrator authentication.
+This order prevents Homebrew from invalidating credentials obtained before installation; the privileged operation remains the same.
+Failed downloads do not trigger an authentication prompt.
 
 ## Interrupted operations
 
-Barn recognizes a recorded QEMU PID reused by an unrelated process as
-a stopped node. An interrupted stop whose VM still runs is reconciled to running;
-other unfinished transitions name the command that can finish them. `destroy`
-settles interrupted transitions itself. A failed first `up` can be retried after
-editing the inventory because its uncommitted artifacts are rolled back from the
-journal.
+If an unrelated process reuses a recorded QEMU PID, Barn identifies the node as stopped.
+If stop was interrupted but the VM still runs, Barn records it as running.
+For other unfinished transitions, Barn identifies the command that can complete them.
+`destroy` resolves interrupted transitions itself.
+After a failed first `up`, you can edit the inventory and retry. Barn rolls back uncommitted artifacts from the journal.
 
 ## Logs and environment
 
-`logs` defaults to the guest serial console; `--source qemu` reads QEMU diagnostics,
-and `--source events` reads the deployment-wide bounded event log. With `--follow`,
-text output streams bytes and JSON emits NDJSON records (YAML emits a document
-stream). The Barn 0.9.0 renders ordinary event/QEMU log reads as readable
-records, showing a QEMU argv only with `--verbose`.
+`logs` reads the guest serial console by default.
+`--source qemu` reads QEMU diagnostics. `--source events` reads the deployment-wide bounded event log.
+With `--follow`, text output streams bytes, JSON emits NDJSON records, and YAML emits a document stream.
+Barn 0.9.1 shows ordinary event/QEMU log reads as readable records. It shows QEMU argv only with `--verbose`.
 
 | Environment variable | Purpose |
 |---|---|
@@ -280,28 +304,30 @@ records, showing a QEMU argv only with `--verbose`.
 
 ## SSH passthrough and completion
 
-`barn ssh [node] [--] [command ...]` opens a session or runs an optional
-command. `barn exec [node] [--] <command ...>` requires a command and passes
-through its exit status. Presentation flags before `--` belong to Barn;
-`ssh` arguments after `--` are joined with spaces and interpreted by the remote
-shell, like plain SSH. `exec` preserves argument boundaries; explicitly use
-`sh -c` when you need shell expansion or pipelines. A single command string
-retains the shell shorthand. Before `--`, only zero or one known node is accepted.
-For convenience, omitting `--` uses a known first argument as the node, or
-runs all arguments as a command on the default node with a warning.
-In Barn 0.9.0, a first argument containing a digit or `-` is checked
-for a near-miss node name: at most one edit for words of four characters or fewer,
-or two edits for longer words. Such a typo is refused; ordinary commands such as
-`ls`, `df`, and `wc` still run. Use an explicit `--` in scripts.
+`barn ssh [node] [--] [command ...]` opens a session or runs an optional command.
+`barn exec [node] [--] <command ...>` requires a command and returns its exit status.
+Presentation flags before `--` belong to Barn.
+Barn joins `ssh` arguments after `--` with spaces. The remote shell interprets them as it does for plain SSH.
+`exec` preserves argument boundaries. For shell expansion or pipelines, explicitly use `sh -c`.
+A single command string retains shell shorthand behavior.
 
-Load `barn completion bash|zsh|fish|powershell` for command and scoped-flag
-completion. It also provides command aliases, templates, image aliases, closed
-flag choices, and best-effort node names from the desired or applied
-specification. In Barn 0.9.0, `-f` completion filters for YAML files.
+Before `--`, Barn accepts no node or one known node.
+If you omit `--`, a known first argument selects the node.
+Otherwise, Barn runs all arguments as a command on the default node and reports a warning.
+
+In Barn 0.9.1, Barn checks a first argument containing a digit or `-` for a possible node-name typo.
+For words of four characters or fewer, the limit is one edit; for longer words, it is two edits.
+Barn refuses such typos. Ordinary commands such as `ls`, `df`, and `wc` still run.
+In scripts, use an explicit `--`.
+
+Load `barn completion bash|zsh|fish|powershell` to complete commands and their flags.
+It also completes command aliases, templates, image aliases, and enumerated flag values.
+It attempts to read node names from the desired or applied specification.
+In Barn 0.9.1, `-f` completion lists only YAML files.
 
 ## Exit codes
 
-This table gives the **Barn 0.9.0** exit-code contract.
+This table lists **Barn 0.9.1** exit codes.
 Missing inventory and unknown images are usage errors (2); setup and network
 failures use runtime (1) or capability (3), according to their cause.
 
@@ -317,12 +343,11 @@ failures use runtime (1) or capability (3), according to their cause.
 | 7 | `integrity` | a verified digest, signature, identity, or ownership did not match |
 | 130 | `cancelled` | interrupted (SIGINT/SIGTERM) or confirmation declined |
 
-In Barn 0.9.0, a modifying command that finds another Barn command
-holding the deployment waits up to 10 minutes and names it; timeout is exit 4
-with `reason: "deployment_busy"`. `status`, `ssh`, `exec`, `ssh-config`, and
-`hosts` do not wait. `status` reports the concurrent operation in `note` while
-showing recorded state; this is not a guarantee of a completed deployment.
+In Barn 0.9.1, a modifying command waits up to 10 minutes if another Barn command holds the deployment lock.
+It identifies the command holding the lock. A timeout exits 4 with `reason: "deployment_busy"`.
+`status`, `ssh`, `exec`, `ssh-config`, and `hosts` do not wait.
+`status` shows recorded state and reports the concurrent operation in `note`. This does not mean that the deployment operation has completed.
 
-`ssh` and `exec` pass through the SSH child exit code unchanged, including
-255. That value may indicate an SSH connection failure or a remote command
-returning 255; text, JSON, and process exit status agree.
+`ssh` and `exec` return the SSH child exit code unchanged, including 255.
+That value can indicate an SSH connection failure or a remote command returning 255.
+Text output, JSON output, and process exit status agree.

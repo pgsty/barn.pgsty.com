@@ -1,14 +1,15 @@
 ---
 title: 参考
 linkTitle: 参考
-description: Barn 0.9.0 的配置字段、命令参数、输出格式与镜像仓库说明。
+description: Barn 0.9.1 的配置字段、命令参数、输出格式与镜像仓库说明。
 weight: 20
 icon: fa-solid fa-book-open
 cascade:
   type: docs
 ---
 
-在这里查找 **Barn 0.9.0** 的字段、参数和命令结果。需要按步骤操作时，先看[使用指南](../start/)。
+在这里查找 **Barn 0.9.1** 的字段、参数和命令结果。
+需要操作步骤时，先看[使用指南](../start/)。
 
 | 参考 | 内容 |
 |---|---|
@@ -19,4 +20,8 @@ cascade:
 | [镜像流水线](image-pipeline/) | 供贡献者使用的 Linux 镜像构建与检查工具 |
 
 使用其他版本时，请核对 `barn version` 与 `barn <command> --help`。
-Barn 对外提供命令行接口，Go `internal/` 下的包属于实现细节。
+Barn 对外支持的接口是命令行。Go `internal/` 下的包属于实现细节。
+
+镜像表描述该版本内置的镜像目录。`barn update` 可以激活更新的仓库元数据，无需更新可执行文件。
+流水线说明面向使用源码工具的贡献者。
+构建与发布的要求见[发布工程](../about/engineering/)。

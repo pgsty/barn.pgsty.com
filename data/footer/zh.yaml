@@ -23,7 +23,7 @@ columns:
       - { label: 设计文章, url: "blog/design/" }
       - { label: GitHub, url: "https://github.com/pgsty/barn", external: true }
       - { label: 参与贡献, url: "https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md", external: true }
-      - { label: 安全政策, url: "https://github.com/pgsty/barn/blob/main/SECURITY.md", external: true }
+      - { label: 安全与信任, url: "docs/about/security/" }
   - title: 开发生态
     links:
       - { label: Pigsty, url: "https://pigsty.cc/", external: true }

@@ -23,7 +23,7 @@ columns:
       - { label: Design Articles, url: "blog/design/" }
       - { label: GitHub, url: "https://github.com/pgsty/barn", external: true }
       - { label: Contributing, url: "https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md", external: true }
-      - { label: Security, url: "https://github.com/pgsty/barn/blob/main/SECURITY.md", external: true }
+      - { label: Security and Trust, url: "docs/about/security/" }
   - title: Ecosystem
     links:
       - { label: Pigsty, url: "https://pigsty.io/", external: true }

@@ -6,23 +6,26 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-This reference covers **Barn 0.9.0**. Check
+This reference covers **Barn 0.9.1**. Check
 `barn version` when using another version.
 
 ## Discovery
 
-Configuration lookup order is explicit `-f`, then `barn.yml`,
-`barn.yaml`, `pigsty.yml`, and `pigsty.yaml` in the current directory. Every
-name uses the same Pigsty-compatible YAML inventory format.
+Barn first checks an explicit `-f` path. Otherwise, it searches the current directory for `barn.yml`,
+`barn.yaml`, `pigsty.yml`, and `pigsty.yaml`, in that order. All names use the same Pigsty-compatible YAML inventory format.
 
-For `plan`, `up`, `reload`, and `recreate`, absence of a file falls back to
-the applied spec when a deployment exists. `validate` has no fallback. A
-configuration must be a regular non-symlink file no larger than 4 MiB. The first
-existing discovery candidate wins; if it is invalid, Barn reports the error
-instead of trying the next filename. Renaming a file or moving directories does
-not create another deployment; applied state lives in `BARN_HOME`.
+If no inventory file exists, `plan`, `up`, `reload`, and `recreate` use the applied specification when a deployment exists.
+`validate` does not use applied state. The configuration must be a regular file, not a symlink, and no larger than 4 MiB.
+Barn uses the first existing candidate. If that file is invalid, Barn reports the error without trying the next filename.
+Renaming the file or changing directories does not create another deployment. Barn stores applied state in `BARN_HOME`.
 
 ## A complete inventory
+
+`barn init [meta|dual|trio|full]` generates 1, 2, 3, or 4 nodes respectively.
+`meta` uses `.10`. Larger templates add `node-1` at `.11`, `node-2` at `.12`, and `node-3` at `.13`.
+These templates define node topology, not Pigsty service roles.
+`--cidr` changes the generated `/24` and preserves the final address octets.
+To inspect a template without creating a file, use `barn init full -o -`.
 
 ```yaml
 all:
@@ -43,8 +46,7 @@ all:
             - { path: /data, size: 128, fs: auto, persistent: true }
 ```
 
-This creates two managed definitions; the control node is `meta`. Save it as
-`barn.yml`, then inspect it without starting VMs:
+This inventory defines two managed nodes, with `meta` as the control node. Save it as `barn.yml`, then inspect it without starting VMs:
 
 ```bash
 barn validate -f barn.yml
@@ -53,43 +55,48 @@ barn plan -f barn.yml
 ```
 
 The JSON validation result includes `valid`, `source`, `spec_hash`, and `resolved`.
-In Barn 0.9.0, `validate` also resolves catalog image references and
-accepts `--repo`; an unreadable catalog adds a warning instead of a false success
-claim about images, and `local-*` image-byte checks remain the responsibility of
-`up`. Validation does not prove host resources, share access, networking, image
-bytes, or guest readiness. It never starts VMs or downloads images.
+In Barn 0.9.1, `validate` also resolves image catalog references and accepts `--repo`.
+If the image catalog cannot be read, the result includes a warning and the image references remain unchecked.
+`up` remains responsible for checking `local-*` image bytes.
+Validation does not verify host resources, share access, networking, image bytes, or guest readiness.
+It does not start VMs or download images.
 
 ## What Barn reads
 
-Barn reads host IPs, `nodename`, `admin_ip`, `pg_cluster`, `pg_seq`,
+The document must have a top-level `all:` group. Barn reads its `hosts` and nested `children` mappings.
+It does not evaluate Ansible inventory plugins or Jinja expressions, or load `group_vars` or `host_vars` files.
+An address in several groups defines one node. Barn combines its inherited values.
+
+Barn reads node IPs, `nodename`, `admin_ip`, `pg_cluster`, `pg_seq`,
 `node_admin_username`, `node_admin_uid`, and the documented `vm_*` variables.
-`admin_ip` is read from `all.vars`; it selects the control node, or the first
-managed host is used. All nodes must resolve the same login username. For the
-default `dba` user, an explicit `node_admin_uid` must be 88. For a custom user,
-`node_admin_uid` is validated as an integer but does not set the guest UID;
-Barn does not expose a general UID customization contract.
 
-Everything else is opaque and cannot create drift. This means unconsumed
-fields such as `pg_role`, `pg_version`, `repo_*`, and `node_packages`, not all
-possible `pg_*` or `node_*` names.
+**Control node.** Barn reads `admin_ip` from `all.vars`. If it is absent or matches no managed node, Barn selects the first managed node.
+Traversal follows YAML order, reading each group's nodes before its child groups.
+Set `admin_ip` explicitly to keep the selection stable.
 
-Inside this namespace validation is strict: unknown `vm_*` names, wrong
-types, Jinja expressions, invalid addresses, and conflicting sibling-group
-values are errors. Inheritance is `all.vars` → deeper `children.<group>.vars` →
-host variables. Host values replace an entire list such as `vm_disks`; lists are
-not appended. Different values inherited from groups at the same depth must be
-resolved with a host-level override. YAML anchors and merge keys are supported;
-explicit keys win, and the first mapping in a merge sequence wins. Duplicate
-mapping keys and multiple YAML documents are errors.
+**Login account.** All nodes must use the same login username, matching `[a-z_][a-z0-9_-]{0,31}`.
+For the default `dba` user, an explicit `node_admin_uid` must be 88.
+For a custom user, Barn checks that `node_admin_uid` is an integer but does not use it to set the guest UID.
+Barn does not support general guest UID customization.
 
-Host keys must be IPv4 addresses even for `vm_skip: true` entries. Skipped hosts
-do not consume the 20-node budget or determine the managed subnet, but the
-inventory must still contain at least one managed host. Skipping an already
-applied node marks it as removed; it does not destroy that VM.
+**Ignored fields.** Fields that Barn does not read, such as `pg_role`, `pg_version`, `repo_*`, and `node_packages`, cannot cause configuration drift.
+Some `pg_*` and `node_*` fields are read, as listed above.
 
-Barn 0.9.0 improves errors with the offending rule, value, and line
-where available, and suggests a nearby `vm_*` spelling. Those diagnostics do
-not add new inventory variables.
+**Inheritance and validation.** Barn strictly validates the fields it reads. Unknown `vm_*` names, wrong types, Jinja expressions, invalid addresses, and conflicting sibling-group values cause errors.
+Inheritance follows `all.vars` → deeper `children.<group>.vars` → node variables.
+Node values replace whole lists such as `vm_disks`; Barn does not append lists.
+If groups at the same depth provide different values, resolve the conflict with an override on the node.
+
+Barn supports YAML anchors and merge keys: explicit keys take priority, followed by the first mapping in a merge sequence.
+Duplicate mapping keys and multiple YAML documents cause errors.
+
+**Skipped nodes.** Node keys must be IPv4 addresses, including `vm_skip: true` entries.
+Skipped nodes do not count toward the 20-node limit or determine the managed subnet.
+The inventory must still contain at least one managed node.
+Skipping an applied node marks it as removed from the inventory. It does not destroy the VM.
+
+In Barn 0.9.1, errors identify the invalid rule, value, and line where available.
+They also suggest a similar `vm_*` spelling.
 
 ## VM variables
 
@@ -106,36 +113,41 @@ not add new inventory variables.
 | `vm_alias` | `[]` | guest `/etc/hosts`, SSH-config, and optional host aliases |
 | `vm_shares` | `[]` | QEMU 9p host-directory shares |
 
-An empty host entry is a complete VM. A deployment contains 1–20 managed
-hosts; `vm_cpu` accepts 1–256 and memory must be at least 512 MiB.
-Bare integer memory is MiB; bare integer disk sizes are GiB. Explicit size
-strings accept positive integers plus `B`, `KiB`, `MiB`, `GiB`, `TiB`, `KB`,
-`MB`, `GB`, or `TB` (case-sensitive). `8GiB` is valid; `8G`, `1.5GiB`, and the
-quoted unitless string `"8192"` are not. Root/data disk sizes must be positive;
-`up` also checks the root disk against the selected base image's virtual size.
+An empty node entry defines a complete VM. A deployment contains 1–20 managed nodes.
+`vm_cpu` accepts 1–256. Memory must be at least 512 MiB.
+Bare integer memory values use MiB; bare integer disk sizes use GiB.
+Explicit size strings accept positive integers followed by `B`, `KiB`, `MiB`, `GiB`, `TiB`, `KB`, `MB`, `GB`, or `TB`.
+Units are case-sensitive: `8GiB` is valid, while `8G`, `1.5GiB`, and the quoted unitless string `"8192"` are invalid.
+Root and data disk sizes must be positive.
 
-Omitting `vm_image` selects Ubuntu 24.04. To use Debian 13, set
-`vm_image: d13` under `all.vars`. Inspect `barn plan` before applying
-changes to an existing Barn inventory.
+`up` also checks that the root disk is at least as large as the selected base image's virtual size.
 
-`vm_version` keeps short version intent separate from the image family:
+If you omit `vm_image`, Barn selects Ubuntu 24.04.
+To use Debian 13, set `vm_image: d13` under `all.vars`.
+This default comes from the binary's embedded image catalog.
+Changing a custom repository's default does not change an inventory that omits `vm_image`.
+Before applying changes to an existing inventory, inspect `barn plan`.
+
+In 0.9.1, inventory parsing converts built-in aliases through the embedded image catalog. For example, `ubuntu` becomes `u24`.
+A custom repository cannot reliably redirect these aliases in an inventory, even if `image info` resolves them differently.
+In `vm_image`, use the custom image catalog's canonical family name.
+Do not reassign a built-in alias to another family.
+
+Use `vm_version` to specify a version prefix separately from the image family:
 
 ```yaml
 vm_image: el9
 vm_version: "9.7"
 ```
 
-An exact catalog version wins first. Otherwise Barn matches only on a dot
-component boundary and selects the numerically newest match: `9.7` resolves to
-the newest `9.7.*` build, while `9` resolves to the newest 9.x release. Numeric
-components are compared as integers, so 9.10 sorts after 9.9. Do not combine
-`vm_version` with a `vm_image` that already contains `:channel` or `@version`.
+If the requested version exists exactly in the image catalog, Barn selects it. Otherwise, it matches the prefix at dot-component boundaries and selects the numerically newest match.
+`9.7` selects the newest `9.7.*` build. `9` selects the newest 9.x release.
+Barn compares numeric components as integers, so 9.10 sorts after 9.9.
+Do not combine `vm_version` with a `vm_image` that already contains `:channel` or `@version`.
 
-`vm_arch` is stricter than ordinary per-host VM fields: when present it must
-resolve to one value on every managed host, so define it once in `all.vars`.
-Changing it is a deployment-envelope change and requires whole-deployment
-recreation. Linux setup installs only the native emulator; a foreign
-architecture also needs its matching `qemu-system-*` binary and firmware.
+If present, `vm_arch` must resolve to the same value on every managed node. Define it once in `all.vars`.
+Changing it changes the deployment configuration and requires recreation of the whole deployment.
+Linux setup installs only the native emulator. A foreign architecture also needs its matching `qemu-system-*` binary and firmware.
 
 ## Data disks
 
@@ -147,38 +159,32 @@ vm_disks:
     persistent: false
 ```
 
-`path` is the disk identity and mount point. `fs` is `auto` (the default), `xfs`,
-or `ext4`. A blank `auto` disk is formatted XFS when the guest has `mkfs.xfs`
-and ext4 otherwise, as determined by the tools in the image. Explicit `xfs` and
-`ext4` never fall back. Healthy existing filesystems are reused.
-`persistent: true` keeps the disk across an ordinary destroy; `vm_disks: []`
-means no extra disk. `size` defaults to 128 GiB for each entry; integer sizes
-are GiB and explicit size strings are accepted.
+`path` defines the disk identity and mount point. `fs` accepts `auto` (the default), `xfs`, or `ext4`.
+For a blank `auto` disk, Barn uses XFS if the guest has `mkfs.xfs`; otherwise, it uses ext4.
+Explicit `xfs` and `ext4` settings never fall back to another filesystem. Barn reuses healthy existing filesystems.
+`persistent: true` keeps the disk across an ordinary destroy. `vm_disks: []` disables extra disks.
+`size` defaults to 128 GiB for each entry. Integer sizes use GiB; explicit size strings are also accepted.
 
-Use clean absolute mount paths such as `/data` or `/data/pg`. The derived disk
-identity trims leading/trailing `/` and replaces inner `/` separators with `-` and must match `[a-z][a-z0-9-]{0,31}`;
-identities and mount paths must be unique within the node. `/`, system paths
-such as `/etc`, `/usr`, `/root`, and `/var/lib/barn`, and their overlapping
-parents/children are refused. Changing a persistent disk's identity or declaration
-can require explicit migration; persistent does not mean every new definition
-can automatically reuse the old disk.
+Use normalized absolute mount paths such as `/data` or `/data/pg`.
+Barn derives the disk identity by trimming leading and trailing `/` and replacing inner `/` separators with `-`.
+The identity must match `[a-z][a-z0-9-]{0,31}`. Identities and mount paths must be unique within the node.
+Barn refuses `/`, system paths such as `/etc`, `/usr`, `/root`, and `/var/lib/barn`, and overlapping parents or children.
+Changing a persistent disk's identity or declaration can require explicit migration.
+Persistence does not guarantee that a new definition can reuse the old disk.
 
-**Data disks are disposable test storage.** `up` resets unrecognized or confirmed
-damaged filesystems to the configured type and reports that old data was
-discarded. This includes persistent disks: persistence controls destroy/recreate,
-not retention of corrupt contents. Probe errors, missing devices, busy mounts,
-and backend I/O failures do not authorize formatting. Root disks and host
-shares are outside this recovery path.
+**Data disks are disposable test storage.** `up` resets unrecognized or confirmed damaged filesystems to the configured type.
+It reports the data loss, including when the affected disk is persistent.
+Persistence controls disk retention during destroy and recreate, not retention of corrupt contents.
+Probe errors, missing devices, busy mounts, and backend I/O failures do not trigger formatting.
+This recovery does not apply to root disks or host shares.
 
 ## Shares
 
-**Linux guests on macOS:** `vm_shares` uses QEMU 9p and is not supported on
-macOS hosts; a node configured with it cannot start. `validate` and `plan`
-warn about this. Use SSH file transfer for these guests. The independent
-`barn mac --share` path supports macOS guests through VirtioFS.
-Changing an existing node's shares requires `recreate`, which replaces the root
-disk. Preserve needed data before considering that operation. Barn does not
-fall back to unchecked host paths.
+**Linux guests on macOS:** `vm_shares` uses QEMU 9p, which Barn does not support on macOS hosts.
+A node configured with it cannot start. `validate` and `plan` report a warning.
+Use SSH file transfer for these guests. The independent `barn mac --share` option uses VirtioFS for macOS guests.
+Changing an existing node's shares requires `recreate`, which replaces the root disk.
+Preserve required data before that operation. Barn does not fall back to unchecked host paths.
 
 ```yaml
 vm_shares:
@@ -187,47 +193,44 @@ vm_shares:
     readonly: true
 ```
 
-`readonly` defaults to `true`; each node accepts at most eight shares. Host and
-guest paths must be clean absolute paths; `~` and relative paths are not expanded.
-Host directories must already exist, be caller-owned, have no symlink path
-components, and not overlap `BARN_HOME`. On Linux, prefer the real path (`realpath /path/to/source`). The
-Barn 0.9.0 includes that replacement path in a symlink diagnostic.
+`readonly` defaults to `true`. Each node accepts at most eight shares.
+Host and guest paths must be normalized absolute paths. Barn does not expand `~` or relative paths.
+Guest targets accept only letters, digits, `.`, `_`, `-`, and `/`. They do not accept spaces.
+Host directories must exist and belong to the caller. No path component can be a symlink.
+Host directories must not overlap `BARN_HOME`. On Linux, use the real path (`realpath /path/to/source`).
+Barn 0.9.1 includes the replacement path in a symlink diagnostic.
 
-Within one node, host sources and guest targets must not overlap. Across nodes,
-overlapping host sources are allowed only when all are read-only. guest targets
-must not overlap data-disk mounts, reserved system paths, or the login user's
-`.ssh` directory. Shares are for trusted development files, not PostgreSQL data. If a requested writable share
-cannot support guest writes, Barn tries read-only access and reports the
-limitation. Correct permissions and repeat `up` to retry; Barn does not
-recursively change the ownership of host files.
+Within one node, host sources must not overlap each other, and guest targets must not overlap each other.
+Across nodes, overlapping host sources are allowed only when all shares are read-only.
+Guest targets must not overlap data-disk mounts, reserved system paths, or the login user's `.ssh` directory.
+Use shares for trusted development files, not PostgreSQL data.
+If a requested writable share cannot support guest writes, Barn tries read-only access and reports the limitation.
+Correct the permissions and repeat `up` to retry. Barn does not recursively change host file ownership.
 
-A missing source fails only its node during
-`up` or `start`. Other selected nodes continue. Restore the original directory or
-its host mount and retry that node; Barn never creates an empty replacement.
-Restart, reload and recreate validate sources before stopping existing nodes.
+During `up` or `start`, a missing source fails only its node. Other selected nodes continue.
+Restore the original directory or its host mount, then retry that node. Barn never creates an empty replacement directory.
+Restart, reload, and recreate validate sources before stopping existing nodes.
 
 ## Names and addresses
 
-Node name order: `nodename`, then `<pg_cluster>-<pg_seq>`, then
-`node-<last-octet>`. Names must be unique, 1–63 lowercase letters/digits/hyphens,
-and may not begin or end with `-`. An explicit non-empty `nodename` takes
-precedence, so unrelated `pg_cluster` or `pg_seq` values need not derive a name.
-`vm_alias` is a list of lowercase DNS-style names; aliases must not duplicate a
-node name or any other alias in the deployment.
+Barn selects the node name from `nodename`, then `<pg_cluster>-<pg_seq>`, then `node-<last-octet>`.
+Names must be unique and contain 1–63 lowercase letters, digits, or hyphens. They must not begin or end with `-`.
+An explicit non-empty `nodename` takes priority. In that case, Barn need not derive a name from `pg_cluster` or `pg_seq`.
+`vm_alias` accepts lowercase DNS-style names. Each alias must differ from every node name and every other alias in the deployment.
 
-All managed hosts must be in one RFC1918 `/24`: `.1` is the host, `.2`–`.8`
+All managed nodes must be in one RFC1918 `/24`: `.1` is the host, `.2`–`.8`
 are reserved, and nodes use `.9`–`.254`.
 
-Inside the guest the fixed-IP interface is the one carrying the inventory
-address (`ip -br addr`); its name is not a Barn contract.
+Inside the guest, the fixed-IP interface carries the inventory address (`ip -br addr`).
+Barn does not guarantee the interface name.
 
 ## Drift
 
-Barn hashes each resolved node. Added hosts are created by `up`; selected
-existing stopped nodes are started; running peers keep their processes while unfinished guest setup is retried. Changed VM
-definitions require per-node recreate; removed hosts are reported but never
-destroyed. deployment architecture, user, or subnet changes require whole-deployment
-recreation. Image selectors are resolved to exact image identities by `plan`/`up`;
-review the plan after a catalog update, even if the inventory text is unchanged.
-Changing a field used to derive a node name appears as a missing
-old node plus a new node, so prefer stable explicit `nodename` values.
+Barn hashes each resolved node. `up` creates added nodes and starts selected stopped nodes.
+Running nodes keep their processes while Barn retries unfinished guest setup.
+Changed VM definitions require recreation of the affected nodes. Barn reports removed nodes but never destroys them automatically.
+Changes to deployment architecture, user, or subnet require recreation of the whole deployment.
+`plan`/`up` resolve image selectors to exact image identities.
+After an image catalog update, review the plan even if the inventory text has not changed.
+Changing a field that determines a node name produces a missing old node and a new node.
+Use stable, explicit `nodename` values.

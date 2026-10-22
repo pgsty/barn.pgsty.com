@@ -12,5 +12,7 @@ cascade:
   theme_color_dark: '#dca579'
 ---
 
-Read [what is new in Barn 0.9.0](release/0.9.0/), or explore the
-[design decisions](design/) behind its configuration, networking, and lifecycle.
+Read [what is new in Barn 0.9.0](release/0.9.0/), or explore the [design decisions](design/) behind its configuration, networking, and lifecycle.
+
+The [release history](release/) preserves earlier versions and development
+snapshots, with their original changes and dated validation results.

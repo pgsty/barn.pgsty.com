@@ -8,9 +8,12 @@ cascade:
   type: docs
 ---
 
+These guides cover **Barn 0.9.1**. Install a release package or follow
+[Build from Source](source-build/) to build the CLI and native Mac component.
+
 Start with [installation](installation/), then follow either the
 [Linux quick start](tutorial/) or the [macOS VM guide](macos/).
-You can use both on the same Apple Silicon Mac; they manage separate machines.
+You can use both workflows on the same Apple Silicon Mac. Each workflow manages separate VMs.
 
 For Linux labs, continue with [daily operations](operations/),
 [storage and access](storage/), [image selection](images/), and

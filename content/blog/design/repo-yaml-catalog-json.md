@@ -10,21 +10,15 @@ icon: fa-solid fa-box-archive
 lastmod: 2026-09-29
 ---
 
-This article describes Barn 0.9.0. The VM lifecycle and network design here
-apply to Linux guests; [Mac machines](/docs/start/macos/) are managed independently.
+This article explains the Linux image repository in Barn 0.9.0. [Mac machines](/docs/start/macos/) use a separate image workflow.
 
-A static image repository sounds like a directory of qcow2 files plus a JSON
-index. The difficult part is deciding which facts a maintainer may write by
-hand and which facts must be derived from the bytes being published.
+A static image repository contains qcow2 files and a JSON index, but not all of its metadata should be maintained by hand. Manually copied checksums and sizes can contain errors, while policy buried in generated JSON makes channel changes and deprecations harder to review.
 
-If checksums and sizes live in the hand-authored source, they are easy to copy
-incorrectly. If policy exists only in generated JSON, reviewing a channel
-change or deprecation requires reading machine output. Barn keeps the two
-jobs separate.
+Barn therefore separates maintainer-defined policy from facts calculated from the published files.
 
 ## `repo.yaml`: what the maintainer means
 
-The source-controlled `repo.yaml` contains author intent:
+The source-controlled `repo.yaml` defines image policy:
 
 - repository revision and defaults;
 - image families and aliases;
@@ -33,12 +27,9 @@ The source-controlled `repo.yaml` contains author intent:
 - boot mode and support status;
 - immutable upstream locations and provenance notes.
 
-It deliberately does **not** contain generated artifact size, SHA-256, or
-virtual size. A compact entry can say that `d13:stable` points to one exact
-version with amd64 and arm64 variants without pretending to know facts that
-belong to the files. This policy excerpt illustrates the format;
-see [Image Repositories](/docs/start/images/) for a complete working example
-and the reference for current versions:
+The file does **not** contain generated artifact size, SHA-256, or virtual size. An entry can map `d13:stable` to an exact version with amd64 and arm64 variants.
+Tools calculate the file metadata separately. This policy excerpt shows the format.
+See [Image Repositories](/docs/start/images/) for a complete example and the reference for current versions:
 
 ```yaml
 defaults: { image: d13, channel: stable, arch: native, boot: uefi }
@@ -54,8 +45,7 @@ images:
           arm64: {}
 ```
 
-This is the right layer for review: a pull request can show that a channel
-moved, a version was deprecated, or a provenance statement changed.
+A pull request can show channel changes, version deprecations, and changes to provenance statements directly in the policy file.
 
 > [!NOTE]
 > Repository syntax and client behavior are
@@ -64,17 +54,11 @@ moved, a version was deprecated, or a provenance statement changed.
 
 ## `catalog.json`: what the repository can prove
 
-`catalog.json` materializes policy against the local repository. For every
-variant it records the exact filename, byte count, SHA-256, qcow2 virtual size,
-boot contract, source user, and immutable upstream provenance.
+`catalog.json` records the local repository files that match the policy. Each variant includes its exact filename, byte count, SHA-256, qcow2 virtual size, boot contract, source user, and immutable upstream provenance.
 
-Filename, byte count, digest, and virtual size are materialized and checked
-against the artifact. Boot mode, source user, status, and provenance are
-validated policy copied from `repo.yaml`; inspection does not independently
-prove those declarations. Build forces qcow2 parsing, rejects backing files,
-external data,
-encryption, and unknown incompatible features, and runs structural checks
-before atomically replacing the catalog.
+The build derives filename, byte count, digest, and virtual size from the artifact and checks these values.
+It copies validated boot mode, source user, status, and provenance from `repo.yaml`. File inspection alone does not prove these policy declarations.
+The build parses qcow2 and rejects backing files, external data, encryption, and unknown incompatible features. It completes structural checks before atomically replacing the catalog.
 
 The artifact identity is the tuple `(image, exact version, architecture)`, not
 the channel that selected it. Files keep readable immutable names:
@@ -83,10 +67,7 @@ the channel that selected it. Files keep readable immutable names:
 images/d13-20260810.2566.0-arm64.qcow2
 ```
 
-Readable names are an operational feature: an administrator can inspect,
-mirror, or recover a repository with ordinary filesystem tools. Integrity
-still comes from generated metadata and verification, not from trusting the
-name.
+Readable filenames let administrators inspect, mirror, and recover a repository with standard filesystem tools. Generated metadata and verification establish integrity; the filename alone does not.
 
 ## Three operations, three responsibilities
 
@@ -98,14 +79,10 @@ The repository CLI keeps observation, generation, and proof separate:
 | `barn repo build` | validate source and artifacts, then atomically materialize the catalog |
 | `barn repo verify` | rebuild the materialization in memory and require byte-for-byte equality with the published catalog |
 
-`build` never edits `repo.yaml` or qcow2 bytes. `verify` is stronger than
-“every checksum is valid”: it also proves that no source policy or artifact
-change was omitted from the generated catalog.
+`build` never edits `repo.yaml` or qcow2 bytes. By regenerating the catalog and comparing it byte for byte, `verify` detects changes to policy or files that checksum checks alone could miss.
 
-Publication follows the same direction. Upload immutable image bytes first;
-publish the catalog and its matching signature last. Publish that pair
-together where possible. A client refuses a mismatched pair during a partial
-upload; the order avoids advertising image bytes that are still in transit.
+Upload immutable image files first. Publish the catalog and its matching signature last, together where possible.
+A client rejects a mismatched pair during a partial upload. Publishing images first prevents the catalog from advertising incomplete downloads.
 
 ## Selectors may move; artifacts may not
 
@@ -114,48 +91,34 @@ Human configuration needs convenient selectors. `d13:stable`, `el9@9`, and
 Numeric prefixes compare dot-separated components as integers, so 9.10 sorts
 after 9.9.
 
-After resolution, the client persists the exact version, architecture, size,
-and digest. An already resolved node does not become a different machine
-because a channel moves. Convenience exists at selection time; immutable
-identity exists at execution time.
+After resolution, the client stores the exact version, architecture, size, and digest. A channel change does not change an already resolved node.
+Selectors can change at selection time, but execution uses the recorded immutable identity.
 
 ## Transport and trust are different questions
 
-Official and plain-HTTP Catalogs require a trusted detached signature. An
-operator who explicitly selects a local directory or HTTPS repository may use
-an unsigned catalog because local ownership or authenticated transport is the
-explicit trust decision. An implicit compiled default remains in the signed
-trust domain even if its URL is HTTPS.
+Official and plain-HTTP catalogs require a trusted detached signature. An operator can explicitly select a local directory or HTTPS repository with an unsigned catalog, trusting local ownership or authenticated transport. An implicit compiled default still requires the signed trust policy, even over HTTPS.
 
-Accepted catalog state is tracked independently per repository. Barn rejects
-unknown keys, a revision below that repository's high-water mark, and different
-bytes at the same revision. An explicit downgrade is visible and scoped to the
-selected repository; resetting to the embedded catalog does not erase the
-anti-rollback record.
+Barn tracks accepted catalog state separately for each repository. It rejects unknown keys, revisions below the highest accepted revision, and different bytes at the same revision.
+An explicit downgrade affects only the selected repository. Resetting to the embedded catalog preserves the anti-rollback record.
 
-catalog acceptance is only the first half. Every pull still checks byte count,
-SHA-256, and qcow2 structure. Verified base images become read-only, and node
-root disks are overlays, so normal VM writes never mutate the trusted base.
+Every image pull checks byte count, SHA-256, and qcow2 structure, even after catalog acceptance.
+Verified base images become read-only, while node root disks use writable overlays. Normal VM writes therefore leave the trusted base unchanged.
 
 ## Separate trust domains stay separate
 
-Image catalog keys authenticate image metadata. Application archives and packages
-are distributed through GitHub Releases with SHA-256 checksums and SPDX SBOMs;
-the application workflow does not produce a separate release signature or
-attestation bundle. A bundled native Mac app has its own Developer ID signing
+Image catalog keys authenticate image metadata. GitHub Releases distributes application archives and packages with SHA-256 checksums and SPDX SBOMs.
+The application workflow does not produce a separate release signature or attestation bundle. A bundled native Mac app has its own Developer ID signing
 and notarization process. These mechanisms have different scopes; a catalog
 signature does not authenticate the Barn executable.
 
-The Barn 0.9.0 defaults to `https://repo.pigsty.io/barn` and exposes
+Barn 0.9.0 defaults to `https://repo.pigsty.io/barn` and exposes
 `--mirror` for `https://repo.pigsty.cc/barn`; `--repo` remains the explicit
 custom override. The two official repositories may
 fall back to each other for image downloads, always verifying the same
-catalog size and SHA-256. Custom repositories remain exclusive. catalog
+catalog size and SHA-256. Custom repositories remain exclusive. Image catalog
 updates still use the selected source; embedded upstream URLs remain
 provenance and never become an artifact fallback. Source configuration,
 generated catalog, uploaded artifacts, signing,
 and public availability remain separate release gates.
 
-That is the larger design principle: policy should be pleasant to review, but
-facts about shipped bytes should be generated, reproducible, and independently
-verifiable.
+Maintainers should be able to review policy directly. Tools should generate facts about published files so those facts are reproducible and independently verifiable.

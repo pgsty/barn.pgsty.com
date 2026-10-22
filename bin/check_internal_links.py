@@ -58,6 +58,8 @@ def main() -> int:
     parser.add_argument("root", type=Path)
     args = parser.parse_args()
     root = args.root.resolve()
+    if not root.is_dir() or not (root / "index.html").is_file():
+        parser.error(f"built site must contain index.html: {root}")
     pages: dict[Path, PageParser] = {}
 
     for path in sorted(root.rglob("*.html")):

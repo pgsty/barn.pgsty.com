@@ -7,14 +7,17 @@ icon: fa-brands fa-linux
 aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 ---
 
-Create an Ubuntu 24.04 VM on your Mac or Linux host, then expand it into a lab.
+Create an Ubuntu 24.04 VM on your Mac or Linux computer, then add more VMs to the lab.
+Your computer is the host; the operating system inside each VM is the guest.
 For macOS guests, use the separate [Mac guide](../macos/).
 
 ## Before you start {#install}
 
-[Install Barn 0.9.0](../installation/) and reserve at least 4 GiB of guest memory
-plus room for the host. Run these commands as your normal user in a terminal.
-Barn can prepare QEMU and the private network; host changes may require sudo.
+[Install Barn 0.9.1](../installation/). Reserve at least 4 GiB of guest memory, plus memory for the host.
+Run these commands as your normal user in a terminal.
+Barn can prepare QEMU and the private network, requesting sudo for host changes when needed.
+
+First-run preparation requires an interactive terminal on standard input; for CI or other noninteractive runs, follow [Automation](../automation/).
 
 ## Start and connect
 
@@ -24,9 +27,11 @@ barn up
 barn ssh
 ```
 
-On first use, when no inventory or deployment exists, `up` creates `barn.yml`
-with one `meta` node. It prepares host dependencies, downloads and verifies the
-image, and waits for SSH. A healthy start ends with a connection command:
+An inventory is the YAML configuration that defines the nodes in your lab.
+On first use, if neither an inventory nor a deployment exists, `up` creates `barn.yml` with one `meta` node.
+It prepares host dependencies, downloads and verifies the image, and waits for SSH.
+
+After a successful start, Barn shows a connection command:
 
 ```text
   ✓  1 node ready
@@ -43,15 +48,10 @@ Run `exit` to return to the host before running more Barn commands.
 | CPU and memory | 2 vCPUs, 4 GiB |
 | Disks | 64 GiB root, 128 GiB test data disk at `/data` |
 
-Disk files grow as data is written. On a fresh, unedited default template,
-setup can select another private `/24` if the default is occupied; check the
-resulting `barn.yml` and `barn status` for the actual addresses. An existing
-template is backed up as `barn.yml.before-network-change`. Explicit `-f` files,
-edited templates, and existing deployments retain their subnet.
+Disk files grow as data is written. If the default subnet is occupied, setup can select another private `/24` for a fresh, unedited default template. Check the resulting `barn.yml` and `barn status` for the actual addresses.
 
-Barn keeps one Linux deployment per user under `~/.barn`. A different working
-directory does not create a second lab: with no local inventory, `up` resumes
-the applied deployment. Use `barn status` to see what already exists.
+Barn keeps one Linux deployment in the selected `BARN_HOME` (default `~/.barn`).
+A different working directory does not create a second lab. If no local inventory exists, `up` resumes the applied deployment. Use `barn status` to see what already exists.
 
 ## Inspect and use the VM
 
@@ -64,8 +64,7 @@ barn ssh meta
 
 `status` describes the VM process. `up` waits for working management SSH and
 reports any limited guest features, such as an unavailable data disk or private
-network. Repeat `barn up` after fixing a problem or interrupting setup; healthy
-VMs keep running. For China-region image downloads, use `barn up --mirror`.
+network. After you fix a problem or interrupt setup, repeat `barn up`. Healthy VMs keep running. For China-region image downloads, use `barn up --mirror`.
 
 > [!WARNING]
 > Data disks are disposable test storage. During guest setup, Barn may reset an
@@ -75,7 +74,8 @@ VMs keep running. For China-region image downloads, use `barn up --mirror`.
 
 ## Customize before the first start
 
-To choose resources before creating a new lab, generate the file first:
+Use these steps instead of the default start above to customize a new lab before its first start.
+If you already started the lab, skip these commands and use the change instructions below.
 
 ```bash
 barn init
@@ -102,13 +102,11 @@ all:
 
 `barn init dual`, `trio`, or `full` generates two, three, or four nodes.
 `barn init full -c 10.20.30.0/24` chooses a different subnet. Existing files
-are preserved unless you explicitly use `--force`. Configuration and catalog
-planning need no host setup; planning an imported `local-*` image also needs
-`qemu-img`. See [configuration](../../reference/configuration/) for all fields.
+are preserved unless you explicitly use `--force`. Configuration validation and image catalog planning need no host setup. See [configuration](../../reference/configuration/) for all fields.
 
 ## Add more nodes
 
-In your existing `barn.yml`, add hosts under the same `hosts` mapping:
+In your existing `barn.yml`, add nodes under the same `hosts` mapping:
 
 ```yaml
         10.10.10.10: { nodename: meta }
@@ -125,10 +123,10 @@ barn plan
 barn up
 ```
 
-With only these additions, the plan lists three new nodes. Barn creates them
-without restarting `meta`. Changing an existing node's CPU, memory, or other VM
-definition requires an explicit `barn recreate <node>`, which replaces its root
-disk. Removing a host from YAML leaves its VM intact until `barn destroy <node>`.
+With only these additions, the plan lists three new nodes. Barn creates them without restarting `meta`.
+
+Changing an existing node's CPU, memory, or other VM definition requires `barn recreate <node>`, which replaces its root disk.
+Removing a node from YAML leaves its VM intact until you run `barn destroy <node>`.
 
 ## Stop, resume, and clean up
 
@@ -137,8 +135,7 @@ barn stop
 barn start
 ```
 
-Both retain the disks. When the lab is no longer needed, run `barn destroy`
-and type `destroy` to confirm. It deletes root and non-persistent data disks,
+Both retain the disks. When you no longer need the lab, run `barn destroy` and type `destroy` to confirm. It deletes root and non-persistent data disks,
 while keeping persistent disks, image cache, keys, and host networking.
 [Complete cleanup](../uninstall/) is a separate workflow.
 
@@ -149,5 +146,4 @@ while keeping persistent disks, image cache, keys, and host networking.
 - [Images](../images/) — choose Debian, Rocky Linux, Ubuntu, or a local image.
 - [Automation](../automation/) — `setup --yes`, JSON results, guest scripts, and using an existing `pigsty.yml` with Pigsty.
 
-Barn prepares VMs and access. Deploy PostgreSQL or other services separately
-with Pigsty; the built-in templates describe machines, not a complete service configuration.
+Barn prepares VMs and access. Use Pigsty to deploy PostgreSQL or other services separately. The built-in templates describe VMs. They do not contain a complete service configuration.

@@ -10,44 +10,30 @@ icon: fa-solid fa-arrows-rotate
 lastmod: 2026-09-29
 ---
 
-This article describes Barn 0.9.0. The VM lifecycle and network design here
-apply to Linux guests; [Mac machines](/docs/start/macos/) are managed independently.
+This article explains the Linux VM lifecycle in Barn 0.9.0. [Mac machines](/docs/start/macos/) are managed independently.
 
-“Declarative” is often shortened to “make reality equal the file.” That is a
-useful slogan until the file is incomplete, the wrong branch is checked out,
-or one YAML group is temporarily removed. If absence is treated as deletion,
-an ordinary editing mistake becomes a destructive operation.
+A declarative tool compares actual state with a configuration file. The file can be incomplete, come from the wrong branch, or temporarily omit a YAML group.
+If the tool treats an omitted definition as deletion permission, an editing mistake can destroy a VM.
 
-Barn uses a narrower rule:
+Barn uses this rule:
 
 > Desired state may authorize creation. It can describe drift. It never
 > authorizes destruction by omission.
 
-The distinction is central to a VM runtime because roots, data disks, SSH keys,
-and local evidence are not stateless replicas. Recreating them may be correct,
-but it must be a decision the operator can see.
+Root disks, data disks, SSH keys, and local records retain state. Recreating these resources can be necessary, but the operator must explicitly select that operation.
 
 ## From inventory to node identity
 
-Barn does not hash the whole Pigsty inventory. It first extracts the fields
-it owns, fills defaults, canonicalizes image selectors and architecture, and
-builds a canonical resolved spec. Exact catalog artifact resolution remains
-separate, so a channel update does not itself change a node's spec hash. Each
-node then receives a hash of:
+Barn first extracts the fields it owns from the Pigsty inventory. It fills defaults and normalizes image selectors and architecture to produce a resolved spec.
+Barn resolves exact catalog artifacts separately. Therefore, a channel update alone does not change a node's spec hash. Each node's hash includes:
 
 - the deployment envelope shared by every node, such as subnet, login user,
   architecture policy, and the deployment-level default image request; and
 - exactly that node's resolved definition.
 
-Adding a peer therefore does not change an existing node's hash. Editing an
-unconsumed Pigsty field—PostgreSQL version, packages, or service policy—does
-not produce VM drift. The VM layer reacts only to the contract it actually
-understands.
+Adding a node does not change an existing node's hash. Changes to other Pigsty fields, such as PostgreSQL version, packages, or service policy, do not produce VM drift. Barn checks only the fields in its VM configuration contract.
 
-This also avoids a dangerous half-promise: Barn does not pretend to implement
-Ansible's entire variable system. Unknown `vm_*` keys and conflicting values
-inside the owned namespace fail. Everything outside the documented boundary
-is opaque rather than partially interpreted.
+Barn does not implement Ansible's entire variable system. It rejects unknown `vm_*` keys and conflicting values inside its namespace. It does not interpret fields outside the documented boundary.
 
 > [!NOTE]
 > Barn converges additions automatically, but
@@ -57,7 +43,7 @@ is opaque rather than partially interpreted.
 ## The five plan outcomes
 
 `barn plan` compares desired state, applied deployment state, and committed
-node state. The result is intentionally small:
+node state. It reports these outcomes:
 
 | Outcome | Meaning | Apply path |
 | --- | --- | --- |
@@ -72,12 +58,10 @@ that applies the required explicit transition.
 
 ## Why `up` stops at drift
 
-Barn could decide that changing CPU or memory is harmless enough to apply,
-or that a new image should silently rebuild a root disk. Barn 0.9.0 intentionally
-does neither. A changed VM definition is classified as recreate and `up`
-returns a typed conflict.
+Barn 0.9.0 does not apply CPU or memory changes automatically. It also does not rebuild a root disk automatically when the image changes.
+A changed VM definition requires recreation, so `up` returns a typed conflict.
 
-That conservative boundary has two advantages:
+This rule provides two benefits:
 
 1. all changes that can invalidate guest state share one visible operation;
 2. Barn can finish every prerequisite check before touching the current
@@ -85,8 +69,7 @@ That conservative boundary has two advantages:
 
 The recreate path resolves the selected emulator, acceleration policy,
 firmware, image bytes, network backend, shares, and persistent-disk contract
-before destruction. If a foreign emulator is missing or a share is unsafe,
-the existing VM remains intact.
+before it destroys the node. If a foreign-architecture emulator is missing or a share is unsafe, Barn preserves the existing VM.
 
 ## Why missing nodes block convergence
 
@@ -99,30 +82,21 @@ deletion intent:
 - a merge conflict dropped a YAML branch;
 - the configuration file itself is unavailable.
 
-When applied state contains such a node, `up` stops and names it. The operator
-must either restore the definition or run the explicit destroy command. This
-is deliberately more friction than automatic garbage collection—and far less
-friction than recovering an unintended disk deletion.
+When applied state contains an omitted node, `up` stops and names that node. The operator must restore its definition or run the explicit destroy command. This step prevents configuration omissions from deleting disks automatically.
 
-Persistent data disks add another boundary. Normal destroy preserves them.
+Normal destroy preserves persistent data disks.
 Whole-deployment `destroy --delete-persistent` explicitly includes owned
-persistent disks, including retained disks, and accepts no node selectors;
-deleting deployment keys as well requires whole-deployment
+persistent disks, including retained disks. It accepts no node selectors.
+Deleting deployment keys as well requires whole-deployment
 `destroy --purge` or `purge`. Retention is not a backup guarantee: guest
 bootstrap can reset unrecognized or confirmed damaged test filesystems, even
 on persistent disks. See [Data disks](/docs/reference/configuration/#data-disks).
-One confirmation cannot silently grow into broader authority.
+Each confirmation applies only to its stated operation.
 
 ## Convergence is still incremental
 
-Safety does not mean rebuilding everything. New nodes are created without
-stopping existing peers. Selected stopped nodes start without recreating
-running ones. A per-node recreate preserves peers and, when requested by the
-disk contract, persistent data.
+Barn creates new nodes without stopping existing ones and starts selected stopped nodes without recreating running peers. A per-node recreate preserves other nodes and retains persistent data when the disk contract requires it.
 
-The result is declarative where desired state is strong evidence—creation and
-comparison—and explicit where the cost is irreversible. Barn does not make
-the operator manually calculate drift, but it also does not confuse a diff
-with permission.
+Barn uses desired state to create nodes and calculate drift. It requires explicit commands for irreversible changes. The operator reviews the difference before authorizing a destructive operation.
 
 Read next: [A PID is not a virtual machine](/blog/design/identity-before-pid/).

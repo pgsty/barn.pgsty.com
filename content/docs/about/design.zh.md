@@ -1,72 +1,83 @@
 ---
 title: 设计
-description: Barn 如何组织 Linux 实验室与 macOS 客机，以及配置、网络、存储和生命周期的设计取舍。
+description: Barn 如何组织 Linux 实验环境与 macOS 客机，以及配置、网络、存储和生命周期的设计取舍。
 weight: 20
 icon: fa-solid fa-compass-drafting
 aliases: [/docs/concepts/, /docs/concepts/networking/, /docs/concepts/storage/, /docs/concepts/safety/, /docs/architecture/, /docs/architecture/overview/, /docs/architecture/networking/, /docs/architecture/security/]
 ---
 
-Barn 提供两套使用方式，共享同一个命令行入口，分别管理配置与生命周期。
+Barn 分别管理 Linux 实验环境和 macOS 客机。两者共用命令行入口，各自管理配置与生命周期。
 
-| | Linux 实验室 | macOS 客机 |
+| | Linux 实验环境 | macOS 客机 |
 | --- | --- | --- |
 | 虚拟化 | QEMU，使用 HVF 或 KVM 加速；特定兼容场景使用 TCG | Apple Virtualization.framework |
-| 期望配置 | 兼容 Pigsty 的 YAML 主机清单 | 通过 `barn mac` 配置的具名虚拟机 |
+| 期望配置 | 兼容 Pigsty 的 YAML 主机清单 | 通过 `barn mac` 配置的命名虚拟机 |
 | 状态目录 | `~/.barn` | `~/.barn/mac` |
-| 网络 | 管理网卡与固定 IP 实验室子网 | 每台虚拟机一个 NAT 子网与 DHCP 地址预留 |
+| 网络 | 管理网卡与固定 IP 实验网段 | 每台虚拟机一个 NAT 子网与 DHCP 地址预留 |
 | 典型用途 | 数据库集群、Linux 开发与自动化 | macOS 构建、桌面工具与独立开发环境 |
 
-下文介绍 Linux 实验室的设计。原生 macOS 用法见[macOS 客机](../../start/macos/)与
+下文介绍 Linux 实验环境的设计。原生 macOS 用法见[macOS 客机](../../start/macos/)与
 [Mac 参考](../../reference/mac/)。
 
 ## 每位用户一套 Linux 实验室
 
-Barn 把一份兼容 Pigsty 的主机清单启动成一套本地 QEMU 环境，无需额外的项目标记、项目注册表、
-租约模型、虚拟化平台适配层或第二种配置格式。
-
-状态位于当前 Unix 用户的 `BARN_HOME`（默认 `~/.barn`）。Linux 工作流按每位用户一套实验室设计，
-并不通过 root 强制限制不同用户只能运行同一套环境。
+每个 Unix 用户用一份兼容 Pigsty 的清单管理一套 Linux 实验环境。
+Barn 将状态保存在 `BARN_HOME`（默认 `~/.barn`）中，与工作目录无关。
+因此，切换目录不会新建实验环境。
 
 ## 节点级收敛
 
-Barn 只提取已记录的 VM 与 Pigsty 原生字段，计算逐节点哈希，并保存应用状态与完整
-进程身份。新增节点增量创建；`up` 也会启动选中的已停止节点，保留运行中同伴的进程，
-同时重试未完成的初始化、刷新托管 hosts 与 SSH 配置。无法识别或确认损坏的测试数据
-文件系统可能被清空重建，包括持久盘，详见[数据盘](../../reference/configuration/#数据盘)。
-定义变更需要显式节点重建；从主机清单中移除节点不会自动删除虚拟机。
+`up` 创建新节点，启动选中的已停止节点，并保留运行中的进程。
+它还会重试未完成的初始化，更新托管的 hosts 与 SSH 配置。
+修改已有节点的定义需要显式重建；从清单中移除节点不会自动删除虚拟机。
+
+为识别变更，Barn 根据文档列出的虚拟机字段与 Pigsty 原生字段计算每个节点的哈希，
+并将它与已应用状态、进程身份一起保存。
 
 ## 运行时选择
 
-客机架构是部署级期望状态。省略或 `native` 跟随宿主；显式 `amd64`/`arm64` 会准确
-选择对应镜像目录工件。HVF/KVM 原生加速仍是默认路径；外来架构或镜像目录已知的
-镜像/宿主不兼容规则才会选择固定 TCG 配置。没有用户可传的加速器参数，也不会
-因任意原生失败静默回退。
+客机架构属于整个部署的期望状态。省略架构或选择 `native` 时，Barn 使用宿主架构。
+显式选择 `amd64`/`arm64` 时，Barn 使用镜像目录中对应的文件。
 
-实际架构与加速器保存在每个 QEMU 启动参数中，并通过 `status` 展示。执行破坏性
-recreate 前，Barn 会检查所选 QEMU 二进制与版本、网络后端、镜像内容、启动模式与固件。
-以后若新二进制改变运行时策略，也不能把新旧节点混跑：运行时差异必须整体重建。
+Barn 默认使用 HVF/KVM 原生加速。仅在跨架构或镜像目录记录了镜像与宿主不兼容时，
+Barn 才使用 TCG 软件模拟。用户不能通过参数选择加速器。其他原生加速失败不会触发 TCG 回退。
+
+Barn 在每个 QEMU 启动参数中记录实际架构与加速器。`status` 显示这些值。
+执行破坏性的 recreate 前，Barn 检查所选 QEMU 二进制与版本、网络后端、镜像内容、启动模式与固件。
+如果 Barn 升级改变了运行时策略，需要重建整个部署才能应用新策略，以保持所有节点的运行时策略一致。
 
 ## 双网卡与一个固定子网
 
-管理网卡负责 DHCP、DNS、出网与回环 SSH；固定 IP 网卡负责宿主、节点间与 Ansible
-流量。macOS 使用 socket_vmnet；Linux 优先跟随当前 NetworkManager，否则使用
-systemd-networkd，并通过发行版 bridge helper 接入。若 networkd 尚未启动，只有在
-激活安全扫描证明现有服务单元不会接管真实宿主链路后才启动。
+每台 Linux 虚拟机有两张网卡。管理网卡提供 DHCP、DNS、出网，以及通过宿主回环地址访问的 SSH。
+固定 IP 网卡用于宿主与节点之间、节点与节点之间的通信，包括 Ansible。
+在 macOS 宿主上，socket_vmnet 提供这套网络。
 
-Debian helper 会临时、可逆地限制给调用者真实加入的组。setup 必须通过一次非特权
-QEMU bridge smoke；失败后自动回滚安装。
+在 Linux 上，如果 NetworkManager 已启动，Barn 使用 NetworkManager。
+否则，Barn 使用 systemd-networkd，并通过发行版 bridge helper 接入。
+如果 networkd 尚未启动，Barn 先检查现有服务单元。只有确认它们不会接管真实宿主链路后，
+Barn 才启动 networkd。
+
+在 Debian 上，Barn 临时向调用者所属的组授予 bridge helper 权限。
+setup 会以该普通用户运行 QEMU，测试网桥。如果测试失败，setup 自动回滚网络安装。
 
 ## 存储与配置有不同生命周期
 
-主机清单保存期望的 VM 定义；应用状态记录已经创建的内容，包括精确基础镜像身份与
-运行时启动参数。镜像目录通道移动不会改写已有根盘。
+清单保存期望的虚拟机定义。已应用状态记录已创建的资源，包括准确的基础镜像身份与启动参数。
+镜像目录通道变化不会改写已有根盘。
 
-通过校验的基础镜像只读共享，每台 VM 写入自己的根盘写时复制层。数据盘遵循独立的保留
-契约：普通销毁保留持久盘，显式磁盘删除或彻底清理才清除它们。镜像缓存清理又有
-独立边界，还会保护活动镜像目录与已注册本地别名。详见[存储与访问](../../start/storage/)
-和[镜像参考](../../reference/images/)。
+虚拟机以只读方式共享已校验的基础镜像，每台虚拟机将根盘变更写入独立的文件（root overlay）。
+普通销毁会保留持久数据盘，显式磁盘删除或彻底清理会删除这些磁盘。
+
+客机恢复流程可能重新格式化无法识别或确认损坏的数据文件系统，包括持久盘上的文件系统。
+详见[数据盘](../../reference/configuration/#数据盘)。
+
+镜像缓存清理使用独立规则，保护活动镜像目录与已注册的本地别名。
+详见[存储与访问](../../start/storage/)和[镜像参考](../../reference/images/)。
 
 ## 安全边界
 
-QEMU 与所有客机工件都以调用者身份运行。root 仅用于宿主软件包安装、网络与可选 hosts publisher。
-销毁必须同时匹配属主、路径包含、节点身份、QMP/进程身份与工件白名单；任何歧义都会停止。
+QEMU 以调用者身份运行，所有客机文件都属于该用户。
+只有安装宿主软件包、配置网络与可选的 hosts 更新需要 root 权限。
+
+销毁前，Barn 检查属主、路径范围、节点身份、QMP/进程身份与文件白名单。
+如果任何检查结果不明确，Barn 停止操作。

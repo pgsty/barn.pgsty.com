@@ -6,8 +6,8 @@ icon: fa-solid fa-compass-drafting
 aliases: [/docs/concepts/, /docs/concepts/networking/, /docs/concepts/storage/, /docs/concepts/safety/, /docs/architecture/, /docs/architecture/overview/, /docs/architecture/networking/, /docs/architecture/security/]
 ---
 
-Barn provides two workflows that share a CLI but keep their configuration and
-lifecycle separate.
+Barn provides two workflows through one CLI: Linux labs and macOS guests.
+Each workflow has its own configuration and lifecycle.
 
 | | Linux labs | macOS guests |
 | --- | --- | --- |
@@ -22,67 +22,76 @@ see [macOS guests](../../start/macos/) and the [Mac reference](../../reference/m
 
 ## One Linux lab per user
 
-Barn boots one Pigsty-compatible inventory as one local QEMU deployment. It deliberately
-has no project marker, project registry, lease model, provider layer, or
-second configuration format.
-
-State lives under `BARN_HOME` (default `~/.barn`) for one Unix user. The
-Linux workflow is designed for one lab per user; this is not a root-enforced cross-user
-singleton.
+Each Unix user manages one Linux lab from one Pigsty-compatible inventory.
+Barn stores its state under `BARN_HOME` (default `~/.barn`), independently of
+the working directory. Changing directories therefore does not create another lab.
 
 ## Node-level convergence
 
-Barn extracts only the documented VM and Pigsty-native fields, computes
-per-node hashes, and keeps applied state plus process identity. Additions are
-incremental. Changes require an
-explicit per-node recreate. `up` also starts selected existing stopped nodes;
-already-running peers keep their processes while unfinished guest setup and
-managed hosts/SSH entries are refreshed. Unrecognized or confirmed damaged
-test data filesystems may be reset, including persistent disks; see
-[Data disks](../../reference/configuration/#data-disks). Absence never authorizes deletion.
+`up` creates new nodes and starts selected nodes that are stopped. It leaves
+running processes in place, retries unfinished guest setup, and updates managed
+hosts and SSH entries. Changes to an existing node require an explicit recreate.
+Removing a node from the inventory does not delete its VM.
+
+To detect changes, Barn computes a hash from the documented VM and Pigsty-native
+fields for each node. It stores that hash with the applied state and process identity.
 
 ## Runtime selection
 
-guest architecture is deployment-wide desired state. Omitted/`native` follows
-the host; explicit `amd64` or `arm64` selects that catalog artifact exactly.
-Native HVF/KVM remains the default. A foreign architecture or one catalogued
-image/host incompatibility selects a fixed TCG profile; there is no user
-accelerator argument and no arbitrary failure fallback.
+The desired guest architecture applies to the whole deployment. If you omit
+the architecture or select `native`, Barn uses the host architecture. An
+explicit `amd64` or `arm64` selects that artifact from the image catalog.
 
-The effective architecture and accelerator are persisted in each QEMU
-invocation and exposed by `status`. Before destructive recreate, Barn proves
-the selected QEMU binary and version, network backend, image bytes, boot mode,
-and firmware. A later binary changing runtime policy cannot mix new nodes with
-old invocations: runtime drift requires whole-deployment recreation.
+Barn uses native HVF/KVM acceleration by default. It uses TCG software emulation
+for a foreign architecture or an image/host incompatibility recorded in the catalog.
+There is no user accelerator argument. Barn does not switch to TCG after other
+native acceleration failures.
+
+Barn records the effective architecture and accelerator in each QEMU invocation.
+`status` shows these values. Before a destructive recreate, Barn verifies the
+selected QEMU binary and version, network backend, image bytes, boot mode, and firmware.
+If a Barn upgrade changes the runtime policy, recreate the whole deployment
+to apply that policy. This keeps all nodes on the same runtime policy.
 
 ## Two NICs, one fixed subnet
 
-The management NIC supplies DHCP, DNS, egress, and loopback SSH. The fixed-IP
-NIC supplies host/peer/Ansible traffic. macOS uses socket_vmnet. Linux follows
-active NetworkManager; otherwise it uses systemd-networkd and connects through
-the distribution bridge helper. Inactive networkd is started only after an
-activation-safety scan proves existing units cannot claim a real host link.
+Each Linux VM has two network interfaces (NICs). The management NIC supplies
+DHCP, DNS, outbound access, and SSH through the host loopback address. The
+fixed-IP NIC connects the host and nodes to each other, including for Ansible.
+On macOS hosts, socket_vmnet provides this network.
 
-On Debian, the helper is temporarily and reversibly scoped to a group the
-caller actually belongs to. A real unprivileged QEMU bridge smoke must pass
-before setup accepts the network; failure rolls the install back automatically.
+On Linux, Barn uses NetworkManager if it is active. Otherwise, Barn uses
+systemd-networkd and the distribution bridge helper. Before it starts inactive
+networkd, Barn verifies that existing units cannot take control of a real host link.
+
+On Debian, Barn temporarily grants bridge-helper access to a group that includes
+the caller. Setup tests the bridge by running QEMU as that unprivileged user. If this test fails, setup automatically rolls back the
+network installation.
 
 ## Storage and configuration have different lifetimes
 
-The inventory records desired VM definitions. Applied state records what was
-created, including the exact base-image identity and runtime invocation.
-Changing a catalog channel does not rewrite an existing root disk.
+The inventory records the desired VM definitions. Applied state records the
+created resources, including the exact base image identity and runtime invocation.
+A change to a catalog channel does not rewrite an existing root disk.
 
-Verified base images are shared read-only; each VM writes to its own root
-overlay. Data disks have a separate preservation contract: normal destroy
-retains persistent disks, while explicit disk deletion or purge removes them.
-Cache pruning has another boundary and also protects the active catalog and
-registered local aliases. See [Storage and access](../../start/storage/) and
+VMs share verified base images as read-only files. Each VM stores its root disk
+changes in a separate file, called a root overlay. Normal destroy retains
+persistent data disks, while explicit disk deletion or purge removes them.
+
+Guest recovery can reset data filesystems that it cannot recognize or confirms
+as damaged, including those on persistent disks. See
+[Data disks](../../reference/configuration/#data-disks).
+
+Cache pruning uses separate rules. It protects the active catalog and registered
+local aliases. See [Storage and access](../../start/storage/) and
 [Images](../../reference/images/).
 
 ## Safety boundary
 
-QEMU and all guest artifacts run as the caller. Root is limited to host
-package installation, network setup, and the optional hosts publisher. Destruction requires matching
-ownership, containment, node identity, QMP/process identity, and an allowlist
-of artifacts. Ambiguity stops the operation.
+QEMU runs as the caller. All guest artifacts belong to that user. Root
+privileges are limited to host package installation, network setup, and optional
+hosts updates.
+
+Before destruction, Barn verifies ownership, path containment, node identity,
+QMP/process identity, and the artifact allowlist. If any check is ambiguous,
+Barn stops the operation.

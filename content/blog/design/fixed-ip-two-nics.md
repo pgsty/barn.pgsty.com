@@ -10,18 +10,13 @@ icon: fa-solid fa-network-wired
 lastmod: 2026-09-29
 ---
 
-This article describes Barn 0.9.0. The VM lifecycle and network design here
-apply to Linux guests; [Mac machines](/docs/start/macos/) are managed independently.
+This article explains the Linux network design in Barn 0.9.0. [Mac machines](/docs/start/macos/) are managed independently.
 
-A Pigsty inventory names machines by stable addresses. PostgreSQL replication,
-etcd membership, HAProxy backends, VIPs, monitoring targets, and Ansible all
-assume that `10.10.10.11` continues to mean the same node. A loopback port
+A Pigsty inventory identifies nodes by stable addresses. PostgreSQL replication, etcd membership, HAProxy backends, VIPs, monitoring targets, and Ansible require `10.10.10.11` to identify the same node. A loopback port
 forward can expose SSH or PostgreSQL to the host, but it cannot provide that
 network identity to peers.
 
-This is why Barn does not choose between a convenient NAT mode and an
-advanced fixed-network mode. Every normal node gets both jobs, on separate
-interfaces.
+Barn therefore gives every normal node two interfaces: one for NAT connectivity and one for a fixed network address.
 
 ## One interface should not do two incompatible jobs
 
@@ -30,19 +25,11 @@ interfaces.
 | management | QEMU user-mode NAT, DHCP | DNS, default route, outbound internet, and loopback SSH fallback |
 | private, MAC-matched | fixed inventory address | host-to-node, node-to-node, Ansible, Pigsty services, and VIP traffic |
 
-Barn matches both virtual interfaces by their deterministic MAC addresses
-and does not rename them. guest-visible names are whatever the image's network
-stack chooses (commonly `eth0` or `enp0s4`); the MAC and address contract, not
-the display name, determines each interface's role.
+Barn matches both virtual interfaces by their deterministic MAC addresses, without renaming them. The image's network stack selects guest-visible names, commonly `eth0` or `enp0s4`; MAC and address settings determine each interface's role.
 
-The management interface is deliberately ordinary. It lets a new cloud image
-reach package repositories before any application exists, without installing
-NAT rules or a DHCP service on the host.
+The management interface lets a new cloud image reach package repositories before applications are installed. The host does not need additional NAT rules or a DHCP service.
 
-The private interface has one deterministic RFC1918 address, no default route,
-and no DNS. guest setup checks those properties, but since 0.7 private-network
-checks are optional: a failure is recorded as a `private-network` warning and
-does not prevent readiness when management SSH and guest identity are usable.
+The private interface has one deterministic RFC1918 address, no default route, and no DNS. Guest setup checks these properties. Since 0.7, a failed private-network check produces a `private-network` warning but does not prevent readiness if management SSH and guest identity are usable.
 An operation can therefore succeed with limited fixed-IP connectivity. Before
 deploying a service that needs this interface, inspect the warnings and test
 the relevant host/peer connection. Repeat `up` after correcting the cause.
@@ -69,10 +56,8 @@ bridge with static guest addresses. The VM address contract therefore does not
 depend on a lease database, and Ansible uses the same address throughout the
 deployment.
 
-For generated configuration, setup can choose from a small bounded set when
-the default subnet is already occupied. An explicitly supplied inventory is
-never silently rewritten to escape a collision. The whole lab—host interface,
-nodes, Pigsty addresses, and aliases—must agree on one subnet.
+For generated configuration, setup can choose from a bounded set if the default subnet is occupied. Barn does not rewrite an explicitly supplied inventory to avoid a collision.
+The host interface, nodes, Pigsty addresses, and aliases must use the same subnet.
 
 ## Platform-specific backend, identical guest contract
 
@@ -88,15 +73,12 @@ the host's native networking owner:
 - **Inactive networkd:** activation is allowed only after a pre-mutation scan
   proves that existing units cannot claim a real host interface.
 
-Supporting both Linux managers is not abstraction for its own sake. Starting
-networkd on a desktop or RHEL-family host merely because Barn knows how to
-write `.network` files can disrupt the host's real network. The backend must
-follow the component already in charge.
+Starting networkd on a desktop or RHEL-family host can disrupt its network. The ability to write `.network` files does not make activation safe.
+Barn therefore uses the network manager that already controls the host.
 
 ## Host networking is a transaction
 
-A bridge or vmnet daemon outlives one CLI process and crosses a privilege
-boundary, so Barn treats installation as a reversible host transaction:
+Because a bridge or vmnet daemon outlives the CLI and its installation requires privileges, Barn uses a reversible host transaction:
 
 1. inspect routes, interfaces, services, ownership, and existing state;
 2. print the exact plan before mutation;
@@ -106,21 +88,14 @@ boundary, so Barn treats installation as a reversible host transaction:
 5. prove an unprivileged QEMU attachment;
 6. accept the installation only after readiness checks pass.
 
-A foreign interface that happens to use the same `.1/24` is not adopted. A
-modified owned file is not overwritten. Uninstall refuses while recorded nodes
-are live and restores only the prestate named by the manifest. Failure is a
-reason to stop, not permission to delete whatever appears to be in the way.
+Barn does not adopt a foreign interface that uses the same `.1/24`. It does not overwrite a modified owned file.
+Uninstall refuses while recorded nodes are running. It restores only the previous state recorded in the manifest. A failure stops the operation without authorizing additional deletion.
 
 ## The accepted trade-off
 
-guest internet traffic uses QEMU's user-mode network. That is not the fastest
-possible forwarding path, but it keeps ordinary egress unprivileged and
-portable. The traffic that matters to a Pigsty lab—host-to-guest, replication,
-service calls, and package distribution from a local control node—stays on the
-private link.
+Guest internet traffic uses QEMU's user-mode network. This path trades forwarding speed for unprivileged, portable internet access.
+The private link carries host-to-guest traffic, replication, service calls, and package distribution from a local control node.
 
-The result is a useful separation of concerns: the management NIC makes a
-machine easy to bootstrap; the private NIC makes it a stable member of the
-lab. Neither has to pretend to be the other.
+The management NIC lets the guest initialize itself, while the private NIC gives it the stable address the lab requires.
 
 Read next: [Declarative does not mean destructive](/blog/design/convergence-without-surprise/).

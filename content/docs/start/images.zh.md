@@ -5,11 +5,12 @@ weight: 50
 icon: fa-solid fa-box-archive
 ---
 
-正常使用不需要先执行镜像命令：`barn up` 默认按本机架构解析 `u24:stable`，并拉取
-最终对应的不可变版本。
-Barn 一直使用已安装构建内置的镜像目录，直到你运行 `barn update`：它会获取、校验并
-激活仓库当前的镜像目录；没有任何自动刷新。恢复时可用 `image sync` 显式激活精确 URL
-或文件。
+本文说明 **Barn 0.9.1** 的镜像目录与镜像命令。
+
+使用默认清单时，`barn up` 按宿主架构选择 `u24:stable`，再下载对应的不可变版本，无需提前拉取镜像。
+
+Barn 最初使用已安装构建内置的镜像目录。运行 `barn update` 可获取、校验并激活仓库当前的镜像目录。
+Barn 不会自动刷新。需要恢复时，可用 `image sync` 从精确 URL 或文件激活镜像目录。
 
 ## 选择镜像
 
@@ -22,9 +23,8 @@ barn image info u24:stable
 ```
 
 内置镜像系列包括 `el7`、`el8`、`el9`、`el10`、`d12`、`d13`、`u22`、`u24`、
-`u26`。裸名称选择 `stable`，`name:channel` 选择通道；`name@version` 优先精确匹配，
-较短的数值选择器则按点分量边界选择最新匹配版本。
-将下面的 `all.vars` 片段合并到现有主机清单中，保留原来的主机定义：
+`u26`。裸名称选择 `stable` 通道，`name:channel` 则选择指定通道。`name@version` 优先精确匹配。较短的数值选择器则按点分量边界选择最新匹配版本。
+将下面的 `all.vars` 片段合并到现有清单中，保留原来的主机定义：
 
 ```yaml
 all:
@@ -37,8 +37,7 @@ all:
 稳定通道，则改用 `vm_image: el9:stable` 并删除 `vm_version`。独立的
 `vm_version` 不能与 `vm_image` 中的 `:channel` 或 `@version` 同时使用。
 
-修改配置后先运行 `barn plan`。已有节点的镜像请求改变时，需要显式执行
-`barn recreate <node>`；`up` 会报告定义漂移而不会自动重建。仅更新镜像目录不会改变
+修改配置后先运行 `barn plan`。已有节点的镜像请求改变时，需要通过 `barn recreate <node>` 应用，该操作会替换根盘。`up` 会报告定义漂移，不会自动重建。仅更新镜像目录不会改变
 已有节点或它保存的基础镜像身份。新增或显式重建的节点才会按照活动镜像目录解析选择器。
 
 需要可重复的实验环境时，应锁定 `image info` 显示的完整版本，而不是可移动的通道
@@ -51,10 +50,15 @@ all:
 ```
 
 YAML 中的数值 `vm_version` 建议加引号，以保留完整原文。
+本文固定版本均存在于 0.9.1 的内置镜像目录中。激活其他镜像目录后，对选定仓库运行 `image info` 确认。`image list` 列出全部架构，`info` 与 `pull` 默认选择宿主
+架构，可用 `--arch amd64` 或 `--arch arm64` 指定。EL7 仅支持原生 Linux/amd64，
+其他宿主即使能下载其 amd64 镜像，也不能用 Barn 运行。Apple Silicon 上的 EL8 arm64
+会自动使用 TCG，因为原版客机要求 HVF 无法提供的 64K 地址转换粒度。所需模拟器与
+固件见[运行时排查](../troubleshooting/#原生加速或兼容运行时不可用)。
 
 > [!WARNING]
 > 除兼容用途的 EOL `el7`、EL9 9.3/9.6 与 EL10 10.0 为 `deprecated` 外，
-> 其余内置版本均为 `supported`。
+> 0.9.1 内置镜像目录中的其余版本均为 `supported`。
 
 ## 使用镜像站
 
@@ -78,17 +82,15 @@ barn up
 ```
 
 选择优先级依次为 `--repo`、`--mirror`、`BARN_REPO`、全球默认仓库。`--mirror`
-解析为 `https://repo.pigsty.cc/barn`，两个官方根都保持规范的签名镜像目录信任。
-`BARN_REPO` 也可以是绝对本地目录。显式本地或 HTTPS 仓库可使用未签名镜像目录；HTTP
-仓库必须提供可信密钥签名。文件大小、SHA-256 与 qcow2 结构始终校验。
+解析为 `https://repo.pigsty.cc/barn`，两个官方仓库都要求可信的镜像目录签名。
+`BARN_REPO` 也可以是绝对本地目录。显式本地或 HTTPS 仓库可使用未签名镜像目录。HTTP 仓库必须提供可信密钥签名。文件大小、SHA-256 与 qcow2 结构始终校验。
 
 镜像下载会重试临时故障，并接续中断的传输。选定官方端点无法提供镜像时，
-两个官方仓库可以互相回退，仍须匹配同一镜像目录中的尺寸与摘要。自定义仓库不会回退
-到其他站点；镜像目录上游 URL 只用于溯源，始终不是备用下载源。
+两个官方仓库可以互相回退，仍须匹配同一镜像目录中的尺寸与摘要。自定义仓库不会回退到其他站点。镜像目录中的上游 URL 只用于溯源，不能作为备用下载源。
 
 这项回退只针对镜像工件。`barn update` 获取选定仓库的镜像目录，`image sync` 读取
-明确指定的 URL 或文件；两者都不会升级 Barn 程序。活动镜像目录按仓库分别记录。
-新 `--repo` 在激活该根的镜像目录前使用内置镜像目录；只改变下载源不会让自定义别名出现。
+明确指定的 URL 或文件。两者都不会升级 Barn 程序。活动镜像目录按仓库分别记录。
+新 `--repo` 在激活该根的镜像目录前使用内置镜像目录。只改变下载源不会让自定义别名出现。
 
 ## 构建静态仓库
 
@@ -122,7 +124,7 @@ images:
 
 将独立校验且已具备 cloud-init 的镜像放到
 `/srv/barn/images/d13-1-arm64.qcow2`。若是 x86 客机，文件名与架构变体都改用
-`amd64`；`source_user` 应填写镜像的源身份。仓库根必须是绝对路径、非符号链接，且不能
+`amd64`。`source_user` 应填写镜像的源身份。仓库根必须是绝对路径、非符号链接，且不能
 允许组或其他用户写入。在本机生成 `catalog.json`：
 
 ```bash
@@ -131,13 +133,13 @@ barn repo build /srv/barn
 barn repo verify /srv/barn
 ```
 
-`scan` 只读；`build` 永不修改 `repo.yaml` 或镜像字节，它运行完整的 `qemu-img check`，
-并物化文件名、SHA-256、工件大小和虚拟大小。`build`、`verify` 需要本机
-`qemu-img`，`scan` 不需要。在安装 QEMU 的机器上构建后，发布时先上传不可变 QCOW，
-最后发布 `catalog.json` 与匹配签名。本地/HTTPS 示例可以不签名；普通 HTTP 与官方仓库
-必须具有可信签名。每次修改镜像目录内容都应增加 `revision`。
+`scan` 只读。`build` 运行完整的 `qemu-img check`，记录文件名、SHA-256、工件大小和虚拟大小，保留 `repo.yaml` 与镜像字节不变。
+`build`、`verify` 需要本机 `qemu-img`，`scan` 不需要。
 
-创建 VM 前，先激活并检查这个本地仓库：
+请在安装 QEMU 的宿主上构建。发布时，先上传不可变 QCOW，再发布 `catalog.json` 与匹配签名。
+本地/HTTPS 示例可以不签名；普通 HTTP 与官方仓库必须具有可信签名。每次修改镜像目录内容都应增加 `revision`。
+
+创建虚拟机前，先激活并检查这个本地仓库：
 
 ```bash
 barn update --repo /srv/barn
@@ -146,32 +148,35 @@ barn image pull d13 --arch arm64 --repo /srv/barn
 ```
 
 `plan`、`up`、`recreate` 都传入相同的 `--repo /srv/barn`，也可设置
-`BARN_REPO=/srv/barn`。主机清单中选择 `vm_image: d13@1` 与
-`vm_arch: arm64`；导入镜像目录不会改写主机清单默认值。
+`BARN_REPO=/srv/barn`。清单中选择 `vm_image: d13@1` 与
+`vm_arch: arm64`。导入镜像目录不会改写清单默认值。
 `barn image reset --repo /srv/barn` 将该根恢复到内置镜像目录，同时保留防回滚记录。
 
 ## 导入与清理
 
 本机原生架构的单个自定义镜像可以直接导入，并提供独立获得的摘要。CLI 中 `--sha256`
-是可选参数；有可信摘要时建议填写：
+是可选参数。有可信摘要时，建议填写：
 
 ```bash
 barn image import --name local-mybase --boot uefi \
   --source-user ubuntu --sha256 <digest> /path/to/base.qcow2
 ```
 
-自定义别名必须以 `local-` 开头；`--name`、`--boot`、`--source-user` 必须一起提供。
-导入只检查 qcow2 并复制到 Barn 缓存，不会准备客机软件；镜像必须已经支持 Barn
-使用的 cloud-init 初始化。命名导入记录宿主架构，外来架构镜像应使用静态仓库。
-在主机清单中设置 `vm_image: local-mybase`，再运行 `barn plan`。
+自定义别名必须以 `local-` 开头。`--name`、`--boot`、`--source-user` 必须一起提供。
+导入只检查 qcow2 并复制到 Barn 缓存，不会准备客机软件，因此镜像必须已支持 Barn 使用的 cloud-init 初始化。不带 `--name` 的导入只校验并缓存文件，不会创建可供
+清单选择的别名。命名别名是不可变的，内容、启动模式或源用户变化时应注册新的
+`local-*` 名称。命名导入记录宿主架构，外来架构镜像应使用静态仓库。
+在清单中设置 `vm_image: local-mybase`，再运行 `barn plan`。
 
 缓存清理会保护选定活动镜像目录的全部镜像、已应用节点的镜像，以及全部已注册本地别名，
-因此销毁所有 VM 后也不会简单清空缓存。删除前先看候选列表：
+因此销毁所有虚拟机后也不会简单清空缓存。删除前先看候选列表：
 
 ```bash
 barn image prune --dry-run
 barn image prune --yes
 ```
 
-签名、回滚保护、缓存布局、架构与 TCG 规则见[镜像参考](../../reference/images/)；准备镜像
-候选镜像及发布前的独立验证要求见[镜像流水线](../../reference/image-pipeline/)。
+预览与删除都需要 `qemu-img` 检查缓存镜像。镜像目录保护只覆盖选定仓库。如果缓存镜像仅被另一个仓库的镜像目录引用，仍可能进入候选列表。两条命令应使用一致的 `--repo`。逐项核对路径，尤其是后续离线使用依赖这些缓存时。中断下载或
+导入的暂存文件也会被列为清理候选。
+
+签名、回滚保护、缓存布局、架构与 TCG 规则见[镜像参考](../../reference/images/)。候选镜像准备与发布前的独立验证要求见[镜像流水线](../../reference/image-pipeline/)。

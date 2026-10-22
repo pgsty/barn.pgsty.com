@@ -10,27 +10,12 @@ icon: fa-solid fa-layer-group
 lastmod: 2026-09-29
 ---
 
-This article describes Barn 0.9.0. The VM lifecycle and network design here
-apply to Linux guests; [Mac machines](/docs/start/macos/) are managed independently.
+This article explains the Linux deployment model in Barn 0.9.0. [Mac machines](/docs/start/macos/) are managed independently.
 
-Barn began with a familiar VM-manager abstraction: a working directory was
-a project, a hidden marker gave it identity, a registry found projects again,
-and a host-global lease kept their private networks from colliding. That model
-can support many independent VM sets. It was also the wrong model for the
-product Barn was actually becoming.
+Barn originally treated each working directory as a project. A hidden marker identified the project, a registry located it, and a host-wide lease prevented private-network collisions.
+This model supported independent VM sets, but it did not match Barn's intended use.
 
-The target is not a general-purpose hypervisor front end. It is one local,
-fixed-IP Pigsty lab. The operator already has a complete description of that
-lab: the Pigsty inventory. Adding a second VM manifest and a second project
-identity made every ordinary question harder.
-
-> [!NOTE]
-> This record explains the product model. For
-> current filenames, fields, and commands, use the
-> [configuration reference](/docs/reference/configuration/).
-
-The old abstraction turned ordinary questions into project-management
-questions:
+Barn is designed for one local Pigsty lab with fixed IP addresses, already described by the Pigsty inventory. A separate VM manifest and project identity introduced extra configuration and ownership questions:
 
 - Which file is authoritative for a node's name and address?
 - Does moving a directory move the lab or create a new one?
@@ -38,37 +23,32 @@ questions:
 - Is a missing directory an abandoned project or an unavailable disk?
 - Which project owns the one host network?
 
-Those are legitimate multi-project questions. Barn chose to stop creating
-them.
+Multiple independent projects need these mechanisms; a single Pigsty lab does not. Barn therefore removed the project model.
+
+> [!NOTE]
+> This record explains the product model. For
+> current filenames, fields, and commands, use the
+> [configuration reference](/docs/reference/configuration/).
 
 ## One inventory is enough
 
-The inventory handed to Pigsty is also Barn's desired state. Barn reads a
-small, documented boundary: host addresses, a few Pigsty-native identity
-fields, and the `vm_*` namespace. Validation is strict inside that namespace;
-the rest of the inventory stays opaque and passes to Pigsty untouched.
+The Pigsty inventory also defines Barn's desired state. Barn reads host addresses, selected Pigsty identity fields, and the documented `vm_*` namespace.
+Barn strictly validates its namespace. It passes the rest of the inventory to Pigsty without interpretation or changes.
 
-This asymmetric rule matters. A misspelled `vm_mem` must fail because it would
-change the machine Barn builds. A new PostgreSQL tuning parameter must not
-fail merely because the VM layer has never heard of it. The same file can
-therefore evolve as a Pigsty inventory without becoming a second Barn
-format in disguise.
+A misspelled `vm_mem` must fail because this field controls the VM definition. An unfamiliar PostgreSQL tuning parameter can pass through because the VM layer does not use it.
+This rule lets the Pigsty inventory change without requiring a separate Barn configuration format.
 
-Names follow the same principle. A node uses `nodename` when present, then a
-stable Pigsty cluster/sequence derivation, then its address suffix. Barn does
-not add a parallel `vm_name` that can disagree with the hostname Pigsty sees.
+Barn selects a node name from `nodename` when present. Otherwise, it derives a stable name from the Pigsty cluster and sequence, then falls back to the address suffix.
+Barn does not add a separate `vm_name` that could conflict with Pigsty's hostname.
 
 ## One owner-scoped state root
 
 Applied state lives under `BARN_HOME`, normally `~/.barn`. There is no
 marker in the working directory and no per-directory registry. Commands that
-operate on applied state can run from any directory; commands that propose new
-desired state discover or receive an inventory explicitly.
+operate on applied state can run from any directory.
+Commands that propose new desired state discover or receive an inventory explicitly.
 
-This is an owner-scoped deployment, not a root-enforced machine-wide
-singleton. Each Unix user has an independent state root. Barn is intended
-for a trusted development workstation, not hostile-user arbitration on a
-shared server.
+Each Unix user has an independent state root, so the single-deployment limit applies per user rather than to the whole host. Barn assumes a trusted development workstation and does not arbitrate between hostile users on a shared server.
 
 The simplification has practical consequences:
 
@@ -83,26 +63,16 @@ The simplification has practical consequences:
 
 ## Configuration absence is not intent
 
-One deployment does **not** mean the inventory is disposable. It means Barn
-can distinguish desired configuration from applied evidence. When a command
-needs desired state, an existing deployment can supply its applied spec where
-the command contract allows that fallback. A missing file is never interpreted
-as a request to remove nodes.
+Barn keeps desired configuration separate from applied state. The inventory remains necessary for configuration changes, while commands that permit fallback can use the existing deployment's applied spec. A missing file never authorizes node removal.
 
-That rule survives every layer of the lifecycle: [planning and deletion stay
-explicit](/blog/design/convergence-without-surprise/), and recovery preserves
-ambiguous resources instead of guessing what the user meant.
+This rule applies throughout the lifecycle. [Planning and deletion remain explicit](/blog/design/convergence-without-surprise/).
+Recovery preserves resources whose identity is ambiguous.
 
 ## The trade-off is deliberate
 
-Barn does not support multiple concurrent deployments per user. Projects,
-registries, and address-level leasing are not hidden future features; they
-were rejected because they would reintroduce the abstraction the product
-removed.
+Barn does not support multiple concurrent deployments per user. The design excludes projects, registries, and address-level leases because these features would reintroduce the removed project model.
 
-If the requirement changes to multi-tenant or multi-host orchestration, that
-is a different product boundary. For a local Pigsty lab, one inventory and one
-deployment make the important things—addresses, ownership, drift, recovery,
-and cleanup—much easier to explain and prove.
+Multi-tenant or multi-host orchestration would require a different product scope.
+For a local Pigsty lab, one inventory and one deployment simplify address management, ownership checks, drift detection, recovery, and cleanup.
 
 Read next: [Why every Barn node has two NICs](/blog/design/fixed-ip-two-nics/).

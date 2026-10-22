@@ -7,16 +7,15 @@ sections:
   - cta
 
 hero:
-  eyebrow: Barn 0.9.0 · Apache-2.0
+  eyebrow: Barn 0.9.1 · Pre-release · Apache-2.0
   title_lines:
-    - Your local lab.
+    - Local virtual machines.
     - Linux and macOS.
   title_size: 3.8rem
   lead: >-
-    Bring up a Linux lab from one YAML inventory, or a clean macOS machine
-    for your next build. Fixed addresses, SSH access, and native virtualization
-    on your own hardware.
-  note: Bootstrap And Run Nodes. Open source, built for development.
+    Create a Linux lab from one YAML inventory, or run a separate macOS machine
+    for builds and tests. Connect through SSH and manage your VMs from the command line.
+  note: Bootstrap And Run Nodes. An open-source tool for local development.
   note_icon: fa-solid fa-terminal
   image:
     src: images/barn-hero.svg
@@ -25,8 +24,8 @@ hero:
     - { label: Start a Linux lab, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: Run a macOS VM, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
   detail:
-    label: What's new in 0.9.0
-    url: blog/release/0.9.0/
+    label: What's new in 0.9.1
+    url: blog/release/0.9.1/
     icon: fa-solid fa-tag
 
 workflows:
@@ -40,25 +39,25 @@ workflows:
       icon: fa-brands fa-linux
       desc: >-
         Test a PostgreSQL cluster, reproduce a bug, or try a new distribution.
-        Define up to 20 nodes in one YAML inventory, with stable IPs and SSH
-        ready to use. The same inventory works with Pigsty.
+        Define up to 20 nodes with fixed IPs and SSH access in one YAML inventory.
+        The same inventory works with Pigsty.
       url: docs/start/tutorial/
-    - title: A fresh Mac for your next build
+    - title: A separate macOS environment
       meta: On Apple Silicon · macOS 27+
       icon: fa-brands fa-apple
       desc: >-
-        Build and test in an independent macOS environment. Open its desktop,
-        connect over SSH, and share folders and text with your Mac.
-        New machines reuse a shared base; each keeps its own disk and identity.
+        Build and test in a separate macOS environment with its own disk and identity.
+        Use the desktop or SSH, and share folders and text with your Mac.
+        New VMs reuse a shared base image.
       url: docs/start/macos/
 
 first_command:
   eyebrow: Install → Start → Connect
   title: Your first Linux VM
   text: >-
-    Choose your host OS below, then install, start, and connect. On a fresh setup,
-    Barn creates a one-node Ubuntu 24.04 lab and prepares the host dependencies.
-    It shows host changes and requests administrator access when needed.
+    Select your host OS to install Barn 0.9.1, start the VM,
+    and connect. On a fresh setup, Barn creates a one-node Ubuntu 24.04 lab.
+    Barn shows the required host changes and requests administrator access when needed.
   body: |-
     ```bash {tab="macOS" group="barn-install" value="macos"}
     brew install pgsty/infra/barn
@@ -68,43 +67,43 @@ first_command:
     ```
 
     ```bash {tab="Linux" value="linux" wrap=true}
-    curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.0/install.sh
-    BARN_VERSION=0.9.0 bash install.sh
+    curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.1/install.sh
+    BARN_VERSION=0.9.1 bash install.sh
     export PATH="$HOME/.local/bin:$PATH"
 
     barn up
     barn ssh
     ```
 
-    Use Homebrew on macOS or the download installer on Linux. Already have a lab? `barn up` resumes it.
+    If a lab already exists, `barn up` resumes it.
     [Installation options and requirements](docs/start/installation/) · [macOS VM guide](docs/start/macos/)
 
 features:
-  eyebrow: Built for repeatable work
-  title: A lab you can understand and control
+  eyebrow: Repeatable operations
+  title: Configure and manage your lab
   columns: 4
   items:
     - { icon: fa-solid fa-network-wired, title: Stable addresses, desc: Linux nodes keep the IPs in your inventory. Reach databases and services directly from the host and other nodes. }
     - { icon: fa-solid fa-file-code, title: One configuration, desc: Keep VM definitions in your Ansible inventory. Use it with Barn to create machines and Pigsty to deploy services. }
-    - { icon: fa-solid fa-arrows-rotate, title: Repeatable operations, desc: Repeat up to finish interrupted setup. Review changes with plan; recreate and delete machines explicitly. }
-    - { icon: fa-solid fa-clone, title: Reusable images, desc: Linux uses verified qcow2 bases. macOS machines clone a base installed from Apple's restore image, with separate writable disks. }
+    - { icon: fa-solid fa-arrows-rotate, title: Repeatable operations, desc: 'Run up again to finish interrupted setup. Use plan to preview configuration changes, then recreate affected VMs when needed.' }
+    - { icon: fa-solid fa-clone, title: Reusable images, desc: Linux uses verified qcow2 base images. macOS VMs clone a base installed from Apple's restore image. Each VM has a separate writable disk. }
 
 faq:
   title: Before you begin
   items:
     - question: Which host do I need?
-      answer: 'Linux guests run on macOS or Linux, on arm64 or amd64, using QEMU with HVF or KVM. macOS guests require Apple Silicon, macOS 27 or later, and the native Barn Mac component. See [platforms and limits](docs/about/status/).'
+      answer: 'Linux guests run on arm64 or amd64 hosts with macOS or Linux. QEMU uses HVF or KVM for native acceleration. macOS guests require Apple Silicon, macOS 27 or later, and the native Barn.app component. See [platforms and limits](docs/about/status/).'
       open: true
     - question: Do I need Pigsty?
-      answer: 'No. Barn works on its own for Linux and macOS development. For a PostgreSQL lab, use the same Linux inventory with [Pigsty](https://pigsty.io/). Barn prepares machines and access; Pigsty installs the services.'
+      answer: 'No. Barn works on its own for Linux and macOS development. For a PostgreSQL lab, use the same Linux inventory with [Pigsty](https://pigsty.io/). Barn prepares VMs and access, and Pigsty installs the services.'
     - question: What happens when I edit the inventory?
-      answer: 'For Linux labs, plan shows the changes. Up adds new nodes; changes to existing VM definitions require recreate. Removing a host from the file leaves its VM intact until you explicitly destroy it.'
+      answer: 'For Linux labs, use plan to see changes. Up adds new nodes, but changes to existing VM definitions require recreate. A VM stays in place when you remove its host from the inventory. Use destroy to delete it.'
     - question: Can I keep several macOS machines?
-      answer: 'Yes. Give them names and start the ones you need. Apple allows two macOS VMs running at a time per Mac, including other tools. Each Barn Mac machine has an independent network and state, separate from the Linux lab.'
+      answer: 'Yes. Give them names and start the ones you need. Up to two macOS VMs can run at once per Mac, including VMs from other tools. You can keep more stopped machines.'
 
 cta:
-  title: Make room for your next experiment.
-  desc: Install Barn 0.9.0, choose your guest, and get to work.
+  title: Create your first VM.
+  desc: Install Barn 0.9.1 and start a local development environment.
   actions:
     - { label: Install Barn, url: docs/start/installation/, icon: fa-solid fa-download, style: primary }
     - { label: Browse the docs, url: docs/, icon: fa-solid fa-book-open, style: ghost }

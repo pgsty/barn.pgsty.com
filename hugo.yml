@@ -175,7 +175,7 @@ params:
   github_repo: https://github.com/pgsty/barn.pgsty.com
   github_project_repo: https://github.com/pgsty/barn
   github_branch: main
-  version: 0.9.0
+  version: 0.9.1
   copyright:
     authors: '[PGSTY](https://pgsty.com/) and Barn contributors'
     from_year: 2026

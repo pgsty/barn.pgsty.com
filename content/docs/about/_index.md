@@ -13,7 +13,9 @@ Its name stands for **Bootstrap And Run Nodes**.
 
 - [Platforms and limits](status/) — check host requirements and choose a suitable guest.
 - [Design](design/) — understand the Linux lab and independent Mac machines.
+- [Security and trust](security/) — understand host privileges, guest credentials, and image verification.
 - [Contributing](engineering/) — find the source, tests, packaging, and image tools.
+- [Validation history](history/) — read dated release checks, native tests, and their original limits.
 
 Follow [release notes](/blog/release/) for changes and [design articles](/blog/design/)
 for the reasoning behind the implementation. Contributions and bug reports are
