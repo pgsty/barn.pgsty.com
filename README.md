@@ -18,7 +18,7 @@
 </p>
 
 This directory contains the bilingual documentation site for Barn: English at
-`/` and Simplified Chinese at `/zh/`. The site uses Hugo Extended and Oink 1.3.2.
+`/` and Simplified Chinese at `/zh/`. The site uses Hugo Extended and Oink 1.4.0.
 
 Paper is the default visual style. The Appearance menu lets readers switch
 between Paper, Slate, Ink, and Terminal independently of light/dark mode.
@@ -88,7 +88,7 @@ pairs, code examples, and GitHub source/download links as well as the generated
 HTML. Internal link checks cannot detect a missing file in a remote repository.
 
 The production target is `https://barn.pgsty.com/`. Review build warnings;
-the OINK 1.3.2 LibSass deprecation warning is accepted for this baseline. Do
+the OINK 1.4.0 LibSass deprecation warning is accepted for this baseline. Do
 not enable `--panicOnWarning` or `HUGO_PANICONWARNING`. Pages settings and DNS
 must authorize that domain before publication.
 
