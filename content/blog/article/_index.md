@@ -1,5 +1,5 @@
 ---
-title: Article
+title: Articles
 linkTitle: Article
 description: Project articles and long-form technical notes about Barn.
 weight: 10
@@ -10,5 +10,4 @@ build:
   list: never
 ---
 
-This section contains project articles and detailed technical notes about Barn.
-For current product behavior, use the [documentation](/docs/).
+Long-form project articles and technical notes on Barn. For current command and configuration references, see the [Documentation](/docs/).

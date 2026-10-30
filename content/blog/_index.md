@@ -1,18 +1,25 @@
 ---
-title: Barn blog
+title: Barn Blog
 linkTitle: Blog
-description: Release notes and the design decisions behind Barn.
-weight: 60
+description: Release notes, architecture essays, and engineering updates for Barn.
+weight: 30
+type: blog
 icon: fa-solid fa-newspaper
-sidebar_root_menu: false
+sidebar_root_for: self
+sidebar_root_link_self: true
+blog_index: cards
+blog_index_columns: 2
+blog_index_toggle: true
+featured_image: wash
 cascade:
   type: blog
-  images: [images/barn-hero.png]
-  theme_color: '#a9573b'
-  theme_color_dark: '#dca579'
+  featured_image: wash
+  reading_time: true
+  toc_taxonomies: false
 ---
 
-Read [what is new in Barn 0.9.0](release/0.9.0/), or explore the [design decisions](design/) behind its configuration, networking, and lifecycle.
+Engineering updates, architectural essays, and release records for Barn. For step-by-step usage guides and command references, see the [Documentation](/docs/).
 
-The [release history](release/) preserves earlier versions and development
-snapshots, with their original changes and dated validation results.
+- [Release Notes](release/) — Version highlights, upgrade instructions, compatibility boundaries, and dated validation records. Current release: **[Barn 0.9.2](release/0.9.2/)**.
+- [Design Notes](design/) — Architectural decisions behind Barn's single-deployment model, Ansible inventory compatibility, in-place convergence, and host networking.
+{.cards}

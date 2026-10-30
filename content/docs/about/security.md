@@ -1,96 +1,61 @@
 ---
 title: Security and Trust
-description: Host privileges, guest credentials, shared folders, and the separate trust boundaries in Barn 0.9.1.
+description: Host privileges, guest credentials, shared folders, and the separate trust boundaries in Barn 0.9.2.
 weight: 25
 icon: fa-solid fa-shield-halved
 ---
 
-Barn is intended for trusted local development. All Linux nodes share a private
-network, and the control node can administer the other nodes. Ownership checks
-prevent accidental changes to unrelated resources, but do not isolate untrusted users.
+Barn is designed for trusted local development workstations. All Linux lab nodes share a private subnet, and the control node holds the SSH key needed to administer every peer node in the lab. Barn's ownership and identity checks prevent accidental damage to unrelated host files or processes, rather than isolating mutually untrusted local users.
 
 ## Host privileges
 
-Run `barn` as your ordinary user. QEMU and image downloads run under that
-account. VM disks and state belong to the same account. Only these host tasks
-require administrator access:
+Always run `barn` as your normal desktop or shell user. QEMU processes, `Barn.app` macOS VMs, image downloads, VM disks, and state files all run under and belong to your user account. Administrator (`sudo`) privileges are used only for three explicit host-level tasks:
 
-| Task | What changes |
-| --- | --- |
-| `setup` installs missing Linux dependencies | The distribution package manager installs QEMU, firmware, and OpenSSH; macOS Homebrew runs as your user |
-| `network install` / `uninstall` | The host-wide fixed-IP backend and its recorded configuration |
-| `hosts install` / `uninstall` | Only Barn's marker-delimited block in the system hosts file, through a separate helper |
+| Task | Privileged scope |
+|---|---|
+| `barn setup` (Linux dependency install) | Runs the distribution package manager (`apt`/`dnf`) to install QEMU, firmware, and OpenSSH (macOS Homebrew runs as your normal user) |
+| `barn network install` / `uninstall` | Configures or removes the host-wide fixed-IP network backend (`barn0` bridge on Linux, `socket_vmnet` launchd service on macOS) |
+| `barn hosts install` / `uninstall` | Updates only Barn's marker-delimited block in `/etc/hosts` through the dedicated `barn-hosts-helper` binary |
+{.wide}
 
-Setup shows the required changes before asking for privileges. Install the CLI
-and `barn-hosts-helper` from the same build. The helper under `/opt/barn/libexec/`
-must match the digest embedded in the packaged CLI. For each write, the helper checks
-file ownership, permissions, link count, and the expected contents before and after the change.
+Before prompting for `sudo`, `setup`, `network`, and `hosts` display the exact plan they will execute. Keep `barn` and `/opt/barn/libexec/barn-hosts-helper` installed from the same release build: the CLI verifies the helper's embedded SHA-256 digest before invoking it, and the helper checks `/etc/hosts` ownership, permissions, link count, and pre/post content digests on every write.
 
-The native `barn mac` workflow uses a separate network for each machine.
-It adds no root daemon or privileged network transaction. See [design](../design/) and
-[uninstall](../../start/uninstall/) for resource lifetimes.
+By contrast, `barn mac` creates per-VM user-space `vmnet` networks on demand without any root daemon or privileged network setup (see [Design](../design/) and [Uninstall](../../start/uninstall/)).
 
 ## Guest access and SSH trust
 
-The Linux guest account defaults to `dba` with passwordless sudo. Its password
-is locked, and Barn supplies a deployment SSH key. The control node also
-receives that private key to run Ansible and administer the other nodes.
-Access to the control node therefore gives administrative access to the entire Linux lab.
+In Linux labs, the default guest account is `dba` with a locked password, passwordless `sudo`, and an Ed25519 deployment SSH keypair generated in `$BARN_HOME`. Barn also installs that private key on the control node so Ansible playbooks and administrative scripts can reach every node in the lab—meaning anyone with shell access to the control node has administrative access to the entire Linux lab.
 
-These SSH connections have different trust policies:
+Barn applies distinct OpenSSH host-key policies across its three connection paths:
 
-| Connection | Host-key policy |
-| --- | --- |
-| Host → Linux guest through Barn | `accept-new`, with a private known-hosts file and VM UUID alias; first use accepts a key, later mismatches fail |
-| Linux control node → lab peers | The generated peer configuration uses `StrictHostKeyChecking no` and `/dev/null` for known hosts, to support routine lab recreation |
-| Host → initialized macOS guest through Barn | A per-machine pinned host key with strict checking; agent forwarding is disabled |
+| Connection path | Host-key policy |
+|---|---|
+| Host → Linux guest (via `barn` or `~/.ssh/barn_config`) | `StrictHostKeyChecking accept-new` against a private `known_hosts` file keyed by VM UUID alias (pins on first connection; rejects later mismatches; explicit `recreate` generates a new VM UUID) |
+| Linux control node → lab peers | `StrictHostKeyChecking no` with `UserKnownHostsFile /dev/null` for Barn-managed peer aliases so recreated lab nodes remain reachable without manual `known_hosts` edits |
+| Host → macOS guest (via `barn mac` or `~/.ssh/barn-mac_config`) | Strict host-key verification against the per-VM `known_hosts` file keyed by `barn-mac-<instance_id>`, with SSH agent forwarding disabled |
+{.wide}
 
-The control node skips host-key checks when it uses the generated SSH configuration
-to connect to other nodes. Use this configuration only in a trusted lab network.
-An explicit recreate establishes a new VM identity,
-even if the port number or fixed IP stays the same.
+Each macOS VM generates its own Ed25519 SSH keypair and random local administrator password (stored in a `0600` `password` file inside the VM slot directory and readable via `barn mac password`). Once guest initialization completes, both Linux and macOS guests enforce SSH public-key authentication, disable SSH password authentication and root SSH login, and grant passwordless `sudo` to the configured admin user. Strip private keys, passwords, and sensitive state before sharing logs or inventories in bug reports.
 
-Each Mac machine has its own SSH key and random desktop password. Barn stores
-the password in a mode-0600 file in the machine directory, not in Keychain.
-Use `barn mac password` to display it.
+## Shared folders and disposable disks
 
-After initial SSH setup, the guest uses key authentication. It disables SSH
-password authentication and SSH login as root. The configured user has passwordless
-sudo access. Do not copy state or command output with credentials into an
-issue or shared repository.
-
-## Shared files and disposable disks
-
-Writable shares give guest processes access to the selected host directory.
-Use a dedicated directory. If the guest does not need to write files, select
-read-only access. The shared host folder and any changes made by the guest remain after VM removal.
-
-Barn retains persistent Linux data disks during ordinary destroy/recreate.
-However, guest recovery can format a filesystem that it cannot recognize or
-confirms as damaged. Back up important data outside the lab. See
-[storage](../../start/storage/) for deletion and recovery rules.
+- **Host directory shares**: Writable shares (`readonly: false` in Linux `vm_shares` or `:rw` in `barn mac --share`) grant guest processes direct write access to the shared host directory, and changes made inside the shared directory persist after the VM is destroyed. Share dedicated project folders and prefer read-only shares whenever guests do not need to modify host files.
+- **Persistent and disposable data disks**: Ordinary Linux `destroy` and `recreate` retain `persistent: true` data disks, while `up` automatically formats unrecognized or confirmed-corrupt data-disk filesystems during recovery. Keep important data backed up on the host (see [Storage and Access](../../start/storage/)).
 
 ## Downloads and image trust
 
-| Mechanism | What it checks |
-| --- | --- |
-| Application `checksums.txt` | Downloaded archives and packages match the release's published hashes |
-| Native app code signature and notarization | A separate macOS distribution process; 0.9.1 does not distribute the native app; local source builds use ad-hoc signing by default |
-| Signed Linux image catalog | Metadata was signed by an accepted catalog key and satisfies revision rules |
-| Image download validation | Size, SHA-256, qcow2 structure, and virtual size match the accepted metadata |
+Barn separates trust verification across four independent mechanisms:
 
-Application checksums are not an independent release signature. A trusted
-catalog also does not authenticate the Barn executable. The two official
-image repositories require signatures, including when explicitly selected
-with `--repo`. A custom HTTPS or local repository may accept unsigned
-metadata. Use such a repository only if you trust its source. See
-[image verification](../../reference/images/) for revision and cache rules.
+| Mechanism | What it verifies |
+|---|---|
+| Release `checksums.txt` | Verifies that downloaded CLI archives and `.deb`/`.rpm` packages match the SHA-256 digests published for that GitHub Release |
+| macOS release signatures | The 0.9.2 Apple Silicon CLI, helper, and `Barn.app` use Developer ID signatures and Apple notarization; the app carries a stapled ticket. Local source builds default to ad-hoc signing |
+| Linux catalog signature (`catalog.json.minisig`) | Verifies with Barn's embedded Ed25519 public keys that `catalog.json` was signed by a trusted key and satisfies per-repository anti-rollback revision rules |
+| Image artifact verification | Verifies before use that every downloaded or imported `.qcow2` matches its catalog byte size, SHA-256 digest, virtual capacity, and standalone `qcow2` format rules |
+{.wide}
+
+The two official image repositories (`https://repo.pigsty.io/barn` and `https://repo.pigsty.cc/barn`) always require valid minisign catalog signatures, even when passed explicitly via `--repo`. Custom HTTPS or local directory repositories may use unsigned catalogs when explicitly selected with `--repo` or `BARN_REPO` (see [Linux Images](../../reference/images/)).
 
 ## Report a vulnerability
 
-Use [GitHub private vulnerability reporting](https://github.com/pgsty/barn/security/advisories/new)
-or email [repo@pigsty.cc](mailto:repo@pigsty.cc). Include `barn --json version`,
-the host platform, and a minimal reproduction with credentials removed.
-The [security policy](https://github.com/pgsty/barn/blob/main/SECURITY.md)
-describes support and disclosure. Report ordinary usage bugs in
-[Issues](https://github.com/pgsty/barn/issues).
+Report security vulnerabilities privately via [GitHub Security Advisories](https://github.com/pgsty/barn/security/advisories/new) or by emailing [repo@pigsty.cc](mailto:repo@pigsty.cc) with `barn --json version`, your host OS and architecture, and a minimal reproduction with credentials removed. See [`SECURITY.md`](https://github.com/pgsty/barn/blob/main/SECURITY.md) for disclosure policy, and use [GitHub Issues](https://github.com/pgsty/barn/issues) for ordinary bug reports.

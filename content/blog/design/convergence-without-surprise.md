@@ -7,96 +7,75 @@ weight: 30
 categories: [Design]
 tags: [Lifecycle, Drift, Safety]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-09-29
+lastmod: 2026-10-30
 ---
 
-This article explains the Linux VM lifecycle in Barn 0.9.0. [Mac machines](/docs/start/macos/) are managed independently.
-
-A declarative tool compares actual state with a configuration file. The file can be incomplete, come from the wrong branch, or temporarily omit a YAML group.
-If the tool treats an omitted definition as deletion permission, an editing mistake can destroy a VM.
-
-Barn uses this rule:
-
-> Desired state may authorize creation. It can describe drift. It never
-> authorizes destruction by omission.
-
-Root disks, data disks, SSH keys, and local records retain state. Recreating these resources can be necessary, but the operator must explicitly select that operation.
-
-## From inventory to node identity
-
-Barn first extracts the fields it owns from the Pigsty inventory. It fills defaults and normalizes image selectors and architecture to produce a resolved spec.
-Barn resolves exact catalog artifacts separately. Therefore, a channel update alone does not change a node's spec hash. Each node's hash includes:
-
-- the deployment envelope shared by every node, such as subnet, login user,
-  architecture policy, and the deployment-level default image request; and
-- exactly that node's resolved definition.
-
-Adding a node does not change an existing node's hash. Changes to other Pigsty fields, such as PostgreSQL version, packages, or service policy, do not produce VM drift. Barn checks only the fields in its VM configuration contract.
-
-Barn does not implement Ansible's entire variable system. It rejects unknown `vm_*` keys and conflicting values inside its namespace. It does not interpret fields outside the documented boundary.
+This essay explains the Linux VM convergence model in Barn `0.9.2` ([macOS guests](/docs/start/macos/) are managed independently).
 
 > [!NOTE]
-> Barn converges additions automatically, but
-> definition changes and removal require explicit commands. See
-> [Daily Operations](/docs/start/operations/) for the command workflow.
+> **2026-10-30 update:** The unreleased source changes scope `plan`, `up`, `reload`, and `recreate` to explicit node selections and retain unselected peers' applied definitions. The whole-inventory drift rules described below still apply when no nodes are selected. See [selected-node operations](/docs/start/operations/#selected-nodes).
 
-## The five plan outcomes
+A declarative tool compares live state against a configuration file—but in daily development, that file might be temporarily edited for debugging, checked out on another git branch, or missing a YAML group after a merge. If a local VM manager treats an omitted YAML block as permission to destroy a virtual machine, a single typo can wipe out a database node.
 
-`barn plan` compares desired state, applied deployment state, and committed
-node state. It reports these outcomes:
+Barn enforces a strict asymmetry between creation and destruction:
 
-| Outcome | Meaning | Apply path |
-| --- | --- | --- |
-| create | desired node has no committed state | `barn up` creates it |
-| unchanged | definition and runtime still match | running peer stays untouched; stopped peer may start |
-| recreate | node definition changed | explicit `barn recreate --force <node>` |
-| missing | applied node is absent or skipped in the inventory | explicit `barn destroy <node> --force`, or restore it to the file |
-| envelope drift | subnet, login identity, architecture, or runtime policy changed | whole-deployment recreate |
+> Desired state authorizes creation and describes drift, but never authorizes destruction by omission.
 
-Plan is read-only. It reports the exact node sets and, in text mode, the command
-that applies the required explicit transition.
+Root overlays, data disks, SSH host identities, and local databases hold state that takes time to rebuild. When a change requires replacing or deleting a node, the operator must invoke that action explicitly.
 
-## Why `up` stops at drift
+## From Pigsty inventory to per-node spec hash
 
-Barn 0.9.0 does not apply CPU or memory changes automatically. It also does not rebuild a root disk automatically when the image changes.
-A changed VM definition requires recreation, so `up` returns a typed conflict.
+When reading `barn.yml`, Barn extracts the fields in its contract, fills defaults, and normalizes image selectors and architecture into a resolved specification. Exact catalog image digests are resolved separately so that running `barn update` does not silently invalidate every node's specification hash. Each node's hash combines two inputs:
 
-This rule provides two benefits:
+- **The deployment envelope** shared by all nodes (the `/24` subnet, login username, `vm_arch` policy, and deployment-level default image selector).
+- **That node's resolved definition** (`nodename`, IP, vCPUs, memory, root disk, `vm_disks`, `vm_shares`, and `vm_alias`).
 
-1. all changes that can invalidate guest state share one visible operation;
-2. Barn can finish every prerequisite check before touching the current
-   node.
+Adding a second node leaves the first node's hash untouched, and editing upper-layer Pigsty variables (`pg_version`, `node_packages`, `pg_role`) produces zero VM drift.
 
-The recreate path resolves the selected emulator, acceleration policy,
-firmware, image bytes, network backend, shares, and persistent-disk contract
-before it destroys the node. If a foreign-architecture emulator is missing or a share is unsafe, Barn preserves the existing VM.
+> [!NOTE]
+> `barn up` converges additions and stopped nodes automatically, while specification changes and node removals use explicit `barn recreate` and `barn destroy` commands. See [Daily Operations](/docs/start/operations/) for the command workflow.
 
-## Why missing nodes block convergence
+## Five explicit `barn plan` outcomes
 
-A node can disappear from desired state for many reasons that do not express
-deletion intent:
+`barn plan` compares the desired inventory against committed deployment and node state and classifies every node into one of five outcomes:
 
-- the operator opened a reduced inventory while debugging;
-- a group was renamed or filtered;
-- `vm_skip` temporarily marks a real or external host;
-- a merge conflict dropped a YAML branch;
-- the configuration file itself is unavailable.
+| Outcome | Meaning | Resolution command |
+|---|---|---|
+| `create` | Node exists in the inventory with no committed VM state | `barn up` creates and boots the node |
+| `unchanged` | Resolved definition and runtime policy match committed state | `barn up` keeps running nodes untouched and starts stopped nodes |
+| `recreate` | Node's hardware, image, disk, or share definition changed | `barn recreate <node>` (or `--force` in scripts) |
+| `missing` | Committed node is absent or marked `vm_skip: true` in the inventory | `barn destroy <node>`, or restore the node to `barn.yml` |
+| Envelope drift | Deployment subnet, login user, `vm_arch`, or runtime policy changed | Whole-deployment `barn recreate` |
+{.wide}
 
-When applied state contains an omitted node, `up` stops and names that node. The operator must restore its definition or run the explicit destroy command. This step prevents configuration omissions from deleting disks automatically.
+`barn plan` is completely read-only and prints the exact command needed to resolve any `recreate` or `missing` drift.
 
-Normal destroy preserves persistent data disks.
-Whole-deployment `destroy --delete-persistent` explicitly includes owned
-persistent disks, including retained disks. It accepts no node selectors.
-Deleting deployment keys as well requires whole-deployment
-`destroy --purge` or `purge`. Retention is not a backup guarantee: guest
-bootstrap can reset unrecognized or confirmed damaged test filesystems, even
-on persistent disks. See [Data disks](/docs/reference/configuration/#data-disks).
-Each confirmation applies only to its stated operation.
+## Why `barn up` stops on node drift
 
-## Convergence is still incremental
+Rather than hot-plugging vCPUs/memory or silently rebuilding a root disk when `vm_image` changes, `barn up` stops with a `conflict` error whenever an existing node's specification has drifted. Requiring an explicit `barn recreate <node>` gives you two guarantees:
 
-Barn creates new nodes without stopping existing ones and starts selected stopped nodes without recreating running peers. A per-node recreate preserves other nodes and retains persistent data when the disk contract requires it.
+1. Every change that replaces a guest's root filesystem goes through one visible, confirmed command.
+2. Barn validates all prerequisites—target QEMU emulator, accelerator policy, UEFI firmware, cached or downloadable image bytes, network backend, shared directory paths, and persistent-disk compatibility—**before** stopping or deleting the existing VM. If a foreign-architecture emulator is missing or a share path is invalid, the running VM stays untouched.
 
-Barn uses desired state to create nodes and calculate drift. It requires explicit commands for irreversible changes. The operator reviews the difference before authorizing a destructive operation.
+## Why missing nodes block `barn up`
 
-Read next: [A PID is not a virtual machine](/blog/design/identity-before-pid/).
+A node can vanish from `barn.yml` for plenty of routine reasons that do not mean "delete this database server":
+
+- You passed a smaller test inventory while debugging a single node.
+- You renamed a group or toggled `vm_skip: true` on a host entry.
+- A branch switch or merge conflict dropped a host stanza.
+- You ran a command from a directory with a different `barn.yml`.
+
+When committed state contains a node that is absent from the desired inventory, `barn up` halts and names the missing node so you can either restore it to `barn.yml` or run `barn destroy <node>` explicitly.
+
+When you do destroy or recreate nodes, data-disk lifetimes follow clear boundaries:
+
+- Ordinary `barn destroy` and `barn recreate` preserve `persistent: true` data disks on disk.
+- Whole-deployment `barn destroy --delete-persistent` removes persistent data disks as well, and `barn purge` (or `barn destroy --purge`) removes all disks, SSH keys, and deployment state in one step.
+- During `barn up` recovery, unrecognized or confirmed-corrupt data-disk filesystems are automatically formatted to the configured `fs` type (see [Data Disks](/docs/reference/configuration/#data-disks)).
+
+## Incremental convergence without collateral damage
+
+Because convergence is evaluated per node, `barn up` scales a 1-node lab out to 4 nodes without restarting the running control node, and `barn recreate node-2` replaces `node-2` while leaving `meta` and `node-1` online and reattaching `node-2`'s compatible persistent data disks.
+
+Read next: [A PID Is Not a Virtual Machine](/blog/design/identity-before-pid/).

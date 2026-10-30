@@ -7,95 +7,71 @@ weight: 20
 categories: [Design]
 tags: [Networking, QEMU, Pigsty]
 icon: fa-solid fa-network-wired
-lastmod: 2026-09-29
+lastmod: 2026-10-26
 ---
 
-This article explains the Linux network design in Barn 0.9.0. [Mac machines](/docs/start/macos/) are managed independently.
+This essay explains the Linux lab network architecture in Barn `0.9.2` ([macOS guests](/docs/start/macos/) use independent per-VM `vmnet` NAT subnets).
 
-A Pigsty inventory identifies nodes by stable addresses. PostgreSQL replication, etcd membership, HAProxy backends, VIPs, monitoring targets, and Ansible require `10.10.10.11` to identify the same node. A loopback port
-forward can expose SSH or PostgreSQL to the host, but it cannot provide that
-network identity to peers.
+A Pigsty inventory identifies every database node by a stable IPv4 address: PostgreSQL streaming replication, Patroni/etcd consensus, HAProxy backends, keepalived VIPs, Prometheus targets, and Ansible playbooks all expect `10.10.10.11` to name the same host across boots. Forwarding a loopback port on the host can expose SSH or port `5432` to your laptop, but peer VMs cannot form a cluster over host loopback forwards.
 
-Barn therefore gives every normal node two interfaces: one for NAT connectivity and one for a fixed network address.
+At the same time, freshly booted cloud images need effortless outbound internet access to download packages without requiring you to maintain custom host NAT/MASQUERADE firewall rules. Barn solves both problems cleanly by giving every Linux node two virtual network interfaces (NICs).
 
-## One interface should not do two incompatible jobs
+## Two interfaces, two distinct jobs
 
 | Interface | Addressing | Responsibility |
-| --- | --- | --- |
-| management | QEMU user-mode NAT, DHCP | DNS, default route, outbound internet, and loopback SSH fallback |
-| private, MAC-matched | fixed inventory address | host-to-node, node-to-node, Ansible, Pigsty services, and VIP traffic |
+|---|---|---|
+| Management NIC | QEMU user-mode NAT (`slirp`), DHCP | Outbound internet access, DNS, default route, and host-loopback SSH port forwarding |
+| Fixed-IP lab NIC (MAC-matched) | Static RFC1918 `/24` inventory IP | Host-to-node, node-to-node, Ansible, Pigsty services, and L2 VIP traffic |
+{.wide}
 
-Barn matches both virtual interfaces by their deterministic MAC addresses, without renaming them. The image's network stack selects guest-visible names, commonly `eth0` or `enp0s4`; MAC and address settings determine each interface's role.
+Barn binds each interface inside the guest by its deterministic MAC address rather than relying on kernel interface names (`eth0`, `enp0s4`, etc., which vary across distributions):
 
-The management interface lets a new cloud image reach package repositories before applications are installed. The host does not need additional NAT rules or a DHCP service.
-
-The private interface has one deterministic RFC1918 address, no default route, and no DNS. Guest setup checks these properties. Since 0.7, a failed private-network check produces a `private-network` warning but does not prevent readiness if management SSH and guest identity are usable.
-An operation can therefore succeed with limited fixed-IP connectivity. Before
-deploying a service that needs this interface, inspect the warnings and test
-the relevant host/peer connection. Repeat `up` after correcting the cause.
+- **The management NIC** gives a new VM immediate outbound internet access, DNS resolution, and a host-loopback SSH forward (`127.0.0.1:<port>`) with zero host firewall configuration.
+- **The fixed-IP lab NIC** configures the exact IPv4 address from `barn.yml` with no default gateway and no DNS servers. During `barn up`, guest bootstrap verifies this interface; if the fixed-IP link has an issue while management SSH is healthy, Barn marks the node ready with a `private-network` warning in `nodes[].warnings` so you can inspect the guest and re-run `barn up` after fixing the host bridge or route conflict.
 
 > [!NOTE]
-> The topology is part of Barn's normal
-> lifecycle, not an optional “private mode.” See the
-> [design reference](/docs/about/design/) for the current platform boundary.
+> Dual-NIC networking is built into every Barn Linux VM. See [Design](/docs/about/design/) for an overview of the Linux and macOS runtime architectures.
 
-## The inventory owns the address plan
+## The inventory owns the `/24` address plan
 
-All managed hosts belong to one canonical RFC1918 `/24`:
+All managed nodes in a deployment share one canonical RFC1918 `/24` subnet:
 
-| Range | Meaning |
-| --- | --- |
-| `.1` | host side of the private network |
-| `.2`–`.8` | reserved boundary, including valid L2 VIP space |
-| `.9`–`.254` | fixed node addresses |
+| Address range | Allocation |
+|---|---|
+| `.1` | Host gateway interface on the private lab subnet |
+| `.2`–`.8` | Reserved range (available for L2 VIPs; also bounds macOS `vmnet` DHCP) |
+| `.9`–`.254` | Static node addresses declared in `barn.yml` |
+{.wide}
 
-The guest private interface does not request DHCP: cloud-init receives the
-exact address already declared in the inventory. On macOS, vmnet's configured
-DHCP range ends at `.8`; managed node addresses begin at `.9`. Linux uses a
-bridge with static guest addresses. The VM address contract therefore does not
-depend on a lease database, and Ansible uses the same address throughout the
-deployment.
+Because `cloud-init` writes the static inventory address directly from `barn.yml` (on macOS, `socket_vmnet`'s DHCP pool ends at `.8`; on Linux, the `barn0` bridge uses static guest addressing), node IPs never depend on a DHCP lease database. Ansible and Pigsty use the exact same IP from the first `barn up` through every subsequent reboot.
 
-For generated configuration, setup can choose from a bounded set if the default subnet is occupied. Barn does not rewrite an explicitly supplied inventory to avoid a collision.
-The host interface, nodes, Pigsty addresses, and aliases must use the same subnet.
+When generating a fresh default template on a host where `10.10.10.0/24` is already in use, `barn setup` can automatically pick another free RFC1918 `/24`; explicit `-f` inventories and edited configurations always keep their declared subnet.
 
-## Platform-specific backend, identical guest contract
+## Platform-native backends, identical guest topology
 
-The guest sees the same topology on every supported host, while Barn follows
-the host's native networking owner:
+Inside the guest, every distribution sees the exact same two-NIC layout. On the host, Barn integrates with the platform's native network manager so QEMU always runs as an unprivileged user process:
 
-- **macOS:** a pinned `socket_vmnet` service provides the private link. Host
-  mode is the default; shared mode is explicit. QEMU still runs as the user.
-- **Linux with active NetworkManager:** Barn creates an owned `barn0`
-  bridge through `nmcli` and integrates with active firewalld policy.
-- **Linux with systemd-networkd:** Barn installs owned units and uses the
-  distribution `qemu-bridge-helper` so QEMU remains unprivileged.
-- **Inactive networkd:** activation is allowed only after a pre-mutation scan
-  proves that existing units cannot claim a real host interface.
+- **macOS (`socket_vmnet`)**: Runs a pinned `socket_vmnet` launchd service (`host` mode by default, or `shared` mode with `--mode shared`) while QEMU runs under your normal user account.
+- **Linux with active NetworkManager**: Creates and manages the `barn0` bridge via `nmcli` and integrates with active `firewalld` zones.
+- **Linux with `systemd-networkd`**: Installs dedicated `barn0` networkd units and uses the distribution's `qemu-bridge-helper` for unprivileged tap attachment.
+- **Linux with inactive `systemd-networkd`**: Before starting an inactive `systemd-networkd` service, Barn scans existing `.network` units on the host and proceeds only if none of them could claim a physical host interface—preventing a lab setup from disrupting workstation or server networking.
 
-Starting networkd on a desktop or RHEL-family host can disrupt its network. The ability to write `.network` files does not make activation safe.
-Barn therefore uses the network manager that already controls the host.
+## Host networking as a reversible transaction
 
-## Host networking is a transaction
+Because a host bridge or `socket_vmnet` service persists across CLI runs and requires `sudo` to install, Barn executes host network setup as a six-step reversible transaction:
 
-Because a bridge or vmnet daemon outlives the CLI and its installation requires privileges, Barn uses a reversible host transaction:
+1. **Inspect host state** — Checks routing tables, existing interfaces, active network services, file ownership, and prior Barn state.
+2. **Display the plan** — Prints the exact files, interfaces, and service changes before requesting privileges.
+3. **Re-verify preconditions** — Re-checks for route or interface collisions immediately before applying changes.
+4. **Record root-owned rollback state** — Writes `/etc/barn/network.json` (or platform equivalent) recording both what Barn created and the prior host state.
+5. **Smoke-test unprivileged QEMU attachment** — Verifies that an unprivileged QEMU process can attach to the bridge/socket before committing (rolling back automatically if the test fails).
+6. **Commit after readiness** — Marks the network installation active only after all interface and service checks pass.
+{.steps}
 
-1. inspect routes, interfaces, services, ownership, and existing state;
-2. print the exact plan before mutation;
-3. re-check the preconditions immediately before apply;
-4. write root-owned state describing what Barn created and what existed
-   before it;
-5. prove an unprivileged QEMU attachment;
-6. accept the installation only after readiness checks pass.
+Barn never hijacks an existing non-Barn interface that happens to use `.1/24`, never overwrites modified files outside its recorded digest, and refuses `network uninstall` while lab VMs are running.
 
-Barn does not adopt a foreign interface that uses the same `.1/24`. It does not overwrite a modified owned file.
-Uninstall refuses while recorded nodes are running. It restores only the previous state recorded in the manifest. A failure stops the operation without authorizing additional deletion.
+## Why this split works
 
-## The accepted trade-off
+Routing outbound internet traffic through QEMU's user-mode stack trades raw WAN throughput for zero-configuration portability, while keeping all latency-sensitive traffic—host-to-guest psql/SSH, PostgreSQL replication, etcd heartbeats, and local package mirror pulls from the `meta` node—on the fast, fixed-IP virtual bridge.
 
-Guest internet traffic uses QEMU's user-mode network. This path trades forwarding speed for unprivileged, portable internet access.
-The private link carries host-to-guest traffic, replication, service calls, and package distribution from a local control node.
-
-The management NIC lets the guest initialize itself, while the private NIC gives it the stable address the lab requires.
-
-Read next: [Declarative does not mean destructive](/blog/design/convergence-without-surprise/).
+Read next: [Declarative Does Not Mean Destructive](/blog/design/convergence-without-surprise/).

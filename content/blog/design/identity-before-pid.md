@@ -7,93 +7,69 @@ weight: 40
 categories: [Design]
 tags: [QMP, Recovery, Safety]
 icon: fa-solid fa-fingerprint
-lastmod: 2026-09-29
+lastmod: 2026-10-26
 ---
 
-This article explains the Linux runtime identity and recovery in Barn 0.9.0. [Mac machines](/docs/start/macos/) are managed independently.
+This essay explains Linux runtime process identity and crash recovery in Barn `0.9.2` ([macOS guests](/docs/start/macos/) use per-slot locks and runner protocol `2`).
 
-A pidfile records a process ID at the time of writing. It does not prove that the process still runs or that the PID was not reused.
-It also does not identify the executable or prove that a QEMU process owns the selected node.
+A `pidfile` records a process ID at the moment it was written. Minutes or days later—especially after a crash or host reboot—that integer alone cannot tell you whether the original QEMU process is still running, whether the OS kernel recycled the PID for an unrelated user process, or which VM node that process belongs to.
 
-A pidfile alone cannot authorize `SIGKILL` or root-disk deletion.
-
-Barn checks identity through independent evidence. Destructive operations proceed only when all required evidence agrees.
+Trusting a bare `pidfile` is how naive process managers end up sending `SIGKILL` to an unrelated process or deleting a disk that is still attached to a live VM. Barn never authorizes `SIGTERM`, `SIGKILL`, or disk deletion from a PID alone; destructive actions proceed only when independent identity checks agree.
 
 ## QMP is the primary runtime identity
 
-Every VM receives a generated UUID and an expected QEMU name. After launch,
-Barn connects to the QEMU Machine Protocol socket and asks QEMU for both.
-Barn reports a successful start only after QMP returns the expected name and UUID. A completed launch command or existing socket path is insufficient.
+Every Barn Linux VM is assigned a generated UUID and an expected QEMU instance name (`barn-<node>`). Immediately after spawning QEMU, Barn connects to the node's QEMU Machine Protocol (QMP) Unix socket and queries both values. A node launch succeeds only after QMP responds with the exact expected name and UUID.
 
-Barn repeats this identity check before shutdown. If the QMP endpoint returns a different name or UUID, Barn sends no command through that endpoint.
+Barn repeats that QMP handshake before every shutdown or status transition:
 
-Barn first requests guest powerdown through QMP. If the bounded shutdown wait expires, Barn asks QEMU to quit. It uses process signals only as a fallback.
+1. Barn queries QMP for the live instance name and UUID; if QMP returns a different identity, Barn aborts without sending any command to that socket.
+2. To stop a verified VM, Barn first sends a clean guest ACPI `system_powerdown` over QMP, then sends QMP `quit` if the shutdown timeout expires, and falls back to OS signals only when QMP itself is unreachable.
+{.steps}
 
 > [!NOTE]
-> This record explains the fail-closed lifecycle
-> boundary. Operational recovery starts with
-> [Troubleshooting](/docs/start/troubleshooting/), not manual deletion.
+> When a command reports an interrupted transition or identity mismatch, start with [Troubleshooting](/docs/start/troubleshooting/) rather than deleting files in `~/.barn` by hand.
 
-## Process identity closes the fallback gap
+## Process four-tuples close the fallback gap
 
-QMP may be unavailable after a crash, a damaged runtime directory, or a
-half-completed shutdown. For that case Barn records a process tuple:
+If QEMU crashes, the runtime socket directory is cleared, or a shutdown is interrupted mid-flight, the QMP socket may no longer respond. To handle signal fallback safely without QMP, Barn records a four-element process identity tuple alongside the full typed QEMU invocation when the VM starts:
 
-- PID;
-- executable path;
-- process start time;
-- SHA-256 of the observed command line.
+- Process ID (`PID`)
+- Resolved executable path
+- OS process start timestamp
+- SHA-256 digest of the observed command-line arguments (`argv`)
 
-The complete typed QEMU invocation is stored beside it. Before sending
-`SIGTERM`, Barn re-reads the live process and requires the tuple to match.
-Before escalating to `SIGKILL`, Barn captures the tuple again. This second check detects PID reuse during the bounded TERM wait.
+Before sending `SIGTERM`, Barn inspects the live OS process table and requires all four fields to match the recorded tuple. If the process does not exit within the `SIGTERM` grace window, Barn re-reads the process tuple a second time immediately before sending `SIGKILL`—closing the race window where the original process exits and the kernel reuses its PID during the wait.
 
-If QMP still responds but an operation fails, Barn does not use a signal to bypass QMP.
-Barn stops if QMP reports another identity or if the process tuple cannot be verified. Missing evidence does not relax the check.
+If QMP is unreachable and the OS process table shows that the recorded PID now belongs to an unrelated process (or no longer exists), Barn marks the VM `stopped` without signaling that PID. Conversely, if QMP is still responsive or if the live process tuple cannot be read unambiguously, Barn refuses to send blind signals and stops with a diagnostic error.
 
-If QMP is unavailable, Barn checks the recorded PID. When it belongs to an unrelated process, Barn treats the VM as stopped and leaves that process untouched. An unreadable or ambiguous identity blocks the operation.
+## Prepare journals track work before state is committed
 
-## Journals describe work before state exists
+Creating a VM requires preparing disk overlays and `cloud-init` seed media on disk before the QEMU process even starts. If the CLI is killed (`SIGINT`/`SIGKILL`) or crashes mid-preparation, those files exist on disk before a committed node state record is written.
 
-Barn prepares disks and seed media before it starts the VM. It can record the VM's identity only after the process starts. A crash between these steps can leave files without a verified owner.
+To recover cleanly without guessing from directory listings, Barn writes a `0600` versioned JSON **prepare journal** before creating any node file:
 
-Barn writes a mode-0600 prepare journal first. It contains:
+- Operation UUID and target VM UUID
+- Node name and resolved specification hash
+- An ordered log of each created artifact from a strict `(kind, path)` allowlist
+- The typed QEMU invocation once disk preparation finishes
+- The committed node-state file path once the transaction completes
 
-- operation and VM UUIDs;
-- node name and resolved-spec hash;
-- each completed artifact from a fixed kind/path allowlist;
-- the typed QEMU invocation once preparation is complete;
-- the exact node-state path once commit succeeds.
+During recovery, Barn validates the journal schema, UUIDs, file modes, symlink absence, and directory containment, then rolls back only the exact uncommitted files recorded in the journal.
 
-The journal uses strict versioned JSON. Barn rejects unknown fields, invalid UUIDs, unsafe paths, repeated artifacts, incorrect modes, symlinks, and paths outside the node directory.
+## Narrow rollback and fail-closed teardown
 
-Recovery uses the journal to identify artifacts created by the uncommitted operation. It does not infer ownership from a directory scan.
+Offline rollback of an uncommitted node runs only when three preconditions hold simultaneously:
 
-## Rollback is narrower than cleanup
+1. No committed node state file exists for that node.
+2. Neither the QMP socket nor the `pidfile` from the journal's QEMU invocation is present.
+3. Every file in the node directory belongs to the journal and its allowlisted artifact set.
 
-Offline rollback requires all of these conditions:
+When all three hold, Barn removes the uncommitted artifacts in reverse creation order, deletes the journal, and removes the empty node directory. This lets you edit `barn.yml` after a failed first `barn up` and re-run `barn up` cleanly, while guaranteeing that a stale journal can never roll back an already committed node or delete pre-existing persistent disks.
 
-- No committed node state exists.
-- The QMP socket and pidfile from the recorded invocation are absent.
-- The node directory contains only the journal and completed artifacts from the allowlist.
+Ordinary `barn destroy` applies the same discipline: it verifies path containment, file ownership, process termination, and the exact known artifact list before unlinking files, and removes the node directory only when it is empty (any unexpected file halts directory removal with an error).
 
-Rollback removes the completed artifacts in reverse order, followed by the
-journal and empty node directory.
+## Atomic state updates
 
-A failed first `up` can be retried after
-the inventory is edited. Safe cleanup follows the journal's completed artifact
-list rather than requiring the new desired spec to match the failed old spec.
+Every state update writes to a sibling temporary file in the same directory, calls `fsync`, performs an atomic `rename`, and `fsync`s the parent directory while holding the deployment and node locks. After any crash, on-disk state reflects either the prior committed state or the new committed state, with the prepare journal covering the bounded window in between.
 
-A stale prepare journal cannot roll back a committed node. Barn does not add pre-existing disks to the removal list. An unexpected file blocks directory removal.
-
-Normal destroy checks path containment, file type, ownership, process termination, and the exact artifact set. Persistent disks follow separate preservation and purge rules.
-Barn removes directories only after all known files are gone; an unknown entry blocks removal with an error.
-
-## Atomic state makes the evidence durable
-
-State updates use a same-directory temporary file, `fsync`, atomic rename, and parent-directory `fsync`. Barn rejects symlink targets. Deployment and node locks serialize changes.
-After a crash, the state should contain either the old committed record or the new committed record. A journal describes the bounded interval between those commits.
-
-When resource identity is ambiguous, Barn preserves the evidence and asks the operator to inspect it. This behavior reduces the risk of unintended deletion in a local database lab.
-
-Read next: [`repo.yaml` is intent; `catalog.json` is evidence](/blog/design/repo-yaml-catalog-json/).
+Read next: [`repo.yaml` Is Intent; `catalog.json` Is Evidence](/blog/design/repo-yaml-catalog-json/).
