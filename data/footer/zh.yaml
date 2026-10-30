@@ -1,33 +1,33 @@
 brand:
   name: BARN
-  tagline: Bootstrap And Run Nodes
-  slogan: 为本地开发与测试准备 Linux 和 macOS 虚拟机。
+  tagline: '**B**ootstrap **A**nd **R**un **N**odes'
+  slogan: 用一套命令行管理本地 Linux 实验环境与原生 macOS 虚拟机。
 columns:
   - title: 使用指南
     links:
-      - { label: 安装, url: "docs/start/installation/" }
+      - { label: 安装 Barn, url: "docs/start/installation/" }
       - { label: Linux 快速上手, url: "docs/start/tutorial/" }
       - { label: macOS 虚拟机, url: "docs/start/macos/" }
-      - { label: 日常管理, url: "docs/start/operations/" }
+      - { label: 日常操作, url: "docs/start/operations/" }
       - { label: 故障排查, url: "docs/start/troubleshooting/" }
-  - title: 参考
+  - title: 参考手册
     links:
       - { label: Linux 配置, url: "docs/reference/configuration/" }
-      - { label: 命令行, url: "docs/reference/cli/" }
-      - { label: Mac 命令, url: "docs/reference/mac/" }
+      - { label: CLI 命令参考, url: "docs/reference/cli/" }
+      - { label: Mac 命令参考, url: "docs/reference/mac/" }
       - { label: Linux 镜像, url: "docs/reference/images/" }
       - { label: 平台与限制, url: "docs/about/status/" }
   - title: 项目
     links:
       - { label: 发布说明, url: "blog/release/" }
-      - { label: 设计文章, url: "blog/design/" }
+      - { label: 设计随笔, url: "blog/design/" }
       - { label: GitHub, url: "https://github.com/pgsty/barn", external: true }
-      - { label: 参与贡献, url: "https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md", external: true }
+      - { label: 参与贡献, url: "docs/about/engineering/" }
       - { label: 安全与信任, url: "docs/about/security/" }
-  - title: 开发生态
+  - title: 开源生态
     links:
       - { label: Pigsty, url: "https://pigsty.cc/", external: true }
       - { label: PIG, url: "https://pig.pgsty.com/zh/", external: true }
       - { label: Silo, url: "https://silo.pgsty.com/zh/", external: true }
-      - { label: Piglet, url: "https://piglet.run/zh/", external: true }
-      - { label: PGSQL.CC, url: "https://pgsql.cc/docs/", external: true }
+      - { label: SOW, url: "https://sow.pgsty.com/zh/", external: true }
+      - { label: PG Exporter, url: "https://exp.pgsty.com/zh/", external: true }

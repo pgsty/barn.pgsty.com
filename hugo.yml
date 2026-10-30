@@ -25,12 +25,53 @@ languages:
     title: Barn
     params:
       description: Local Linux labs and native macOS virtual machines
+      ui:
+        command_palette:
+          commands:
+            - id: linux_quickstart
+              title: Linux Quick Start
+              description: Boot a single node or multi-node Linux lab from YAML
+              url: /docs/start/tutorial/
+              icon: fa-solid fa-terminal
+              keywords: [linux, lab, up, ssh, yaml, inventory, tutorial]
+            - id: macos_vms
+              title: Native macOS VMs
+              description: Create and open isolated macOS 27+ VMs on Apple Silicon
+              url: /docs/start/macos/
+              icon: fa-brands fa-apple
+              keywords: [mac, macos, apple silicon, virtualization, desktop, share]
+            - id: install
+              title: Install Barn 0.9.2
+              description: Install via Homebrew, pinned installer script, or native packages
+              url: /docs/start/installation/
+              icon: fa-solid fa-download
+              keywords: [install, brew, download, upgrade, package]
+            - id: cli_reference
+              title: CLI Reference
+              description: Look up Barn flags, lifecycle commands, and JSON output
+              url: /docs/reference/cli/
+              icon: fa-solid fa-code
+              keywords: [cli, command, flags, json, exit code]
+            - id: mac_reference
+              title: Mac Commands Reference
+              description: Look up barn mac subcommands, schemas, and runtime layout
+              url: /docs/reference/mac/
+              icon: fa-solid fa-laptop-code
+              keywords: [barn mac, runtime, clone, open, configure]
+            - id: release_notes
+              title: Release Notes (0.9.2)
+              description: Signed Barn.app in Homebrew and release archives, plus SSH/exec argument rules
+              url: /blog/release/0.9.2/
+              icon: fa-solid fa-tag
+              keywords: [release, changelog, 0.9.2, upgrade, notarized]
     menus:
       main:
         - identifier: docs
           name: Docs
           pageRef: /docs
           weight: 10
+          params:
+            icon: fa-solid fa-book
         - identifier: docs-start
           parent: docs
           name: Guides
@@ -59,14 +100,8 @@ languages:
           name: Blog
           pageRef: /blog
           weight: 20
-        - identifier: blog-design
-          parent: blog
-          name: Design
-          pageRef: /blog/design
-          weight: 20
           params:
-            icon: fa-solid fa-pen-ruler
-            description: Architecture decisions, trade-offs, and implementation boundaries
+            icon: fa-solid fa-newspaper
         - identifier: blog-release
           parent: blog
           name: Releases
@@ -75,6 +110,26 @@ languages:
           params:
             icon: fa-solid fa-clipboard-list
             description: What is new, upgrade instructions, and compatibility notes
+        - identifier: blog-design
+          parent: blog
+          name: Design
+          pageRef: /blog/design
+          weight: 20
+          params:
+            icon: fa-solid fa-pen-ruler
+            description: Architecture decisions, trade-offs, and implementation boundaries
+        - identifier: install
+          name: Install
+          pageRef: /docs/start/installation
+          weight: 25
+          params:
+            icon: fa-solid fa-download
+        - identifier: pigsty
+          name: Pigsty
+          url: https://pigsty.io/
+          weight: 30
+          params:
+            icon: fa-solid fa-database
   zh:
     label: 简体中文
     locale: zh-CN
@@ -82,12 +137,53 @@ languages:
     title: Barn
     params:
       description: 本地 Linux 实验室与原生 macOS 虚拟机
+      ui:
+        command_palette:
+          commands:
+            - id: linux_quickstart
+              title: Linux 快速上手
+              description: 基于 YAML 清单启动单节点或多节点 Linux 实验环境
+              url: /zh/docs/start/tutorial/
+              icon: fa-solid fa-terminal
+              keywords: [linux, lab, up, ssh, yaml, 清单, 教程]
+            - id: macos_vms
+              title: 原生 macOS 虚拟机
+              description: 在 Apple Silicon 上创建并打开隔离的 macOS 27+ 虚拟机
+              url: /zh/docs/start/macos/
+              icon: fa-brands fa-apple
+              keywords: [mac, macos, apple silicon, 虚拟化, 桌面, 共享目录]
+            - id: install
+              title: 安装 Barn 0.9.2
+              description: 通过 Homebrew、固定版本安装脚本或原生软件包安装
+              url: /zh/docs/start/installation/
+              icon: fa-solid fa-download
+              keywords: [install, brew, 安装, 下载, 升级]
+            - id: cli_reference
+              title: CLI 命令参考
+              description: 查阅 Barn 全局参数、生命周期子命令与 JSON 输出结构
+              url: /zh/docs/reference/cli/
+              icon: fa-solid fa-code
+              keywords: [cli, 命令, 参数, json, 退出码]
+            - id: mac_reference
+              title: Mac 命令参考
+              description: 查阅 barn mac 子命令、JSON 模式与运行时目录布局
+              url: /zh/docs/reference/mac/
+              icon: fa-solid fa-laptop-code
+              keywords: [barn mac, 运行时, 克隆, open, configure]
+            - id: release_notes
+              title: 发布说明 (0.9.2)
+              description: Homebrew 与发行包内置签名公证 Barn.app，明确 SSH/exec 参数规范
+              url: /zh/blog/release/0.9.2/
+              icon: fa-solid fa-tag
+              keywords: [release, 发布说明, 0.9.2, 升级, 公证]
     menus:
       main:
         - identifier: docs
           name: 文档
           pageRef: /docs
           weight: 10
+          params:
+            icon: fa-solid fa-book
         - identifier: docs-start
           parent: docs
           name: 使用指南
@@ -116,14 +212,8 @@ languages:
           name: 博客
           pageRef: /blog
           weight: 20
-        - identifier: blog-design
-          parent: blog
-          name: 设计
-          pageRef: /blog/design
-          weight: 20
           params:
-            icon: fa-solid fa-pen-ruler
-            description: 架构决策、方案取舍与实现边界
+            icon: fa-solid fa-newspaper
         - identifier: blog-release
           parent: blog
           name: 发布说明
@@ -132,6 +222,26 @@ languages:
           params:
             icon: fa-solid fa-clipboard-list
             description: 版本更新、升级方法与兼容性说明
+        - identifier: blog-design
+          parent: blog
+          name: 设计
+          pageRef: /blog/design
+          weight: 20
+          params:
+            icon: fa-solid fa-pen-ruler
+            description: 架构决策、方案取舍与实现边界
+        - identifier: install
+          name: 安装
+          pageRef: /docs/start/installation
+          weight: 25
+          params:
+            icon: fa-solid fa-download
+        - identifier: pigsty
+          name: Pigsty
+          url: https://pigsty.cc/
+          weight: 30
+          params:
+            icon: fa-solid fa-database
 
 taxonomies:
   categories: categories
@@ -175,7 +285,7 @@ params:
   github_repo: https://github.com/pgsty/barn.pgsty.com
   github_project_repo: https://github.com/pgsty/barn
   github_branch: main
-  version: 0.9.1
+  version: 0.9.2
   copyright:
     authors: '[PGSTY](https://pgsty.com/) and Barn contributors'
     from_year: 2026
@@ -197,16 +307,20 @@ params:
     theme_color_dark: '#dca579'
     landing_search: true
     navbar_autohide: false
+    footer_style: fat
+    quick_links: [docs, blog]
     section_index: cards
     blog_index: cards
+    blog_index_size: 60
     blog_index_toggle: true
     breadcrumb: true
+    scroll_spy: true
     sidebar_menu_compact: true
     sidebar_menu_foldable: true
     sidebar_root_enabled: true
     sidebar_root_menu: true
     sidebar_expand_levels: 2
-    sidebar_item_overflow: wrap
+    sidebar_item_overflow: ellipsis
     dark_mode: true
     image_zoom: true
     page_context_menu:
@@ -215,5 +329,5 @@ params:
       links: []
     feedback:
       enable: false
-    reading_time: false
+    reading_time: true
     share: []

@@ -1,48 +1,37 @@
 # Barn documentation style
 
-Write for readers who want to install Barn, run a VM, or find a specific option.
-Use [ASD-STE100 Issue 9](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf)
-as the English writing reference. Apply the same clarity principles to Chinese,
-with natural Chinese grammar. This guide records project conventions; it is not
-a substitute for the standard or its dictionary.
+Write for engineers who want to install Barn, bring up a VM, or look up a specific configuration field or CLI option. Use clear, direct technical prose in both English and Simplified Chinese.
+
+## Core razor
+
+Before keeping any caveat, transition, negative comparison, or summary sentence, ask:
+
+> **If we delete this sentence, what specific command will the reader mistype, what parameter will they misconfigure, or what essential technical fact or design trade-off will they miss?**
+
+If the answer is "nothing", delete it immediately.
 
 ## Organize around the reader's task
 
-- Start with the purpose and prerequisites. Then give the steps and expected result.
-- Introduce a term when the reader first needs it. Explain its effect before its implementation.
-- Keep tutorials on one working path. Put alternative settings in the reference.
-- Start each paragraph with its topic. Use the remaining sentences to develop that topic.
-- Keep conditions, causes, and results connected. Use words such as “if”, “because”, and “then” where they clarify the relationship.
-- Give each fact one useful place. Repeat it only when a reader needs it to complete the current task safely.
-- Put a specific data-loss warning before the affected command. State the condition, consequence, and action to take.
+- Lead with the goal and prerequisites, then show the steps and expected output.
+- Introduce a concept when the reader first needs it, explaining what it does before how it works internally.
+- Keep tutorials focused on one working path; leave exhaustive option tables for the reference pages.
+- Give each shared concept one authoritative home (`BARN_HOME` deployment scope, data-disk recovery boundaries, pre-release packaging, or CLI argument separators) and link to it from other pages instead of repeating boilerplate paragraphs.
+- Place specific data-loss warnings immediately before the affected command, stating the trigger condition, what gets overwritten, and how to inspect the plan first.
 
-## Write clear, connected sentences
+## Write natural, connected prose
 
-In English, use at most 20 words per instruction and 25 per descriptive sentence.
-Rewrite a long sentence around its meaning; do not split it at an arbitrary word count.
-A sequence of short sentences must still explain how the ideas connect.
+- **Favour rhythm and logical flow over rigid word-count caps.** Combine closely related facts (such as filename characters, extensions, and cache location) into a single coherent sentence instead of chopping them into robotic five-word fragments.
+- Use active verbs and name the actor when ambiguity is possible. Keep "can", "must", and "should" distinct.
+- State what a command or check actually verifies and what step comes next. Never pad sections with defensive disclaimers ("X does not establish Y", "A successful build does not prove Z", "No new VM replay is claimed here").
+- Avoid false negative contrasts ("This is an excerpt, not a replacement for the entire file"; "A separate subnet describes the topology; it is not a firewall policy"). State directly how to use the snippet or where the boundary lies.
+- Do not lecture the reader ("Do not parse human text as an API"). Show the `--json` flag and `jq` filter directly.
 
-Use direct verbs and name the actor when it could be unclear. Use one instruction
-per sentence and number steps that must run in order. Keep complete grammar,
-including articles. Use a list for steps or parallel items, not for every sentence.
+## 简体中文写作与排版规范
 
-Use a consistent term for each concept. Refer to the STE dictionary for general
-English words and their approved meanings. Retain established software terms and
-literal command names. Avoid idioms, promotional claims, and abstract noun chains.
-
-State known behavior directly. Keep “can”, “must”, and “should” distinct. Retain
-real exceptions; do not add speculative warnings or general disclaimers.
-
-## 简体中文
-
-先说明读者要完成什么，再按操作顺序展开。需要某个术语时再解释，不在开头堆放实现细节。
-“宿主”是运行 Barn 的电脑，“客机”是虚拟机内的系统。第一次出现时，可结合上下文说明。
-
-使用直接、自然的表达，如“检查配置”，不写“对配置进行检查”。一句话说明一个主要意思，
-但不要机械拆开紧密相关的条件、原因和结果。中文不套用英文词数限制。
-
-能用常见中文说明的概念，不必夹杂英文。命令、参数、文件名和产品名称保持原样。
-保留有实际意义的“可能”“仅”“必须”，删除重复提醒和无信息的强调。
+- **地道的技术母语表达**：像资深系统程序员一样用自然的中文主动句和动宾结构写作（例如写“检查配置”而非“对配置进行检查”，写“无法确认旧节点身份时，Barn 会中止操作”而非“遗留节点产物的身份无法确认时，Barn 仍会拒绝继续”）。
+- **句群连贯**：将紧密相关的条件、原因和结果自然衔接，切勿按英文短句生硬切碎，也不要照搬欧化被动句式。
+- **保留英文原样的标识符**：CLI 命令名、子命令、标志（`--json`）、配置键（`ip_base`）、环境变量（`BARN_HOME`）、镜像名称（`el10`）及路径保持英文原样并置于反引号内。首次出现 `Barn.app` 时，说明它是 macOS 宿主上的原生应用包。
+- **中英文与加粗排版间距**：中文 `.zh.md` 中，`**加粗**`、`*斜体*` 与前后的普通中英文字符或数字之间保留一个半角空格（紧邻中文全角标点时除外），冒号放在加粗标记外部（写作 `**适用条件**：正文`）。
 
 ## Terms that need consistent names
 
@@ -60,19 +49,18 @@ real exceptions; do not add speculative warnings or general disclaimers.
 | root overlay | 根盘写时复制层 | A separate file that stores one VM's root disk changes |
 | persistent data disk | 持久数据盘 | A data disk retained during ordinary VM destruction |
 
-Use “Linux lab” / “Linux 实验环境” for the user's environment. Use “deployment” /
-“部署” when explaining configuration or state. Do not alternate terms for variety.
+Use "Linux lab" / "Linux 实验环境" for the user's environment, and "deployment" / "部署" when explaining configuration or runtime state. Keep terminology consistent across pages.
+
+## Use OINK v1.4.0 components purposefully
+
+- Use ```` ```filetree ```` fences with `#` comments for directory layouts (`$BARN_HOME/images/`, `$BARN_HOME/mac/`).
+- Add `{title="barn.yml"}` or script filenames to configuration and script code blocks, and use `{tab="..." group="..." value="..."}` on adjacent code fences for multi-platform command comparisons.
+- Add `{.steps}` to sequential ordered lists in tutorials and operational runbooks, and `{.cards}` to navigation link lists on section index pages.
+- Add `{.wide}` (and `{.expand}` where helpful) to dense reference tables while preserving project classes such as `{.platform-table}` and `{.evidence-table}`.
+- Use GitHub-style callouts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`) sparingly; never stack two callouts back-to-back or nest them.
 
 ## Review the result
 
-Read the page as a user: can you find the next action without learning unrelated details?
-Read paragraphs aloud: do they flow, or do they sound like disconnected commands?
-Keep an existing sentence when it already answers those questions well.
+Read the page as a user: can you find the next command and its flags without wading through boilerplate? Read paragraphs aloud in both languages to verify that they flow naturally.
 
-Compare both languages with the documented release. Preserve commands, defaults,
-paths, versions, dates, test results, and real limits. If you remove a repeated fact,
-make sure its explanation remains where the reader needs it. Preserve heading anchors
-and valid link targets. Keep historical results separate from current instructions.
-
-Run `make check` and preview changed pages. Sentence-length tools can identify
-passages to review, but cannot establish clarity, technical accuracy, or STE compliance.
+Compare English and Chinese pages side by side (`page.md` and `page.zh.md`). Preserve all front matter routing fields (`url`, `aliases`, `weight`, `date`, `version`), explicit heading anchors (`{#...}`), commands, defaults, paths, versions, dates, and test evidence. Run `make check` to validate the production Hugo build and internal link/fragment integrity before committing.

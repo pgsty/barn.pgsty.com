@@ -1,7 +1,7 @@
 brand:
   name: BARN
-  tagline: Bootstrap And Run Nodes
-  slogan: Local Linux and macOS virtual machines for development and testing.
+  tagline: '**B**ootstrap **A**nd **R**un **N**odes'
+  slogan: Local Linux labs and native macOS virtual machines from one CLI.
 columns:
   - title: Guides
     links:
@@ -13,21 +13,21 @@ columns:
   - title: Reference
     links:
       - { label: Linux Configuration, url: "docs/reference/configuration/" }
-      - { label: CLI, url: "docs/reference/cli/" }
+      - { label: CLI Reference, url: "docs/reference/cli/" }
       - { label: Mac Commands, url: "docs/reference/mac/" }
       - { label: Linux Images, url: "docs/reference/images/" }
       - { label: Platforms and Limits, url: "docs/about/status/" }
   - title: Project
     links:
       - { label: Release Notes, url: "blog/release/" }
-      - { label: Design Articles, url: "blog/design/" }
+      - { label: Design Notes, url: "blog/design/" }
       - { label: GitHub, url: "https://github.com/pgsty/barn", external: true }
-      - { label: Contributing, url: "https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md", external: true }
+      - { label: Contributing, url: "docs/about/engineering/" }
       - { label: Security and Trust, url: "docs/about/security/" }
   - title: Ecosystem
     links:
       - { label: Pigsty, url: "https://pigsty.io/", external: true }
       - { label: PIG, url: "https://pig.pgsty.com/", external: true }
       - { label: Silo, url: "https://silo.pgsty.com/", external: true }
-      - { label: Piglet, url: "https://piglet.run/", external: true }
-      - { label: PG Center, url: "https://pg.center/docs/reference/", external: true }
+      - { label: SOW, url: "https://sow.pgsty.com/", external: true }
+      - { label: PG Exporter, url: "https://exp.pgsty.com/", external: true }

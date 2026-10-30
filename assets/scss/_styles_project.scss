@@ -1,54 +1,79 @@
-:root {
-  --td-brand-copper: #a9573b;
-  --td-brand-copper-dim: #af8250;
-  --td-brand-mark-from: #344f60;
-  --td-brand-mark-to: #a9573b;
-  --td-brand-line-strong: #cfb49a;
+// Barn-specific presentation layered on top of OINK v1.4.0.
+
+// Swap the navbar wordmark to its light-ink outline in dark mode.
+[data-bs-theme='dark'] .td-nav-wordmark {
+  content: url('/images/barn-wordmark-dark.svg');
 }
 
-[data-bs-theme='dark'] {
-  --td-brand-copper: #dca579;
-  --td-brand-copper-dim: #af8250;
-  --td-brand-mark-from: #fff9eb;
-  --td-brand-mark-to: #dca579;
-  --td-brand-line-strong: #755642;
-}
+// Frame the 1800x1080 hero illustration at its native 5:3 aspect ratio without
+// the theme's default 1.1x emblem bleed.
+.td-landing-hero--with-media {
+  .td-landing-hero__title {
+    letter-spacing: -0.028em;
+    line-height: 1.08;
+  }
 
-// Follow the site's theme toggle as well as the system preference.
-[data-bs-theme='dark'] {
-  .td-nav-wordmark,
-  .td-shell-brand-logo--wordmark,
-  .td-site-footer__logo--wordmark img {
-    content: url('/images/barn-wordmark-dark.svg');
+  .td-landing-hero__media {
+    aspect-ratio: 5 / 3;
+    transform: none;
+    background-size: cover;
+    border: 1px solid var(--td-line-strong);
+    border-radius: var(--td-radius-md);
+    box-shadow: var(--td-shadow-lg);
+    overflow: hidden;
   }
 }
 
-.td-landing-hero__media {
-  aspect-ratio: 5 / 3;
-  transform: none;
-  border-radius: 12px;
-  overflow: hidden;
+// Keep capability titles, subtitles, bullets, and value lines on one line
+// when desktop width permits.
+.td-landing-module__copy {
+  h3 {
+    font-size: clamp(1.5rem, 2.2vw, 1.95rem);
+    letter-spacing: -0.02em;
+  }
+
+  @media (min-width: 1100px) {
+    h3,
+    .td-landing-module__motto,
+    .td-landing-module__value,
+    li {
+      white-space: nowrap;
+    }
+  }
 }
 
-.td-landing-hero code {
-  white-space: nowrap;
+// Keep Quick Start step descriptions compact (max 2 lines on desktop).
+.td-landing-step__desc {
+  @media (min-width: 992px) {
+    max-width: 34ch;
+  }
 }
 
-.td-content table.evidence-table {
-  min-width: 720px !important;
+.td-landing-codeplate {
+  .k {
+    color: #7fb8e8;
+  }
+
+  .s,
+  .v {
+    color: #e0a35c;
+  }
 }
 
-.evidence-table code {
-  overflow-wrap: anywhere;
-}
-
-// Platform names and requirements should stay readable inside the theme's
-// horizontal table scroller on narrow screens.
-.td-content table.platform-table {
-  min-width: 560px;
-
-  th:first-child,
-  td:first-child {
+// Tabular dates and crisp alignment in release & blog index tables.
+.td-blog-table {
+  .td-blog-table__date {
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
+  }
+}
+
+.td-landing-landing-steps > li > i {
+  margin-inline-start: 0.5em;
+}
+
+@media (max-width: 420px) {
+  .td-landing-hero__title {
+    font-size: clamp(1.75rem, 7.8vw, 2.3rem);
   }
 }
