@@ -1,40 +1,18 @@
 ---
 title: 发布说明
 linkTitle: 发布说明
-description: Barn 各版本的变化与升级说明。
+description: Barn 的版本更新说明、升级指南与历史验证里程碑。
 weight: 10
 icon: fa-solid fa-clipboard-list
-sidebar_root_menu: false
+blog_index: table
+blog_index_toggle: true
+featured_image: wash
 cascade:
-  type: blog
-  theme_color: '#a9573b'
-  theme_color_dark: '#dca579'
+  featured_image: wash
+  reading_time: true
+  toc_taxonomies: false
 ---
 
-本栏目记录各版本的功能变化、升级注意事项与安装链接。
+**[Barn 0.9.2](0.9.2/)**（2026-10-30）是当前发布的最新版本。在 CLI 契约演进至 `1.0` 之前，所有 Barn `0.x` 版本均作为 GitHub pre-release 发布；固定版本的安装命令与归档校验方法请参阅[安装 Barn](/zh/docs/start/installation/)。
 
-当前版本：**[Barn 0.9.1](0.9.1/)**，发布于 2026-10-22。
-
-当前已发布版本：**[Barn 0.9.0](0.9.0/)**（GitHub 预发布版）。
-
-## 版本历史
-
-| 版本 | 日期 | 主要变化 |
-| --- | --- | --- |
-| [0.9.1](0.9.1/) | 2026-10-22 | Go 1.27.3、依赖升级、Barn.app 命名与签名 |
-| [0.9.0](0.9.0/) | 2026-09-30 | 原生 macOS 虚拟机、统一错误格式与中断恢复 |
-| [0.8.0](0.8.0/) | 2026-09-21 | 宿主恢复、节点故障隔离与镜像更新 |
-| [0.7.0](0.7.0/) | 2026-09-16 | 简化首次启动与自动恢复客机 |
-| [0.6.0](0.6.0/) | 2026-09-05 | 默认 Ubuntu 24.04，改进计划、扩容与重建命令 |
-| [0.5.0](0.5.0/) | 2026-09-03 | 显式处置、仓库选择与可复现镜像 |
-| [0.4.0](0.4.0/) | 2026-09-02 | 一条命令启动、可用的数据盘与统一输出 |
-| [0.3.0](0.3.0/) | 2026-09-02 | 显式更新镜像目录与可操作的就绪诊断 |
-| [0.2.0](0.2.0/) | 2026-09-01 | 指定节点收敛与发布完整性 |
-
-源码仓库还保留了 [0.1.0 发布说明原稿](https://github.com/pgsty/barn/blob/54315029d4a8d3ace7b4f7250d0381598f2d61dc/.github/releases/0.1.0.md)。
-更早的开发记录包括 [2026-08-24 开发快照](development-snapshot-20260824/)和
-[2026-08-25 RC6 候选](rc6-owner-scoped-20260825/)。
-
-历史文章统一使用 Barn 名称，保留原始日期、版本号、功能变化和验收数据。旧版发行附件已下线。
-各阶段的实测证据见[验证历史](/zh/docs/about/history/)，安装当前版本请使用
-[安装指南](/zh/docs/start/installation/)。
+本归档收录了从早期 `2026-08-24` 开发快照至 `v0.9.2` 的全部版本说明与阶段性验收记录。

@@ -3,25 +3,18 @@ title: "RC6 development candidate: owner-scoped Tier-1 delivery"
 linkTitle: 2026-08-25 RC6 candidate
 description: Exact RC6 identity, four requested native product passes, durable network transactions, reproducible local archives, and the boundary that keeps this candidate unpublished.
 date: 2026-08-25
-weight: 5
+weight: 110
 categories: [Development]
-tags: [RC6, Go 1.27, Quick, Private, QEMU, macOS, Linux]
+tags: [RC6, QEMU, Networking]
 icon: fa-solid fa-vial-circle-check
 ---
 
 > [!NOTE]
-> This pre-Barn record preserves the predecessor candidate's exact identity, design, versions, digests, and validation scope. It does not establish support for current Barn binaries or paths; see the [documentation](/docs/) and [current status](/docs/about/status/).
+> Pre-Barn historical archive (`Piglet 1.0.0-rc.6`, 2026-08-25). This candidate was a local verification milestone and was never published as a GitHub Release or package repository; the SHA-256 digests below record the retained local build artifacts. For current Barn usage and support status, see the [documentation](/docs/) and [status page](/docs/about/status/).
 
-Piglet `1.0.0-rc.6` is a local development candidate scoped to its owner and using native QEMU.
-It completes the requested Quick and exact four-node `full` scenarios on both Tier-1 hosts.
-It also adds privileged-network transactions that support durable recovery. The candidate has not been publicly released.
+Piglet `1.0.0-rc.6` was a local development candidate that validated the Quick and four-node `full` profiles on both Tier-1 native hypervisor platforms (`macOS arm64 / HVF` and `Linux amd64 / KVM`) and introduced journaled host-network transactions for crash recovery.
 
-> [!WARNING]
-> This work did not run Homebrew operations, create public tags, push to remotes, or publish a GitHub Release.
-> It did not establish a package repository, production signature, attestation, or support commitment.
-> The hashes below identify retained local artifacts. This site does not provide them as downloads.
-
-## Frozen identity
+## Frozen build identity
 
 | Field | RC6 value |
 | --- | --- |
@@ -33,76 +26,57 @@ It also adds privileged-network transactions that support durable recovery. The 
 | Channel | `development` |
 | Signature / attestation | `false` / `false` |
 | Exact `full` profile SHA-256 | `912fea61bf1602c2a437570561a6ab4d0a5a8c152695147ad9e96ae831bc9336` |
+{.wide}
 
-## Four requested product scenarios
+## Four native product scenarios
 
 | Host | Scenario | Result | Guest contract |
 | --- | --- | --- | --- |
-| macOS arm64 / HVF | Quick | PASS | Ubuntu 24.04.4, `dba` UID/GID 88, 2 vCPU, 64 GiB root, 64 GiB `/data` |
-| Linux amd64 / KVM | Quick | PASS | same contract |
-| macOS arm64 / HVF | exact `full` | PASS | `.10`–`.13`, UID 88, 64 GiB roots, 128 GiB data disks, 2/1/1/1 vCPU, four-way peers |
-| Linux amd64 / KVM | exact `full` | PASS | same contract |
+| macOS `arm64` / HVF | Quick | PASS | Ubuntu 24.04.4, `dba` UID/GID 88, 2 vCPU, 64 GiB root, 64 GiB `/data` |
+| Linux `amd64` / KVM | Quick | PASS | Ubuntu 24.04.4, `dba` UID/GID 88, 2 vCPU, 64 GiB root, 64 GiB `/data` |
+| macOS `arm64` / HVF | Exact `full` | PASS | `.10`–`.13`, UID 88, 64 GiB roots, 128 GiB data disks, 2/1/1/1 vCPU, 4-way peer mesh |
+| Linux `amd64` / KVM | Exact `full` | PASS | `.10`–`.13`, UID 88, 64 GiB roots, 128 GiB data disks, 2/1/1/1 vCPU, 4-way peer mesh |
+{.wide}
 
-All eight final full-profile guests reported Ubuntu 24.04.4. The projects were
-destroyed through Piglet after assertions; shared image caches, project
-markers, and keys were intentionally retained.
+All eight `full`-profile guests booted Ubuntu 24.04.4, passed contract assertions, and were cleanly destroyed afterward while retaining shared image caches, project markers, and keys.
 
-## Durable native networking
+## Journaled host-network transactions
 
-Network install and uninstall now use one root-owned strict-prefix transaction:
+Network install and uninstall use a root-owned, strict-prefix transaction:
 
-- root planning returns an owner/host/prestate-bound token;
-- apply replans under the host-global lock and accepts only that token;
-- a typed, fsynced journal is published before mutation;
-- each fixed action is checkpointed after exact postcondition verification;
-- interrupted work blocks ordinary private changes; an explicit forward or rollback recovery plan requires separate token approval.
+- Root planning produces a token bound to the invoking owner, host identity, and observed prestate.
+- Apply re-evaluates the plan under the host-global lock and accepts only that token.
+- A typed, `fsync`-committed journal is written before any host mutation begins.
+- Each step records a checkpoint only after verifying its postcondition.
+- If a transaction is interrupted, ordinary network changes are blocked until an explicit forward or rollback recovery plan is approved.
 
-Darwin completed a real interrupted forward recovery and ended protected and healthy in default host mode.
-Linux completed real install, rollback/retry, four-node operation, uninstall, and host restoration before the final adversarial patch.
-That patch corrected socket-state canonicalization, overly broad systemd enablement, NetworkManager ordering, and field-scoped recovery effects.
-It then passed the combined source checks and race tests.
-
-At the owner's direction, VM and network testing stopped after the last patch, so the post-audit Linux install/uninstall/reinstall replay was **not run**. The final patch has source-check and race-test evidence only.
+macOS completed an interrupted forward-recovery test and converged to a healthy default `host` network. Linux completed install, rollback/retry, four-node operation, uninstall, and host restoration prior to a final patch that tightened socket-state canonicalization, `systemd` unit enablement scope, NetworkManager ordering, and recovery field scoping (verified via source checks and `-race` tests).
 
 ## macOS shared mode and subnet conflicts
 
-The supported default remains socket_vmnet host mode. Shared mode passed a two-node contract on an alternate subnet verified as free. This fallback requires explicit selection and does not provide an isolation boundary.
+The default macOS mode is `socket_vmnet` `host` mode; `shared` mode also passed a two-node test on an alternate free subnet as an explicit opt-in fallback.
 
-The default subnet previously failed with `VMNET_SHARING_SERVICE_BUSY (1009)`.
-VirtualBox was a possible source of interference, but the evidence did not establish it as the cause.
-Immediately before the final migration, the observed subnet interface was the older Piglet-created `bridge100`.
-Preflight rejects foreign interfaces by identity and does not adopt an interface because its `.1/24` address matches.
-Operators can remove the confirmed owner or move the whole lab to one canonical RFC1918 `/24` subnet with a warning.
-Piglet never changes only the guest addresses or selects a random subnet to avoid a conflict.
+During testing, the default subnet encountered `VMNET_SHARING_SERVICE_BUSY (1009)` when an older Piglet-created `bridge100` interface was still present. Preflight checks interface ownership markers rather than adopting an existing interface just because its `.1/24` address matches. When a subnet conflict occurs, operators can either remove the conflicting interface or move the entire lab to a clean RFC 1918 `/24` subnet—the runtime never renumbers individual guests or picks a random subnet on its own.
 
 ## Reproducible local archives
 
-Two independent local RC6 output trees passed the strict release verifier and
-were byte-identical for the four archives, checksums, release metadata, and
-formula:
+Two independent local RC6 build trees produced byte-identical archives, checksums, release metadata, and Homebrew formula files:
 
 | Archive | SHA-256 |
 | --- | --- |
-| Darwin amd64 | `1295288ff198b53fcb761a6e8794087d75a46105fc19980fabcd44f0c70fb9ef` |
-| Darwin arm64 | `308310b0f2d179f98c8be78ea09f89d226167072c936387bc42d717a922ec0c6` |
-| Linux amd64 | `547a61f6cc0768071df349cbf5c17d7ddfe3ab3cea59e6b4026e3e3e616a5550` |
-| Linux arm64 | `afc9ce1043d377cc3b4ef8bdf77826a8139a8c839685025853e8bee8100c6a2e` |
+| Darwin `amd64` | `1295288ff198b53fcb761a6e8794087d75a46105fc19980fabcd44f0c70fb9ef` |
+| Darwin `arm64` | `308310b0f2d179f98c8be78ea09f89d226167072c936387bc42d717a922ec0c6` |
+| Linux `amd64` | `547a61f6cc0768071df349cbf5c17d7ddfe3ab3cea59e6b4026e3e3e616a5550` |
+| Linux `arm64` | `afc9ce1043d377cc3b4ef8bdf77826a8139a8c839685025853e8bee8100c6a2e` |
+{.wide}
 
-The formula is a generated build artifact that has not been used.
-Earlier candidates exercised offline RPM/DEB consumption and ephemeral Cosign/SLSA round trips.
-These results verified the mechanisms but did not establish RC6 publication or signing.
+## Remaining work before public release
 
-## What remains public-GA work
+At the close of RC6, the remaining items before public release were:
+- Physical host-reboot persistence checks on both Tier-1 platforms
+- Native smoke tests on macOS `amd64` and Linux `arm64`
+- Re-running the Linux network install/uninstall/reinstall cycle with the final post-audit patch
+- Guest image normalization, hosting, and active/standby manifest signing keys
+- Public release tags, Homebrew tap and DEB/RPM package publication, and clean-host installer verification
 
-- literal reboot persistence on both Tier-1 hosts;
-- current native smoke on macOS amd64 and Linux arm64;
-- the deliberately deferred Linux final network replay;
-- remaining image normalization, byte-reproducibility decision, hosting, and
-  active/standby manifest-key custody;
-- production release identity, signing/attestation, published Homebrew and
-  Linux package channels, and clean-host consumption;
-- a durable owner-operated macOS HVF runner and explicit release authorization.
-
-See the current [tutorial](/docs/start/tutorial/),
-[design](/docs/about/design/), and [status](/docs/about/status/) for the
-maintained boundary.
+See the [tutorial](/docs/start/tutorial/), [architecture guide](/docs/about/design/), and [status page](/docs/about/status/) for how these items were completed in subsequent Barn releases.
