@@ -2,48 +2,37 @@
 title: 镜像流水线
 description: 不下载、不上传、不签名地校验或离线归一化显式 qcow2 候选镜像。
 weight: 40
-icon: fa-solid fa-shield-halved
+icon: fa-solid fa-diagram-project
 ---
 
-使用 `packaging/image-pipeline/build.sh` 校验或规范化一个已下载的不可变 qcow2 文件，并提供独立获得的 SHA-256。
-该底层工具只在本地处理文件，不下载、上传、读取签名密钥或修改 Barn 运行时及网络状态。
-输出仍是候选镜像，不会标为 `supported`。
+在 Barn 源码仓库下使用 `packaging/image-pipeline/build.sh`，可对照已知的 SHA-256 摘要校验或离线归一化已下载的 `qcow2` 候选镜像。该工具全程在本地运行，不联网、不读取签名密钥、也不修改 Barn 运行时与网络状态，输出状态为 `testing` 的候选产物包，供后续真机冒烟测试与发布审核使用。
 
-在 Barn 源码目录执行以下命令。需要 Python 3 与 `qemu-img`。
-`offline` 还需要可用的 libguestfs `virt-customize`、`virt-cat`。
-这些是镜像构建宿主的依赖，不属于 `barn setup` 为运行虚拟机安装的依赖。
-请将源镜像、软件包缓存与输出产物放在 Git 工作树之外。
-仓库保存配方与锁定清单，不保存下载或生成的镜像。
-`--arch` 只声明候选镜像架构，不会转换镜像，也不检查构建宿主上的 libguestfs 能否执行该架构的客机。
+构建宿主环境要求：
 
-## 模式
+- **依赖工具**：所有模式均需 Python 3 与 `qemu-img`；`offline` 模式还需安装可用的 `libguestfs` 工具（`virt-customize` 与 `virt-cat`）。可通过 `--qemu-img`、`--virt-customize`、`--virt-cat` 参数或 `QEMU_IMG`、`VIRT_CUSTOMIZE`、`VIRT_CAT` 环境变量指定工具路径。
+- **工作树外存储**：请将源镜像、RPM/DEB 软件包缓存和输出目录放在 Git 工作树之外（源码仓库只跟踪构建配方与锁定清单）。
+- **架构匹配**：`--arch` 用于记录候选镜像的目标架构元数据；执行 `offline` 定制时，构建宿主上的 `libguestfs` 必须能够运行目标客机架构。
 
-- `validate`：复制镜像并重新计算哈希，强制执行 qcow2 检查，校验仅含一个镜像的后端链。
-  它运行 `qemu-img check`，输出用于审核、未经发布验证的产物包，不修改客机凭据。
-- `offline`：额外在暂存副本上使用 libguestfs `virt-customize --no-network` 与 `virt-cat`。
-  如果其他用户或组占用了 UID/GID 88，它会拒绝继续；否则按固定规则配置 `dba`/`admin` 身份，并禁用 SSH 的密码认证和 root 登录。
-  它还会清理密钥、历史、主机身份和 cloud-init 缓存，恢复指定的 SELinux 标签，再读取写入客机的固定标记以确认处理结果。
+## 模式与处理方案
 
-底层构建器默认使用 `--profile base`。各处理方案（profile）的作用范围如下：
+- **`validate`（校验模式）**：复制源镜像并重算哈希，调用 `qemu-img check` 强制检查单文件 `qcow2` 结构，不修改客机文件与凭据，直接生成证据产物包。
+- **`offline`（离线归一化模式）**：在暂存副本上运行 `virt-customize --no-network` 与 `virt-cat`：确认 UID/GID `88` 未被其他账号占用后，配置固定的 `dba`/`admin` 管理身份，禁用 SSH 密码登录与 root 登录，清理残留密钥、命令历史、机器标识与 `cloud-init` 缓存，恢复 SELinux 标签，并读回客机内的确定性标记以验证定制结果。
 
-| 处理方案 | 额外处理 | 软件包输入 |
+`build.sh` 默认使用 `--profile base`。各处理方案（profile）的作用范围如下：
+
+| 处理方案 | 归一化操作 | 软件包输入 |
 |---|---|---|
-| `base` | 只归一化身份与凭据 | 无；拒绝软件包参数 |
-| `el8` | Python 3、SSH 配置片段加载、旧网络清理、chrony 和 SELinux 处理 | 锁定的 RPM 依赖集合 |
-| `el9` | 旧网络清理与身份归一化 | 无；拒绝软件包参数 |
-| `d12`、`d13` | XFS 工具与区域设置校验 | 锁定的 DEB 依赖集合 |
+| `base` | 仅执行账号、sudo、SSH 与 cloud-init 身份归一化 | 无（拒绝传入软件包参数） |
+| `el8` | 基础归一化 + 安装 Python 3、加载 SSH 配置片段、清理旧网络配置、配置 `chronyd` 与恢复 SELinux 标签 | 锁定的 RPM 依赖包集合 |
+| `el9` | 基础归一化 + 清理旧网络配置与恢复 SELinux 标签 | 无（拒绝传入软件包参数） |
+| `d12`、`d13` | 基础归一化 + 离线安装 XFS 用户态工具并生成 `en_US.UTF-8` / `C.UTF-8` 区域设置 | 锁定的 DEB 依赖包集合 |
+{.wide}
 
-`validate` 只接受 `base`。
-`offline` 配合 `el8`、`d12`、`d13` 时，必须同时提供 `--package-lock` 和 `--package-cache`。
-JSON 锁定清单必须符合规定格式，并与处理方案、架构匹配。构建官方镜像时，优先使用下一节封装脚本提供的固定软件包输入。
-可通过 `--qemu-img`、`--virt-customize`、`--virt-cat` 指定工具路径。
-默认也读取对应的 `QEMU_IMG`、`VIRT_CUSTOMIZE`、`VIRT_CAT` 环境变量。
+`validate` 模式仅支持 `--profile base`。在 `offline` 模式下使用 `el8`、`d12` 或 `d13` 时，必须同时传入与方案及架构匹配的 `--package-lock` 和 `--package-cache`。构建官方镜像时，直接使用下方的 `build-official.py` 封装脚本即可自动传入锁定的软件包集合。
 
 ## 官方候选镜像矩阵
 
-`build-official.py` 沿用相同的离线限制，封装固定的八目标矩阵。
-矩阵包含 Debian 12/13 与 Rocky Linux 8/9，各自覆盖 amd64、arm64。
-每份上游 qcow2、RPM/DEB 输入、发布版本名称、摘要与源时间戳都锁定在 `official-v1.json`。
+`packaging/image-pipeline/build-official.py` 封装了八个官方离线归一化目标——Debian 12/13（`d12`、`d13`）与 Rocky Linux 8/9（`el8`、`el9`）各自的 `amd64` 与 `arm64` 变体，所有上游 `qcow2` URL、RPM/DEB 依赖包、发布版本号、SHA-256 摘要与 `SOURCE_DATE_EPOCH` 均锁定在 `official-v1.json` 中（Ubuntu 直接使用固定日期的官方原始云镜像，不经过此离线定制矩阵）。
 
 ```bash
 ./packaging/image-pipeline/build-official.py --list
@@ -55,27 +44,12 @@ JSON 锁定清单必须符合规定格式，并与处理方案、架构匹配。
   --target d13/arm64 --fetch
 ```
 
-不加 `--fetch` 时，全部锁定输入必须已在两个规范化缓存目录中。
-运行封装脚本前，先创建两个缓存根和构建输出根，并使用规范化绝对路径。
-加上 `--fetch` 后，封装脚本也只下载固定 HTTPS URL。
-它会在调用离线归一化前拒绝任何摘要不匹配。
+使用说明：
 
-Debian 12/13 安装锁定的 XFS 用户态工具及其依赖。
-Rocky Linux 8 安装锁定的 `python36` 与 `python3-pip` RPM。
-cloud-init 启用 NTP 时，它使用镜像已有的 RHEL chrony 模板与 `chronyd` 服务。
-Rocky Linux 9 不需要额外软件包输入。SELinux 标签恢复属于归一化步骤，不需要另一组软件包输入。
+- 运行前请预先创建好 `--source-cache`、`--package-cache` 与 `--output` 目录，并传入规范化的绝对路径。加上 `--fetch` 时，脚本会从锁定的 HTTPS URL 下载缺失输入并在调用 `virt-customize --no-network` 前校验 SHA-256；不加 `--fetch` 时，所有锁定输入必须已存在于两个缓存目录中。
+- 省略 `--target` 会构建全部八个目标，重复指定 `--target` 可构建指定子集。`--list` 会列出当前源码锁定的精确版本（当前为 Debian `20260923.2610.1` / `20260914.2601.2` 与 Rocky Linux `8.10.20240528.3` / `9.8.20260525.2`）。
 
-Debian 同时生成 `en_US.UTF-8`，并保留 `C.UTF-8` 作为默认区域设置。
-客机处理脚本和宿主端标记校验都会检查这两项要求，基础镜像更新后也不例外。
-Ubuntu 使用固定日期的官方原始镜像，不经过此离线定制流程。
-
-每份结果仍是未签名的 `testing` 候选镜像。
-不传 `--target` 时，脚本构建全部八个目标。重复该参数可以选择多个目标。
-`--list` 显示当前源码锁定的精确版本。
-目前包含 Debian `20260923.2610.1`/`20260914.2601.2` 与 Rocky Linux `8.10.20240528.3`/`9.8.20260525.2`。
-
-组装参数接受**包含各命名产物包的父目录**，不能直接指定产物包目录。
-八个构建都放在同一个输出根下时，执行：
+八个目标全部构建完成后，将**包含各产物包目录的父目录**传给 `--assemble-from`（若分散在多个父目录可重复传入 `--assemble-from`），即可组装出静态候选仓库：
 
 ```bash
 ./packaging/image-pipeline/build-official.py \
@@ -83,14 +57,9 @@ Ubuntu 使用固定日期的官方原始镜像，不经过此离线定制流程�
   --output /absolute/new-candidate-repository
 ```
 
-构建分散在不同根目录时，可以重复 `--assemble-from`。八个目标都必须各有一个产物包。
-组装会创建新的静态仓库，并调用 PATH 中的 `barn` 执行 `repo build` 与 `verify`。
-也可用 `--barn /absolute/path/to/barn` 指定程序。
-构建模式使用已存在的输出根。组装模式的目标目录必须不存在。
-生成仓库使用 `candidate` 通道，而非 `stable`，例如应选 `d13:candidate`。
-此过程不包含真机启动测试、签名、上传或镜像目录发布。
+组装操作要求八个目标各有且仅有一个产物包，输出目标路径 `--output` 必须尚不存在，并会调用 `PATH` 中的 `barn`（或 `--barn /absolute/path/to/barn`）执行 `barn repo build` 与 `barn repo verify`。生成的候选仓库默认使用 `candidate` 通道（例如 `d13:candidate`）和 `testing` 状态，便于在提升为 `stable` / `supported` 之前执行真机冒烟测试。
 
-## 校验一个已下载镜像
+## 校验单个已下载镜像
 
 ```bash
 SOURCE_DATE_EPOCH=1787486400
@@ -109,35 +78,24 @@ SOURCE_DATE_EPOCH=1787486400
   --manifest-version 2026082903
 ```
 
-源文件与输出必须是绝对路径。
-源文件必须使用规范化路径，是普通文件且非符号链接，复制期间保持稳定，大小不超过 16 GiB。
-输出路径必须不存在，但父目录必须已存在。
+路径与容量限制：
 
-流水线允许最大 16 GiB 的源文件，超过 Barn 0.9.1 的 **8 GiB 运行时/仓库文件上限**。
-因此，流水线成功不代表生成的 qcow2 一定能被导入、组装或下载。
-请检查结果产物的文件大小，不能只看虚拟容量。
-构建器在输出路径旁加排他锁，在权限为 0700 的目录中暂存文件，完成后通过一次重命名发布产物。
-失败时只删除本次构建管理的暂存目录。
+- `--source` 必须是规范化绝对路径的普通文件（非符号链接），大小不超过 16 GiB；`--output` 的父目录必须已存在，而目标目录本身必须尚不存在。
+- Barn `0.9.2` 的运行时镜像产物上限为 8 GiB。2026-10-30 [尚未发布的源码变更](../../about/unreleased/#limits)已移除本地镜像及目录中声明了大小的镜像的这一上限；使用更大产物时需要对应源码版本。流水线本身仍遵循构建配方的大小边界。
+- 构建器会在输出路径旁创建排他锁，在权限 `0700` 的临时目录中完成暂存，最后通过原子重命名发布到 `--output`（失败时仅清理本次构建的暂存目录）。
 
-成功产物包包含只读 qcow2、处理配方、SLSA 来源记录、SPDX 构建范围物料清单、状态为
-`testing` 的 `manifest-candidate.json`、校验记录与校验和：
+每个成功生成的产物包包含以下文件：
 
 | 文件 | 用途 |
 |---|---|
-| `<name>-<release>-<arch>-<digest-prefix>.qcow2` | 已校验的候选镜像字节 |
-| `build-recipe.json` | 调用参数、配方/工具身份与输入记录 |
-| `manifest-candidate.json` | 未签名 testing 候选元数据 |
-| `provenance.intoto.json` | SLSA 来源声明 |
-| `sbom.spdx.json` | 声明的输入与构建范围 |
-| `validation.json` | qcow2 前后检查、归一化结果与尚未通过的发布检查 |
-| `checksums.txt` | 产物包内文件的 SHA-256 |
-| `package-lock.json` | 使用软件包输入时额外包含 |
+| `<name>-<release>-<arch>-<digest-prefix>.qcow2` | 通过校验的只读候选 `qcow2` 镜像文件 |
+| `build-recipe.json` | 构建调用参数、工具版本与输入摘要记录 |
+| `manifest-candidate.json` | 未签名的候选镜像元数据（`status: "testing"`） |
+| `provenance.intoto.json` | SLSA 构建来源声明 |
+| `sbom.spdx.json` | 覆盖流水线声明输入与注入软件包的 SPDX 物料清单 |
+| `validation.json` | 处理前后的 `qcow2` 检查结果、客机标记校验与待完成的发布门禁项 |
+| `checksums.txt` | 产物包内所有文件的 SHA-256 校验和 |
+| `package-lock.json` | 使用锁定 RPM/DEB 软件包输入时附带的锁定清单 |
+{.wide}
 
-候选清单是流水线证据格式。仓库组装才会生成运行时使用的 Schema-3 `catalog.json`。
-SPDX 文件描述声明的输入和构建范围，不是客机文件系统的完整软件包清单。签名在流水线之外执行。
-输入和工具固定时，validate 校验模式可逐字节复现。
-offline 离线模式的结果用于发布验证前，必须对同一候选镜像构建两次并比较。
-
-发布仍需对每条声明的宿主与客机路径执行运行时启动测试。
-还需审查支持状态与溯源、增加镜像目录修订号、执行生产签名，并校验公开产物。
-构建成功不能直接将候选镜像改为 `supported`，也不能证明它已经公开可用。
+在输入文件与工具版本固定时，`validate` 模式可逐字节复现；使用 `offline` 模式准备发布证据时，请对同一候选镜像构建两次并比对结果。将候选镜像正式发布为 `supported` 状态时，还需在目标宿主与客机组合上完成真机启动测试、在 `repo.yaml` 中递增 `revision` 并更新状态、运行 `barn repo build` 与 `barn repo verify`、使用生产密钥签发 `catalog.json.minisig` 并验证公开仓库端点。

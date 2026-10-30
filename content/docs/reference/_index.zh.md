@@ -1,27 +1,21 @@
 ---
 title: 参考
 linkTitle: 参考
-description: Barn 0.9.1 的配置字段、命令参数、输出格式与镜像仓库说明。
+description: Barn 0.9.2 的配置字段、命令参数、输出格式与镜像仓库说明。
 weight: 20
 icon: fa-solid fa-book-open
+no_list: true
 cascade:
   type: docs
 ---
 
-在这里查找 **Barn 0.9.1** 的字段、参数和命令结果。
-需要操作步骤时，先看[使用指南](../start/)。
+本节汇总 **Barn 0.9.2** 的配置字段、命令行参数、结构化输出格式与镜像仓库规范，尚未发布的行为会单独标注并汇总到[未发布变更](../about/unreleased/)。需要按步骤上手操作时，请先阅读[使用指南](../start/)。
 
-| 参考 | 内容 |
-|---|---|
-| [Linux 配置](configuration/) | 配置发现、变量、默认值、磁盘、共享与变更规则 |
-| [命令行](cli/) | 通用参数、Linux 命令、结构化结果与退出码 |
-| [Mac 命令](mac/) | macOS 虚拟机命令、设置、JSON 结果与文件布局 |
-| [Linux 镜像](images/) | 镜像版本、仓库、签名、导入与缓存管理 |
-| [镜像流水线](image-pipeline/) | 供贡献者使用的 Linux 镜像构建与检查工具 |
+- [Linux 配置](configuration/) — 清单发现顺序、变量继承、默认值、数据盘、目录共享与节点漂移规则
+- [命令行](cli/) — 全局参数、Linux 生命周期命令、JSON/YAML 结构化输出与退出码
+- [Mac 命令](mac/) — `barn mac` 子命令、虚拟机设置、JSON 输出结构、失败原因与文件布局
+- [Linux 镜像](images/) — 内置镜像目录 `2026093001`、版本别名、仓库验签、本地导入与缓存清理
+- [镜像流水线](image-pipeline/) — 面向贡献者的 Linux qcow2 候选镜像校验与离线归一化工具
+{.cards}
 
-使用其他版本时，请核对 `barn version` 与 `barn <command> --help`。
-Barn 对外支持的接口是命令行。Go `internal/` 下的包属于实现细节。
-
-镜像表描述该版本内置的镜像目录。`barn update` 可以激活更新的仓库元数据，无需更新可执行文件。
-流水线说明面向使用源码工具的贡献者。
-构建与发布的要求见[发布工程](../about/engineering/)。
+Barn 对外承诺的稳定接口是 `barn` 命令行（可通过 `barn version` 与 `barn <command> --help` 查看当前安装版本）；Go 仓库 `internal/` 下的包属于内部实现。镜像表对应 Barn `0.9.2` 二进制内置的镜像目录快照，日常运行 `barn update` 即可激活更新的签名仓库元数据，无需升级可执行文件。构建与发布门禁详见[发布工程](../about/engineering/)。
