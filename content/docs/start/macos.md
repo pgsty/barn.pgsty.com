@@ -6,58 +6,35 @@ weight: 20
 icon: fa-brands fa-apple
 ---
 
-`barn mac` creates disposable macOS VMs on an Apple Silicon Mac for testing, building, and reproducing macOS-specific behavior.
-Each VM has an administrator account, passwordless sudo, pinned SSH keys, and a fixed address.
-Barn uses Apple's Virtualization framework to run the VMs as your user, without administrator access.
+> [!NOTE]
+> **Unreleased**: The changes below to expanded share names and counts, linked share sources, and flexible state paths require a build containing source commit `27f17bb`; they are not included in Barn 0.9.2. See [Unreleased Changes](/docs/about/unreleased/).
 
-Mac VMs are separate from the Linux lab. They do not read `barn.yml` or join a Pigsty inventory. Barn stores their data under `$BARN_HOME/mac` (default `~/.barn/mac`). Linux `destroy` and `purge` do not affect them.
+`barn mac` provisions disposable macOS VMs on Apple Silicon Macs for building, testing, and reproducing macOS-specific issues. Each VM comes with an administrator account, passwordless `sudo`, pinned SSH keys, and a dedicated private IP, running directly under your user account via Apple's Virtualization framework without `sudo`.
+
+Mac VMs are managed independently from the Linux lab: they do not read `barn.yml`, they store their state under `$BARN_HOME/mac` (default `~/.barn/mac`), and Linux `barn destroy` or `barn purge` commands never touch them.
 
 ## Requirements
 
-- An Apple Silicon Mac running **macOS 27 or later**, with a user logged in to
-  its desktop. Guests also run macOS 27.
-- About **65 GiB** free for the first VM. This includes Apple's 25 GiB restore image, the 27 GiB installed base image, and startup space. Barn keeps the restore image until you prune it. Each VM then grows with its own changes up to its disk capacity,
-  100 GiB by default.
-- The native **Barn.app** component paired with the 0.9.1 CLI. Xcode 27+ is
-  needed only to build the native component.
-- No sudo. Every VM, its network and its desktop run as your user.
+- An Apple Silicon Mac running **macOS 27 or later** with an active logged-in desktop session (guests also run macOS 27).
+- Roughly **65 GiB** of free disk space for the first VM—covering Apple's ~25 GiB restore image (`.ipsw`), the ~27 GiB installed base image, and initial guest writes. Each VM clones the base image on APFS and grows up to its configured capacity (100 GiB by default).
+- The native **`Barn.app`** bundle paired with the `0.9.2` CLI, included in the Apple Silicon release and Homebrew installation.
+- No `sudo` privileges required.
 
-The native runtime supports **two macOS VMs running at a time**
-on one Mac, counting those of other tools and macOS installation itself.
-You can create more VMs and start any two, subject to the applicable
-Apple software license.
+Apple's Virtualization framework allows **at most two running macOS VMs at a time** per Mac across all virtualization tools (including an active macOS base-image installation). You can keep additional stopped VMs on disk and start any two at once, subject to the Apple software license.
 
 ## Install {#install}
 
-[Install Barn 0.9.1](../installation/), then check the Mac component:
+Install the prebuilt release with Homebrew:
 
 ```bash
+brew install pgsty/infra/barn
 barn version
 barn mac doctor
 ```
 
-**The 0.9.1 downloads and Homebrew formula do not include `Barn.app`.**
-The native component remains a source preview. Until it is built, `doctor`
-reports the missing component.
+Homebrew installs the signed, notarized `Barn.app` and matching CLI/helper together. No Go or Xcode installation is needed. The [download installer and manual archive](../installation/) also include the app on Apple Silicon. Stop running Mac VMs before upgrading or replacing the app.
 
-On Apple Silicon, build tag `v0.9.1` with **Xcode 27+** and
-[Go 1.27.3](../source-build/):
-
-```bash
-git clone --branch v0.9.1 https://github.com/pgsty/barn.git
-cd barn
-BARN_VERSION=0.9.1 make mac-build
-export PATH="$PWD/bin/mac:$PATH"
-barn version
-barn mac doctor
-```
-
-`bin/mac` contains the CLI, matching hosts helper, native runner, and `Barn.app`.
-Keep the complete bundle together. With signing variables unset, this local
-build uses an ad-hoc signature; it is not a notarized release download.
-`doctor` checks the host, component signature, free disk space, and existing
-VMs. It does not verify Apple notarization. See [source builds and signing](../source-build/#mac-component).
-Stop existing Mac VMs before replacing their bundle.
+To develop Barn itself, see [Build the Mac component](../source-build/#mac-component).
 
 ## Create your first machine
 
@@ -65,7 +42,7 @@ Stop existing Mac VMs before replacing their bundle.
 barn mac up
 ```
 
-If the Mac has no prepared macOS base image, `up` lists the requirements and asks for confirmation:
+When no macOS base image exists yet, `barn mac up` displays the download and disk requirements before asking for confirmation:
 
 ```text
 → macOS 27.0 (26A428) is not prepared on this Mac yet.
@@ -75,12 +52,12 @@ free:      551.2 GiB
 Download macOS from Apple now? [Y/n]
 ```
 
-After you confirm, Barn:
+Once you confirm, Barn completes three steps:
 
-1. **Downloads the restore image from Apple only**. Barn verifies it against Apple's published SHA-256. It resumes interrupted downloads.
-2. **Installs macOS once** into an unbooted *base image*. Installation uses one of
-   the two macOS VM slots while it runs.
-3. **Creates `mac1`** as a copy-on-write clone of the base image. Barn starts it and creates your account. It waits until SSH and sudo work.
+1. **Downloads the restore image from Apple (`updates.cdn-apple.com`)**, resuming any partial transfer and verifying Apple's published SHA-256 digest.
+2. **Installs macOS once into an unbooted base image**, temporarily using one of the two macOS VM slots during installation.
+3. **Clones `mac1` from the base image** using APFS copy-on-write, boots the guest, configures your user account, and waits until SSH and passwordless `sudo` are ready.
+{.steps}
 
 ```text
   ✓  mac1 created and ready · macOS 27.0 (26A428) · alice@10.10.20.10
@@ -88,22 +65,15 @@ shell:     barn mac ssh mac1
 desktop:   barn mac open mac1
 ```
 
-Later VMs reuse the installed base image, skipping the full macOS restore.
-Startup time depends on host resources and first-boot provisioning. Barn 0.9.1 pins the first download to macOS **27.0 (26A428)**. The timing and free-space figures above are examples. `image update` explicitly selects a newer supported
-macOS 27 base image.
+Subsequent VMs clone the prepared base image in seconds without repeating the IPSW restore. Barn `0.9.2` pins initial setup to **macOS 27.0 (26A428)**; use `barn mac image update` when you want to adopt a newer macOS 27 build.
 
-If you already have Apple's restore image, pass it instead of downloading.
-If the image is on the same APFS volume, Barn clones it without copying. Otherwise, Barn verifies the file and uses it in place:
+If you already have a local copy of Apple's restore image, pass `--ipsw` to skip the download (Barn clones it without copying if it resides on the same APFS volume):
 
 ```bash
 barn mac up --ipsw ~/Downloads/UniversalMac_27.0_26A428_Restore.ipsw
 ```
 
-Without a terminal, such as in a script, `up` downloads the 25 GiB image only if you supply `--yes`. `barn mac setup` prepares
-the base image ahead of time without creating a VM.
-
-`--no-wait` returns when the VM runs, before SSH provisioning and readiness.
-If you used that flag for a new VM, finish initialization with `barn mac up NAME` without `--no-wait` before using `ssh` or `exec`. Polling `ls` alone does not install its SSH keys or sudo configuration.
+In non-interactive scripts, pass `--yes` to authorize the 25 GiB download, or run `barn mac setup` ahead of time to prepare the base image without creating a VM. If you start a new VM with `--no-wait` (which returns as soon as the VM process starts), run `barn mac up NAME` without `--no-wait` to finish SSH and `sudo` provisioning before calling `ssh` or `exec`.
 
 ## Work in the machine
 
@@ -111,7 +81,7 @@ If you used that flag for a new VM, finish initialization with `barn mac up NAME
 
 ```bash
 barn mac ssh                                  # interactive shell
-barn mac exec -- sw_vers                      # one command
+barn mac exec -- sw_vers                      # single program execution
 barn mac ssh -- 'id; sudo -n true && echo sudo works'
 ```
 
@@ -121,7 +91,7 @@ ProductVersion:		27.0
 BuildVersion:		26A428
 ```
 
-The account has your macOS user name and passwordless sudo. To choose another name, use `--user` when creating the VM. Like plain ssh, `ssh` passes a command line to the guest shell. `exec` keeps argument boundaries. Both return the guest's exit status. `--json` records stdout, stderr, and the exit code:
+By default, the guest administrator account matches your host macOS username (override with `--user` at creation time). Place `--` before the remote command: `ssh` passes a command string to the guest shell, while `exec` passes the program and arguments directly (use `sh -c` for shell pipelines or redirection; see the [SSH/exec contract](../../reference/mac/#ssh-and-exec)). Both return the remote command's exit status, and `--json` captures `stdout`, `stderr`, and `exit_code`:
 
 ```bash
 barn --json mac exec -- sh -c 'echo out; exit 3'
@@ -139,7 +109,7 @@ barn --json mac exec -- sh -c 'echo out; exit 3'
 }
 ```
 
-The JSON above is shortened. The [Mac reference](../../reference/mac/#json-output) lists every field.
+See the [Mac command reference](../../reference/mac/#json-output) for the complete JSON schema.
 
 ### Desktop
 
@@ -147,25 +117,21 @@ The JSON above is shortened. The [Mac reference](../../reference/mac/#json-outpu
 barn mac open
 ```
 
-The desktop opens in a native window sized to your screen. Resizing it changes the guest resolution.
-To enter full screen, use **View → Enter Full Screen**.
+`barn mac open` launches a native window that resizes the guest display dynamically (use **View → Enter Full Screen** for full-screen mode). Closing the window leaves the VM running in the background; run `barn mac open` again to reopen it, or to boot a stopped VM and open its display.
 
-Closing the window keeps the VM running. Use `open` to show it again; if the VM is stopped, the command starts it first.
-While the window has focus, keyboard shortcuts go to the guest, so use the menu bar for host commands:
+While the guest window has focus, keyboard shortcuts are sent to the guest OS, so use the macOS menu bar for host actions:
 
-| Menu | Action |
+| Menu item | Action |
 |---|---|
-| **Machine → Share Clipboard** | turn clipboard sharing on or off for this session |
-| **Machine → Restart…** | restart macOS in the guest |
-| **Machine → Shut Down…** | shut down normally, like `barn mac stop` |
-| **Window → Keep Running in Background** | hide the window; the VM keeps running |
-| **Barn → Quit Barn…** | choose to keep the VM running or shut it down |
+| **Machine → Share Clipboard** | Toggle plain-text clipboard sync for the current session |
+| **Machine → Restart…** | Restart macOS inside the guest |
+| **Machine → Shut Down…** | Perform a clean guest shutdown (equivalent to `barn mac stop`) |
+| **Window → Keep Running in Background** | Hide the desktop window while keeping the VM running |
+| **Barn → Quit Barn…** | Choose whether to keep the VM running in the background or shut it down |
 
-The app-renaming changes use **Barn → Quit Barn…** instead.
-Logging out or shutting down the host requests guest shutdown; if the guest does not stop, Barn eventually powers it off.
+When you log out of or shut down the host Mac, Barn requests a clean guest shutdown and powers off the VM if it does not stop before the timeout.
 
-Each VM has a random login password for the lock screen and desktop administrator prompts.
-To copy it without printing it:
+Each VM also generates a random password for the macOS lock screen and GUI administrator prompts. Copy it directly to your host clipboard without printing it to the terminal:
 
 ```bash
 barn mac password --copy
@@ -173,22 +139,20 @@ barn mac password --copy
 
 ### Clipboard
 
-Clipboard sharing transfers plain text when focus changes. When you click the guest window, text copied on the Mac becomes available in the guest. When you switch to another app, text copied in the guest becomes available on the Mac. Text travels over the VM's own SSH connection. Barn installs nothing in the guest for this feature. Items that password managers
-mark as concealed never leave the Mac. Images and files are not shared.
+Clipboard sharing syncs plain text across focus changes over the VM's SSH channel without installing extra guest agents: focusing the guest window syncs text copied on the host Mac, and switching back to a host app syncs text copied inside the guest. Concealed items from password managers, images, and files are never transferred.
 
-To disable clipboard sharing for a VM, use `barn mac configure mac1 --clipboard off`. The setting applies at the VM's next start.
+To disable clipboard sharing persistently for a VM, run `barn mac configure mac1 --clipboard off` (applied on the next start).
 
-### Shared folders
+### Shared folders {#shared-folders}
 
-Share Mac folders when creating a VM. The guest mounts them under
-`/Volumes/My Shared Files/<name>`:
+Pass one or more `--share` flags when creating a VM to mount host directories inside the guest under `/Volumes/My Shared Files/<name>`:
 
 ```bash
 barn mac up dev --cpu 8 --memory 16G --share ~/src --share docs=~/Documents:ro
 barn mac exec dev -- ls "/Volumes/My Shared Files"
 ```
 
-The name defaults to the folder's last path component. `:ro` makes a share read-only. A share must be an existing directory, not a symlink. Barn never creates or deletes shared folders. To change shares later, stop the VM. Then use `configure`:
+The share name defaults to the directory's basename, and appending `:ro` mounts it read-only. Each shared path must resolve to an existing directory (symlinks are supported); Barn never creates or deletes shared host directories. To add or remove shares on an existing VM, stop it first and run `barn mac configure`:
 
 ```bash
 barn mac stop dev
@@ -196,32 +160,24 @@ barn mac configure dev --share data=/Volumes/Work/data --unshare docs
 barn mac start dev
 ```
 
-macOS guests can show stale file contents for a short while after the Mac
-changes a shared file. If you need the latest bytes immediately, use `scp`
-or `rsync` to copy the files onto the guest's own disk.
+Because VirtioFS on macOS guests can briefly cache file contents after host-side edits, use `scp` or `rsync` to copy files onto the guest disk when a build requires immediate byte-level consistency.
 
 ### SSH from other tools
 
-When the first VM becomes ready, Barn adds one marked `Include` to `~/.ssh/config`. Then `ssh mac1`, `scp`, `rsync`, and editors with Remote-SSH can reach every VM by name. Each connection uses the VM's own key and pinned host key:
+When the first Mac VM becomes ready, Barn adds a marked `Include` line to `~/.ssh/config` so `ssh mac1`, `scp`, `rsync`, and IDE Remote-SSH extensions work out of the box using each VM's dedicated key and pinned host key:
 
 ```bash
 ssh mac1 'uptime'
 rsync -a ./project/ mac1:project/
-barn mac ssh-config              # print the entries
-barn mac ssh-config --remove     # remove only what Barn added
+barn mac ssh-config              # print the generated SSH config entries
+barn mac ssh-config --remove     # remove Barn's Include and disable auto-install
 ```
 
-Lifecycle commands keep the entries current. If a dotfile tool manages `~/.ssh/config` through a link, Barn does not edit it. Barn prints the `Include` line for you to add.
+If `~/.ssh/config` is a symlink managed by a dotfile tool, Barn leaves the file untouched and prints the `Include` line for you to add. Re-enable automatic integration after `--remove` with `barn mac ssh-config --install`. If your personal `~/.ssh/config` already defines a `Host` alias with the same name as a VM, Barn preserves your alias and writes its managed entry by IP address only.
 
-`--remove` also disables automatic integration until you run
-`barn mac ssh-config --install`. If your SSH config already owns a VM's
-name, Barn preserves that alias and publishes its entry by IP address only.
-`barn mac ssh` and `exec` use the VM's own key and pinned host key,
-independently of your personal SSH keys and config.
+## Multiple machines
 
-## Several machines
-
-Give each VM a name. Creation options apply only to a new VM:
+Assign each VM a lowercase alphanumeric name (starting with a letter, with optional internal hyphens). Creation flags (`--cpu`, `--memory`, `--disk`, `--user`, `--share`) apply only when creating a new VM:
 
 ```bash
 barn mac up dev --cpu 8 --memory 16G
@@ -235,12 +191,9 @@ mac1  running  10.10.20.10  ready  alice  macOS 27.0    4   8 GiB  4.7 GiB / 100
 limit:     2 of 2 macOS VMs are running; stop one before starting another
 ```
 
-Names use lowercase letters, digits and inner hyphens and start with a letter.
-A command without a name acts on the only VM, or on `mac1`. If the target is ambiguous, you must specify a name. `DISK` shows the space the VM uses now
-and its capacity. The base image determines the capacity. If `--disk` differs from the prepared base image's capacity, Barn installs another base image first. This requires the restore image again.
+When you omit the VM name, commands target the sole existing VM or `mac1` (and ask you to disambiguate when multiple VMs exist). If you request a `--disk` size that differs from the prepared base image's capacity, Barn installs a new base image at that capacity from the restore image first.
 
-Each VM has its own private network. The first available subnet is `10.10.20.0/24`, with the guest at `.10`. Barn skips subnets that conflict with your LAN, VPNs, the Linux lab, or another Mac VM.
-VMs reach the Mac and use NAT for outbound connections. If two VMs in the same Barn data root are running, Barn refuses a third before creating anything. It names a VM to stop:
+Each VM gets its own `/24` private subnet starting at `10.10.20.0/24` (guest IP `.10`), automatically skipping subnets that overlap with your LAN, VPNs, the Linux lab, or other Mac VMs. If two Mac VMs are already running, starting a third fails immediately and suggests a VM to stop:
 
 ```bash
 barn mac up build --user ci
@@ -251,28 +204,25 @@ error: dev and mac1 are running; macOS allows 2 macOS virtual machines at a time
 next: barn mac stop mac1
 ```
 
-## Everyday lifecycle
+## Everyday lifecycle {#everyday-lifecycle}
 
 ```bash
-barn mac stop dev               # shut down through macOS
+barn mac stop dev               # clean guest shutdown (powers off after 2m timeout)
 barn mac start dev              # boot and wait for SSH
-barn mac restart dev            # stop, then start, applying changes
-barn mac stop --all             # every machine
+barn mac restart dev            # stop then start, applying pending configure changes
+barn mac stop --all             # stop all running Mac VMs
 ```
 
-`stop` shuts down normally. If a VM still runs after two minutes, Barn powers it off and reports the action. `stop --force` powers off immediately. Powering off loses unsaved work in the guest.
-`start --recovery` boots macOS Recovery and shows its desktop.
+Use `barn mac stop --force` for an immediate power-off, or `barn mac start --recovery` to boot into macOS Recovery with the desktop window open.
 
-`up` never reconfigures an existing VM. If you pass an option that
-differs, it refuses and names the command to use:
+`barn mac up` never mutates an existing VM's specification—passing changed creation flags on an existing VM returns a hint pointing to `barn mac configure`:
 
 ```text
 error: dev already exists, so --cpu would not apply; its configuration and data were preserved
 next: barn mac configure dev --cpu 4
 ```
 
-While the VM is stopped, `configure` changes CPUs, memory, shared folders, and the network. It can change clipboard sharing at any time. Changes apply at the next
-start:
+Stop the VM before changing CPUs, memory, shared folders, or subnet with `configure` (clipboard settings can be toggled while running):
 
 ```bash
 barn mac stop dev
@@ -280,25 +230,19 @@ barn mac configure dev --cpu 6 --memory 12G --subnet auto
 barn mac start dev
 ```
 
-`recreate` replaces a VM with a fresh macOS from the base image, keeping its
-name, account, resources, shared folders and address. `destroy` deletes
-VMs. Both describe what they delete and ask you to type the command name. Without a terminal, use `--force` to confirm.
-
-Choose the operation you need:
+To reset a VM's disk to a clean clone of the base image while preserving its name, account, hardware settings, shares, and IP, run `barn mac recreate`. To delete the VM completely, run `barn mac destroy` (pass `--force` in non-interactive scripts):
 
 ```bash
 barn mac recreate dev
 barn mac destroy dev
 ```
 
-| Operation | guest disk and apps | Settings, address, account |
+| Operation | Guest disk and installed apps | Hardware settings, IP, and account |
 |---|---|---|
-| `stop`/`start`, `restart`, repeated `up` | kept | kept |
-| `configure` | kept | changed as requested |
-| `recreate` | replaced with a fresh macOS | kept; new password and SSH keys |
-| `destroy` | deleted | deleted |
-
-None of these operations changes the shared base image. Barn retains it when VMs are destroyed.
+| `stop` / `start`, `restart`, repeated `up` | Preserved | Preserved |
+| `configure` | Preserved | Updated as requested |
+| `recreate` | Replaced with a fresh macOS clone | Preserved (generates new login password and SSH keys) |
+| `destroy` | Deleted | Deleted (base image is retained) |
 
 ## macOS versions and disk space
 
@@ -311,57 +255,42 @@ KIND  OS          BUILD   STATE  ON DISK   CAPACITY  USED BY
 base  macOS 27.0  26A428  ready  26.7 GiB  100 GiB   mac1,default
 ```
 
-Updates require an explicit command. `barn mac image update` asks Apple for the newest macOS 27. After you confirm, Barn downloads it and prepares the base image for new VMs. Existing VMs keep their macOS until you run
-`barn mac recreate NAME --update`. `up` and `start` never change a VM's
-macOS.
+Run `barn mac image update` to query Apple for the newest supported macOS 27 build, download its IPSW, and prepare a new default base image for future VMs. Existing VMs stay on their current build until you run `barn mac recreate NAME --update` (if a VM uses a custom disk size such as `200G`, prepare the matching base image first with `barn mac setup --disk 200G`).
 
-Recreation keeps disk capacity. A VM with a custom 200 GiB disk needs a base image of the new macOS at that capacity. If prompted, prepare it with `barn mac setup --disk 200G`. Then retry `recreate NAME --update`.
-Changes made inside the guest, including its own system updates, are separate
-from Barn's base-image lifecycle.
-
-`image prune` lists non-default base images that no VM uses. `--yes` deletes them. `--installers` adds downloaded restore images and partial downloads.
-APFS clones share blocks, so `ON DISK` and VM disk figures can include the same space.
-Do not add them together to calculate total usage.
+Use `barn mac image prune` to inspect unused non-default base images, adding `--installers` to include downloaded `.ipsw` files and `--yes` to delete them:
 
 ```bash
-barn mac image prune --installers         # review
-barn mac image prune --installers --yes   # delete
+barn mac image prune --installers         # preview reclaimable images
+barn mac image prune --installers --yes   # delete them
 ```
 
-## Troubleshooting
+Because APFS clones share physical storage blocks with the base image, `ON DISK` and per-VM disk figures overlap and do not sum linearly.
 
-Start with `barn mac doctor`. It checks the host, component, base image, and every VM. It suggests follow-up commands where available.
-Its 40 GiB free-space check is not the entire first-download requirement:
-setup also reserves space for the missing portion of the IPSW, about 25 GiB.
-`barn mac logs [name]` shows the VM's runtime log: startup, network,
-shutdown and Apple Virtualization errors.
+## Troubleshooting {#troubleshooting}
 
-| Symptom | What to do |
+Run `barn mac doctor` to check host compatibility, the native `Barn.app` bundle, base images, and every VM, and use `barn mac logs [name]` to inspect startup, network, and Virtualization framework logs.
+
+| Symptom | Resolution |
 |---|---|
-| `network … overlaps route …` on start | A VPN or another tool now uses that subnet. Run `barn mac configure NAME --subnet auto`. |
-| `macOS allows 2 macOS virtual machines at a time` | Stop one of the named VMs, or quit another tool's macOS VM. |
-| `ssh mac1` from a third-party client says "No route to host" | macOS Local Network privacy can block the app. Check its access in **System Settings → Privacy & Security → Local Network**, or use `/usr/bin/ssh`. `barn mac ssh` and `exec` use Apple's tools to avoid that restriction. |
-| `mac_runner_missing` or `mac_runner_protocol` | Keep the CLI and native component together. Build the complete bundle above. A CLI-only archive cannot supply the missing app; use a release with the native payload or build the complete bundle. |
-| Starting fails from an SSH session to the Mac | Run `barn mac` in a terminal of the Mac's desktop session. VMs need the logged-in user's graphical session. Make sure that the login keychain is unlocked. |
+| `network … overlaps route …` on start | A VPN or new host route now overlaps the VM's subnet. Run `barn mac configure NAME --subnet auto`. |
+| `macOS allows 2 macOS virtual machines at a time` | Stop one of the running Mac VMs (`barn mac stop NAME`) or quit another tool's macOS VM. |
+| Third-party SSH client reports `No route to host` for `ssh mac1` | Grant Local Network access to your terminal/IDE in **System Settings → Privacy & Security → Local Network**, or use `/usr/bin/ssh` (`barn mac ssh` and `exec` use Apple's system binary). |
+| `mac_runner_missing` or `mac_runner_protocol` | Keep `barn`, `barn-hosts-helper`, `barn-mac-runner`, and `Barn.app` from the same `make mac-build` output directory together. |
+| Starting a VM fails from a remote SSH session | Run `barn mac` inside a terminal attached to the Mac's logged-in graphical desktop session with the login keychain unlocked. |
 
-Apple Account sign-in inside a VM is unreliable, and USB devices,
-snapshots and suspending a VM are not supported.
+Apple Account sign-in inside macOS guests is not reliably supported by Apple's Virtualization framework, and USB passthrough, snapshots, and VM suspend/resume are not supported.
 
 ## Clean up
 
-Inspect the remaining VMs and replace the example names with those
-you want to remove:
-
 ```bash
-barn mac ls                               # check the names first
-barn mac destroy mac1 dev                  # confirm deletion of these machines
-barn mac image prune --installers --yes     # delete unused images
+barn mac ls                                 # list existing Mac VMs
+barn mac destroy mac1 dev                   # delete selected VMs
+barn mac image prune --installers --yes     # delete cached IPSWs and unused base images
 ```
 
-Destroying the last VM also removes its entries from `~/.ssh/config`. Barn retains the default base image for new VMs. To remove every Mac file, including this base image, first destroy all VMs. Remove the Mac SSH integration with `barn mac ssh-config --remove`. Then delete `$BARN_HOME/mac` (default `~/.barn/mac`). Outside that directory, the Mac feature also writes:
+Destroying the last Mac VM automatically cleans up its `~/.ssh/config` entries while keeping the default base image. For a complete removal of all Mac VM state:
 
-- SSH integration in `~/.ssh/config` and the `~/.ssh/barn-mac_config` fragment.
-- Desktop window positions in `~/Library/Preferences/com.pgsty.barn.plist`; the 0.9.0 app used `io.pgsty.barn.mac-runner.plist`.
-- A short runtime directory under `/tmp`.
-
-Nothing needs sudo.
+1. Destroy all Mac VMs (`barn mac destroy ...`) and run `barn mac ssh-config --remove`.
+2. Delete `$BARN_HOME/mac` (default `~/.barn/mac`).
+3. Optionally remove `~/Library/Preferences/com.pgsty.barn.plist` (`io.pgsty.barn.mac-runner.plist` in `0.9.0`), which stores desktop window geometry.
+{.steps}

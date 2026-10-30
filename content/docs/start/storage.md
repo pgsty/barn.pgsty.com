@@ -6,18 +6,18 @@ weight: 40
 icon: fa-solid fa-hard-drive
 ---
 
-This guide uses the **Barn 0.9.1** interface and assumes familiarity with the [Quick Start](../tutorial/).
-The disk example below is for a new lab.
-Examples use node `meta` and the default subnet; keep your actual names and addresses when adapting an existing inventory.
+> [!NOTE]
+> **Unreleased**: The changes below to macOS-host 9p sharing, flexible share sources, and guest mount paths require a build containing source commit `27f17bb`; they are not included in Barn 0.9.2. See [Unreleased Changes](/docs/about/unreleased/).
 
-## Choose disks before creating the VM
+This guide covers disk configuration, file transfer, and service access for Linux labs in **Barn 0.9.2**. It builds on the [Linux Quick Start](../tutorial/) using node `meta` at `10.10.10.10`.
 
-By default, every node has a 64 GiB root disk and one 128 GiB non-persistent
-data disk at `/data`. An integer `vm_disk` sets the root disk size in GiB. Barn also accepts an explicit unit such as `64GiB`. `vm_disks` replaces the entire data-disk list. `vm_disks: []` disables extra data disks.
+## Configure disks before creating the VM
 
-For a new single-node lab, save this as `storage.yml`:
+By default, every Linux node gets a 64 GiB root overlay disk and one 128 GiB non-persistent data disk mounted at `/data`. `vm_disk` sets the root disk capacity in GiB (as an integer like `64` or with a unit like `64GiB`), while `vm_disks` replaces the default data-disk list (`vm_disks: []` disables extra data disks).
 
-```yaml
+For a new single-node lab, save the following inventory as `storage.yml`:
+
+```yaml {title="storage.yml"}
 all:
   vars:
     admin_ip: 10.10.10.10
@@ -35,10 +35,9 @@ all:
             - {path: /scratch, size: 32, fs: ext4, persistent: false}
 ```
 
-If the same node already exists with a different definition, `up` reports a configuration difference.
-Recreation replaces the root and non-persistent disks. Review `plan` and back up needed data before explicitly using `recreate`.
+If `meta` already exists with a different disk layout, `barn up` reports drift; inspect `barn plan` and back up any needed files before running `barn recreate meta` (which replaces root and non-persistent disks).
 
-For a new lab, review the configuration, create the VM, and check its mounts:
+Validate the inventory, provision the VM, and verify the mounted filesystems:
 
 ```bash
 barn validate -f storage.yml
@@ -49,35 +48,24 @@ barn exec meta -- findmnt /scratch
 barn exec meta -- df -h / /data /scratch
 ```
 
-`size: 64` means 64 GiB. `size: 64GiB` is also valid for a data disk. These are
-virtual capacities, not immediately allocated host space. Monitor host free
-space as the qcow2 files grow. If the guest provides `mkfs.xfs`, `fs: auto` prefers XFS. Otherwise, it uses ext4. A successful VM process start alone does not prove that either data disk mounted. Check the guest result and warnings.
+Disk sizes (`size: 64` or `size: 64GiB`) are thin-provisioned virtual capacities that consume host space as data is written. With `fs: auto`, Barn formats new disks as XFS when `mkfs.xfs` is available in the guest and falls back to `ext4` otherwise. Check `barn up` warnings and `findmnt` to confirm that every data disk mounted cleanly.
 
 ## What survives each operation
 
-| Operation | Root and non-persistent disks | Persistent disks |
+| Operation | Root and non-persistent disks | Persistent disks (`persistent: true`) |
 |---|---|---|
-| `stop` then `start`, or `restart` | retained | retained |
-| Healthy repeated `up` | retained | retained |
-| Compatible `recreate` | replaced | retained and reattached |
-| Ordinary `destroy` | deleted | retained |
-| Whole-deployment `destroy --delete-persistent` | deleted | deleted, including retained disks |
-| Whole-deployment `purge` | deleted | deleted, including retained disks |
+| `stop` then `start`, or `restart` | Retained | Retained |
+| Repeated `up` on a healthy node | Retained | Retained |
+| Compatible `recreate` | Replaced | Retained and reattached |
+| Ordinary `destroy` | Deleted | Retained |
+| Whole-deployment `destroy --delete-persistent` or `purge` | Deleted | Deleted (including retained disks) |
 
-Persistence is based on disk identity and a compatible specification. Keep
-the node, mount path, size, and filesystem definition consistent when reusing a
-retained disk. It is not an automatic resize, rename, filesystem conversion,
-backup, or snapshot facility. Barn rejects incompatible retained disks. Do not edit state files to force attachment.
+Barn matches retained persistent disks by disk identity and specification: to reattach a retained disk across `recreate` or after `destroy`, keep the node name, mount `path`, `size`, and `fs` type identical. Barn rejects mismatched retained disks rather than attempting in-place resizing, renaming, or filesystem conversion.
 
-**A persistent disk is still disposable test storage.** During guest recovery,
-`up` may reset an unrecognized or confirmed damaged filesystem and report the
-discarded contents. Persistence only controls VM destruction/recreation.
-Missing devices, failed probes, busy mounts, and I/O failures do not authorize
-formatting. Copy valuable data elsewhere before testing failure recovery.
+> [!WARNING]
+> **Persistent disks are still disposable test storage.** `persistent: true` preserves the disk across ordinary `destroy` and `recreate` runs, but during guest recovery `barn up` will still reformat a filesystem that is unrecognized or confirmed damaged (reporting the reset in `nodes[].repairs`). Transient device absences, failed probes, busy mounts, and host I/O errors never trigger formatting. Keep backups of valuable data on the host.
 
-A freshly formatted data filesystem is owned by root, so this write check uses guest sudo.
-You can instead configure directory permissions for your application.
-On the lab created above, check that data survives a normal stop and start:
+Newly formatted data filesystems are owned by `root`. You can verify that data written to `/data` persists across a `stop` and `start` cycle:
 
 ```bash
 barn exec meta -- sudo -n sh -c \
@@ -87,12 +75,11 @@ barn start meta
 barn exec meta -- cat /data/barn-retention.txt
 ```
 
-This checks retention across a VM stop/start. Keep backups outside the lab.
-For macOS guest folders, see the [Mac guide](../macos/#shared-folders).
+For macOS guest folder sharing, see the [macOS VM guide](../macos/#shared-folders).
 
-## Copy files with the managed SSH connection
+## Copy files over managed SSH
 
-Generate a standalone OpenSSH configuration from the running deployment:
+Export a standalone OpenSSH configuration from the running deployment to use `ssh`, `scp`, or `rsync` directly:
 
 ```bash
 barn ssh-config > barn-ssh.conf
@@ -101,67 +88,45 @@ scp -F ./barn-ssh.conf ./storage.yml barn-meta:/tmp/storage.yml
 scp -F ./barn-ssh.conf barn-meta:/data/barn-retention.txt ./barn-retention.txt
 ```
 
-The generated fragment selects the current loopback SSH port, deployment key,
-and instance host-key identity. Regenerate it after recreation or a management
-port change. To add these aliases to your normal SSH configuration, optionally use `barn ssh-config --install`. `-F` works without that integration. The exported file references your deployment key. It does not embed or export the private key.
+The exported fragment points to the current loopback SSH port, deployment key path, and instance-scoped `known_hosts` file without embedding private key material. Regenerate `barn-ssh.conf` if you recreate a node or its loopback port changes, or run `barn ssh-config --install` so `ssh meta` and `scp` work without `-F`.
 
-## Reach a service inside the guest
+## Reach services inside the guest
 
-If a service listens on the guest's fixed IP and the guest firewall allows access, the host can connect to that IP.
-For example, you can reach PostgreSQL at `10.10.10.10:5432` after installing and configuring it in the guest.
-Starting a VM does not install PostgreSQL.
+When a service inside the guest listens on the node's fixed private IP (for example, PostgreSQL on `10.10.10.10:5432`) and the guest firewall permits it, your host and peer nodes can connect to that IP directly.
 
-To reach a service listening only on the guest's loopback address, use OpenSSH
-with the generated configuration:
+If a service binds only to `127.0.0.1` inside the guest, forward a local host port over SSH:
 
 ```bash
 ssh -F ./barn-ssh.conf -N \
   -L 127.0.0.1:15432:127.0.0.1:5432 barn-meta
 ```
 
-Keep that host terminal open. Connect a local client to `127.0.0.1:15432`. The guest service must already be listening on port 5432.
-Ctrl-C closes the tunnel. If 15432 is occupied, choose another local port.
-The explicit loopback bind keeps this example local to your host.
+While that command remains running, connect local clients on the host to `127.0.0.1:15432` (press `Ctrl-C` to close the tunnel).
 
-SSH aliases and ordinary hostname resolution are separate. `ssh meta` can work
-without `meta` resolving in a browser or database client. To publish the
-deployment names and `vm_alias` entries on the host, review and apply the
-optional hosts-file integration:
+SSH aliases (`ssh meta`) apply only to OpenSSH tools. If you also want browsers, `psql`, or other host applications to resolve node names and `vm_alias` entries via `/etc/hosts`, preview and apply the optional hosts integration:
 
 ```bash
 barn hosts install --json
 barn hosts install --yes
 ```
 
-The first command previews the change. The second may require sudo. Rerun it
-after changing node names or addresses. It changes only this host, so another
-computer on the LAN does not gain those names or a route to the private subnet.
+`barn hosts install --yes` updates `/etc/hosts` on the local host (requesting `sudo` when needed); re-run it after adding nodes or changing IPs.
 
-The inventory has no `vm_ports` or `vm_forwards` setting. Barn rejects unknown `vm_*` keys. Use the fixed-IP network or OpenSSH forwarding. Management
-SSH uses a separate loopback connection and can remain available while the
-fixed-IP network has a reported limitation.
+Barn inventories do not use `vm_ports` or `vm_forwards`—connect via the fixed-IP network or OpenSSH port forwarding. Because management SSH runs over an independent loopback port, `barn ssh` and `-L` tunnels remain usable even if the fixed-IP bridge reports a limitation.
 
-## Host directory sharing on Linux
+## Host directory sharing
 
-For a Linux host, a read-only share can be added before the first `up`:
+Linux and macOS hosts can share directories with Linux guests through QEMU Virtio-9p. Set `vm_shares` under `all.vars` or a host entry before the first `barn up`:
 
-```yaml
+```yaml {title="barn.yml"}
 vm_shares:
-  - host: /srv/barn-project
+  - host: ./src
     guest: /workspace
     readonly: true
 ```
 
-Put this under the intended node's variables or `all.vars`. Replace the host path with an
-existing real directory owned by your Barn user and accessible to that user.
-Read-only shares also require this ownership. Host paths must be
-absolute, cannot pass through symlinks, and cannot overlap the Barn data root.
-An explicit read-only share is a useful starting point for source files.
-Writable shares also depend on guest-user permissions. Barn can fall back to read-only access and report a limitation. It does not change host ownership.
+`host` accepts paths relative to the inventory’s real file, `~/`, and directory symlinks. The directory must exist, be accessible, and not overlap `BARN_HOME`; it need not belong to the Barn user. Multiple guests may write the same tree, with writes coordinated by the user.
 
-**For Linux guests on a macOS host, omit `vm_shares` and use SSH file transfer.**
-A node with such a share cannot start because the tested macOS/QEMU runtime cannot reopen Barn's secured directory handle.
+Host QEMU and the guest kernel must support 9p. Writable shares also depend on guest permissions; failed writable mounts fall back to read-only with a warning without changing host ownership. After changing existing shares, run `barn recreate <node>`. Native macOS guests use VirtioFS through `barn mac --share`.
 
-If a source directory or host mount is missing, restore it before retrying `up`; Barn does not create an empty replacement.
-Changing an existing node's share definition requires recreation.
-See [Configuration](../../reference/configuration/) for the full disk and share constraints.
+See [Linux Configuration](../../reference/configuration/#data-disks) for the complete disk and share schema.

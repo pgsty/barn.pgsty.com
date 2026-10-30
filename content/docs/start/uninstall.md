@@ -5,128 +5,90 @@ weight: 90
 icon: fa-solid fa-trash-can
 ---
 
-Barn manages Linux and macOS VMs separately. **`barn purge` deletes only the Linux deployment. It does not remove Mac VMs.** Keep Barn installed
-until you have finished VM and host cleanup.
+Barn manages Linux labs and macOS VMs independently. **`barn purge` removes only the Linux deployment—it does not delete Mac VMs.** Keep the `barn` CLI installed until you have finished removing VMs, integrations, cached images, and host networking.
 
 ## Choose what to remove
 
-| Goal | Operation |
+| Goal | Command |
 |---|---|
-| Free running resources, keep disks | `barn stop`; `barn mac stop --all` for Mac VMs |
-| Delete a Linux node | `barn destroy <node>` |
-| Delete the Linux lab, keep persistent disks | `barn destroy` |
-| Delete the Linux lab, including persistent disks and keys | `barn purge` — no confirmation |
-| Delete named Mac VMs | `barn mac destroy <name...>` — asks for confirmation |
+| Stop running VMs while keeping disks | `barn stop`; `barn mac stop --all` for Mac VMs |
+| Delete a single Linux node | `barn destroy <node>` |
+| Delete the Linux lab, keeping persistent disks | `barn destroy` |
+| Delete the Linux lab, persistent disks, and keys | `barn purge` (no confirmation prompt) |
+| Delete named Mac VMs | `barn mac destroy <name...>` (prompts for confirmation) |
 
-Use actual names from `barn status` and, if you use Mac guests, `barn mac ls`.
-Back up files you need before deleting VMs.
+Check `barn status` (for Linux nodes) and `barn mac ls` (for Mac VMs), and copy any files you want to keep onto the host before destroying machines.
 
-## 1. Remove the machines
+## Full teardown steps
 
-To discard the complete Linux lab, including retained persistent disks:
+1. **Destroy Linux and Mac virtual machines**
 
-```bash
-barn purge
-```
+   To discard the entire Linux lab—including retained persistent disks and deployment keys—run:
 
-Images and host networking remain. If you have not used Mac guests, skip the Mac commands.
-Otherwise, inspect the VM list and specify the names to delete. This example deletes `mac1` and `dev`:
+   ```bash
+   barn purge
+   ```
 
-```bash
-barn mac ls
-barn mac destroy mac1 dev
-```
+   If you also created macOS VMs, list and destroy them by name:
 
-Mac destruction removes disks, credentials, and settings, while keeping the
-shared base image and host folders.
+   ```bash
+   barn mac ls
+   barn mac destroy mac1 dev
+   ```
 
-## 2. Remove optional integrations
+2. **Remove SSH and `/etc/hosts` integrations**
 
-Whole-deployment Linux destruction removes its default SSH integration.
-Remove any custom fragment and optional hosts-file entries you installed:
+   Whole-deployment Linux `destroy` / `purge` removes the default `~/.ssh/barn_config` integration automatically. If you installed a custom named SSH fragment, `/etc/hosts` entries, or Mac SSH aliases, remove them:
 
-```bash
-barn ssh-config --remove --name lab
-barn hosts uninstall --json
-barn hosts uninstall --yes
-```
+   ```bash
+   barn ssh-config --remove --name lab
+   barn hosts uninstall --json
+   barn hosts uninstall --yes
+   barn mac ssh-config --remove
+   ```
 
-`lab` is an example custom fragment name. The JSON command previews the hosts-file removal. `--yes` applies it. For Mac SSH entries:
+   These commands remove only Barn's managed blocks, leaving your personal `~/.ssh/config` and `/etc/hosts` entries intact.
 
-```bash
-barn mac ssh-config --remove
-```
+3. **Prune cached images**
 
-These commands remove only Barn's managed entries, preserving your own SSH
-configuration and hosts-file content.
+   Preview and delete cached Linux and macOS images:
 
-## 3. Prune cached images
+   ```bash
+   barn image prune --dry-run
+   barn image prune --yes
+   barn mac image prune --installers
+   barn mac image prune --installers --yes
+   ```
 
-```bash
-barn image prune --dry-run
-barn image prune --yes
-```
+4. **Uninstall Linux host networking**
 
-Linux prune protects the active catalog, applied VMs, and registered local
-aliases. It will not necessarily empty the cache after VM deletion.
-For Mac images:
+   Preview and remove the shared Linux host network (requires all Linux VMs to be stopped and removed first; Mac VM networks tear down automatically when the VM stops):
 
-```bash
-barn mac image prune --installers
-barn mac image prune --installers --yes
-```
+   ```bash
+   barn network uninstall --json
+   barn network uninstall --yes
+   ```
 
-Mac prune keeps base images still used by a VM and the default base image.
+5. **Uninstall the Barn application and remaining state**
 
-## 4. Remove Linux host networking
+   If you installed Barn through a package manager, remove the package:
 
-```bash
-barn network uninstall --json
-barn network uninstall --yes
-```
+   ```bash {tab="Homebrew" group="uninstall" value="brew"}
+   brew uninstall barn
+   ```
 
-The JSON command previews removal and may need sudo to inspect protected host state.
-After reviewing the plan, use the second command to apply it. The network is shared across
-users and cannot be uninstalled while a VM is attached. Mac private networks
-disappear when their VMs stop and need no separate uninstall.
+   ```bash {tab="Debian / Ubuntu" group="uninstall" value="deb"}
+   sudo apt remove barn
+   ```
 
-## 5. Remove the application and remaining files
+   ```bash {tab="RHEL / Fedora" group="uninstall" value="rpm"}
+   sudo dnf remove barn
+   ```
 
-For package-manager installations, use the matching command:
+   - **User-scoped `install.sh`**: Remove `barn`, `barn-hosts-helper`, `.barn-current`, `.barn-releases/`, and `.barn-install.lock` from `~/.local/bin` (and remove the `PATH` entry from your shell rc file).
+   - **Manual archive or source build**: After stopping all Mac guests, remove the extracted release directory, `bin/mac`, or any copied `Barn.app` (`Barn Mac.app` in `0.9.0`), plus `~/Library/Preferences/com.pgsty.barn.plist` (`io.pgsty.barn.mac-runner.plist` in `0.9.0`).
+   - **Manually installed hosts helper**: If `/opt/barn/libexec/barn-hosts-helper` was installed manually and no other user on the host uses Barn, remove it after running `barn hosts uninstall --yes`.
+{.steps}
 
-```bash {tab="Homebrew" group="uninstall" value="brew"}
-brew uninstall barn
-```
-
-```bash {tab="Debian / Ubuntu" value="deb"}
-sudo apt remove barn
-```
-
-```bash {tab="RHEL / Fedora" value="rpm"}
-sudo dnf remove barn
-```
-
-For the user-scoped installer, inspect the installation directory (default
-`~/.local/bin`). Its Barn-owned files are the `barn` and `barn-hosts-helper`
-symlinks, `.barn-current`, `.barn-releases/`, and `.barn-install.lock`.
-After all VMs have stopped and integrations are removed, remove those exact items.
-For a manual archive or source bundle, remove its directory or PATH entry instead.
-
-If you separately installed a native Mac app from source, first stop all Mac guests. Then remove that exact app. The 0.9.0 source uses `Barn Mac.app`. Version 0.9.1 uses `Barn.app`. Inspect the actual
-location (for example `~/Applications` or `/Applications`) and any runner path
-override. Uninstalling the CLI does not remove an independently copied app.
-See [Mac installation](../macos/) for the release/source distinction.
-
-If a manually installed hosts helper remains, its path is
-`/opt/barn/libexec/barn-hosts-helper`. Remove it only after uninstalling the
-hosts integration and confirming no other Barn user needs it.
-
-**Delete `~/.barn` only after removing both Linux and Mac VMs.** It contains
-both kinds of VM state, credentials, persistent disks, and image caches. Linux
-`purge` alone is not sufficient. If you set `BARN_HOME`, inspect that exact path
-instead. If a VM directory remains or destroy fails, investigate the cause. Do not recursively delete the directory. Deleting just `~/.barn/mac` also requires all Mac
-VMs to have been destroyed first.
-
-Barn stores Mac window preferences separately at `~/Library/Preferences/io.pgsty.barn.mac-runner.plist`. Removing them only resets window positions.
-
-Other tools may use QEMU, so keep it until you know it is no longer needed.
+> [!WARNING]
+> **Delete `~/.barn` (or your custom `BARN_HOME`) only after destroying both Linux and Mac VMs.** `~/.barn` holds active VM state, keys, persistent disks, and base images for both workflows; if a VM is still running or `destroy` fails, resolve the error with `barn status` / `barn mac ls` before deleting the directory.

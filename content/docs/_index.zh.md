@@ -1,30 +1,28 @@
 ---
 title: Barn 文档
 linkTitle: 文档
-description: 安装 Barn 0.9.1，创建第一台 Linux 或 macOS 虚拟机，再按任务查阅使用指南与参考。
+description: 安装 Barn 0.9.2，创建第一台 Linux 或 macOS 虚拟机，并按任务查找指南与参考手册。
 weight: 10
 icon: fa-solid fa-book
 cascade:
   type: docs
 ---
 
-Barn 用于创建本地开发与测试用的虚拟机。本文档面向 **Barn 0.9.1**。
-先[安装 Barn](start/installation/)，再选择你需要的客机：
+Barn 用于在本地创建和管理开发测试虚拟机。本文档适用于 **Barn 0.9.2**，尚未发布的行为会标注为 **Unreleased**，详见[未发布变更](about/unreleased/)。可从以下入口快速开始：
 
-| 我想要…… | 从这里开始 | 所需环境 |
-|---|---|---|
-| 运行 Linux 虚拟机或多节点实验环境 | [Linux 快速上手](start/tutorial/) | macOS 或 Linux 宿主；Barn 可准备 QEMU 与网络 |
-| 运行带桌面和 SSH 的 macOS | [macOS 虚拟机](start/macos/) | Apple Silicon、macOS 27+ 和 Barn.app 原生组件 |
+- [安装 Barn 0.9.2](start/installation/) — 在 macOS 或 Linux 上通过 Homebrew、固定版本安装脚本或原生软件包安装 CLI。
+- [Linux 快速上手](start/tutorial/) — 在 macOS（HVF）或 Linux（KVM）上基于 Ansible YAML 清单启动单节点或多节点固定 IP 实验集群。
+- [原生 macOS 虚拟机](start/macos/) — 在 Apple Silicon 上运行相互隔离的 macOS 27+ 虚拟机，提供原生桌面窗口、SSH、VirtioFS 共享目录与剪贴板同步。
+{.cards}
 
-对于 Linux，用兼容 Ansible 的 YAML 清单定义节点，如 `barn.yml` 或 `pigsty.yml`。
-每个用户管理一套 Linux 实验环境，与工作目录无关。对于 macOS，用 `barn mac` 按名称管理每台虚拟机。
-两类虚拟机的状态默认都保存在 `~/.barn` 下。
+## 常见任务
 
-## 创建虚拟机之后
+- [日常操作](start/operations/) — 查看状态、启停节点、通过 `plan` 预览配置变更，以及重建或销毁虚拟机。
+- [存储与服务访问](start/storage/) — 挂载持久化测试数据盘、配置 Virtio-9p 宿主共享目录与访问客机端口。
+- [镜像与仓库](start/images/) — 从 9 个 Linux 发行版系中选择镜像、切换国内加速源或导入自定义 `qcow2` 镜像。
+- [脚本与自动化](start/automation/) — 使用 `--yes`、`--json` 与结构化退出码在脚本或 CI 中驱动 Barn。
+- [故障排查](start/troubleshooting/) — 使用 `barn doctor` 诊断宿主机依赖、桥接网络、SSH 密钥与中断操作。
+- [0.9.2 版本更新](../blog/release/0.9.2/) — 了解随包提供的 macOS 原生 App、SSH/exec 命令规范与升级步骤。
+{.cards}
 
-- 日常操作见[启停与变更](start/operations/)、[文件传输和服务访问](start/storage/)、[选择镜像](start/images/)、[编写自动化](start/automation/)。
-- 具体设置见[Linux 配置](reference/configuration/)、[命令行参数](reference/cli/)、[Mac 命令](reference/mac/)。
-- 排查问题见[故障排查](start/troubleshooting/)、[平台与限制](about/status/)，或[报告问题](https://github.com/pgsty/barn/issues)。
-
-版本变化见 [0.9.1 发布说明](../blog/release/0.9.1/)。
-实现与构建方法见[设计说明](about/design/)和[源码构建指南](start/source-build/)。
+## 按栏目浏览

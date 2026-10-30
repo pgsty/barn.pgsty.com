@@ -1,153 +1,113 @@
 ---
 title: Install Barn
 linkTitle: Installation
-description: Install Barn 0.9.1 on macOS or Linux, check requirements, and keep the application up to date.
+description: Install Barn 0.9.2 on macOS or Linux, check requirements, and keep the application up to date.
 weight: 5
 icon: fa-solid fa-download
 aliases: [/docs/start/upgrade/]
 ---
 
-Barn 0.9.1 provides archives for macOS and Linux on **arm64 and amd64**,
-plus DEB and RPM packages for Linux. Run Barn as your normal user.
-After installation, follow the [Linux quick start](../tutorial/) or [macOS VM guide](../macos/).
+Barn 0.9.2 ships archives for macOS and Linux on **arm64 and amd64**, along with DEB and RPM packages for Linux. Always run `barn` as your normal Unix user; after installing, continue with the [Linux quick start](../tutorial/) or [macOS VM guide](../macos/).
 
-[Barn 0.9.1](https://github.com/pgsty/barn/releases/tag/v0.9.1) uses the
-pre-release channel. The downloads include the CLI and hosts helper;
-`Barn.app` requires a [source build](../source-build/#mac-component).
+> [!NOTE]
+> [Barn 0.9.2](https://github.com/pgsty/barn/releases/tag/v0.9.2) is published as a GitHub pre-release (like all `0.x` releases), so `releases/latest` does not match it—always specify `0.9.2` explicitly when running the installer. The Apple Silicon archive includes the matching `barn`, `barn-hosts-helper`, and native macOS app bundle (`Barn.app`), signed with Developer ID and notarized by Apple. Go and Xcode are only needed for [source builds](../source-build/).
 
-Select the version explicitly. Barn's release workflow marks versions below
-1.0.0 as GitHub pre-releases; `releases/latest` excludes them, and the installer
-does not fall back to them.
-
-| Component | Purpose | Included in 0.9.1 downloads |
+| Component | Purpose | Included in 0.9.2 downloads |
 |---|---|---|
-| `barn` | Go CLI for Linux and macOS VM lifecycle | All four platform archives and Linux packages |
-| `barn-hosts-helper` | Restricted companion for managed host-name integration | Packaged with its matching CLI |
-| `Barn.app` | Virtualization.framework runner and macOS guest desktop | Not included in 0.9.1 downloads; build from tag `v0.9.1` |
-
-Linux guests use QEMU and do not need the native Mac app. The app does not
-replace the CLI or include QEMU, macOS restore images, or VM disks.
+| `barn` | Go CLI for Linux labs and macOS VM lifecycle | All four platform archives and Linux packages |
+| `barn-hosts-helper` | Companion binary for `/etc/hosts` name integration | Packaged alongside its matching CLI |
+| `Barn.app` | Native `Virtualization.framework` runner and macOS guest desktop | Included in the Darwin arm64 archive and Apple Silicon Homebrew install; macOS guests only |
 
 ## Install the release
 
-Choose the operating system of the computer that will run Barn—the **host**.
-Use Homebrew on macOS or the download installer on Linux.
+Choose the operating system of your **host** machine. Use Homebrew on macOS or the release installer script on Linux.
 
 {{< tabs group="barn-install" default="macos" label="Host operating system" >}}
 {{< tab label="macOS" value="macos" >}}
 
-Install Barn and its QEMU dependency with [Homebrew](https://brew.sh/):
+Install Barn and its QEMU dependency with [Homebrew](https://brew.sh/) as your normal user:
 
 ```bash
 brew install pgsty/infra/barn
 barn version
 ```
 
-Run `brew` as your normal user, without sudo. The 0.9.1
-[Homebrew formula](https://github.com/pgsty/homebrew-infra/blob/main/Formula/barn.rb)
-installs the CLI and hosts helper. It does not include `Barn.app`. macOS guests
-require Apple Silicon, macOS 27+, and a native component built from tag `v0.9.1`.
-See the [Mac installation instructions](../macos/#install).
+On Apple Silicon, the `0.9.2` [Homebrew formula](https://github.com/pgsty/homebrew-infra/blob/main/Formula/barn.rb) also installs `Barn.app` under `libexec`, where the CLI discovers it automatically. On macOS 27+, run `barn mac doctor` and continue with the [Mac guide](../macos/#install). Intel Macs use the CLI and helper for Linux guests.
 
 {{< /tab >}}
 {{< tab label="Linux" value="linux" >}}
 
-Download the installer and select the release when you run it.
-It chooses the amd64 or arm64 archive, verifies its SHA-256, and installs it into `~/.local/bin` without sudo:
+Download `install.sh` and pass `BARN_VERSION=0.9.2`. The script detects `amd64` or `arm64`, verifies the archive SHA-256 against `checksums.txt`, and installs the CLI and matching `barn-hosts-helper` under `~/.local/bin` without `sudo`:
 
 ```bash {wrap=true}
-curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.1/install.sh
-BARN_VERSION=0.9.1 bash install.sh
+curl -fLO https://github.com/pgsty/barn/releases/download/v0.9.2/install.sh
+BARN_VERSION=0.9.2 bash install.sh
 export PATH="$HOME/.local/bin:$PATH"
 barn version
 ```
 
-Add the PATH line to your shell's startup file, such as `~/.bashrc` for Bash.
-The installer keeps the CLI and its matching hosts helper in a versioned directory. Preserve that layout.
-
-If you prefer, use the same pinned installer on macOS instead of Homebrew.
-It installs Barn; `barn setup` prepares Linux-guest dependencies separately.
+Add `export PATH="$HOME/.local/bin:$PATH"` to your shell startup file (such as `~/.bashrc` or `~/.zshrc`), and keep the versioned `.barn-releases/` directory layout intact. You can also run this same pinned installer on macOS if you prefer not to use Homebrew; `barn setup` will handle QEMU and host-network dependencies separately.
 
 {{< /tab >}}
 {{< /tabs >}}
 
-Check the installed version with `barn version`. Installing Barn does not start
-a VM. Interactive `barn up` prepares missing Linux-guest dependencies and host networking. It requests administrator access when needed. Use
-`barn setup --dry-run` to inspect the plan. Run Barn itself as your normal user.
+When you run `barn up` interactively for the first time, Barn checks for any missing Linux-guest dependencies and host networking, displays the planned changes, and requests administrator access (`sudo`) only when needed. To preview those host changes without applying them, run `barn setup --dry-run`.
 
 ## System requirements
 
-| guest | Host | Runtime |
+| Guest | Host | Runtime |
 |---|---|---|
 | Linux | macOS, Apple Silicon or Intel | QEMU 8.2.1+, HVF |
 | Linux | Linux, arm64 or amd64 | QEMU 6.2+, usable KVM, NetworkManager or systemd-networkd |
-| macOS 27 | Apple Silicon, macOS 27+, logged-in desktop session | Barn.app native component; no QEMU required |
+| macOS 27 | Apple Silicon, macOS 27+, logged-in desktop session | `Barn.app` native component; no QEMU required |
 {.platform-table}
 
-A default Linux VM uses **2 vCPUs and 4 GiB of memory**, with a 64 GiB root
-disk and a 128 GiB test data disk. These are virtual capacities; the files grow as data is written. Leave memory and disk space for the host as well.
+A default Linux VM uses **2 vCPUs and 4 GiB of memory**, backed by thin-provisioned `qcow2` disks (64 GiB root disk and 128 GiB test data disk) that grow as data is written.
 
-The first Mac VM needs about **65 GiB of free disk space** for Apple's restore
-image, the installed base image, and initial writes. Its defaults are 4 vCPUs, 8 GiB of memory, and a 100 GiB disk for the first base image. Unless you specify `--disk`, later VMs inherit the prepared base image's capacity. See [platforms and limits](../../about/status/)
-for guest-specific restrictions.
+The first macOS VM requires roughly **65 GiB of free disk space** to hold Apple's ~25 GiB restore image, the ~27 GiB installed base image, and initial guest writes. By default, a Mac VM uses 4 vCPUs, 8 GiB of memory, and a 100 GiB APFS clone disk. Later Mac VMs inherit the prepared base image's capacity unless you pass `--disk`. See [Platforms and limits](../../about/status/) for guest-specific constraints.
 
 ## Other installation methods
 
 ### Linux packages
 
-These examples use **amd64**; on ARM64, use the corresponding `linux_arm64` asset.
-Packages declare their QEMU, firmware, and SSH dependencies.
+The DEB and RPM packages declare their QEMU, UEFI firmware, and OpenSSH dependencies automatically. On ARM64 hosts, replace `amd64` with `arm64`:
 
 ```bash {tab="Debian / Ubuntu" group="linux-package" value="deb"}
-barn_release=https://github.com/pgsty/barn/releases/download/v0.9.1
-curl -fLO "$barn_release/barn_0.9.1_linux_amd64.deb"
-sudo apt install ./barn_0.9.1_linux_amd64.deb
+barn_release=https://github.com/pgsty/barn/releases/download/v0.9.2
+curl -fLO "$barn_release/barn_0.9.2_linux_amd64.deb"
+sudo apt install ./barn_0.9.2_linux_amd64.deb
 barn version
 ```
 
-```bash {tab="RHEL / Fedora" value="rpm"}
-barn_release=https://github.com/pgsty/barn/releases/download/v0.9.1
-curl -fLO "$barn_release/barn_0.9.1_linux_amd64.rpm"
-sudo dnf install ./barn_0.9.1_linux_amd64.rpm
+```bash {tab="RHEL / Fedora" group="linux-package" value="rpm"}
+barn_release=https://github.com/pgsty/barn/releases/download/v0.9.2
+curl -fLO "$barn_release/barn_0.9.2_linux_amd64.rpm"
+sudo dnf install ./barn_0.9.2_linux_amd64.rpm
 barn version
 ```
 
 ### Manual archives
 
-Download the archive matching your host from [Barn 0.9.1 on GitHub](https://github.com/pgsty/barn/releases/tag/v0.9.1).
-Names follow `barn_0.9.1_<os>_<arch>.tar.gz`, where `os` is `darwin` or `linux`.
-Verify the selected archive against the release's `checksums.txt` before
-extracting it. For example, on Apple Silicon:
+Download `barn_0.9.2_<os>_<arch>.tar.gz` (`darwin` or `linux`, `arm64` or `amd64`) and `checksums.txt` from [Barn 0.9.2 on GitHub](https://github.com/pgsty/barn/releases/tag/v0.9.2), then verify the SHA-256 digest before extracting:
 
 ```bash
-barn_release=https://github.com/pgsty/barn/releases/download/v0.9.1
-curl -fLO "$barn_release/barn_0.9.1_darwin_arm64.tar.gz"
+barn_release=https://github.com/pgsty/barn/releases/download/v0.9.2
+curl -fLO "$barn_release/barn_0.9.2_darwin_arm64.tar.gz"
 curl -fLO "$barn_release/checksums.txt"
-shasum -a 256 barn_0.9.1_darwin_arm64.tar.gz
+shasum -a 256 -c checksums.txt --ignore-missing
 ```
 
-Compare the complete digest with that filename's entry in `checksums.txt`.
-If it matches, extract the archive and add its `bin/` directory to PATH.
-Keep `barn` and `barn-hosts-helper` in their packaged locations.
-The helper must match the SHA-256 embedded in the CLI; an unrelated helper will not work.
-The 0.9.1 archives do not include `Barn.app`; build the complete native bundle
-from tag `v0.9.1` to run macOS guests.
+Extract the archive and add its `bin/` directory to `PATH`. Keep the packaged layout intact: `barn` and `barn-hosts-helper` must stay paired, and the Darwin arm64 archive also contains `bin/Barn.app`. The CLI verifies the helper's embedded SHA-256 before invoking it and discovers the app beside the binary.
 
 ### Build from source
 
-To develop Barn or build the native Mac component yourself, follow
-[Build from Source](../source-build/).
+To work on Barn or compile the native `Barn.app` bundle for macOS guests, see [Build from Source](../source-build/).
 
 ## Upgrade Barn
 
-For 0.9.0 → 0.9.1, stop Mac VMs before replacing the app and update the CLI,
-helper, and app together. The new CLI recognizes old `Barn Mac.app` bundles;
-the old CLI does not discover `Barn.app`. Existing VM disks and configuration
-stay in place. No VM recreation or image-catalog update is required. Desktop
-window positions may reset because the app identifier changed. See the
-[0.9.1 upgrade notes](/blog/release/0.9.1/).
+Before upgrading to **0.9.2**, stop running Mac VMs and replace the CLI, `barn-hosts-helper`, and `Barn.app` together through your installation channel. VM disks and configuration stay in place; no recreation is required. Update scripts to include `--` before SSH/exec remote commands, for example `barn exec meta -- hostname`. See the [0.9.2 release notes](/blog/release/0.9.2/).
 
-Use the same installation method for upgrades. On macOS, update with Homebrew:
+Upgrade using the same channel you used to install Barn. On macOS with Homebrew:
 
 ```bash
 brew update
@@ -155,21 +115,14 @@ brew upgrade pgsty/infra/barn
 barn version
 ```
 
-On Linux, repeat the installer commands with the version you want, or install
-the new DEB/RPM package.
-Then check `command -v barn` and `barn version` to confirm which binary your
-shell selects. Review the [release notes](/blog/release/) before upgrading.
+On Linux, re-run `install.sh` with the target `BARN_VERSION` or install the newer `.deb` / `.rpm` package, then run `command -v barn` and `barn version` to confirm the active binary.
 
-The application, Linux images, and macOS base images have separate update commands:
+Barn decouples CLI upgrades from guest image updates so existing VMs never change OS versions unexpectedly:
 
-| What to update | How |
-|---|---|
-| Barn application | Install the chosen release |
-| Linux image catalog | `barn update` (or `barn update --mirror`) |
-| macOS base image for new machines | `barn mac image update` |
+| Target | Command | Effect on existing VMs |
+|---|---|---|
+| Barn CLI, helper & bundled app | Reinstall or `brew upgrade` | Preserves all VM disks and state |
+| Linux image catalog | `barn update` (or `barn update --mirror`) | Updates catalog for new or `recreate`d nodes |
+| macOS base image | `barn mac image update` | Prepares a new base image; apply to an existing VM with `barn mac recreate NAME --update` |
 
-Image updates keep existing VM disks intact. To replace a VM's OS, review the relevant `recreate` workflow. This operation replaces the guest disk.
-Stop Mac machines before replacing their native component.
-
-For network or PATH problems, see [troubleshooting](../troubleshooting/#download-and-path-problems).
-For removal, see [uninstall and cleanup](../uninstall/).
+For proxy or `PATH` issues, see [Troubleshooting](../troubleshooting/#download-and-path-problems). To remove Barn and its host state, see [Uninstall and Clean Up](../uninstall/).

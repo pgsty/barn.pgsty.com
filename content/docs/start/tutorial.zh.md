@@ -7,16 +7,11 @@ icon: fa-brands fa-linux
 aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 ---
 
-先在 Mac 或 Linux 电脑上创建一台 Ubuntu 24.04 虚拟机，再按需增加节点。
-运行 Barn 的电脑称为宿主，虚拟机中的操作系统称为客机。
-macOS 客机请使用独立的 [Mac 教程](../macos/)。
+在 Mac 或 Linux 宿主上创建一台 Ubuntu 24.04 虚拟机，通过 SSH 登录，再用同一份 YAML 清单扩展为多节点固定 IP 实验环境。如需在 Apple Silicon 上运行 macOS 客机，请阅读 [macOS 虚拟机教程](../macos/)。
 
 ## 开始之前 {#install}
 
-[安装 Barn 0.9.1](../installation/)，为客机预留至少 4 GiB 内存，并为宿主保留余量。
-在终端中以普通用户执行以下命令。Barn 可以准备 QEMU 和私有网络，宿主变更可能需要 sudo。
-
-首次准备要求标准输入连接交互终端，CI 等非交互场景请使用[自动化指南](../automation/)。
+[安装 Barn 0.9.2](../installation/)，并确保宿主至少预留 4 GiB 可用内存供客机使用。请在交互式终端中以普通用户执行以下命令——Barn 会自动配置 QEMU 与私有网络，仅在需要修改宿主系统配置时提示输入 `sudo` 密码（CI 等非交互场景请参阅[自动化指南](../automation/)）。
 
 ## 启动并连接
 
@@ -26,31 +21,26 @@ barn up
 barn ssh
 ```
 
-定义实验环境节点的 YAML 配置文件称为清单。
-首次使用，且既没有配置文件也没有已有部署时，`up` 会生成只有一个 `meta` 节点的 `barn.yml`。
-它先准备宿主依赖，再下载并校验镜像，最后等待 SSH 就绪。
-
-启动成功后会显示连接命令：
+首次运行且既没有配置文件也没有已有部署时，`barn up` 会自动生成包含单个 `meta` 节点的 `barn.yml`，准备宿主依赖，下载并校验基础镜像，随后等待 SSH 就绪：
 
 ```text
   ✓  1 node ready
 connect:   barn ssh meta
 ```
 
-此时你已通过密钥以 `dba` 登录客机，可以使用免密 sudo。
-执行 `exit` 返回宿主后，再运行其他 Barn 命令。
+`barn ssh` 会使用部署密钥以管理员用户 `dba` 登录客机，支持免密 `sudo`。输入 `exit` 退回宿主终端后，即可继续运行其他 `barn` 命令。
 
 | 默认配置 | 值 |
 |---|---|
-| 节点与地址 | `meta`，`10.10.10.10` |
-| 镜像 | Ubuntu 24.04，`u24:stable`，与宿主相同的架构 |
+| 节点与地址 | `meta`（`10.10.10.10`） |
+| 镜像 | Ubuntu 24.04（`u24:stable`，与宿主架构一致） |
 | CPU 与内存 | 2 vCPU、4 GiB |
-| 磁盘 | 64 GiB 根盘，挂载到 `/data` 的 128 GiB 测试数据盘 |
+| 磁盘 | 64 GiB 根盘写时复制层，以及挂载到 `/data` 的 128 GiB 测试数据盘 |
 
-磁盘文件随写入增长。如果全新、未编辑的默认模板遇到子网冲突，setup 可以选择其他私有 `/24`。实际地址以生成后的 `barn.yml` 和 `barn status` 为准。
+两块磁盘均为按需增长的 `qcow2` 稀疏文件。如果默认网段 `10.10.10.0/24` 与本机现有路由冲突，首次 `setup` 会为未修改过的默认模板自动选择另一个空闲的私有 `/24` 网段——实际分配的地址以生成的 `barn.yml` 和 `barn status` 为准。
 
-Barn 在选定的 `BARN_HOME`（默认 `~/.barn`）中管理一套 Linux 部署。
-切换工作目录不会新建部署。当前目录没有配置文件时，`up` 会继续已有部署。用 `barn status` 查看现有虚拟机。
+> [!NOTE]
+> **每个 `BARN_HOME` 对应唯一一套 Linux 部署**：Barn 默认将 Linux 实验环境的状态保存在 `BARN_HOME`（即 `~/.barn`）下。切换工作目录不会创建第二套实验环境；在没有清单文件的目录中运行 `barn up` 会直接恢复现有部署。设计背景详见[一套部署，没有项目概念](/zh/blog/design/one-deployment-no-projects/)。
 
 ## 查看并使用虚拟机
 
@@ -61,31 +51,52 @@ barn exec meta -- df -h / /data
 barn ssh meta
 ```
 
-`status` 展示虚拟机进程状态。`up` 等待管理 SSH 可用，并报告数据盘、私网等客机功能的
-限制。修正问题或中断初始化后，再次执行 `barn up` 继续。健康虚拟机保持运行。
-中国地区可使用 `barn up --mirror` 优先从中国官方仓库下载镜像。
+`barn status` 用于查看虚拟机进程状态，`barn up` 则会确认管理 SSH 可用，并报告数据盘、私网等客机阶段是否存在功能限制。修复问题或中断初始化后，重新运行 `barn up` 即可继续收敛，已处于健康状态的虚拟机不会重启。中国大陆网络环境可使用 `barn up --mirror` 从中国官方镜像站拉取镜像。
 
 > [!WARNING]
-> 数据盘用于可丢弃的测试数据。客机初始化时，Barn 可能清空重建无法识别或确认损坏的
-> 文件系统，包括持久盘。请将有价值的数据另行保存。[存储与恢复说明](../storage/)
-> 解释了保留磁盘与保护磁盘内容之间的区别。
+> 数据盘属于可丢弃的测试存储。在客机恢复期间，`barn up` 可能会重新格式化无法识别或确认损坏的文件系统（包括持久数据盘）。重要数据请保存在宿主上，磁盘保留与恢复边界详见[存储与访问](../storage/)。
 
 ## 首次启动前定制配置
 
-以下步骤是默认启动的替代方案：先定制配置，再首次启动。
-如果已经按上文启动实验环境，请跳过这组命令，按下文说明修改已有配置。
+如果希望在首次创建虚拟机前自定义拓扑、网段或操作系统镜像，可以先生成并编辑清单：
 
-```bash
-barn init
-# 编辑 barn.yml。
-barn validate
-barn plan
-barn up
-```
+1. 生成初始配置文件（`barn init dual`、`trio`、`full` 分别生成 2、3、4 节点模板，`-c 10.20.30.0/24` 可指定网段，`--force` 覆盖已有文件）：
 
-以下是一份完整的单节点配置：
+   ```bash
+   barn init
+   ```
 
-```yaml
+2. 编辑 `barn.yml`，调整镜像或硬件资源：
+
+   ```yaml {title="barn.yml"}
+   all:
+     vars:
+       admin_ip: 10.10.10.10
+       vm_image: u24
+       vm_cpu: 2
+       vm_mem: 4GiB
+     children:
+       nodes:
+         hosts:
+           10.10.10.10: { nodename: meta }
+   ```
+
+3. 校验 YAML 语法、预览变更计划并启动环境：
+
+   ```bash
+   barn validate
+   barn plan
+   barn up
+   ```
+{.steps}
+
+`barn validate` 和 `barn plan` 可在未安装 QEMU 或宿主网络前直接运行。完整配置字段见[配置参考](../../reference/configuration/)。
+
+## 扩容为多节点环境
+
+要将现有的单节点环境扩展为四节点集群（按默认每节点 4 GiB 计算共需 16 GiB 客机内存），只需在 `barn.yml` 的 `all.children.nodes.hosts` 下追加新节点：
+
+```yaml {title="barn.yml"}
 all:
   vars:
     admin_ip: 10.10.10.10
@@ -96,34 +107,21 @@ all:
     nodes:
       hosts:
         10.10.10.10: { nodename: meta }
-```
-
-`barn init dual`、`trio`、`full` 分别生成双节点、三节点和四节点配置。
-`barn init full -c 10.20.30.0/24` 指定其他子网。除非显式使用 `--force`，否则 Barn 会保留已有文件。配置校验和镜像目录规划不要求先准备宿主。全部字段见[配置参考](../../reference/configuration/)。
-
-## 添加更多节点
-
-在现有 `barn.yml` 的同一个 `hosts` 下补充节点条目：
-
-```yaml
-        10.10.10.10: { nodename: meta }
         10.10.10.11: { nodename: node-1 }
         10.10.10.12: { nodename: node-2 }
         10.10.10.13: { nodename: node-3 }
 ```
 
-沿用实际网段和其他已有设置。这只是配置片段，不要用它替换整个文件。
-四节点环境按默认规格需要 16 GiB 客机内存。
+预览差异并拉起新增节点：
 
 ```bash
 barn plan
 barn up
 ```
 
-仅有这些新增行时，计划会列出三台新节点。Barn 创建它们时不重启 `meta`。
+`barn plan` 会列出 3 个 `create` 动作，随后 `barn up` 会在不重启 `meta` 的前提下创建 `node-1` 至 `node-3`。
 
-修改已有节点的 CPU、内存或其他虚拟机定义，需要执行 `barn recreate <node>`，该操作会替换根盘。
-从 YAML 删除节点条目会保留虚拟机，直到你执行 `barn destroy <node>`。
+如果修改了已有节点的 CPU、内存或镜像，需执行 `barn recreate <node>` 使其生效（这会替换该节点的根盘）。从 `barn.yml` 中删除节点条目不会自动销毁虚拟机，需显式运行 `barn destroy <node>`。
 
 ## 停止、恢复与清理
 
@@ -132,15 +130,12 @@ barn stop
 barn start
 ```
 
-两条命令都会保留磁盘。环境不再需要时，执行 `barn destroy` 并输入 `destroy` 确认。
-它会删除根盘与非持久数据盘，保留持久盘、镜像缓存、密钥和宿主网络。
-[彻底清理](../uninstall/)有独立的操作步骤。
+`stop` 与 `start` 都会保留虚拟机磁盘。不再需要实验环境时，运行 `barn destroy` 并输入 `destroy` 确认——Barn 会删除虚拟机及其根盘与非持久数据盘，同时保留持久数据盘、镜像缓存、密钥和宿主网络。如需彻底移除所有残留文件，请参阅[卸载与清理](../uninstall/)。
 
 ## 接下来
 
-- [日常管理](../operations/)：连接、日志、重启、配置变更与删除。
-- [存储与访问](../storage/)：传输文件，访问客机服务。
-- [镜像](../images/)：选择 Debian、Rocky Linux、Ubuntu 或本地镜像。
-- [自动化](../automation/)：`setup --yes`、JSON 结果、客机脚本，以及与 Pigsty 共用 `pigsty.yml`。
-
-Barn 准备虚拟机与访问环境。通过 Pigsty 另行部署 PostgreSQL 等服务。内置模板描述虚拟机拓扑，不包含完整的服务配置。
+- [日常管理](../operations/) — 查看日志、重启节点、应用配置变更与销毁虚拟机。
+- [存储与访问](../storage/) — 配置持久数据盘、通过 OpenSSH 传输文件并访问客机端口。
+- [镜像仓库](../images/) — 选择 Debian、Rocky Linux、Ubuntu 或导入本地 `qcow2` 镜像。
+- [自动化](../automation/) — 无人值守 `setup --yes`、解析 `--json` 输出、执行客机脚本，以及与 Pigsty 共用 `pigsty.yml`。
+{.cards}

@@ -2,11 +2,11 @@
 title: Daily Operations
 description: "The normal lifecycle for the one deployment: inspect, access, scale, change, stop, and destroy."
 weight: 30
-icon: fa-solid fa-gears
+icon: fa-solid fa-sliders
 aliases: [/docs/start/lifecycle/, /docs/start/provisioning/]
 ---
 
-This guide covers Linux labs in **Barn 0.9.1**. For Mac VMs, use the [macOS guide](../macos/#everyday-lifecycle).
+This guide covers day-to-day Linux lab management in **Barn 0.9.2**. For macOS guests, see the [macOS VM guide](../macos/#everyday-lifecycle).
 
 ## Inspect and access
 
@@ -17,23 +17,17 @@ barn exec node-1 -- hostname
 barn logs meta --source serial
 ```
 
-Barn records the existing deployment under `~/.barn` by default; `BARN_HOME` overrides this location.
-The commands above use that applied state and work from any directory. Changing directories does not create another deployment.
+These commands read the active deployment under `BARN_HOME` (default `~/.barn`) and work from any directory when that path points to the same location. If you set `BARN_HOME` yourself, use an absolute path across working directories. `barn status` lists each node's image and resource allocation (including any software-emulated `tcg` notice), while `barn status --verbose` adds guest architecture, accelerator, loopback SSH port, and QEMU PID.
 
-Status shows images and resources. `--verbose` adds architecture, accelerator, SSH ports, and PID.
-Ordinary output identifies TCG, and an abnormal node does not hide the other nodes' status.
-After starting the selected VMs, `barn up` rebuilds SSH aliases from the complete applied deployment.
-A scoped `up` retains unselected nodes' aliases, so connections such as `ssh meta` continue to work.
-To rewrite the aliases manually, use `barn ssh-config --install`.
+When you run `barn up` (including on a subset of nodes), Barn refreshes the `~/.ssh/barn_config` aliases for the entire applied deployment so `ssh meta` and peer aliases stay current. You can also regenerate those aliases at any time with `barn ssh-config --install`.
 
-`plan`, `up`, `reload`, and `recreate` first use an explicit `-f`, then search for an inventory in the current directory.
-If discovery finds no file, they use the applied specification. `validate` always needs a file.
-The search order is `barn.yml`, `barn.yaml`, `pigsty.yml`, then `pigsty.yaml`; Barn does not search parent directories.
-If the first existing file is malformed, the command fails without trying another file or applied state.
-Use `-f pigsty.yml` when both Barn and Pigsty files exist.
+Commands that reconcile configuration—`plan`, `up`, `reload`, and `recreate`—locate the inventory in this order:
 
-Repeat `up` to retry unfinished guest setup and refresh older guest helpers
-without restarting healthy VMs. The result lists optional limitations. JSON/YAML expose `nodes[].warnings` and `nodes[].repairs`. Barn may reset unrecognized or confirmed damaged test data filesystems, including persistent disks. See [Data disks](../../reference/configuration/#data-disks).
+1. An explicit `-f /path/to/inventory.yml` flag (required when both `barn.yml` and `pigsty.yml` exist in the same directory and you want `pigsty.yml`).
+2. The first matching file in the current working directory (`barn.yml`, `barn.yaml`, `pigsty.yml`, then `pigsty.yaml`; parent directories are never searched).
+3. The previously applied deployment specification in `BARN_HOME` (except `barn validate`, which always requires a file).
+
+Re-running `barn up` retries any unfinished guest setup stages and updates guest helper scripts in place without restarting healthy VMs. Any remaining guest limitations or automatic test-disk repairs are surfaced in the terminal summary and under `nodes[].warnings` / `nodes[].repairs` in JSON/YAML output (see [Data disks](../../reference/configuration/#data-disks)).
 
 ## Stop and start
 
@@ -41,81 +35,82 @@ without restarting healthy VMs. The result lists optional limitations. JSON/YAML
 barn stop
 barn start
 barn restart node-1
-barn reload -f barn.yml       # read/check config, stop, then converge
+barn reload -f barn.yml       # validate inventory, stop selected nodes, and run up
 ```
 
-`start` powers on stopped VMs and re-checks readiness of running ones. Both
-`start` and `restart` use applied state and refresh SSH aliases, including any
-reassigned automatic ports. Before stopping selected nodes, `reload` reads the inventory and checks drift and startup dependencies. It then runs the full `up` workflow.
+`barn start` boots stopped VMs, re-verifies running ones, and updates SSH aliases if any automatic loopback port was reassigned. `barn reload` validates the inventory and startup dependencies before stopping selected nodes, then runs `barn up` for that selection.
 
-Starting commands also refresh Barn hosts and control-node SSH entries in
-running guests. `--no-wait` skips readiness, guest recovery, and this refresh. Run `up` later to complete these steps.
+Passing `--no-wait` to a start command returns as soon as QEMU starts, skipping readiness checks, guest recovery, and `/etc/hosts` or control-node SSH updates until your next `barn up`.
 
 ## Change the deployment
 
 ```bash
 barn plan
-barn up                         # create/start selected nodes and install SSH aliases
-barn recreate node-1            # applies a changed VM definition
+barn up                         # create/start selected nodes and refresh SSH aliases
+barn recreate node-1            # rebuild a node whose VM specification changed
 ```
 
-On a terminal, `recreate` and `destroy` ask you to type the confirmation word. `--force` skips that prompt. Without a terminal, this flag is required.
+`barn plan` compares your inventory against the applied state and reports image selections, aggregate resources, drift reasons, and disk impact:
 
-Before host setup, `plan` can show image catalog selections, total resources, change reasons, and disk effects.
-Planning an imported `local-*` image also validates its cache and requires `qemu-img`.
-
-CPU and memory changes require recreate, which replaces root and non-persistent data disks and retains compatible persistent disks.
-If changes to unselected nodes block the requested recreate, Barn refuses before deletion and identifies the affected nodes.
-
-Inventory changes appear in these fields:
-
-| Field | Meaning | Action |
+| Detected change | Meaning | How to apply |
 |---|---|---|
-| `create` | desired node has no state | `barn up` |
-| `recreate` | VM definition changed | `barn recreate <node>` |
-| `missing` | stateful node left the file | restore it, or destroy it explicitly |
+| `create` | Node is in the inventory but not yet provisioned | `barn up` |
+| `recreate` | Node's hardware, image, disk, or share specification changed | `barn recreate <node>` |
+| `missing` | Provisioned node was removed from the inventory YAML | Restore the YAML entry, or run `barn destroy <node>` |
 
-Deleting YAML never deletes a VM. Changes to Pigsty fields that Barn does not use produce `action:none`. Barn uses native naming and node-admin fields even though they do not begin with `vm_`. Successful recreate refreshes the complete SSH
-fragment as well.
+In JSON output, `create`, `recreate`, and `missing` are node lists. The top-level `action` summarizes the plan (for example `converge`, `recreate`, or `blocked-removal`); `blocked`, when present, is an explanation string.
+
+Editing or deleting YAML entries never destroys a VM automatically, and changes to service-level Pigsty variables that Barn does not consume report `action: none`. When a node requires `recreate`, Barn replaces its root overlay and non-persistent data disks while preserving compatible persistent disks. Interactive `recreate` and `destroy` prompt you to type the command name to confirm; pass `--force` in non-interactive scripts.
+
+### Apply changes to selected nodes {#selected-nodes}
+
+**Unreleased:** With a build containing `27f17bb`, you can edit several nodes in the inventory and apply them in batches:
+
+```bash
+barn plan node-1 -f barn.yml
+barn recreate node-1 -f barn.yml
+barn plan node-2 -f barn.yml
+```
+
+`plan`, `up`, `reload`, and `recreate` with explicit selectors retain every unselected peer's applied definition, including peers changed or temporarily omitted in YAML. Images for uncreated, unselected nodes are resolved when you select those nodes. The entire inventory must still parse correctly, and selected changes must not conflict with applied addresses, aliases, control-node roles, or deployment-wide settings.
+
+Without selectors, Barn evaluates the whole inventory: changed existing VMs require `recreate`, and missing VMs require restoring their definitions or explicitly destroying them. These selection changes are not in 0.9.2; see [Unreleased Changes](../../about/unreleased/).
 
 ## Concurrent commands
 
-Commands that modify the deployment, including `provision`, wait up to ten minutes for another Barn operation. The command's own deadline can shorten this wait. The waiting message identifies
-the command, PID, and start time. A lock timeout returns exit 4, JSON `error: conflict`, and `reason: deployment_busy`. After the lock holder finishes, retry the command.
-The lock is released automatically when the holding process exits. Do not
-delete a lock file to interrupt a live operation.
+Mutating commands (`up`, `start`, `stop`, `restart`, `reload`, `recreate`, `destroy`, `purge`, and `provision`) acquire the deployment lock in `BARN_HOME`, waiting up to 10 minutes (or the command's `--timeout`) if another operation is in flight. While waiting, Barn prints the lock holder's command, PID, and start time; if the wait times out, it exits with code `4` (`error: conflict`, `reason: deployment_busy`). The lock releases automatically when the holding process exits—never delete lock files manually.
 
-`status`, `ssh`, `exec`, `ssh-config`, and the deployment-state read for `hosts`
-do not queue behind this lock. They use the published state. If another command holds the deployment lock, `status` adds a `note`. It does not reconcile that command's transitions. A VM still starting may therefore be unavailable to SSH.
-
-See [Troubleshooting](../troubleshooting/#a-command-was-killed) for interrupted
-operations and [Automation](../automation/) for scriptable results.
+Read-only and access commands (`status`, `ssh`, `exec`, `ssh-config`, and the state read in `hosts`) read the last published state without waiting on the lock. If a mutating command is currently running, `barn status` includes a `note` indicating the active operation. See [Troubleshooting](../troubleshooting/#a-command-was-killed) for interrupted runs.
 
 ## Destroy
 
-Choose the command for the scope you want to delete. These are alternatives, not a sequence to run in full:
+Pick the teardown command that matches the scope you want to remove:
 
-```bash
+```bash {tab="Single node" group="destroy-scope" value="node"}
 barn destroy node-3
-barn destroy
-barn destroy --delete-persistent
-barn destroy --purge
-barn purge                         # discard everything without confirmation
 ```
 
-`--delete-persistent` and `--purge` are valid only for whole-deployment
-destroy, not with node selectors. `--purge` removes persistent disks, keys, and deployment state. Images remain cached. Node destroy refreshes the SSH
-fragment for remaining peers, while whole destroy removes the default Barn
-SSH integration. Host network removal is separate and refuses while a VM is attached.
+```bash {tab="Keep persistent disks" group="destroy-scope" value="lab"}
+barn destroy
+```
 
-`barn purge` deletes the disposable lab without confirmation. For an existing deployment, it is equivalent to `destroy --force --purge`. It accepts no node selectors. If no deployment exists, it still succeeds and can remove owned retained disks. It keeps the image cache and host
-network, and it does not bypass process, ownership, or path-integrity checks.
+```bash {tab="Delete persistent disks" group="destroy-scope" value="persistent"}
+barn destroy --delete-persistent
+```
 
-Plain `destroy` succeeds when no deployment exists. If deployment state is gone but owned persistent disks remain, use `purge`. `destroy --delete-persistent` or `destroy --purge` points to that command. The old `rm` alias has been removed. Spell out `purge`.
+```bash {tab="Purge lab & keys" group="destroy-scope" value="purge"}
+barn purge
+```
+
+- `barn destroy <node>` deletes only the named node and refreshes SSH aliases for the remaining nodes.
+- `barn destroy` removes all VMs along with their root overlays and non-persistent data disks, while retaining persistent disks, deployment keys, cached images, and host networking.
+- `barn destroy --delete-persistent` and `barn destroy --purge` apply to the entire deployment (they cannot be combined with node names). `--purge` also removes persistent disks, SSH keys, and deployment state.
+- `barn purge` is the non-interactive shorthand for `barn destroy --force --purge`—it tears down the entire Linux deployment and any retained persistent disks without prompting, while keeping the image cache and host network intact.
+
+To remove the shared Linux host network after all VMs are gone:
 
 ```bash
 barn network uninstall --yes
 ```
 
-See [Image Repositories](../images/) for image selection, mirrors, and cache
-pruning, or [Uninstall and Clean Up](../uninstall/) to remove host state.
+See [Image Repositories](../images/) for image cache management, or [Uninstall and Clean Up](../uninstall/) for a full host teardown.
