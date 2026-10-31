@@ -7,7 +7,7 @@ sections:
   - cta
 
 hero:
-  eyebrow: Barn 0.9.2 · 预发布版 · Apache-2.0
+  eyebrow: Barn 0.9.3 · 预发布版 · Apache-2.0
   title_lines:
     - words:
         - { text: 拉起本地虚拟机舰队 }
@@ -28,10 +28,10 @@ hero:
   actions:
     - { label: 启动 Linux 实验室, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: 运行 macOS 虚拟机, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
-    - { label: 安装 0.9.2, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
+    - { label: 安装 0.9.3, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
   detail:
-    label: 了解 0.9.2 的新变化
-    url: blog/release/0.9.2/
+    label: 了解 0.9.3 的新变化
+    url: blog/release/0.9.3/
 
 capabilities:
   eyebrow: 核心能力
@@ -41,7 +41,7 @@ capabilities:
     - ref: 01 / LINUX 实验集群
       title: 声明式 Linux 集群
       url: docs/start/tutorial/
-      motto: 一份 YAML 清单，拉起 1 至 20 个固定 IP 节点
+      motto: 一份 YAML 清单，拉起固定 IP 节点
       bullets:
         - '在 [`barn.yml`](docs/reference/configuration/) 中按节点声明 CPU、内存与数据盘'
         - '自带固定私网 IP、免密 SSH 与 `/etc/hosts` 解析'
@@ -82,7 +82,7 @@ capabilities:
     - ref: 03 / 客机镜像目录
       title: 签名校验客机镜像
       url: docs/start/images/
-      motto: 覆盖九大 Linux 发行版系的 41 个官方镜像
+      motto: 覆盖九大 Linux 发行版系的 17 个已验证镜像制品
       bullets:
         - '涵盖 Ubuntu、Debian、Rocky、Alma 与 Oracle'
         - '入库前强制通过签名清单与 SHA-256 摘要校验'
@@ -160,10 +160,10 @@ faq:
       answer: >-
         所有部署状态、SSH 密钥、基础镜像缓存与虚拟机磁盘均保存在 `$BARN_HOME`
         下（默认路径为 `~/.barn`）。除非显式指定不同的 `BARN_HOME`，切换工作目录不会新建另一套部署。
-    - question: 为什么 GitHub Releases 将 0.9.2 标记为 pre-release？
+    - question: 为什么 GitHub Releases 将 0.9.3 标记为 pre-release？
       answer: >-
         在 CLI 契约演进至 `1.0` 之前，所有 Barn `0.x` 版本均作为 GitHub
-        pre-release 发布。下载发布归档或运行 `install.sh` 时请显式固定 `v0.9.2`。
+        pre-release 发布。下载发布归档或运行 `install.sh` 时请显式固定 `v0.9.3`。
 
 cta:
   title: 准备好搭建本地实验环境了吗？

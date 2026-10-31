@@ -7,7 +7,7 @@ sections:
   - cta
 
 hero:
-  eyebrow: Barn 0.9.2 · Pre-release · Apache-2.0
+  eyebrow: Barn 0.9.3 · Pre-release · Apache-2.0
   title_lines:
     - words:
         - { text: Launch Local VM Fleets }
@@ -28,10 +28,10 @@ hero:
   actions:
     - { label: Start a Linux lab, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: Run a macOS VM, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
-    - { label: Install 0.9.2, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
+    - { label: Install 0.9.3, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
   detail:
-    label: What's new in 0.9.2
-    url: blog/release/0.9.2/
+    label: What's new in 0.9.3
+    url: blog/release/0.9.3/
 
 capabilities:
   eyebrow: Core capabilities
@@ -41,7 +41,7 @@ capabilities:
     - ref: 01 / LINUX LABS
       title: Declarative Linux Labs
       url: docs/start/tutorial/
-      motto: One YAML inventory for 1 to 20 fixed-IP nodes
+      motto: One YAML inventory for fixed-IP nodes
       bullets:
         - 'Declare CPU, memory, and disks in [`barn.yml`](docs/reference/configuration/)'
         - 'Fixed private IPs with prewired SSH and `/etc/hosts`'
@@ -82,7 +82,7 @@ capabilities:
     - ref: 03 / GUEST CATALOG
       title: Verified Guest Images
       url: docs/start/images/
-      motto: 41 signed Linux images across nine distributions
+      motto: 17 verified Linux image artifacts across nine distributions
       bullets:
         - 'Ubuntu, Debian, Rocky, Alma, Oracle, and CentOS'
         - 'Verified by signed manifests and SHA-256 digests'
@@ -164,10 +164,10 @@ faq:
         under `$BARN_HOME` (`~/.barn` by default). Changing your working
         directory does not create a separate deployment unless you set a
         different `BARN_HOME`.
-    - question: Why does GitHub Releases show 0.9.2 as a pre-release?
+    - question: Why does GitHub Releases show 0.9.3 as a pre-release?
       answer: >-
         All Barn `0.x` builds are published as GitHub pre-releases while the
-        CLI contract approaches `1.0`. Pin `v0.9.2` explicitly when downloading
+        CLI contract approaches `1.0`. Pin `v0.9.3` explicitly when downloading
         release assets or running `install.sh`.
 
 cta:
