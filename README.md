@@ -17,7 +17,7 @@
   <a href="https://barn.pgsty.com/zh/">中文</a>
 </p>
 
-This repository contains the bilingual documentation and blog site for Barn, published in English at `/` and Simplified Chinese at `/zh/`. The site builds with Hugo Extended `0.168.0` and the [OINK `v1.4.0`](https://oink.pgsty.com/) theme.
+This repository contains the bilingual documentation and blog site for Barn, published in English at `/` and Simplified Chinese at `/zh/`. The site builds with the latest Hugo Extended release and the [OINK `v1.4.0`](https://oink.pgsty.com/) theme.
 
 Paper is the default visual preset. Readers can switch between Paper, Slate, Ink, and Terminal independently of light or dark mode from the Appearance menu.
 
@@ -56,11 +56,11 @@ make build
 make check
 ```
 
-`make build` and `make check` clear `HUGO_MODULE_REPLACEMENTS` and disable Go/Hugo workspaces (`GOWORK=off`, `HUGO_MODULE_WORKSPACE=off`), then run Hugo in production mode followed by `bin/check_internal_links.py public`. Keep build warnings visible and do not enable `--panicOnWarning` or `HUGO_PANICONWARNING`; the upstream LibSass deprecation notice is expected on Hugo Extended `0.168.0`.
+`make build` and `make check` clear `HUGO_MODULE_REPLACEMENTS` and disable Go/Hugo workspaces (`GOWORK=off`, `HUGO_MODULE_WORKSPACE=off`), then run the current Hugo Extended release in production mode followed by `bin/check_internal_links.py public`. Keep build warnings visible and do not enable `--panicOnWarning` or `HUGO_PANICONWARNING`; the upstream LibSass deprecation notice is expected on current Hugo Extended releases.
 
 When auditing CLI behavior or configuration examples against the `v0.9.3` source tag or the source commit named by a release note, point `BARN_HOME` at a temporary directory for `validate` and `plan` so you do not touch an active local lab.
 
-`wrangler.toml` configures Cloudflare Pages with `HUGO_VERSION=0.168.0` and `GO_VERSION=1.27.3` for both Production and Preview deployments, targeting `https://barn.pgsty.com/`.
+`wrangler.toml` configures Cloudflare Pages with the current supported Hugo release and `GO_VERSION=1.27.3` for both Production and Preview deployments, targeting `https://barn.pgsty.com/`.
 
 ## Content policy
 

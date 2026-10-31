@@ -3,9 +3,9 @@ pages_build_output_dir = "./public"
 compatibility_date = "2026-09-29"
 
 [vars]
-HUGO_VERSION = "0.168.0"
+HUGO_VERSION = "0.169.0"
 GO_VERSION = "1.27.3"
 
 [env.preview.vars]
-HUGO_VERSION = "0.168.0"
+HUGO_VERSION = "0.169.0"
 GO_VERSION = "1.27.3"

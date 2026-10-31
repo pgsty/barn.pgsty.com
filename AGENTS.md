@@ -2,10 +2,13 @@
 
 ## OINK build baseline
 
-As of 2026-10-26, this site uses OINK v1.4.0 and Hugo Extended 0.168.0.
-Keep CI and local builds on this baseline. Do not enable `--panicOnWarning`
-or `HUGO_PANICONWARNING`; keep warnings visible and review them. The upstream
-LibSass deprecation warning is accepted. No external Sass compiler is required.
+As of 2026-10-31, this site uses OINK v1.4.0 and Hugo Extended from the current
+release channel. Keep CI and local builds on the latest available Hugo; do not
+pin a patch version. If a deployment platform requires a literal version, use
+Hugo Extended 0.169.0 until that platform supports its latest channel. Do not
+enable `--panicOnWarning` or `HUGO_PANICONWARNING`; keep warnings visible and
+review them. The upstream LibSass deprecation warning is accepted. No external
+Sass compiler is required.
 
 ## Git 内容与大文件规则
 
