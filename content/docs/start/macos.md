@@ -6,9 +6,6 @@ weight: 20
 icon: fa-brands fa-apple
 ---
 
-> [!NOTE]
-> **Unreleased**: The changes below to expanded share names and counts, linked share sources, and flexible state paths require a build containing source commit `27f17bb`; they are not included in Barn 0.9.2. See [Unreleased Changes](/docs/about/unreleased/).
-
 `barn mac` provisions disposable macOS VMs on Apple Silicon Macs for building, testing, and reproducing macOS-specific issues. Each VM comes with an administrator account, passwordless `sudo`, pinned SSH keys, and a dedicated private IP, running directly under your user account via Apple's Virtualization framework without `sudo`.
 
 Mac VMs are managed independently from the Linux lab: they do not read `barn.yml`, they store their state under `$BARN_HOME/mac` (default `~/.barn/mac`), and Linux `barn destroy` or `barn purge` commands never touch them.
@@ -17,7 +14,7 @@ Mac VMs are managed independently from the Linux lab: they do not read `barn.yml
 
 - An Apple Silicon Mac running **macOS 27 or later** with an active logged-in desktop session (guests also run macOS 27).
 - Roughly **65 GiB** of free disk space for the first VM—covering Apple's ~25 GiB restore image (`.ipsw`), the ~27 GiB installed base image, and initial guest writes. Each VM clones the base image on APFS and grows up to its configured capacity (100 GiB by default).
-- The native **`Barn.app`** bundle paired with the `0.9.2` CLI, included in the Apple Silicon release and Homebrew installation.
+- The native **`Barn.app`** bundle paired with the `0.9.3` CLI, included in the Apple Silicon release and Homebrew installation.
 - No `sudo` privileges required.
 
 Apple's Virtualization framework allows **at most two running macOS VMs at a time** per Mac across all virtualization tools (including an active macOS base-image installation). You can keep additional stopped VMs on disk and start any two at once, subject to the Apple software license.
@@ -65,7 +62,7 @@ shell:     barn mac ssh mac1
 desktop:   barn mac open mac1
 ```
 
-Subsequent VMs clone the prepared base image in seconds without repeating the IPSW restore. Barn `0.9.2` pins initial setup to **macOS 27.0 (26A428)**; use `barn mac image update` when you want to adopt a newer macOS 27 build.
+Subsequent VMs clone the prepared base image in seconds without repeating the IPSW restore. Barn `0.9.3` pins initial setup to **macOS 27.0 (26A428)**; use `barn mac image update` when you want to adopt a newer macOS 27 build.
 
 If you already have a local copy of Apple's restore image, pass `--ipsw` to skip the download (Barn clones it without copying if it resides on the same APFS volume):
 

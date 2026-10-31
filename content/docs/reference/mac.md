@@ -5,16 +5,13 @@ weight: 25
 icon: fa-brands fa-apple
 ---
 
-> [!NOTE]
-> **Unreleased**: The changes below to share names and counts, linked sources, runner paths, and log line limits require a build containing source commit `27f17bb`; they are not included in Barn 0.9.2. See [Unreleased Changes](/docs/about/unreleased/).
-
 ```text
 barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 ```
 
 Running macOS guests requires an Apple Silicon Mac on macOS 27 or later, invoked as the logged-in desktop user. Commands that talk to the native runner reject `root` with `mac_root` and unsupported hosts with `mac_host_unsupported`. Top-level `--help` hides `mac` on Linux and Intel Macs, while local-state queries such as `barn mac image ls` work without invoking the runner. Running `barn mac` with no subcommand executes `barn mac ls`.
 
-This reference covers the **Barn 0.9.2** command interface and `Barn.app` (runner protocol `2`), plus the source changes identified above. The Apple Silicon release and Homebrew installation include the app; see [macOS Guests](../../start/macos/#install).
+This reference covers the **Barn 0.9.3** command interface and `Barn.app` (runner protocol `2`). The Apple Silicon release and Homebrew installation include the app; see [macOS Guests](../../start/macos/#install).
 
 ## Commands
 
@@ -97,7 +94,7 @@ When a VM name is optional, omitting it selects the only existing VM or `mac1`; 
 
 If you run `up` on an existing VM with creation flags that differ from its recorded settings, `up` exits with `mac_configuration_conflict` and prints the exact `configure` or `recreate` command in `next:`:
 
-- Use `barn mac configure` while the VM is stopped to change `--cpu`, `--memory`, `--share`/`--unshare`, `--subnet`, or `--clipboard` (clipboard changes can also be saved while the VM is running and take effect on the next start; use the menu bar item to toggle clipboard sync for the active session). **Unreleased:** Share names may contain spaces and Unicode, must be valid UTF-8 of 1–255 bytes, and cannot be `.`, `..`, or contain `/` or ASCII control characters; reusing a share name in `configure --share` updates its path and mode, while `--unshare` removes that share.
+- Use `barn mac configure` while the VM is stopped to change `--cpu`, `--memory`, `--share`/`--unshare`, `--subnet`, or `--clipboard` (clipboard changes can also be saved while the VM is running and take effect on the next start; use the menu bar item to toggle clipboard sync for the active session). **Barn 0.9.3:** Share names may contain spaces and Unicode, must be valid UTF-8 of 1–255 bytes, and cannot be `.`, `..`, or contain `/` or ASCII control characters; reusing a share name in `configure --share` updates its path and mode, while `--unshare` removes that share.
 - The guest administrator account (`--user`) and disk capacity (`--disk`) are fixed for the lifetime of a VM and preserved across `recreate`. Create a new VM if you need a different account or disk size.
 - To upgrade a VM to a newer macOS build, run `barn mac image update` followed by `barn mac recreate NAME --update`. Because `recreate --update` preserves the VM's disk capacity, if the new macOS build does not yet have a base image at a custom disk size (for example, `200G`), prepare it first with `barn mac setup --disk 200G`.
 
@@ -255,6 +252,6 @@ Additional host and guest paths:
 
 - **Control sockets**: `/tmp/barn-mac-<uid>-<hash>/`.
 - **OpenSSH fragment**: `barn mac ssh-config` manages `~/.ssh/barn-mac_config` and a `# barn-mac:include` block in `~/.ssh/config` (independent of the Linux `# barn:include` block). Running `barn mac ssh-config --remove` sets `ssh_config_off` in `config.json` so subsequent lifecycle commands do not re-add the `Include` block until you run `barn mac ssh-config --install`.
-- **Desktop preferences**: Barn `0.9.2` stores window positions in `~/Library/Preferences/com.pgsty.barn.plist` (upgraded from `~/Library/Preferences/io.pgsty.barn.mac-runner.plist` in `0.9.0`).
+- **Desktop preferences**: Barn `0.9.3` stores window positions in `~/Library/Preferences/com.pgsty.barn.plist` (upgraded from `~/Library/Preferences/io.pgsty.barn.mac-runner.plist` in `0.9.0`).
 - **Runner discovery**: The `barn` CLI locates the runner relative to its resolved binary path across app bundle (`Barn.app/Contents/MacOS/barn`), pkg installer, and Homebrew `libexec` layouts, or via `BARN_MAC_RUNNER` with an absolute path, relative path, or `~/` path. Before executing VM operations, the CLI verifies runner protocol `2`; `barn mac doctor` also verifies the runner's local code signature.
 - **Guest configuration files**: Inside the macOS guest, Barn writes `~/.ssh/authorized_keys`, `/private/etc/sudoers.d/80-barn`, and `/etc/ssh/sshd_config.d/000-barn.conf`, configures `ComputerName` and `LocalHostName`, and disables idle sleep via `pmset`.

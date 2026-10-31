@@ -6,10 +6,7 @@ weight: 40
 icon: fa-solid fa-hard-drive
 ---
 
-> [!NOTE]
-> **Unreleased**: The changes below to macOS-host 9p sharing, flexible share sources, and guest mount paths require a build containing source commit `27f17bb`; they are not included in Barn 0.9.2. See [Unreleased Changes](/docs/about/unreleased/).
-
-This guide covers disk configuration, file transfer, and service access for Linux labs in **Barn 0.9.2**. It builds on the [Linux Quick Start](../tutorial/) using node `meta` at `10.10.10.10`.
+This guide covers disk configuration, file transfer, and service access for Linux labs in **Barn 0.9.3**. It builds on the [Linux Quick Start](../tutorial/) using node `meta` at `10.10.10.10`.
 
 ## Configure disks before creating the VM
 
@@ -21,7 +18,7 @@ For a new single-node lab, save the following inventory as `storage.yml`:
 all:
   vars:
     admin_ip: 10.10.10.10
-    vm_image: u24@20260926.0.0
+    vm_image: u24@20261017.0.1
   children:
     nodes:
       hosts:

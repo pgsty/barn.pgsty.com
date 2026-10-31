@@ -21,9 +21,9 @@ This repository contains the bilingual documentation and blog site for Barn, pub
 
 Paper is the default visual preset. Readers can switch between Paper, Slate, Ink, and Terminal independently of light or dark mode from the Appearance menu.
 
-Current guides and command references use **Barn 0.9.2** (released on 2026-10-30 via the GitHub pre-release channel used by Barn `0.x`) as their released baseline. The Apple Silicon archive and Homebrew formula include the signed, notarized `Barn.app` alongside the CLI and helper; installation and use require no Go or Xcode. See the [0.9.2 release notes](content/blog/release/0.9.2.md).
+Current guides and command references use **Barn 0.9.3** (released on 2026-10-31 via the GitHub pre-release channel used by Barn `0.x`) as their released baseline. The Apple Silicon archive and Homebrew formula include the signed, notarized `Barn.app` alongside the CLI and helper; installation and use require no Go or Xcode. See the [0.9.3 release notes](content/blog/release/0.9.3.md).
 
-Changes from source commit `27f17bb` are explicitly marked **Unreleased** and collected in [Unreleased Changes](content/docs/about/unreleased.md); they are not included in the 0.9.2 downloads. Older release posts and validation records retain their original version numbers and test evidence.
+The path, sharing, node-selection, image, and limit changes from source commit `27f17bb`, together with later recovery and resize fixes, are documented in [Barn 0.9.3 Changes](content/docs/about/unreleased.md). Older release posts and validation records retain their original version numbers and test evidence.
 
 ## Brand assets
 
@@ -58,7 +58,7 @@ make check
 
 `make build` and `make check` clear `HUGO_MODULE_REPLACEMENTS` and disable Go/Hugo workspaces (`GOWORK=off`, `HUGO_MODULE_WORKSPACE=off`), then run Hugo in production mode followed by `bin/check_internal_links.py public`. Keep build warnings visible and do not enable `--panicOnWarning` or `HUGO_PANICONWARNING`; the upstream LibSass deprecation notice is expected on Hugo Extended `0.168.0`.
 
-When auditing CLI behavior or configuration examples against the `v0.9.2` source tag or the source commit named by an Unreleased note, point `BARN_HOME` at a temporary directory for `validate` and `plan` so you do not touch an active local lab.
+When auditing CLI behavior or configuration examples against the `v0.9.3` source tag or the source commit named by a release note, point `BARN_HOME` at a temporary directory for `validate` and `plan` so you do not touch an active local lab.
 
 `wrangler.toml` configures Cloudflare Pages with `HUGO_VERSION=0.168.0` and `GO_VERSION=1.27.3` for both Production and Preview deployments, targeting `https://barn.pgsty.com/`.
 

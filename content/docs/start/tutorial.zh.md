@@ -11,7 +11,7 @@ aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 
 ## 开始之前 {#install}
 
-[安装 Barn 0.9.2](../installation/)，并确保宿主至少预留 4 GiB 可用内存供客机使用。请在交互式终端中以普通用户执行以下命令——Barn 会自动配置 QEMU 与私有网络，仅在需要修改宿主系统配置时提示输入 `sudo` 密码（CI 等非交互场景请参阅[自动化指南](../automation/)）。
+[安装 Barn 0.9.3](../installation/)，并确保宿主至少预留 4 GiB 可用内存供客机使用。请在交互式终端中以普通用户执行以下命令——Barn 会自动配置 QEMU 与私有网络，仅在需要修改宿主系统配置时提示输入 `sudo` 密码（CI 等非交互场景请参阅[自动化指南](../automation/)）。
 
 ## 启动并连接
 
@@ -121,7 +121,7 @@ barn up
 
 `barn plan` 会列出 3 个 `create` 动作，随后 `barn up` 会在不重启 `meta` 的前提下创建 `node-1` 至 `node-3`。
 
-如果修改了已有节点的 CPU、内存或镜像，需执行 `barn recreate <node>` 使其生效（这会替换该节点的根盘）。从 `barn.yml` 中删除节点条目不会自动销毁虚拟机，需显式运行 `barn destroy <node>`。
+如果修改了已有节点的 CPU 或内存，执行 `barn resize <node>` 即可应用，并保留虚拟机身份与磁盘；镜像变更仍需执行 `barn recreate <node>`，这会替换该节点的根盘。从 `barn.yml` 中删除节点条目不会自动销毁虚拟机，需显式运行 `barn destroy <node>`。
 
 ## 停止、恢复与清理
 

@@ -1,7 +1,7 @@
 ---
 title: 平台与限制
 linkTitle: 平台与限制
-description: Barn 0.9.2 的宿主要求、Linux 镜像兼容性、macOS 运行条件与存储限制。
+description: Barn 0.9.3 的宿主要求、Linux 镜像兼容性、macOS 运行条件与存储限制。
 weight: 10
 icon: fa-solid fa-laptop-code
 ---
@@ -10,11 +10,11 @@ Barn 专为**本地开发与测试**设计。在搭建实验环境前，可通�
 
 ## 版本 {#documentation-baseline}
 
-当前文档对应 **Barn 0.9.2**（安装方式与版本变更详见[安装指南](../../start/installation/)与 [0.9.2 发布说明](/zh/blog/release/0.9.2/)）。可通过 `barn version` 查看本地安装版本；Linux 镜像目录通过 `barn update` 独立更新。
+当前文档对应 **Barn 0.9.3**（安装方式与版本变更详见[安装指南](../../start/installation/)与 [0.9.3 发布说明](/zh/blog/release/0.9.3/)）。可通过 `barn version` 查看本地安装版本；Linux 镜像目录通过 `barn update` 独立更新。
 
-- **预发布渠道**：[Barn 0.9.2](https://github.com/pgsty/barn/releases/tag/v0.9.2) 于 2026-10-30 通过 Barn `0.x` 使用的 GitHub pre-release 渠道发布；使用安装脚本下载时请显式传入 `BARN_VERSION=0.9.2`。
+- **预发布渠道**：[Barn 0.9.3](https://github.com/pgsty/barn/releases/tag/v0.9.3) 于 2026-10-31 通过 Barn `0.x` 使用的 GitHub pre-release 渠道发布；使用安装脚本下载时请显式传入 `BARN_VERSION=0.9.3`。
 - **macOS 原生组件**：Darwin arm64 归档与 Apple Silicon Homebrew 安装均包含经过签名、公证的 `Barn.app` 及配套 CLI/helper，无需安装 Go 或 Xcode，详见 [macOS 客机指南](../../start/macos/#install)。
-- **未发布变更**：源码提交 `27f17bb` 的路径、共享、节点选择与上限调整尚未包含在 0.9.2 中，集中说明见[未发布变更](../unreleased/)。
+- **Barn 0.9.3 变更**：路径、共享、节点选择、镜像、上限、资源调整与恢复行为见[Barn 0.9.3 变更](../unreleased/)。
 - **历史验证记录**：早期版本的真机验收与测试记录归档在[验证历史](../history/)中。
 
 ## Linux 客机
@@ -27,12 +27,12 @@ Barn 专为**本地开发与测试**设计。在搭建实验环境前，可通�
 
 Barn 为上述四个平台构建发行二进制，真机虚拟化测试主要覆盖 `darwin/arm64` 与 `linux/amd64`。Linux 宿主需要可访问的 `/dev/kvm` 以及 NetworkManager 或 `systemd-networkd`。可运行 `barn doctor` 检查宿主环境，或用 `barn setup --dry-run` 预览依赖安装与网络配置计划。
 
-Barn 0.9.2 内置镜像目录 `2026093001` 提供 **9 个发行版系列、41 个镜像产物**：Ubuntu 22.04/24.04/26.04 LTS、Debian 12/13、Rocky Linux 8/9/10 与 CentOS 7（具体版本号见[镜像参考](../../reference/images/)）：
+Barn 0.9.3 内置镜像目录 `2026102802` 提供 **9 个发行版系列、17 个镜像产物**：Ubuntu 22.04/24.04/26.04 LTS、Debian 12/13、Rocky Linux 8/9/10 与 CentOS 7（具体版本号见[镜像参考](../../reference/images/)）：
 
-- **Unreleased 源码**：每位用户管理一套 Linux 部署，使用私有 RFC1918 `/24` 网段，不再另设 20 节点上限。
+- **Barn 0.9.3**：每位用户管理一套 Linux 部署，使用私有 RFC1918 `/24` 网段，不再另设 20 节点上限。
 - 跨架构客机使用 QEMU TCG 软件模拟；Rocky Linux 8 `arm64` 因采用与 Apple HVF 不兼容的 64 KiB 页大小内核，在 Apple Silicon 上同样自动使用 TCG。
 - CentOS 7（`el7`）为 `deprecated`（已弃用）兼容镜像，仅支持在 `linux/amd64` 宿主上原生运行。
-- **Unreleased 源码**：`vm_shares`（QEMU Virtio-9p）支持 Linux 与 macOS 宿主，要求 QEMU 与客机内核支持 9p。Barn 0.9.2 在 macOS 宿主上仍需通过 SSH/SCP/rsync 与 Linux 客机交换文件。
+- **Barn 0.9.3**：`vm_shares`（QEMU Virtio-9p）支持 Linux 与 macOS 宿主，要求 QEMU 与客机内核支持 9p。若客机内核不支持 9p，仍可使用 SSH/SCP/rsync。
 
 ## macOS 客机 {#macos-guests}
 

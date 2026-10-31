@@ -1,17 +1,38 @@
 ---
-title: Unreleased Changes
-description: Development workflow changes after Barn 0.9.2, covering paths, sharing, node selection, images, and limits.
+title: Barn 0.9.3 Changes
+description: Barn 0.9.3 changes covering resource resize, recovery, paths, sharing, node selection, images, and limits.
 weight: 15
 icon: fa-solid fa-code-branch
 ---
 
-The changes on this page were implemented on **2026-10-30** in source commit `27f17bb` (`fix: remove unnecessary restrictions from development workflows`). They are **not included in the published 0.9.2 downloads**. To try them, use a [source build](../../start/source-build/) from a checkout containing that commit and check its identity with `barn version`.
+This page records the user-visible changes shipped in **Barn 0.9.3** on
+2026-10-31. The workflow changes began in source commit `27f17bb` and were
+completed by the commits leading to the release. Check `barn version` when
+auditing another build.
 
-For the published release, see [Barn 0.9.2](/blog/release/0.9.2/). Its Apple Silicon package already includes `Barn.app`, and its SSH/exec commands already require `--`.
+See the [Barn 0.9.3 release notes](/blog/release/0.9.3/) for the upgrade
+summary and the complete bilingual release note.
+
+## Resource changes and recovery {#resize-recovery}
+
+Edit `vm_cpu` or `vm_mem` and run `barn resize [node...]`. QEMU hot-plugs
+supported increases when the running VM has reserved capacity; decreases,
+older VMs, and unsupported backends use a stop/start fallback. The VM identity,
+disks, and SSH keys remain unchanged. `resize` refuses image, disk, network,
+share, creation, removal, and deployment-wide changes; use `recreate`, `up`,
+`destroy`, or a full selected operation as indicated by its `next:` field.
+
+Linux and macOS lifecycle, persistent-disk, and replacement operations journal
+their transition state. If a process is interrupted or receives `SIGINT` or
+`SIGTERM`, the next lifecycle command can recover the operation; cancelled
+commands report the structured `cancelled` result. On macOS,
+`barn mac up --no-wait` returns when the VM process starts and may leave first
+boot SSH and sudo provisioning running. Run `barn mac up NAME` again to wait
+for readiness.
 
 ## Paths {#paths}
 
-`barn init` and `setup` work through directory symlinks. `init -o ./lab/config/barn.yml` also creates missing parent directories. Existing files still require `--force`, and writes never follow or replace an output-file symlink. The [troubleshooting guide](../../start/troubleshooting/#linked-directory) gives a workaround for 0.9.2's `atomic create parent is not a real directory` error.
+`barn init` and `setup` work through directory symlinks. `init -o ./lab/config/barn.yml` also creates missing parent directories. Existing files still require `--force`, and writes never follow or replace an output-file symlink.
 
 User-selected paths now accept normal development layouts:
 
@@ -49,6 +70,15 @@ barn plan node-2 -f barn.yml
 ```
 
 The entire inventory must still parse correctly. Conflicts with applied addresses, aliases, control-node roles, or shared deployment settings are checked before stopping or deleting nodes. Omitting selectors evaluates the whole inventory; removing a YAML entry never deletes its VM. See [Daily Operations](../../start/operations/#selected-nodes).
+
+## Generated template image selection {#template-images}
+
+`barn init [template] --image <reference>` writes an explicit `vm_image` under
+`all.vars` for every generated node. `barn setup [template] --image <reference>`
+uses the same behavior while preparing a generated template. References may be
+aliases, channels, or version selectors; the flag does not download an image.
+Existing inventories selected with `-f` or discovered automatically are never
+rewritten by this option.
 
 ## Images and development limits {#limits}
 

@@ -6,9 +6,6 @@ weight: 20
 icon: fa-brands fa-apple
 ---
 
-> [!NOTE]
-> **Unreleased**：下文关于共享名称与数量放宽、共享源符号链接及状态路径支持的变更需要包含源码提交 `27f17bb` 的构建，Barn 0.9.2 尚未包含这些行为。详见[未发布变更](/zh/docs/about/unreleased/)。
-
 `barn mac` 用于在 Apple Silicon Mac 上创建和管理可随时重建的 macOS 虚拟机，适合编译构建、自动化测试以及复现 macOS 专属问题。每台虚拟机自带管理员账号、免密 `sudo`、固定绑定的 SSH 密钥与独立私网地址，基于 Apple Virtualization 框架直接以当前用户身份运行，全程无需 `sudo`。
 
 Mac 虚拟机与 Linux 实验环境完全独立：它不读取 `barn.yml`，所有数据保存在 `$BARN_HOME/mac`（默认 `~/.barn/mac`）下，执行 Linux 的 `barn destroy` 或 `barn purge` 不会影响任何 Mac 虚拟机。
@@ -17,7 +14,7 @@ Mac 虚拟机与 Linux 实验环境完全独立：它不读取 `barn.yml`，所�
 
 - 一台运行 **macOS 27 或更高版本**的 Apple Silicon Mac，且当前用户已登录图形桌面会话（客机同样运行 macOS 27）。
 - 首次创建约需 **65 GiB** 可用磁盘空间，用于存放从 Apple 下载的恢复镜像（`.ipsw`，约 25 GiB）、安装后的基础镜像（约 27 GiB）以及启动写入空间。后续每台虚拟机通过 APFS 写时复制克隆基础镜像，按实际改动增长（默认容量上限为 100 GiB）。
-- 与 `0.9.2` CLI 配套的原生应用包 **`Barn.app`**，Apple Silicon 发行包与 Homebrew 安装均已包含。
+- 与 `0.9.3` CLI 配套的原生应用包 **`Barn.app`**，Apple Silicon 发行包与 Homebrew 安装均已包含。
 - 无需 `sudo` 权限。
 
 受 Apple Virtualization 框架限制，单台 Mac **最多同时运行两台 macOS 虚拟机**（其他虚拟化工具启动的实例及正在执行的 macOS 基础镜像安装均计入配额）。你可以创建更多已停止的虚拟机并按需启动其中任意两台（须遵守适用的 Apple 软件许可协议）。
@@ -65,7 +62,7 @@ shell:     barn mac ssh mac1
 desktop:   barn mac open mac1
 ```
 
-后续新建虚拟机都会直接克隆这份基础镜像，几秒内即可完成创建，无需重复执行漫长的系统恢复安装。Barn `0.9.2` 首次下载默认固定为 **macOS 27.0 (26A428)**；如需跟进更新的 macOS 27 版本，可显式运行 `barn mac image update`。
+后续新建虚拟机都会直接克隆这份基础镜像，几秒内即可完成创建，无需重复执行漫长的系统恢复安装。Barn `0.9.3` 首次下载默认固定为 **macOS 27.0 (26A428)**；如需跟进更新的 macOS 27 版本，可显式运行 `barn mac image update`。
 
 如果本机已下载好 Apple 恢复镜像，可通过 `--ipsw` 直接传入（位于同一 APFS 卷时将直接克隆数据块而无需复制）：
 

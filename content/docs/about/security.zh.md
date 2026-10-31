@@ -1,6 +1,6 @@
 ---
 title: 安全与信任
-description: Barn 0.9.2 的宿主权限、客机凭据、共享目录，以及应用与镜像的独立信任边界。
+description: Barn 0.9.3 的宿主权限、客机凭据、共享目录，以及应用与镜像的独立信任边界。
 weight: 25
 icon: fa-solid fa-shield-halved
 ---
@@ -49,7 +49,7 @@ Barn 将软件分发与镜像校验划分为四个彼此独立的信任机制：
 | 机制 | 校验范围 |
 |---|---|
 | 发布资产 `checksums.txt` | 核对下载的 CLI 归档与 `.deb`/`.rpm` 软件包是否与该 GitHub Release 公布的 SHA-256 摘要一致 |
-| macOS 发行包代码签名 | 0.9.2 Apple Silicon CLI、helper 与 `Barn.app` 均使用 Developer ID 签名并通过 Apple 公证，App 已装订票据；本地源码构建默认使用 ad-hoc 签名 |
+| macOS 发行包代码签名 | 0.9.3 Apple Silicon CLI、helper 与 `Barn.app` 均使用 Developer ID 签名并通过 Apple 公证，App 已装订票据；本地源码构建默认使用 ad-hoc 签名 |
 | Linux 镜像目录签名（`catalog.json.minisig`） | 使用二进制内置的 Ed25519 生产公钥校验 `catalog.json` 签名，并执行按仓库隔离的修订号防回滚检查 |
 | 镜像产物校验 | 在启用镜像前逐一核对 `.qcow2` 文件的字节大小、SHA-256 摘要、虚拟磁盘容量与独立 `qcow2` 结构安全性 |
 {.wide}

@@ -9,11 +9,11 @@ cascade:
   type: docs
 ---
 
-These guides cover **Barn 0.9.2** and explicitly marked [Unreleased Changes](../about/unreleased/). You can run both Linux labs and isolated macOS VMs on the same Apple Silicon Mac—each workflow manages its own VMs under `~/.barn`.
+These guides cover **Barn 0.9.3**. The [Barn 0.9.3 Changes](../about/unreleased/) page collects the detailed behavior and upgrade boundaries. You can run both Linux labs and isolated macOS VMs on the same Apple Silicon Mac—each workflow manages its own VMs under `~/.barn`.
 
 ## Get started
 
-- [Install Barn](installation/) — Install the `0.9.2` CLI on macOS or Linux, check host requirements, and upgrade existing installations.
+- [Install Barn](installation/) — Install the `0.9.3` CLI on macOS or Linux, check host requirements, and upgrade existing installations.
 - [Linux Quick Start](tutorial/) — Bring up an Ubuntu 24.04 VM, connect over SSH, and scale to a multi-node fixed-IP lab from one `barn.yml`.
 - [macOS Virtual Machines](macos/) — Create and manage macOS 27 guests on Apple Silicon with a native desktop, SSH, shared folders, and clipboard sync.
 {.cards}
@@ -29,6 +29,6 @@ These guides cover **Barn 0.9.2** and explicitly marked [Unreleased Changes](../
 ## Diagnostics, source builds, and cleanup
 
 - [Troubleshooting](troubleshooting/) — Runbooks for host readiness, network repairs, guest stage warnings, SSH keys, and interrupted commands.
-- [Build from Source](source-build/) — Compile the `v0.9.2` CLI, `barn-hosts-helper`, and native `Barn.app` bundle, and run contributor test gates.
+- [Build from Source](source-build/) — Compile the `v0.9.3` CLI, `barn-hosts-helper`, and native `Barn.app` bundle, and run contributor test gates.
 - [Uninstall and Clean Up](uninstall/) — Tear down Linux and macOS VMs cleanly, prune image caches, remove host networking, and uninstall Barn.
 {.cards}

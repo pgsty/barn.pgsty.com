@@ -5,7 +5,7 @@ weight: 70
 icon: fa-solid fa-life-ring
 ---
 
-This guide covers Linux lab diagnostics for **Barn 0.9.2**. For macOS guests, run `barn mac doctor` and see the [Mac troubleshooting section](../macos/#troubleshooting).
+This guide covers Linux lab diagnostics for **Barn 0.9.3**. For macOS guests, run `barn mac doctor` and see the [Mac troubleshooting section](../macos/#troubleshooting).
 
 Start by collecting the three JSON diagnostic reports (`barn status` also reconciles interrupted process state when no other command holds the lock):
 
@@ -41,15 +41,15 @@ If `barn status` reports `no deployment state found`, the active `BARN_HOME` has
 
 ## init rejects a directory symlink {#linked-directory}
 
-`atomic create parent is not a real directory: ...` in Barn 0.9.2 can mean that the output directory is a symlink, even when its target is a writable directory. The [Unreleased path fix](../../about/unreleased/#paths) resolves directory aliases and creates missing parents for `init -o`.
+`atomic create parent is not a real directory: ...` in Barn 0.9.3 can mean that the output directory is a symlink, even when its target is a writable directory. The [Barn 0.9.3 path fix](../../about/unreleased/#paths) resolves directory aliases and creates missing parents for `init -o`.
 
-With 0.9.2, use the physical directory path for the output:
+With 0.9.3, use the physical directory path for the output:
 
 ```bash
 barn init -o "$(pwd -P)/barn.yml"
 ```
 
-You can also run `cd -P .` before `barn init`; the directory symlink can remain in place. For a nested output path on 0.9.2, create its parent directory first. Existing output files still require `--force`, and output-file symlinks are not followed for writes.
+You can also run `cd -P .` before `barn init`; the directory symlink can remain in place. For a nested output path on 0.9.3, create its parent directory first. Existing output files still require `--force`, and output-file symlinks are not followed for writes.
 
 ## Setup needs sudo
 
@@ -92,7 +92,7 @@ dpkg-statoverride --list /usr/lib/qemu/qemu-bridge-helper
 - **`recreate`**: The node's inventory specification changed. Inspect `barn plan` and back up any data on the root or non-persistent disks before running `barn recreate <node>` (pass `--force` in non-interactive scripts).
 - **`missing`**: A provisioned node was removed from the YAML inventory. Either restore its YAML entry or run `barn destroy <node>` to delete the VM.
 
-With the [Unreleased node-selection changes](../operations/#selected-nodes), `barn plan node-1` and `barn recreate node-1` retain unselected peers' applied definitions. An unrelated peer edit no longer requires rebuilding it together. Real conflicts in addresses, aliases, control-node roles, or deployment-wide settings still need to be resolved.
+With the [Barn 0.9.3 node-selection changes](../operations/#selected-nodes), `barn plan node-1` and `barn recreate node-1` retain unselected peers' applied definitions. An unrelated peer edit no longer requires rebuilding it together. Real conflicts in addresses, aliases, control-node roles, or deployment-wide settings still need to be resolved.
 
 ## A node did not become ready {#a-node-did-not-become-ready}
 
@@ -116,7 +116,7 @@ Secondary guest stages—data disks, Virtio-9p shares, hostname, `/etc/hosts`, c
 
 Re-running `barn up` retries only the unfinished stages without restarting healthy VMs (and may reformat unrecognized or confirmed damaged test data filesystems; see [Data disks](../../reference/configuration/#data-disks)). Pass `--rollback` to `barn up` if you want failed initial preparation artifacts removed in the same run.
 
-For Linux shared folders, both QEMU and the guest kernel need 9p support. A valid host path cannot make an unsupported guest kernel mount 9p; use SSH/SCP/rsync or a kernel with 9p support. Linux-guest sharing on a macOS host also requires the [Unreleased fix](../../about/unreleased/#sharing); native macOS guests use VirtioFS separately.
+For Linux shared folders, both QEMU and the guest kernel need 9p support. A valid host path cannot make an unsupported guest kernel mount 9p; use SSH/SCP/rsync or a kernel with 9p support. Linux-guest sharing on a macOS host also requires the [Barn 0.9.3 fix](../../about/unreleased/#sharing); native macOS guests use VirtioFS separately.
 
 ## SSH fails
 

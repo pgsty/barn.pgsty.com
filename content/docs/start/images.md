@@ -5,10 +5,7 @@ weight: 50
 icon: fa-solid fa-boxes-stacked
 ---
 
-> [!NOTE]
-> **Unreleased**: The changes below to flexible local repository paths and image imports cached by content digest require a build containing source commit `27f17bb`; they are not included in Barn 0.9.2. See [Unreleased Changes](/docs/about/unreleased/).
-
-This guide covers Linux guest image selection, mirrors, static repositories, and cache management in **Barn 0.9.2**.
+This guide covers Linux guest image selection, mirrors, static repositories, and cache management in **Barn 0.9.3**.
 
 With the default inventory, `barn up` automatically resolves `u24:stable` for your host architecture and downloads the matching verified `qcow2` image on demand. Barn starts with the image catalog embedded in the binary; run `barn update` whenever you want to fetch, verify, and activate the latest catalog from the repository (or `barn image sync` to load an exact catalog URL or local file).
 
@@ -38,7 +35,7 @@ For strict reproducibility across catalog updates, pin the full version string r
 ```yaml {title="barn.yml"}
 all:
   vars:
-    vm_image: d13@20260914.2601.2
+    vm_image: d13@20261026.2643.1
 ```
 
 After changing `vm_image` or `vm_version`, preview the change with `barn plan`. Existing nodes keep their current root disk until you run `barn recreate <node>`; updating the catalog with `barn update` only affects newly created or recreated nodes.
@@ -49,7 +46,7 @@ After changing `vm_image` or `vm_version`, preview the change with `barn plan`. 
 - **`el8` on `arm64`** automatically runs under QEMU TCG software emulation on Apple Silicon because the stock RHEL/Rocky 8 `arm64` kernel requires a 64 KiB page granule that macOS HVF does not support. See [Runtime rules](../troubleshooting/#native-acceleration-or-compatibility-runtime-is-unavailable) for foreign-architecture emulator requirements.
 
 > [!NOTE]
-> All image versions in the `0.9.2` embedded catalog carry `supported` status except legacy compatibility builds marked `deprecated`: EOL `el7`, EL9 `9.3` / `9.6`, and EL10 `10.0`.
+> All image versions in the `0.9.3` embedded catalog carry `supported` status except legacy compatibility builds marked `deprecated`: EOL `el7`, EL9 `9.3` / `9.6`, and EL10 `10.0`.
 
 ## Use a mirror
 

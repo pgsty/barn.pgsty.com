@@ -1,6 +1,6 @@
 ---
 title: 从源码构建
-description: 构建 Barn 0.9.2 或开发分支，准备 Mac 原生组件，并运行贡献者检查。
+description: 构建 Barn 0.9.3 或开发分支，准备 Mac 原生组件，并运行贡献者检查。
 weight: 80
 icon: fa-solid fa-hammer
 ---
@@ -9,28 +9,28 @@ icon: fa-solid fa-hammer
 
 ## 检出源码
 
-克隆 **v0.9.2** 标签以复现本文档对应的发行版（开发主分支时可省略 `--branch v0.9.2`），并在提交构建记录时附上 `git log -1 --oneline` 与 `git status --short`：
+克隆 **v0.9.3** 标签以复现本文档对应的发行版（开发主分支时可省略 `--branch v0.9.3`），并在提交构建记录时附上 `git log -1 --oneline` 与 `git status --short`：
 
 ```bash
-git clone --branch v0.9.2 https://github.com/pgsty/barn.git
+git clone --branch v0.9.3 https://github.com/pgsty/barn.git
 cd barn
 ```
 
-`v0.9.2` 标签用于复现已发布版本，不包含[未发布变更](../../about/unreleased/)。测试这些修复时，请使用包含 `27f17bb` 的源码；不要设置 `BARN_VERSION`，或使用开发版本号，避免将开发构建标记为正式的 `0.9.2`。
+`v0.9.3` 标签用于复现包含[Barn 0.9.3 变更](../../about/unreleased/)的已发布版本。开发构建不要设置 `BARN_VERSION`，避免将开发构建标记为正式的 `0.9.3`。
 
 ## 构建 CLI
 
-Barn `0.9.2` 在 `go.mod` 与 `packaging/toolchain.env` 中固定使用 **Go 1.27.3**，并依赖 Git、Make、Bash 与标准编译工具（仅编译 CLI 无需安装 QEMU 或配置宿主网络）：
+Barn `0.9.3` 在 `go.mod` 与 `packaging/toolchain.env` 中固定使用 **Go 1.27.3**，并依赖 Git、Make、Bash 与标准编译工具（仅编译 CLI 无需安装 QEMU 或配置宿主网络）：
 
 ```bash
-BARN_VERSION=0.9.2 make build
+BARN_VERSION=0.9.3 make build
 export PATH="$PWD/bin:$PATH"
 barn version
 ```
 
 `make build` 会在 `bin/.barn-releases/` 下编译配套的 `barn` 与 `barn-hosts-helper`，将 helper 的 SHA-256 摘要嵌入 CLI，并在 `bin/` 下创建入口符号链接。请始终使用 `make build` 而非裸跑 `go build ./cmd/barn`；移动构建产物时请一并保留 `bin/.barn-releases/` 目录与 `bin/` 下的两个链接。
 
-未指定 `BARN_VERSION` 时，开发构建默认将版本号标记为 `dev`（本地候选构建可传入 `BARN_VERSION=0.9.2-dev.1`），工作区存在未提交改动时 commit 字段会显示为 `uncommitted`。
+未指定 `BARN_VERSION` 时，开发构建默认将版本号标记为 `dev`（本地候选构建可传入 `BARN_VERSION=0.9.3-dev.1`），工作区存在未提交改动时 commit 字段会显示为 `uncommitted`。
 
 执行 `make cross` 可在 `bin/darwin_amd64`、`bin/darwin_arm64`、`bin/linux_amd64` 与 `bin/linux_arm64` 下交叉编译四个目标平台的 Go CLI 与 helper。构建产物（`bin/`、`dist/`、`.goreleaser-*/`）及实验环境清单不应纳入版本控制；在工作树内生成前，请确认对应路径已被忽略。
 
@@ -43,7 +43,7 @@ barn version
 在运行 macOS 27+ 的 Apple Silicon Mac 上，确认 `xcrun` 已指向 **Xcode 27+**（提供 macOS 27 SDK 与 Swift 编译器），然后执行：
 
 ```bash
-BARN_VERSION=0.9.2 make mac-build
+BARN_VERSION=0.9.3 make mac-build
 export PATH="$PWD/bin/mac:$PATH"
 barn mac doctor
 ```
@@ -53,9 +53,9 @@ barn mac doctor
 | 源码标签 | 原生应用包 | 应用标识符（Bundle ID） |
 |---|---|---|
 | `v0.9.0` | `Barn Mac.app` | `io.pgsty.barn.mac-runner` |
-| `v0.9.1`、`v0.9.2` | `Barn.app` | `com.pgsty.barn` |
+| `v0.9.1`、`v0.9.3` | `Barn.app` | `com.pgsty.barn` |
 
-`0.9.2` CLI 同时兼容 `Barn.app` 与旧版 `Barn Mac.app`，而 `0.9.0` CLI 仅查找 `Barn Mac.app`——请始终使用 `bin/mac` 下同批构建出的 CLI 与应用包。
+`0.9.3` CLI 同时兼容 `Barn.app` 与旧版 `Barn Mac.app`，而 `0.9.0` CLI 仅查找 `Barn Mac.app`——请始终使用 `bin/mac` 下同批构建出的 CLI 与应用包。
 
 ### 代码签名与公证
 
@@ -63,7 +63,7 @@ barn mac doctor
 
 - 设置 `BARN_CODESIGN_IDENTITY` 以使用 Developer ID 证书为 `Barn.app` 签名。
 - 设置 `BARN_NOTARY_PROFILE` 与 `BARN_MAC_REQUIRE_NOTARIZATION=1`，使构建流水线自动校验签名、提交 Apple 公证、装订票据（staple）并验证 Gatekeeper 状态。
-- `make mac-build` 为原生组件签名；Go CLI/helper 的签名与公证请使用 [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v0.9.2/docs/mac-release.md) 中的正式发布流程。该流程先签名 helper，将最终 SHA-256 嵌入 CLI，再签名 CLI 并将配套产物一起提交公证。详见[发布工程](../../about/engineering/)。
+- `make mac-build` 为原生组件签名；Go CLI/helper 的签名与公证请使用 [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v0.9.3/docs/mac-release.md) 中的正式发布流程。该流程先签名 helper，将最终 SHA-256 嵌入 CLI，再签名 CLI 并将配套产物一起提交公证。详见[发布工程](../../about/engineering/)。
 
 ## 运行贡献者检查
 

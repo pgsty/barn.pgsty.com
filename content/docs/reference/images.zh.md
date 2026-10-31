@@ -5,9 +5,6 @@ weight: 30
 icon: fa-solid fa-compact-disc
 ---
 
-> [!NOTE]
-> **Unreleased**：下文关于本地仓库路径、镜像导入命名、镜像大小及本地别名数量的变更需要包含源码提交 `27f17bb` 的构建，Barn 0.9.2 尚未包含这些行为。详见[未发布变更](/zh/docs/about/unreleased/)。
-
 Barn 通过静态镜像目录与不可变 `qcow2` 产物解析 Linux 客机镜像。官方仓库与 HTTP 仓库必须提供 Ed25519/minisign 目录签名，用户显式指定的本地目录仓库与 HTTPS 仓库则允许不签名。日常可通过 `barn update` 激活新版镜像目录而无需升级 `barn` 二进制；受信任的签名公钥与 `qcow2` 安全检查规则则由二进制本身固定。
 
 > [!WARNING]
@@ -15,21 +12,21 @@ Barn 通过静态镜像目录与不可变 `qcow2` 产物解析 Linux 客机镜�
 
 ## 别名与拉取顺序
 
-Barn `0.9.2` 内置镜像目录 `2026093001`，涵盖 9 个发行版系列、共 41 个镜像产物（除 `el7` 仅提供 `amd64` 外，其余系列均同时提供 `amd64` 与 `arm64`；其中 `el9` 包含 `9.3`、`9.6`、`9.7`、`9.8`，`el10` 包含 `10.0`、`10.1`、`10.2`）。缺省请求为宿主原生架构的 `u24:stable`（Ubuntu 24.04 LTS）。
+Barn `0.9.3` 内置镜像目录 `2026102802`，涵盖 9 个发行版系列、共 17 个镜像产物（除 `el7` 仅提供 `amd64` 外，其余系列均同时提供 `amd64` 与 `arm64`；其中 `el9` 包含 `9.3`、`9.6`、`9.7`、`9.8`，`el10` 包含 `10.0`、`10.1`、`10.2`）。缺省请求为宿主原生架构的 `u24:stable`（Ubuntu 24.04 LTS）。
 
-下表列出内置镜像目录 `2026093001` 中各系列的 `stable` 版本快照。运行 `barn update` 后再执行 `barn image list` 可查看所选仓库当前的实时目录；宿主平台兼容性详见[平台与限制](../../about/status/)。
+下表列出内置镜像目录 `2026102802` 中各系列的 `stable` 版本快照。运行 `barn update` 后再执行 `barn image list` 可查看所选仓库当前的实时目录；宿主平台兼容性详见[平台与限制](../../about/status/)。
 
 | 镜像系列 | 内置 `stable` | 可用别名 |
 |---|---|---|
-| `d12` | `20260923.2610.1` | `debian12`、`bookworm` |
-| `d13` | `20260914.2601.2` | `debian13`、`debian`、`trixie` |
+| `d12` | `20261026.2643.1` | `debian12`、`bookworm` |
+| `d13` | `20261026.2643.1` | `debian13`、`debian`、`trixie` |
 | `el7` | `7.9.20221112.0` | `c7`、`centos7`、`centos79` |
 | `el8` | `8.10.20240528.3` | `rocky8` |
 | `el9` | `9.8.20260525.2` | `rocky9`、`rocky` |
 | `el10` | `10.2.20260525.0` | `rocky10` |
-| `u22` | `20260926.0.0` | `ubuntu22`、`ubuntu2204`、`jammy` |
-| `u24` | `20260926.0.0` | `ubuntu`、`ubuntu24`、`ubuntu2404`、`noble` |
-| `u26` | `20260927.0.0` | `ubuntu26`、`ubuntu2604`、`resolute` |
+| `u22` | `20261017.0.1` | `ubuntu22`、`ubuntu2204`、`jammy` |
+| `u24` | `20261017.0.1` | `ubuntu`、`ubuntu24`、`ubuntu2404`、`noble` |
+| `u26` | `20261016.0.1` | `ubuntu26`、`ubuntu2604`、`resolute` |
 {.wide}
 
 发行版说明：
@@ -56,7 +53,7 @@ barn image list
 barn image info d13
 barn image info d13:stable
 barn image info el9@9.7
-barn image pull d13@20260914.2601.2
+barn image pull d13@20261026.2643.1
 barn image pull d13 --arch arm64
 barn update
 ```
@@ -148,8 +145,8 @@ images:
 - 通道与按点号分段的数值前缀（如 `el9@9.7`、`el9@9`）会解析为精确版本或匹配的最高版本，最终落定为不可变的三元组标识 `(image, exact version, arch)`：
   ```text
   d13:stable + native
-    -> d13@20260914.2601.2 + arm64
-    -> images/d13-20260914.2601.2-arm64.qcow2
+    -> d13@20261026.2643.1 + arm64
+    -> images/d13-20261026.2643.1-arm64.qcow2
   ```
 - **`barn repo scan`** 为只读检查，不依赖 `qemu-img`；即使存在 `missing`（缺失）或 `unsafe`（命名/类型不安全）的文件也会返回退出码 `0`，自动化脚本需检查输出中的 `missing` 与 `unsafe` 数组是否为空。
 - **`barn repo build`** 与 **`barn repo verify`** 依赖本机 `qemu-img`。`build` 校验 `repo.yaml` 并完整检查每个 `qcow2` 文件后原子替换 `catalog.json`（存在 `missing` 或 `unsafe` 文件时拒绝构建，`untracked` 未声明文件则仅报告而不写入目录）；`verify` 要求现有 `catalog.json` 与重新生成的结果逐字节一致。每次修改目录内容都必须递增 `revision`，发布时先上传不可变的 `.qcow2` 文件，最后同步更新 `catalog.json` 与 `catalog.json.minisig`。
@@ -166,9 +163,9 @@ local-images.json # 已注册的 local-* 本地镜像别名索引
 local/
   <sha256>.qcow2 # 按内容摘要索引的本地导入 qcow2 镜像
 d13/
-  d13-20260914.2601.2-arm64.qcow2 # 按系列分目录存放的只读缓存镜像
+  d13-20261026.2643.1-arm64.qcow2 # 按系列分目录存放的只读缓存镜像
 u24/
-  u24-20260926.0.0-arm64.qcow2
+  u24-20261017.0.1-arm64.qcow2
 ```
 
 将本地 `qcow2` 文件导入缓存，或注册为 `local-*` 命名镜像：

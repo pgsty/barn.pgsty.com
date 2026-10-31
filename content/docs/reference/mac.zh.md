@@ -5,16 +5,13 @@ weight: 25
 icon: fa-brands fa-apple
 ---
 
-> [!NOTE]
-> **Unreleased**：下文关于共享名称与数量、源目录符号链接、runner 路径及日志行数限制的变更需要包含源码提交 `27f17bb` 的构建，Barn 0.9.2 尚未包含这些行为。详见[未发布变更](/zh/docs/about/unreleased/)。
-
 ```text
 barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 ```
 
 运行 macOS 客机需要搭载 Apple 芯片且运行 macOS 27 或更高版本的 Mac，并由当前登录桌面用户直接调用。需要调用原生 runner 的命令会以 `mac_root` 拒绝 `root` 身份，并以 `mac_host_unsupported` 拒绝不满足要求的宿主。在 Linux 与 Intel Mac 上，顶层 `--help` 默认隐藏 `mac` 命令；而 `barn mac image ls` 等只读取本地记录的子命令则无需启动原生 runner。不带子命令直接运行 `barn mac` 等同于 `barn mac ls`。
 
-本参考说明 **Barn 0.9.2** 命令接口与 `Barn.app`（runner 协议版本 `2`），以及上方标注的源码变更。Apple Silicon 发行包与 Homebrew 安装已包含 App，安装步骤见 [macOS 客机指南](../../start/macos/#install)。
+本参考说明 **Barn 0.9.3** 命令接口与 `Barn.app`（runner 协议版本 `2`）。Apple Silicon 发行包与 Homebrew 安装已包含 App，安装步骤见 [macOS 客机指南](../../start/macos/#install)。
 
 ## 命令
 
@@ -99,7 +96,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 
 对已存在的虚拟机运行 `up` 时，若传入的创建参数与现有设置不一致，`up` 会以 `mac_configuration_conflict` 拒绝执行，并在 `next:` 行给出对应的 `configure` 或 `recreate` 命令：
 
-- 在虚拟机停止状态下使用 `barn mac configure` 修改 `--cpu`、`--memory`、`--share`/`--unshare`、`--subnet` 或 `--clipboard`（剪贴板配置也可在运行时修改并保存到下次启动生效；当前会话可通过菜单栏图标即时开关剪贴板同步）。**Unreleased**：共享名称支持空格与中文，须为 1–255 字节的有效 UTF-8，不能是 `.`、`..`，也不能包含 `/` 或 ASCII 控制字符；`configure --share` 复用已有名称时会更新其路径与读写属性，`--unshare` 则按名称移除对应共享。
+- 在虚拟机停止状态下使用 `barn mac configure` 修改 `--cpu`、`--memory`、`--share`/`--unshare`、`--subnet` 或 `--clipboard`（剪贴板配置也可在运行时修改并保存到下次启动生效；当前会话可通过菜单栏图标即时开关剪贴板同步）。**Barn 0.9.3**：共享名称支持空格与中文，须为 1–255 字节的有效 UTF-8，不能是 `.`、`..`，也不能包含 `/` 或 ASCII 控制字符；`configure --share` 复用已有名称时会更新其路径与读写属性，`--unshare` 则按名称移除对应共享。
 - 管理员账号（`--user`）与磁盘容量（`--disk`）在虚拟机整个生命周期内固定不变，`recreate` 也会保留它们；如需更改账号或磁盘大小，请创建一台新虚拟机。
 - 升级虚拟机的 macOS 版本时，先运行 `barn mac image update`，再执行 `barn mac recreate NAME --update`。由于 `recreate --update` 会保留原虚拟机的磁盘容量，若新 macOS 版本下还没有对应自定义容量（如 `200G`）的基础镜像，请先执行 `barn mac setup --disk 200G` 准备好该容量的基础镜像。
 
@@ -257,6 +254,6 @@ runtime/ # 全局状态锁与单机操作锁
 
 - **运行时套接字**：`/tmp/barn-mac-<uid>-<hash>/`。
 - **OpenSSH 配置片段**：`barn mac ssh-config` 负责维护 `~/.ssh/barn-mac_config` 以及 `~/.ssh/config` 中的 `# barn-mac:include` 区块（与 Linux 环境使用的 `# barn:include` 区块互不干扰）。执行 `barn mac ssh-config --remove` 会在 `config.json` 中写入 `ssh_config_off`，此后生命周期命令不会再自动写入 SSH 配置，直到你显式运行 `barn mac ssh-config --install`。
-- **桌面窗口偏好设置**：Barn `0.9.2` 将窗口位置保存在 `~/Library/Preferences/com.pgsty.barn.plist`（`0.9.0` 使用 `~/Library/Preferences/io.pgsty.barn.mac-runner.plist`）。
+- **桌面窗口偏好设置**：Barn `0.9.3` 将窗口位置保存在 `~/Library/Preferences/com.pgsty.barn.plist`（`0.9.0` 使用 `~/Library/Preferences/io.pgsty.barn.mac-runner.plist`）。
 - **Runner 查找机制**：CLI 根据解析符号链接后的自身可执行文件路径定位 runner，兼容 `Barn.app` 应用包、安装器与 Homebrew `libexec` 布局；开发调试时可通过环境变量 `BARN_MAC_RUNNER` 指定绝对路径、相对路径或 `~/` 路径。执行虚拟机操作前 CLI 会校验 runner 协议版本 `2`；`barn mac doctor` 还会检查 runner 的本地代码签名。
 - **客机内部配置文件**：Barn 在客机内写入 `~/.ssh/authorized_keys`、`/private/etc/sudoers.d/80-barn` 与 `/etc/ssh/sshd_config.d/000-barn.conf`，设置电脑名称与本地主机名，并通过 `pmset` 禁用休眠。

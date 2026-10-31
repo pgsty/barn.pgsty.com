@@ -10,7 +10,7 @@ icon: fa-solid fa-box-archive
 lastmod: 2026-10-26
 ---
 
-This essay explains the Linux image repository contract in Barn `0.9.2` ([macOS guests](/docs/start/macos/) manage Apple `.ipsw` restore images and APFS base images separately via `barn mac`).
+This essay explains the Linux image repository contract in Barn `0.9.3` ([macOS guests](/docs/start/macos/) manage Apple `.ipsw` restore images and APFS base images separately via `barn mac`).
 
 A static VM image repository needs two kinds of metadata: human policy decisions (which version is `:stable`, which old releases are `deprecated`, what aliases map to each family) and physical file facts (exact byte size, SHA-256 digest, `qcow2` virtual disk size). Maintaining both in a single hand-edited JSON file invites copy-paste checksum errors and buries policy changes inside noisy diffs.
 
@@ -42,7 +42,7 @@ images:
           arm64: {}
 ```
 
-Because `repo.yaml` stays compact and free of generated hashes, pull requests clearly show channel promotions, deprecations, and provenance updates (see [Image Repositories](/docs/start/images/) for a complete walkthrough and [Linux Images](/docs/reference/images/) for the current `2026093001` catalog).
+Because `repo.yaml` stays compact and free of generated hashes, pull requests clearly show channel promotions, deprecations, and provenance updates (see [Image Repositories](/docs/start/images/) for a complete walkthrough and [Linux Images](/docs/reference/images/) for the current `2026102802` catalog).
 
 > [!NOTE]
 > Repository authoring and client verification are covered in [Linux Images](/docs/reference/images/); offline candidate normalization is covered in [Image Pipeline](/docs/reference/image-pipeline/).
@@ -98,4 +98,4 @@ Barn keeps its three distribution trust domains distinct:
 2. **Native macOS `Barn.app` bundles** use Apple Developer ID code signing and notarization (or local ad-hoc signing when built from source).
 3. **Linux image catalogs** are authenticated via offline Ed25519 Minisign keys (`catalog.json.minisig`).
 
-In Barn `0.9.2`, the compiled default repository is `https://repo.pigsty.io/barn`, `--mirror` selects `https://repo.pigsty.cc/barn`, and `--repo` selects any custom root. The two official mirrors can fall back to each other when downloading `.qcow2` artifacts—always verifying the exact same catalog byte size and SHA-256 digest—while catalog updates (`barn update`) and custom `--repo` repositories always read from their explicitly selected source.
+In Barn `0.9.3`, the compiled default repository is `https://repo.pigsty.io/barn`, `--mirror` selects `https://repo.pigsty.cc/barn`, and `--repo` selects any custom root. The two official mirrors can fall back to each other when downloading `.qcow2` artifacts—always verifying the exact same catalog byte size and SHA-256 digest—while catalog updates (`barn update`) and custom `--repo` repositories always read from their explicitly selected source.

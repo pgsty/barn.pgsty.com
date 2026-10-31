@@ -6,16 +6,13 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-> [!NOTE]
-> **Unreleased**: The changes below to linked inventories, shared folders, mount paths, size shorthand, skipped external hosts, node counts, and selected-node drift require a build containing source commit `27f17bb`; they are not included in Barn 0.9.2. See [Unreleased Changes](/docs/about/unreleased/).
-
-This reference describes Barn 0.9.2 plus the source changes identified above. Run `barn version` to check your build.
+This reference describes Barn 0.9.3. Run `barn version` to check your build.
 
 ## Discovery
 
 Barn resolves the inventory path by checking an explicit `-f` argument first, then searching the current working directory for `barn.yml`, `barn.yaml`, `pigsty.yml`, and `pigsty.yaml` in that order. All four filenames use the same Pigsty-compatible YAML inventory format.
 
-When no inventory file is present in the current directory, `plan`, `up`, `reload`, and `recreate` fall back to the applied specification stored in `BARN_HOME` (default `~/.barn`) if a deployment already exists. `validate` always requires an inventory file on disk. The file must resolve to a regular file no larger than 4 MiB; symlinks are supported. Relative shared-directory paths resolve beside the inventory’s real file. Barn stops at the first matching filename and reports any parse or validation error directly rather than falling through to the next candidate.
+When no inventory file is present in the current directory, `plan`, `up`, `reload`, `recreate`, and `resize` fall back to the applied specification stored in `BARN_HOME` (default `~/.barn`) if a deployment already exists. `validate` always requires an inventory file on disk. The file must resolve to a regular file no larger than 4 MiB; symlinks are supported. Relative shared-directory paths resolve beside the inventory’s real file. Barn stops at the first matching filename and reports any parse or validation error directly rather than falling through to the next candidate.
 
 Barn stores applied deployment state in `BARN_HOME`. Renaming the inventory does not change the deployment; use an absolute `BARN_HOME` to address the same deployment across working directories.
 
@@ -50,7 +47,7 @@ barn --json validate -f barn.yml
 barn plan -f barn.yml
 ```
 
-`validate` checks YAML syntax, field rules, and image catalog references (accepting `--repo` in Barn 0.9.2) without starting VMs or downloading images. Its JSON output includes `valid`, `source`, `spec_hash`, and `resolved`; if the local image catalog cannot be read, it emits a warning and leaves image selectors unresolved. During `up`, Barn verifies `local-*` imported image bytes, host capabilities, shared directories, networking, and guest SSH readiness.
+`validate` checks YAML syntax, field rules, and image catalog references (accepting `--repo` in Barn 0.9.3) without starting VMs or downloading images. Its JSON output includes `valid`, `source`, `spec_hash`, and `resolved`; if the local image catalog cannot be read, it emits a warning and leaves image selectors unresolved. During `up`, Barn verifies `local-*` imported image bytes, host capabilities, shared directories, networking, and guest SSH readiness.
 
 ## What Barn reads
 
@@ -145,11 +142,11 @@ All managed nodes in a deployment must belong to a single RFC1918 `/24` subnet: 
 
 ## Drift
 
-Explicit node selectors apply only selected changes: `plan node-1`, `up node-1`, `reload node-1`, and `recreate node-1` retain the applied definitions of unselected peers, even when edited or omitted in the inventory. The entire inventory must still parse correctly. Images for uncreated, unselected nodes are not resolved. Conflicts with applied addresses, aliases, control-node roles, or deployment-wide settings are still rejected.
+Explicit node selectors apply only selected changes: `plan node-1`, `up node-1`, `reload node-1`, `recreate node-1`, and `resize node-1` retain the applied definitions of unselected peers, even when edited or omitted in the inventory. The entire inventory must still parse correctly. Images for uncreated, unselected nodes are not resolved. Conflicts with applied addresses, aliases, control-node roles, or deployment-wide settings are still rejected.
 
 Barn computes a specification hash for every resolved node:
 
 - `barn up` creates newly added nodes, starts stopped nodes, and retries unfinished guest provisioning on running nodes without restarting their QEMU processes.
-- Modifying a node's hardware, image, disk, or share definition requires `barn recreate <node>`. Removing a node from the inventory (or setting `vm_skip: true`) reports the node as `missing` in `plan` without automatically destroying it.
+- Modifying a node's CPU or memory uses `barn resize <node>` and preserves its identity and disks. Image, disk, share, or other VM definition changes require `barn recreate <node>`. Removing a node from the inventory (or setting `vm_skip: true`) reports the node as `missing` in `plan` without automatically destroying it.
 - Changing deployment-wide settings (`vm_arch`, login username, or the `/24` subnet) requires recreating the entire deployment.
 - Because `plan` and `up` resolve image channels and version prefixes against the active catalog, running `barn update` can introduce image drift even when `barn.yml` has not changed. Always keep an explicit `nodename` on each host so renaming `pg_cluster` does not turn an existing node into a `missing` old node plus a new node.

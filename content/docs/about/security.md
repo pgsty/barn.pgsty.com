@@ -1,6 +1,6 @@
 ---
 title: Security and Trust
-description: Host privileges, guest credentials, shared folders, and the separate trust boundaries in Barn 0.9.2.
+description: Host privileges, guest credentials, shared folders, and the separate trust boundaries in Barn 0.9.3.
 weight: 25
 icon: fa-solid fa-shield-halved
 ---
@@ -49,7 +49,7 @@ Barn separates trust verification across four independent mechanisms:
 | Mechanism | What it verifies |
 |---|---|
 | Release `checksums.txt` | Verifies that downloaded CLI archives and `.deb`/`.rpm` packages match the SHA-256 digests published for that GitHub Release |
-| macOS release signatures | The 0.9.2 Apple Silicon CLI, helper, and `Barn.app` use Developer ID signatures and Apple notarization; the app carries a stapled ticket. Local source builds default to ad-hoc signing |
+| macOS release signatures | The 0.9.3 Apple Silicon CLI, helper, and `Barn.app` use Developer ID signatures and Apple notarization; the app carries a stapled ticket. Local source builds default to ad-hoc signing |
 | Linux catalog signature (`catalog.json.minisig`) | Verifies with Barn's embedded Ed25519 public keys that `catalog.json` was signed by a trusted key and satisfies per-repository anti-rollback revision rules |
 | Image artifact verification | Verifies before use that every downloaded or imported `.qcow2` matches its catalog byte size, SHA-256 digest, virtual capacity, and standalone `qcow2` format rules |
 {.wide}

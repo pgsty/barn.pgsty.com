@@ -6,10 +6,7 @@ weight: 40
 icon: fa-solid fa-hard-drive
 ---
 
-> [!NOTE]
-> **Unreleased**：下文关于macOS 宿主 9p 共享、共享源与客机挂载路径支持的变更需要包含源码提交 `27f17bb` 的构建，Barn 0.9.2 尚未包含这些行为。详见[未发布变更](/zh/docs/about/unreleased/)。
-
-本指南介绍 **Barn 0.9.2** 下 Linux 实验环境的数据盘配置、文件传输与服务访问，示例沿用 [Linux 快速上手](../tutorial/)中的 `meta` 节点（`10.10.10.10`）。
+本指南介绍 **Barn 0.9.3** 下 Linux 实验环境的数据盘配置、文件传输与服务访问，示例沿用 [Linux 快速上手](../tutorial/)中的 `meta` 节点（`10.10.10.10`）。
 
 ## 创建虚拟机前配置磁盘
 
@@ -21,7 +18,7 @@ icon: fa-solid fa-hard-drive
 all:
   vars:
     admin_ip: 10.10.10.10
-    vm_image: u24@20260926.0.0
+    vm_image: u24@20261017.0.1
   children:
     nodes:
       hosts:

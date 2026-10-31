@@ -10,7 +10,7 @@ icon: fa-solid fa-arrows-rotate
 lastmod: 2026-10-30
 ---
 
-This essay explains the Linux VM convergence model in Barn `0.9.2` ([macOS guests](/docs/start/macos/) are managed independently).
+This essay explains the Linux VM convergence model in Barn `0.9.3` ([macOS guests](/docs/start/macos/) are managed independently).
 
 > [!NOTE]
 > **2026-10-30 update:** The unreleased source changes scope `plan`, `up`, `reload`, and `recreate` to explicit node selections and retain unselected peers' applied definitions. The whole-inventory drift rules described below still apply when no nodes are selected. See [selected-node operations](/docs/start/operations/#selected-nodes).

@@ -81,7 +81,7 @@ SOURCE_DATE_EPOCH=1787486400
 Path and size constraints:
 
 - `--source` must be a canonical absolute path to a regular file (not a symlink) up to 16 GiB, and `--output` must be a new path inside an existing parent directory.
-- Barn `0.9.2` limits runtime image artifacts to 8 GiB. The [unreleased source changes](../../about/unreleased/#limits) from 2026-10-30 remove that ceiling for local images and catalog artifacts with declared sizes; use a corresponding source build for larger artifacts. The pipeline itself retains its recipe bounds.
+- Barn `0.9.3` limits runtime image artifacts to 8 GiB. The [unreleased source changes](../../about/unreleased/#limits) from 2026-10-30 remove that ceiling for local images and catalog artifacts with declared sizes; use a corresponding source build for larger artifacts. The pipeline itself retains its recipe bounds.
 - The builder acquires an adjacent lockfile, stages work in a `0700` temporary directory, and atomically renames the completed bundle into `--output` (cleaning up only its staging directory on failure).
 
 Each completed output bundle contains:

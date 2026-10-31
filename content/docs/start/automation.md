@@ -6,14 +6,11 @@ weight: 60
 icon: fa-solid fa-gears
 ---
 
-> [!NOTE]
-> **Unreleased**: The changes below to linked script inputs and the removal of provisioning worker, node-count, and timeout ceilings require a build containing source commit `27f17bb`; they are not included in Barn 0.9.2. See [Unreleased Changes](/docs/about/unreleased/).
-
-This guide shows how to drive **Barn 0.9.2** from unattended scripts and CI pipelines. Run all commands as the Unix user who owns the deployment, and pass the same `-f <inventory>` and `BARN_HOME` across invocations.
+This guide shows how to drive **Barn 0.9.3** from unattended scripts and CI pipelines. Run all commands as the Unix user who owns the deployment, and pass the same `-f <inventory>` and `BARN_HOME` across invocations.
 
 ## Prepare a predictable lab
 
-Keep your inventory file in version control and pin `vm_image` to an exact version (such as `vm_image: u24@20260926.0.0`) so catalog updates never alter your base image mid-pipeline. Passing `-f` explicitly also prevents first-run setup from relocating an unedited default template to a different subnet. If you use a custom image repository, activate its catalog first with `barn update --repo URL` and pass the same `--repo` to `setup` and `up`.
+Keep your inventory file in version control and pin `vm_image` to an exact version (such as `vm_image: u24@20261017.0.1`) so catalog updates never alter your base image mid-pipeline. Passing `-f` explicitly also prevents first-run setup from relocating an unedited default template to a different subnet. If you use a custom image repository, activate its catalog first with `barn update --repo URL` and pass the same `--repo` to `setup` and `up`.
 
 Generate and validate the inventory before running host setup:
 
@@ -34,6 +31,16 @@ Once you have reviewed the host plan and ensured non-interactive `sudo` credenti
 barn setup -f barn.yml --yes
 barn up -f barn.yml --json > up.json
 ```
+
+For a generated inventory, `barn init [template] --image <reference>` writes
+`vm_image` under `all.vars`, so every generated node inherits the same image.
+The reference can be a catalog alias (`el9`), a channel (`u24:stable`), or a
+version selector (`u24@24.04`). This only edits the inventory; catalog lookup,
+signature checks, and image download still happen through the normal
+`validate`/`plan`/`up` flow. `barn setup [template] --image <reference>` provides
+the same option while preparing a generated template. `--image` is rejected
+with `-f` or an automatically discovered existing inventory, which must be
+edited explicitly.
 
 `barn setup --yes` accepts the host-preparation confirmation prompt, whereas non-interactive `barn up` skips first-run host setup and expects the host dependencies and private network to be ready already.
 

@@ -6,7 +6,7 @@ icon: fa-solid fa-sliders
 aliases: [/docs/start/lifecycle/, /docs/start/provisioning/]
 ---
 
-This guide covers day-to-day Linux lab management in **Barn 0.9.2**. For macOS guests, see the [macOS VM guide](../macos/#everyday-lifecycle).
+This guide covers day-to-day Linux lab management in **Barn 0.9.3**. For macOS guests, see the [macOS VM guide](../macos/#everyday-lifecycle).
 
 ## Inspect and access
 
@@ -21,7 +21,7 @@ These commands read the active deployment under `BARN_HOME` (default `~/.barn`) 
 
 When you run `barn up` (including on a subset of nodes), Barn refreshes the `~/.ssh/barn_config` aliases for the entire applied deployment so `ssh meta` and peer aliases stay current. You can also regenerate those aliases at any time with `barn ssh-config --install`.
 
-Commands that reconcile configuration—`plan`, `up`, `reload`, and `recreate`—locate the inventory in this order:
+Commands that reconcile configuration—`plan`, `up`, `reload`, `resize`, and `recreate`—locate the inventory in this order:
 
 1. An explicit `-f /path/to/inventory.yml` flag (required when both `barn.yml` and `pigsty.yml` exist in the same directory and you want `pigsty.yml`).
 2. The first matching file in the current working directory (`barn.yml`, `barn.yaml`, `pigsty.yml`, then `pigsty.yaml`; parent directories are never searched).
@@ -40,6 +40,15 @@ barn reload -f barn.yml       # validate inventory, stop selected nodes, and run
 
 `barn start` boots stopped VMs, re-verifies running ones, and updates SSH aliases if any automatic loopback port was reassigned. `barn reload` validates the inventory and startup dependencies before stopping selected nodes, then runs `barn up` for that selection.
 
+`reload` is a controlled stop-and-boot cycle. It can add new nodes and start
+stopped nodes, but it refuses existing-node changes to CPU, memory, image,
+disks, shares, addresses, or other VM definition before stopping anything.
+
+For CPU or memory changes, edit `vm_cpu` or `vm_mem` and use `barn resize`.
+Supported increases may be hot-plugged; decreases and unsupported backends use
+a stop/start fallback while preserving the VM identity and disks. `resize`
+does not apply image, disk, network, or share changes; use `recreate` for those.
+
 Passing `--no-wait` to a start command returns as soon as QEMU starts, skipping readiness checks, guest recovery, and `/etc/hosts` or control-node SSH updates until your next `barn up`.
 
 ## Change the deployment
@@ -47,6 +56,7 @@ Passing `--no-wait` to a start command returns as soon as QEMU starts, skipping 
 ```bash
 barn plan
 barn up                         # create/start selected nodes and refresh SSH aliases
+barn resize node-1              # apply vm_cpu/vm_mem changes without recreation
 barn recreate node-1            # rebuild a node whose VM specification changed
 ```
 
@@ -55,16 +65,24 @@ barn recreate node-1            # rebuild a node whose VM specification changed
 | Detected change | Meaning | How to apply |
 |---|---|---|
 | `create` | Node is in the inventory but not yet provisioned | `barn up` |
-| `recreate` | Node's hardware, image, disk, or share specification changed | `barn recreate <node>` |
+| `resize` | Node CPU or memory changed | `barn resize <node>` |
+| `recreate` | Node image, disk, share, or other VM specification changed | `barn recreate <node>` |
 | `missing` | Provisioned node was removed from the inventory YAML | Restore the YAML entry, or run `barn destroy <node>` |
 
 In JSON output, `create`, `recreate`, and `missing` are node lists. The top-level `action` summarizes the plan (for example `converge`, `recreate`, or `blocked-removal`); `blocked`, when present, is an explanation string.
 
 Editing or deleting YAML entries never destroys a VM automatically, and changes to service-level Pigsty variables that Barn does not consume report `action: none`. When a node requires `recreate`, Barn replaces its root overlay and non-persistent data disks while preserving compatible persistent disks. Interactive `recreate` and `destroy` prompt you to type the command name to confirm; pass `--force` in non-interactive scripts.
 
+`recreate` is the explicit replacement path. Barn validates the new image,
+network, shares, and persistent-disk attachment contract first, then destroys
+the selected VM artifacts and boots a fresh VM from the desired inventory.
+Root and non-persistent data disks are replaced; compatible persistent disks
+remain attached. The replacement gets a new VM identity and refreshes SSH
+host-key state.
+
 ### Apply changes to selected nodes {#selected-nodes}
 
-**Unreleased:** With a build containing `27f17bb`, you can edit several nodes in the inventory and apply them in batches:
+**Barn 0.9.3:** You can edit several nodes in the inventory and apply them in batches:
 
 ```bash
 barn plan node-1 -f barn.yml
@@ -72,13 +90,13 @@ barn recreate node-1 -f barn.yml
 barn plan node-2 -f barn.yml
 ```
 
-`plan`, `up`, `reload`, and `recreate` with explicit selectors retain every unselected peer's applied definition, including peers changed or temporarily omitted in YAML. Images for uncreated, unselected nodes are resolved when you select those nodes. The entire inventory must still parse correctly, and selected changes must not conflict with applied addresses, aliases, control-node roles, or deployment-wide settings.
+`plan`, `up`, `reload`, `recreate`, and `resize` with explicit selectors retain every unselected peer's applied definition, including peers changed or temporarily omitted in YAML. Images for uncreated, unselected nodes are resolved when you select those nodes. The entire inventory must still parse correctly, and selected changes must not conflict with applied addresses, aliases, control-node roles, or deployment-wide settings.
 
-Without selectors, Barn evaluates the whole inventory: changed existing VMs require `recreate`, and missing VMs require restoring their definitions or explicitly destroying them. These selection changes are not in 0.9.2; see [Unreleased Changes](../../about/unreleased/).
+Without selectors, Barn evaluates the whole inventory: CPU and memory changes use `resize`, other changed existing VMs require `recreate`, and missing VMs require restoring their definitions or explicitly destroying them. See [Barn 0.9.3 Changes](../../about/unreleased/).
 
 ## Concurrent commands
 
-Mutating commands (`up`, `start`, `stop`, `restart`, `reload`, `recreate`, `destroy`, `purge`, and `provision`) acquire the deployment lock in `BARN_HOME`, waiting up to 10 minutes (or the command's `--timeout`) if another operation is in flight. While waiting, Barn prints the lock holder's command, PID, and start time; if the wait times out, it exits with code `4` (`error: conflict`, `reason: deployment_busy`). The lock releases automatically when the holding process exits—never delete lock files manually.
+Mutating commands (`up`, `start`, `stop`, `restart`, `reload`, `resize`, `recreate`, `destroy`, `purge`, and `provision`) acquire the deployment lock in `BARN_HOME`, waiting up to 10 minutes (or the command's `--timeout`) if another operation is in flight. While waiting, Barn prints the lock holder's command, PID, and start time; if the wait times out, it exits with code `4` (`error: conflict`, `reason: deployment_busy`). The lock releases automatically when the holding process exits—never delete lock files manually.
 
 Read-only and access commands (`status`, `ssh`, `exec`, `ssh-config`, and the state read in `hosts`) read the last published state without waiting on the lock. If a mutating command is currently running, `barn status` includes a `note` indicating the active operation. See [Troubleshooting](../troubleshooting/#a-command-was-killed) for interrupted runs.
 

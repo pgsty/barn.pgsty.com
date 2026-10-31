@@ -10,10 +10,10 @@ icon: fa-solid fa-layer-group
 lastmod: 2026-10-30
 ---
 
-本文阐述 Barn `0.9.2` 的 Linux 实验环境部署模型（[Mac 虚拟机](/zh/docs/start/macos/)作为独立的具名虚拟机管理）。
+本文阐述 Barn `0.9.3` 的 Linux 实验环境部署模型（[Mac 虚拟机](/zh/docs/start/macos/)作为独立的具名虚拟机管理）。
 
 > [!NOTE]
-> **2026-10-30 更新**：未发布构建支持相对或符号链接形式的 `BARN_HOME`，并允许 `vm_skip: true` 外部主机使用主机名或 IPv6 清单键。跨目录操作同一部署时请使用绝对 `BARN_HOME`，详见[未发布变更](/zh/docs/about/unreleased/)。
+> **2026-10-30 更新**：Barn 0.9.3 构建支持相对或符号链接形式的 `BARN_HOME`，并允许 `vm_skip: true` 外部主机使用主机名或 IPv6 清单键。跨目录操作同一部署时请使用绝对 `BARN_HOME`，详见[Barn 0.9.3 变更](/zh/docs/about/unreleased/)。
 
 Barn 的早期原型曾将每个工作目录视为一个独立“项目”：用隐藏目录标记项目身份，用全局注册表记录项目路径，再用宿主级租约表协调私有网段冲突。这套机制虽然能管理多组互不相关的虚拟机，但与 Barn 的核心场景格格不入——在本地拉起一套具有固定 IP 的 Pigsty 数据库实验集群。
 

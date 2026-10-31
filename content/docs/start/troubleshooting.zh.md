@@ -5,7 +5,7 @@ weight: 70
 icon: fa-solid fa-life-ring
 ---
 
-本手册提供 **Barn 0.9.2** 下 Linux 实验环境的常见问题排查步骤。macOS 客机请运行 `barn mac doctor` 并参阅 [Mac 故障排查章节](../macos/#故障排查)。
+本手册提供 **Barn 0.9.3** 下 Linux 实验环境的常见问题排查步骤。macOS 客机请运行 `barn mac doctor` 并参阅 [Mac 故障排查章节](../macos/#故障排查)。
 
 排查问题时，建议先采集以下三份 JSON 诊断报告（当没有其他命令持有部署锁时，`barn status` 还会自动收敛中断的虚拟机状态）：
 
@@ -41,15 +41,15 @@ barn version
 
 ## init 拒绝目录符号链接 {#linked-directory}
 
-Barn 0.9.2 报出 `atomic create parent is not a real directory: ...` 时，可能只是输出目录为符号链接，即使其目标是可写的真实目录也会触发。[未发布的路径修复](../../about/unreleased/#paths)已支持解析目录链接，并为 `init -o` 创建缺失的父目录。
+Barn 0.9.3 报出 `atomic create parent is not a real directory: ...` 时，可能只是输出目录为符号链接，即使其目标是可写的真实目录也会触发。[Barn 0.9.3 路径修复](../../about/unreleased/#paths)已支持解析目录链接，并为 `init -o` 创建缺失的父目录。
 
-使用 0.9.2 时，可临时改用物理目录路径输出：
+使用 0.9.3 时，可临时改用物理目录路径输出：
 
 ```bash
 barn init -o "$(pwd -P)/barn.yml"
 ```
 
-也可先执行 `cd -P .` 再运行 `barn init`，原目录符号链接可以保留。0.9.2 输出到多级新路径时，请先创建父目录。覆盖已有文件仍需 `--force`，写入操作不会跟随输出文件本身的符号链接。
+也可先执行 `cd -P .` 再运行 `barn init`，原目录符号链接可以保留。0.9.3 输出到多级新路径时，请先创建父目录。覆盖已有文件仍需 `--force`，写入操作不会跟随输出文件本身的符号链接。
 
 ## setup 需要 sudo
 
@@ -92,7 +92,7 @@ dpkg-statoverride --list /usr/lib/qemu/qemu-bridge-helper
 - **`recreate`**：节点的虚拟机规格定义已变更。请先查看 `barn plan` 并备份根盘或非持久数据盘上的文件，再运行 `barn recreate <node>`（非交互环境需加 `--force`）。
 - **`missing`**：已创建的节点从 YAML 清单中被移除。可恢复该节点的 YAML 条目，或执行 `barn destroy <node>` 将其销毁。
 
-采用[未发布的节点选择规则](../operations/#selected-nodes)后，`barn plan node-1` 与 `barn recreate node-1` 会保留未选中节点的已应用定义，无关节点的编辑不再要求一起重建。地址、别名、控制节点角色及部署公共设置的真实冲突仍需处理。
+采用[Barn 0.9.3 节点选择规则](../operations/#selected-nodes)后，`barn plan node-1` 与 `barn recreate node-1` 会保留未选中节点的已应用定义，无关节点的编辑不再要求一起重建。地址、别名、控制节点角色及部署公共设置的真实冲突仍需处理。
 
 ## 节点未就绪 {#节点未就绪}
 
@@ -116,7 +116,7 @@ barn status
 
 排除故障后再次运行 `barn up`，Barn 会仅重试未完成的阶段而不重启健康节点（若测试数据盘文件系统无法识别或已确认损坏，恢复流程可能会将其重新格式化；详见[数据盘说明](../../reference/configuration/#数据盘)）。若希望在首次准备失败时当场清理未完成产物，可在运行 `barn up` 时加上 `--rollback`。
 
-Linux 目录共享要求 QEMU 与客机内核均支持 9p；如果客机内核不支持，修正宿主路径也无法挂载，可改用 SSH/SCP/rsync 或支持 9p 的内核。macOS 宿主向 Linux 客机共享目录还需要[未发布的修复](../../about/unreleased/#sharing)；原生 macOS 客机使用独立的 VirtioFS。
+Linux 目录共享要求 QEMU 与客机内核均支持 9p；如果客机内核不支持，修正宿主路径也无法挂载，可改用 SSH/SCP/rsync 或支持 9p 的内核。macOS 宿主向 Linux 客机共享目录还需要[Barn 0.9.3 修复](../../about/unreleased/#sharing)；原生 macOS 客机使用独立的 VirtioFS。
 
 ## SSH 失败
 

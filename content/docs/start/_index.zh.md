@@ -9,11 +9,11 @@ cascade:
   type: docs
 ---
 
-本章节指南面向 **Barn 0.9.2**，并明确标注[未发布变更](../about/unreleased/)。你可以在同一台 Apple Silicon Mac 上同时使用 Linux 实验环境与 macOS 虚拟机，两套流程在 `~/.barn` 下各自独立管理虚拟机。
+本章节指南面向 **Barn 0.9.3**，详细行为与升级边界汇总在[Barn 0.9.3 变更](../about/unreleased/)。你可以在同一台 Apple Silicon Mac 上同时使用 Linux 实验环境与 macOS 虚拟机，两套流程在 `~/.barn` 下各自独立管理虚拟机。
 
 ## 快速上手
 
-- [安装 Barn](installation/) — 在 macOS 或 Linux 上安装 `0.9.2` CLI，核对宿主软硬件要求并了解版本升级方式。
+- [安装 Barn](installation/) — 在 macOS 或 Linux 上安装 `0.9.3` CLI，核对宿主软硬件要求并了解版本升级方式。
 - [Linux 快速上手](tutorial/) — 启动单节点 Ubuntu 24.04 虚拟机，通过 SSH 登录，并用一份 `barn.yml` 扩展为多节点固定 IP 实验环境。
 - [macOS 虚拟机](macos/) — 在 Apple Silicon 上创建和管理 macOS 27 虚拟机，使用原生桌面、SSH、共享目录与剪贴板同步。
 {.cards}
@@ -29,6 +29,6 @@ cascade:
 ## 故障排查、源码构建与清理
 
 - [故障排查](troubleshooting/) — 针对宿主依赖、私网修复、客机阶段警告、SSH 密钥与中断恢复的排查手册。
-- [从源码构建](source-build/) — 从 `v0.9.2` 标签编译 CLI、`barn-hosts-helper` 与原生应用包 `Barn.app`，并运行贡献者检查。
+- [从源码构建](source-build/) — 从 `v0.9.3` 标签编译 CLI、`barn-hosts-helper` 与原生应用包 `Barn.app`，并运行贡献者检查。
 - [卸载与清理](uninstall/) — 按序销毁 Linux 与 macOS 虚拟机、清理镜像缓存、卸载宿主网络并移除 Barn 程序。
 {.cards}

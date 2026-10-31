@@ -5,9 +5,6 @@ weight: 30
 icon: fa-solid fa-compact-disc
 ---
 
-> [!NOTE]
-> **Unreleased**: The changes below to local repository paths, image import naming, image-size limits, and local alias counts require a build containing source commit `27f17bb`; they are not included in Barn 0.9.2. See [Unreleased Changes](/docs/about/unreleased/).
-
 Barn resolves Linux guest images from a static catalog and immutable `qcow2` artifacts. Official and HTTP repositories require Ed25519/minisign catalog signatures, while explicitly selected local directory and HTTPS repositories may be unsigned. You can activate newer image catalogs with `barn update` without replacing the `barn` binary; the binary defines the trusted signing public keys and `qcow2` safety rules.
 
 > [!WARNING]
@@ -15,21 +12,21 @@ Barn resolves Linux guest images from a static catalog and immutable `qcow2` art
 
 ## Aliases and pull order
 
-Barn `0.9.2` embeds image catalog `2026093001`, covering 9 distribution families and 41 image artifacts (`el7` is `amd64`-only; every other family provides both `amd64` and `arm64`, with `el9` offering `9.3`, `9.6`, `9.7`, and `9.8` and `el10` offering `10.0`, `10.1`, and `10.2`). When no image is specified, Barn selects `u24:stable` (Ubuntu 24.04 LTS) on the host's native architecture.
+Barn `0.9.3` embeds image catalog `2026102802`, covering 9 distribution families and 17 image artifacts (`el7` is `amd64`-only; every other family provides both `amd64` and `arm64`, with `el9` offering `9.3`, `9.6`, `9.7`, and `9.8` and `el10` offering `10.0`, `10.1`, and `10.2`). When no image is specified, Barn selects `u24:stable` (Ubuntu 24.04 LTS) on the host's native architecture.
 
-The table below lists the `stable` channel targets in embedded catalog `2026093001`. Run `barn update` followed by `barn image list` to inspect the latest catalog published on your selected repository, and see [Platforms and Limits](../../about/status/) for host support details.
+The table below lists the `stable` channel targets in embedded catalog `2026102802`. Run `barn update` followed by `barn image list` to inspect the latest catalog published on your selected repository, and see [Platforms and Limits](../../about/status/) for host support details.
 
 | Family | Embedded `stable` | Accepted aliases |
 |---|---|---|
-| `d12` | `20260923.2610.1` | `debian12`, `bookworm` |
-| `d13` | `20260914.2601.2` | `debian13`, `debian`, `trixie` |
+| `d12` | `20261026.2643.1` | `debian12`, `bookworm` |
+| `d13` | `20261026.2643.1` | `debian13`, `debian`, `trixie` |
 | `el7` | `7.9.20221112.0` | `c7`, `centos7`, `centos79` |
 | `el8` | `8.10.20240528.3` | `rocky8` |
 | `el9` | `9.8.20260525.2` | `rocky9`, `rocky` |
 | `el10` | `10.2.20260525.0` | `rocky10` |
-| `u22` | `20260926.0.0` | `ubuntu22`, `ubuntu2204`, `jammy` |
-| `u24` | `20260926.0.0` | `ubuntu`, `ubuntu24`, `ubuntu2404`, `noble` |
-| `u26` | `20260927.0.0` | `ubuntu26`, `ubuntu2604`, `resolute` |
+| `u22` | `20261017.0.1` | `ubuntu22`, `ubuntu2204`, `jammy` |
+| `u24` | `20261017.0.1` | `ubuntu`, `ubuntu24`, `ubuntu2404`, `noble` |
+| `u26` | `20261016.0.1` | `ubuntu26`, `ubuntu2604`, `resolute` |
 {.wide}
 
 Distribution notes:
@@ -56,7 +53,7 @@ barn image list
 barn image info d13
 barn image info d13:stable
 barn image info el9@9.7
-barn image pull d13@20260914.2601.2
+barn image pull d13@20261026.2643.1
 barn image pull d13 --arch arm64
 barn update
 ```
@@ -148,8 +145,8 @@ Repository management rules (`barn repo scan|build|verify /absolute/repo`):
 - Channels and dot-separated numeric prefixes (`el9@9.7`, `el9@9`) resolve to an exact version key when present or the highest matching numeric version, yielding an immutable artifact identity `(image, exact version, arch)`:
   ```text
   d13:stable + native
-    -> d13@20260914.2601.2 + arm64
-    -> images/d13-20260914.2601.2-arm64.qcow2
+    -> d13@20261026.2643.1 + arm64
+    -> images/d13-20261026.2643.1-arm64.qcow2
   ```
 - **`barn repo scan`** is read-only and does not require `qemu-img`; it exits `0` while reporting any `missing`, `unsafe`, or `untracked` files in its output arrays (automation must check that `missing` and `unsafe` are empty).
 - **`barn repo build`** and **`barn repo verify`** require `qemu-img`. `build` validates `repo.yaml`, inspects every `qcow2` artifact, and atomically writes `catalog.json` (failing if any declared artifact is `missing` or `unsafe`, and omitting `untracked` files). `verify` checks that the existing `catalog.json` matches a fresh build byte-for-byte. Increment `revision` whenever catalog contents change, upload immutable `.qcow2` files before updating `catalog.json` and `catalog.json.minisig`, and publish the catalog and signature together.
@@ -166,9 +163,9 @@ local-images.json # Registry of named local-* image aliases
 local/
   <sha256>.qcow2 # Imported local qcow2 files indexed by content digest
 d13/
-  d13-20260914.2601.2-arm64.qcow2 # Verified read-only catalog artifacts by family
+  d13-20261026.2643.1-arm64.qcow2 # Verified read-only catalog artifacts by family
 u24/
-  u24-20260926.0.0-arm64.qcow2
+  u24-20261017.0.1-arm64.qcow2
 ```
 
 Import a local `qcow2` file into the cache or register it under a `local-*` alias:

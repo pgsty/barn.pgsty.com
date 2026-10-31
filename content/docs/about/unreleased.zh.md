@@ -1,17 +1,32 @@
 ---
-title: 未发布变更
-description: Barn 0.9.2 之后的开发工作流调整：路径、共享、节点选择、镜像与限制。
+title: Barn 0.9.3 变更
+description: Barn 0.9.3 的资源调整、中断恢复、路径、共享、节点选择、镜像与限制。
 weight: 15
 icon: fa-solid fa-code-branch
 ---
 
-本页记录 **2026-10-30** 在源码提交 `27f17bb`（`fix: remove unnecessary restrictions from development workflows`）中实现的变更，**尚未包含在已发布的 0.9.2 下载包中**。如需试用，请从包含该提交的工作区[构建源码](../../start/source-build/)，并通过 `barn version` 核对构建身份。
+本页记录 **Barn 0.9.3**（2026-10-31）中已经发布的用户可见变更。路径、
+共享与工作流调整始于源码提交 `27f17bb`，其余恢复与资源变更在后续提交中完成。
+核对其他构建时请使用 `barn version`。
 
-已发布版本见 [Barn 0.9.2](/zh/blog/release/0.9.2/)。该版本的 Apple Silicon 软件包已经包含 `Barn.app`，SSH/exec 也已经要求使用 `--`。
+升级摘要与完整双语说明见 [Barn 0.9.3 发布说明](/zh/blog/release/0.9.3/)。
+
+## 资源调整与中断恢复 {#resize-recovery}
+
+修改 `vm_cpu` 或 `vm_mem` 后执行 `barn resize [node...]`。运行中的虚拟机有预留容量
+且 QEMU 后端支持时，增加的资源会热插拔；减少资源、旧虚拟机或不支持的后端会自动
+停机再启动。虚拟机身份、磁盘与 SSH 密钥保持不变。`resize` 会拒绝镜像、磁盘、网络、
+共享目录、创建、删除和部署级变更，应根据 `next:` 字段使用 `recreate`、`up`、
+`destroy` 或完整的选择操作。
+
+Linux 与 macOS 的生命周期、持久盘及替换操作会记录转换状态。进程被中断或收到
+`SIGINT`、`SIGTERM` 后，下一次生命周期命令可以继续恢复；取消的命令返回结构化的
+`cancelled` 结果。在 macOS 上，`barn mac up --no-wait` 在虚拟机进程启动后返回，
+首次启动的 SSH 与 sudo 初始化可能仍在进行；请再次执行 `barn mac up NAME` 等待就绪。
 
 ## 路径 {#paths}
 
-`barn init` 与 `setup` 支持通过目录符号链接工作，`init -o ./lab/config/barn.yml` 还会自动创建缺失的父目录。覆盖已有文件仍需 `--force`，写入不会跟随或替换输出文件本身的符号链接。0.9.2 中 `atomic create parent is not a real directory` 报错的临时解决方法见[故障排查](../../start/troubleshooting/#linked-directory)。
+`barn init` 与 `setup` 支持通过目录符号链接工作，`init -o ./lab/config/barn.yml` 还会自动创建缺失的父目录。覆盖已有文件仍需 `--force`，写入不会跟随或替换输出文件本身的符号链接。
 
 用户传入的路径支持常见开发目录布局：
 
@@ -49,6 +64,13 @@ barn plan node-2 -f barn.yml
 ```
 
 整份清单仍须通过语法解析。与已应用节点的地址、别名、控制节点角色或部署公共设置发生冲突时，Barn 会在停机删盘前报错。不传选择器时仍检查整份清单，删除 YAML 条目不会自动删除虚拟机。操作流程见[日常管理](../../start/operations/#selected-nodes)。
+
+## 生成模板时选择镜像 {#template-images}
+
+`barn init [模板] --image <引用>` 会把显式的 `vm_image` 写入 `all.vars`，让
+所有生成节点继承该镜像。准备生成模板时，`barn setup [模板] --image <引用>`
+也采用同样的行为。引用可以是镜像别名、频道或版本选择器；该参数不会下载
+镜像。通过 `-f` 指定或自动发现的已有清单不会被此参数改写。
 
 ## 镜像与开发工作流限制 {#limits}
 

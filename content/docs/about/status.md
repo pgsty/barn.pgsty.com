@@ -1,7 +1,7 @@
 ---
 title: Platforms and Limits
 linkTitle: Platforms and Limits
-description: Barn 0.9.2 host requirements, Linux guest compatibility, macOS requirements, and storage limits.
+description: Barn 0.9.3 host requirements, Linux guest compatibility, macOS requirements, and storage limits.
 weight: 10
 icon: fa-solid fa-laptop-code
 ---
@@ -10,11 +10,11 @@ Barn is built for **local development and testing**. Use this page to check host
 
 ## Version {#documentation-baseline}
 
-This documentation covers **Barn 0.9.2** (see the [Installation Guide](../../start/installation/) and [0.9.2 Release Notes](/blog/release/0.9.2/)). Run `barn version` to check your installed binary; the Linux image catalog updates independently via `barn update`.
+This documentation covers **Barn 0.9.3** (see the [Installation Guide](../../start/installation/) and [0.9.3 Release Notes](/blog/release/0.9.3/)). Run `barn version` to check your installed binary; the Linux image catalog updates independently via `barn update`.
 
-- **Pre-release channel**: [Barn 0.9.2](https://github.com/pgsty/barn/releases/tag/v0.9.2) was published on 2026-10-30 on the GitHub pre-release channel used by Barn `0.x`. Pass `BARN_VERSION=0.9.2` explicitly when using the download installer script.
+- **Pre-release channel**: [Barn 0.9.3](https://github.com/pgsty/barn/releases/tag/v0.9.3) was published on 2026-10-31 on the GitHub pre-release channel used by Barn `0.x`. Pass `BARN_VERSION=0.9.3` explicitly when using the download installer script.
 - **Native macOS component**: The Darwin arm64 archive and Apple Silicon Homebrew install include the signed, notarized `Barn.app` alongside the matching CLI and helper. Go and Xcode are not required; see [macOS Guests](../../start/macos/#install).
-- **Unreleased changes**: Path, sharing, node-selection, and limit changes from source commit `27f17bb` are documented in [Unreleased Changes](../unreleased/) and are not included in 0.9.2.
+- **Barn 0.9.3 changes**: Path, sharing, node-selection, image, limit, resize, and recovery changes are documented in [Barn 0.9.3 Changes](../unreleased/).
 - **Historical verification**: Dated test records for earlier releases are archived in [Validation History](../history/).
 
 ## Linux guests
@@ -27,12 +27,12 @@ This documentation covers **Barn 0.9.2** (see the [Installation Guide](../../sta
 
 Barn builds release binaries for all four host targets, with primary live-hypervisor test coverage on `darwin/arm64` and `linux/amd64`. On Linux hosts, Barn requires accessible `/dev/kvm` and either NetworkManager or `systemd-networkd`. Run `barn doctor` to inspect host readiness or `barn setup --dry-run` to preview dependency and network setup.
 
-The catalog embedded in Barn 0.9.2, `2026093001`, provides **9 distribution families and 41 image artifacts**: Ubuntu 22.04/24.04/26.04 LTS, Debian 12/13, Rocky Linux 8/9/10, and CentOS 7 (see [Linux Images](../../reference/images/) for exact versions):
+The catalog embedded in Barn 0.9.3, `2026102802`, provides **9 distribution families and 17 image artifacts**: Ubuntu 22.04/24.04/26.04 LTS, Debian 12/13, Rocky Linux 8/9/10, and CentOS 7 (see [Linux Images](../../reference/images/) for exact versions):
 
-- **Unreleased source:** Each user manages one Linux lab in a private RFC1918 `/24`; the separate 20-node ceiling has been removed.
+- **Barn 0.9.3:** Each user manages one Linux lab in a private RFC1918 `/24`; the separate 20-node ceiling has been removed.
 - Foreign-architecture guests run under QEMU TCG software emulation. Rocky Linux 8 `arm64` also uses TCG on Apple Silicon because its 64 KiB page-size kernel is incompatible with Apple HVF.
 - CentOS 7 (`el7`) is a `deprecated` compatibility image restricted to native `linux/amd64`.
-- **Unreleased source:** `vm_shares` (QEMU Virtio-9p) supports Linux and macOS hosts when QEMU and the guest kernel support 9p. Barn 0.9.2 still requires SSH/SCP/rsync for Linux guests on macOS.
+- **Barn 0.9.3:** `vm_shares` (QEMU Virtio-9p) supports Linux and macOS hosts when QEMU and the guest kernel support 9p. SSH/SCP/rsync remain alternatives when a guest kernel lacks 9p.
 
 ## macOS guests {#macos-guests}
 

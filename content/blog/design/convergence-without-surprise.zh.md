@@ -10,10 +10,10 @@ icon: fa-solid fa-arrows-rotate
 lastmod: 2026-10-30
 ---
 
-本文阐述 Barn `0.9.2` 的 Linux 虚拟机收敛模型（[Mac 虚拟机](/zh/docs/start/macos/)独立管理）。
+本文阐述 Barn `0.9.3` 的 Linux 虚拟机收敛模型（[Mac 虚拟机](/zh/docs/start/macos/)独立管理）。
 
 > [!NOTE]
-> **2026-10-30 更新**：未发布源码中的 `plan`、`up`、`reload` 与 `recreate` 按显式节点选择应用变更，保留未选中节点的已应用定义。下文的全清单漂移规则仍适用于未指定节点的操作，详见[分批应用节点变更](/zh/docs/start/operations/#selected-nodes)。
+> **2026-10-30 更新**：Barn 0.9.3 源码中的 `plan`、`up`、`reload` 与 `recreate` 按显式节点选择应用变更，保留未选中节点的已应用定义。下文的全清单漂移规则仍适用于未指定节点的操作，详见[分批应用节点变更](/zh/docs/start/operations/#selected-nodes)。
 
 声明式工具通过对比实际状态与配置文件来驱动变更——但在日常开发中，配置文件可能为了调试被临时删减、切换到另一个 Git 分支，或在解决合并冲突时漏掉某个 YAML 主机组。如果本地虚拟机管理工具把“配置中少写了某个节点”直接当成“允许销毁该虚拟机”，一次普通的编辑失误就可能把正在测试的数据库节点连根抹掉。
 

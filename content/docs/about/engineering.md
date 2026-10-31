@@ -20,7 +20,7 @@ When filing a bug report, include `barn version`, your host OS and architecture,
 
 ## Find the implementation
 
-Tag **`v0.9.2`** is the published baseline. Post-release behavior from commit `27f17bb` is described in [Unreleased Changes](../unreleased/). Find each subsystem here:
+Tag **`v0.9.3`** is the published baseline. Post-release behavior from commit `27f17bb` is described in [Barn 0.9.3 Changes](../unreleased/). Find each subsystem here:
 
 | Subsystem | Source paths |
 |---|---|
@@ -70,9 +70,9 @@ make check
 
 Releases prior to `1.0.0` are published as GitHub pre-releases. Each release ships `darwin`/`linux` `.tar.gz` archives (containing `bin/barn`, `bin/barn-hosts-helper`, and `licenses/`), Linux `.deb` and `.rpm` packages (installing `/usr/bin/barn` and `/opt/barn/libexec/barn-hosts-helper`), `checksums.txt`, `release.json`, and SPDX SBOMs.
 
-Starting with **0.9.2**, the Darwin arm64 archive also contains `bin/Barn.app`. Its CLI, helper, and app use Developer ID signatures and Apple notarization. Homebrew installs the app under `libexec`; ordinary installation needs no Go or Xcode.
+Starting with **0.9.3**, the Darwin arm64 archive also contains `bin/Barn.app`. Its CLI, helper, and app use Developer ID signatures and Apple notarization. Homebrew installs the app under `libexec`; ordinary installation needs no Go or Xcode.
 
-The automatic release workflow requires all six Apple signing/notarization secrets and a successful native build. With none configured, it skips automatic release creation and maintainers can use the documented local signed-release process; partial configuration fails. See [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v0.9.2/docs/mac-release.md).
+The automatic release workflow requires all six Apple signing/notarization secrets and a successful native build. With none configured, it skips automatic release creation and maintainers can use the documented local signed-release process; partial configuration fails. See [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v0.9.3/docs/mac-release.md).
 
 Before publishing a release:
 
@@ -92,4 +92,4 @@ To export the binary's embedded schema-3 catalog to a new path:
 go run ./tools/catalogexport /absolute/new/catalog.json
 ```
 
-`catalogexport` writes atomically to a non-existent target path. **Unreleased:** It also accepts relative paths, `~/`, and directory symlinks and creates missing parent directories. Use `make catalog-sign` and `make catalog-verify` with the offline Minisign keypair (keeping production private keys outside Git and CI). See [Linux Images](../../reference/images/) for the repository and client verification rules.
+`catalogexport` writes atomically to a non-existent target path. **Barn 0.9.3:** It also accepts relative paths, `~/`, and directory symlinks and creates missing parent directories. Use `make catalog-sign` and `make catalog-verify` with the offline Minisign keypair (keeping production private keys outside Git and CI). See [Linux Images](../../reference/images/) for the repository and client verification rules.

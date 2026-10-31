@@ -11,7 +11,7 @@ Create an Ubuntu 24.04 VM on your Mac or Linux host, connect over SSH, and scale
 
 ## Before you start {#install}
 
-[Install Barn 0.9.2](../installation/) and make sure your host has at least 4 GiB of free memory for the guest. Run all commands as your normal user in an interactive terminal—Barn prepares QEMU and the private host network automatically, prompting for `sudo` only when a host change requires administrator privileges. (For non-interactive CI runs, see [Automation](../automation/).)
+[Install Barn 0.9.3](../installation/) and make sure your host has at least 4 GiB of free memory for the guest. Run all commands as your normal user in an interactive terminal—Barn prepares QEMU and the private host network automatically, prompting for `sudo` only when a host change requires administrator privileges. (For non-interactive CI runs, see [Automation](../automation/).)
 
 ## Start and connect
 
@@ -121,7 +121,11 @@ barn up
 
 `barn plan` shows three `create` actions, and `barn up` provisions `node-1` through `node-3` without restarting `meta`.
 
-If you change an existing node's CPU, memory, or image, apply the change with `barn recreate <node>` (which replaces its root disk). Removing a host entry from `barn.yml` leaves the VM untouched on disk until you run `barn destroy <node>`.
+If you change an existing node's CPU or memory, apply the change with
+`barn resize <node>`; it preserves the VM identity and disks. Image changes
+still use `barn recreate <node>`, which replaces its root disk. Removing a host
+entry from `barn.yml` leaves the VM untouched on disk until you run
+`barn destroy <node>`.
 
 ## Stop, resume, and clean up
 

@@ -10,7 +10,7 @@ icon: fa-solid fa-network-wired
 lastmod: 2026-10-26
 ---
 
-This essay explains the Linux lab network architecture in Barn `0.9.2` ([macOS guests](/docs/start/macos/) use independent per-VM `vmnet` NAT subnets).
+This essay explains the Linux lab network architecture in Barn `0.9.3` ([macOS guests](/docs/start/macos/) use independent per-VM `vmnet` NAT subnets).
 
 A Pigsty inventory identifies every database node by a stable IPv4 address: PostgreSQL streaming replication, Patroni/etcd consensus, HAProxy backends, keepalived VIPs, Prometheus targets, and Ansible playbooks all expect `10.10.10.11` to name the same host across boots. Forwarding a loopback port on the host can expose SSH or port `5432` to your laptop, but peer VMs cannot form a cluster over host loopback forwards.
 

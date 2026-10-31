@@ -20,7 +20,7 @@ Barn 采用 Apache-2.0 开源许可证，欢迎参与命令行工具、macOS 原
 
 ## 定位源码实现
 
-已发布基线对应 **`v0.9.2`** 标签；提交 `27f17bb` 的后续行为见[未发布变更](../unreleased/)。各子系统的实现位置如下：
+已发布基线对应 **`v0.9.3`** 标签；提交 `27f17bb` 的后续行为见[Barn 0.9.3 变更](../unreleased/)。各子系统的实现位置如下：
 
 | 子系统 | 源码路径 |
 |---|---|
@@ -70,9 +70,9 @@ make check
 
 `1.0.0` 之前的版本在 GitHub 上均标记为 pre-release（预发布版）。每次发布包含 `darwin`/`linux` `.tar.gz` 归档（含 `bin/barn`、`bin/barn-hosts-helper` 与 `licenses/`）、Linux `.deb` 与 `.rpm` 软件包（安装至 `/usr/bin/barn` 与 `/opt/barn/libexec/barn-hosts-helper`）、`checksums.txt`、`release.json` 及 SPDX 物料清单。
 
-从 **0.9.2** 开始，Darwin arm64 归档还包含 `bin/Barn.app`，CLI、helper 与 App 均经过 Developer ID 签名与 Apple 公证。Homebrew 将 App 安装在 `libexec` 下，普通安装无需 Go 或 Xcode。
+从 **0.9.3** 开始，Darwin arm64 归档还包含 `bin/Barn.app`，CLI、helper 与 App 均经过 Developer ID 签名与 Apple 公证。Homebrew 将 App 安装在 `libexec` 下，普通安装无需 Go 或 Xcode。
 
-自动发布工作流要求配齐全部 6 项 Apple 签名/公证密钥，并成功构建原生组件。6 项均未配置时跳过自动创建发布，可改用文档中的本地签名发布流程；仅配置部分时直接报错。详见 [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v0.9.2/docs/mac-release.md)。
+自动发布工作流要求配齐全部 6 项 Apple 签名/公证密钥，并成功构建原生组件。6 项均未配置时跳过自动创建发布，可改用文档中的本地签名发布流程；仅配置部分时直接报错。详见 [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v0.9.3/docs/mac-release.md)。
 
 正式发布版本的验收步骤：
 
@@ -92,4 +92,4 @@ make check
 go run ./tools/catalogexport /absolute/new/catalog.json
 ```
 
-`catalogexport` 采用原子写入并要求目标路径尚不存在。**Unreleased**：还支持相对路径、`~/` 与目录符号链接，并自动创建缺失父目录。使用 `make catalog-sign` 与 `make catalog-verify` 配合离线保存的 Minisign 密钥完成签名与验签（生产环境私钥严禁进入源码仓库或 CI）。客户端侧的验签与缓存策略见[镜像参考](../../reference/images/)。
+`catalogexport` 采用原子写入并要求目标路径尚不存在。**Barn 0.9.3**：还支持相对路径、`~/` 与目录符号链接，并自动创建缺失父目录。使用 `make catalog-sign` 与 `make catalog-verify` 配合离线保存的 Minisign 密钥完成签名与验签（生产环境私钥严禁进入源码仓库或 CI）。客户端侧的验签与缓存策略见[镜像参考](../../reference/images/)。

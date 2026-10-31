@@ -10,7 +10,7 @@ icon: fa-solid fa-network-wired
 lastmod: 2026-10-26
 ---
 
-本文阐述 Barn `0.9.2` 的 Linux 实验环境网络设计（[Mac 虚拟机](/zh/docs/start/macos/)使用每台虚拟机独立的 `vmnet` NAT 子网）。
+本文阐述 Barn `0.9.3` 的 Linux 实验环境网络设计（[Mac 虚拟机](/zh/docs/start/macos/)使用每台虚拟机独立的 `vmnet` NAT 子网）。
 
 Pigsty 主机清单依靠固定 IPv4 地址标识每个数据库节点：PostgreSQL 流复制、Patroni/etcd 共识、HAProxy 后端、keepalived 二层 VIP、Prometheus 采集目标与 Ansible 剧本，都要求 `10.10.10.11` 始终指向同一个节点。宿主回环端口转发虽然能把 SSH 或 `5432` 端口暴露给宿主机，却无法让多台虚拟机之间通过固定内网地址组成集群。
 

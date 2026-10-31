@@ -5,10 +5,7 @@ weight: 50
 icon: fa-solid fa-boxes-stacked
 ---
 
-> [!NOTE]
-> **Unreleased**：下文关于本地仓库路径放宽与镜像导入按内容摘要缓存的变更需要包含源码提交 `27f17bb` 的构建，Barn 0.9.2 尚未包含这些行为。详见[未发布变更](/zh/docs/about/unreleased/)。
-
-本指南介绍 **Barn 0.9.2** 下 Linux 客机镜像的选择、镜像站切换、静态仓库构建与本地缓存清理。
+本指南介绍 **Barn 0.9.3** 下 Linux 客机镜像的选择、镜像站切换、静态仓库构建与本地缓存清理。
 
 使用默认配置时，`barn up` 会自动按宿主架构解析 `u24:stable` 并按需下载经过校验的不可变 `qcow2` 镜像，无需提前手动拉取。Barn 初始使用二进制内置的镜像目录；执行 `barn update` 可从远端仓库获取、校验并激活最新镜像目录（或用 `barn image sync` 从指定 URL 或本地文件加载目录）。
 
@@ -38,7 +35,7 @@ all:
 ```yaml {title="barn.yml"}
 all:
   vars:
-    vm_image: d13@20260914.2601.2
+    vm_image: d13@20261026.2643.1
 ```
 
 修改 `vm_image` 或 `vm_version` 后，先运行 `barn plan` 查看变更。已有节点会保留当前根盘，直到显式执行 `barn recreate <node>`；运行 `barn update` 仅影响后续新建或重建的节点。
@@ -49,7 +46,7 @@ all:
 - **Apple Silicon 上的 `el8`（`arm64`）** 会自动启用 QEMU TCG 软件模拟，因为上游 RHEL/Rocky 8 `arm64` 内核要求 64 KiB 页粒度，而 macOS HVF 硬件加速不支持该页大小。跨架构模拟器与固件要求见[运行时排查](../troubleshooting/#原生加速或兼容运行时不可用)。
 
 > [!NOTE]
-> `0.9.2` 内置镜像目录中，除仅供兼容旧环境使用的 EOL `el7`、EL9 `9.3` / `9.6` 和 EL10 `10.0` 标记为 `deprecated` 外，其余全部版本均为 `supported`。
+> `0.9.3` 内置镜像目录中，除仅供兼容旧环境使用的 EOL `el7`、EL9 `9.3` / `9.6` 和 EL10 `10.0` 标记为 `deprecated` 外，其余全部版本均为 `supported`。
 
 ## 使用镜像站
 
