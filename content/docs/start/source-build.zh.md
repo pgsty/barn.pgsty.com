@@ -16,7 +16,7 @@ git clone --branch v0.9.3 https://github.com/pgsty/barn.git
 cd barn
 ```
 
-`v0.9.3` 标签用于复现包含[Barn 0.9.3 变更](../../about/unreleased/)的已发布版本。开发构建不要设置 `BARN_VERSION`，避免将开发构建标记为正式的 `0.9.3`。
+`v0.9.3` 标签用于复现包含[Barn 0.9.3 变更](../../about/0.9.3-changes/)的已发布版本。开发构建不要设置 `BARN_VERSION`，避免将开发构建标记为正式的 `0.9.3`。
 
 ## 构建 CLI
 

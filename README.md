@@ -23,7 +23,7 @@ Paper is the default visual preset. Readers can switch between Paper, Slate, Ink
 
 Current guides and command references use **Barn 0.9.3** (released on 2026-10-31 via the GitHub pre-release channel used by Barn `0.x`) as their released baseline. The Apple Silicon archive and Homebrew formula include the signed, notarized `Barn.app` alongside the CLI and helper; installation and use require no Go or Xcode. See the [0.9.3 release notes](content/blog/release/0.9.3.md).
 
-The path, sharing, node-selection, image, and limit changes from source commit `27f17bb`, together with later recovery and resize fixes, are documented in [Barn 0.9.3 Changes](content/docs/about/unreleased.md). Older release posts and validation records retain their original version numbers and test evidence.
+The path, sharing, node-selection, image, limit, recovery, and resize changes shipped in Barn 0.9.3 are documented in [Barn 0.9.3 Changes](content/docs/about/0.9.3-changes.md). Older release posts and validation records retain their original version numbers and test evidence.
 
 ## Brand assets
 

@@ -92,7 +92,7 @@ barn plan node-2 -f barn.yml
 
 `plan`, `up`, `reload`, `recreate`, and `resize` with explicit selectors retain every unselected peer's applied definition, including peers changed or temporarily omitted in YAML. Images for uncreated, unselected nodes are resolved when you select those nodes. The entire inventory must still parse correctly, and selected changes must not conflict with applied addresses, aliases, control-node roles, or deployment-wide settings.
 
-Without selectors, Barn evaluates the whole inventory: CPU and memory changes use `resize`, other changed existing VMs require `recreate`, and missing VMs require restoring their definitions or explicitly destroying them. See [Barn 0.9.3 Changes](../../about/unreleased/).
+Without selectors, Barn evaluates the whole inventory: CPU and memory changes use `resize`, other changed existing VMs require `recreate`, and missing VMs require restoring their definitions or explicitly destroying them. See [Barn 0.9.3 Changes](../../about/0.9.3-changes/).
 
 ## Concurrent commands
 

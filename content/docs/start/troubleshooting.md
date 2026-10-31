@@ -41,7 +41,7 @@ If `barn status` reports `no deployment state found`, the active `BARN_HOME` has
 
 ## init rejects a directory symlink {#linked-directory}
 
-`atomic create parent is not a real directory: ...` in Barn 0.9.3 can mean that the output directory is a symlink, even when its target is a writable directory. The [Barn 0.9.3 path fix](../../about/unreleased/#paths) resolves directory aliases and creates missing parents for `init -o`.
+`atomic create parent is not a real directory: ...` in Barn 0.9.3 can mean that the output directory is a symlink, even when its target is a writable directory. The [Barn 0.9.3 path fix](../../about/0.9.3-changes/#paths) resolves directory aliases and creates missing parents for `init -o`.
 
 With 0.9.3, use the physical directory path for the output:
 
@@ -116,7 +116,7 @@ Secondary guest stages—data disks, Virtio-9p shares, hostname, `/etc/hosts`, c
 
 Re-running `barn up` retries only the unfinished stages without restarting healthy VMs (and may reformat unrecognized or confirmed damaged test data filesystems; see [Data disks](../../reference/configuration/#data-disks)). Pass `--rollback` to `barn up` if you want failed initial preparation artifacts removed in the same run.
 
-For Linux shared folders, both QEMU and the guest kernel need 9p support. A valid host path cannot make an unsupported guest kernel mount 9p; use SSH/SCP/rsync or a kernel with 9p support. Linux-guest sharing on a macOS host also requires the [Barn 0.9.3 fix](../../about/unreleased/#sharing); native macOS guests use VirtioFS separately.
+For Linux shared folders, both QEMU and the guest kernel need 9p support. A valid host path cannot make an unsupported guest kernel mount 9p; use SSH/SCP/rsync or a kernel with 9p support. Linux-guest sharing on a macOS host also requires the [Barn 0.9.3 fix](../../about/0.9.3-changes/#sharing); native macOS guests use VirtioFS separately.
 
 ## SSH fails
 

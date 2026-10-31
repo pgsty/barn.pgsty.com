@@ -14,7 +14,7 @@ This documentation covers **Barn 0.9.3** (see the [Installation Guide](../../sta
 
 - **Pre-release channel**: [Barn 0.9.3](https://github.com/pgsty/barn/releases/tag/v0.9.3) was published on 2026-10-31 on the GitHub pre-release channel used by Barn `0.x`. Pass `BARN_VERSION=0.9.3` explicitly when using the download installer script.
 - **Native macOS component**: The Darwin arm64 archive and Apple Silicon Homebrew install include the signed, notarized `Barn.app` alongside the matching CLI and helper. Go and Xcode are not required; see [macOS Guests](../../start/macos/#install).
-- **Barn 0.9.3 changes**: Path, sharing, node-selection, image, limit, resize, and recovery changes are documented in [Barn 0.9.3 Changes](../unreleased/).
+- **Barn 0.9.3 changes**: Path, sharing, node-selection, image, limit, resize, and recovery changes are documented in [Barn 0.9.3 Changes](../0.9.3-changes/).
 - **Historical verification**: Dated test records for earlier releases are archived in [Validation History](../history/).
 
 ## Linux guests

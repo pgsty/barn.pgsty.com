@@ -16,7 +16,7 @@ git clone --branch v0.9.3 https://github.com/pgsty/barn.git
 cd barn
 ```
 
-Tag `v0.9.3` reproduces the published release, including the changes summarized in [Barn 0.9.3 Changes](../../about/unreleased/). Leave `BARN_VERSION` unset for a development build.
+Tag `v0.9.3` reproduces the published release, including the changes summarized in [Barn 0.9.3 Changes](../../about/0.9.3-changes/). Leave `BARN_VERSION` unset for a development build.
 
 ## Build the CLI
 

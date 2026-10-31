@@ -8,7 +8,7 @@ cascade:
   type: docs
 ---
 
-Barn 用于在本地创建和管理开发测试虚拟机。本文档适用于 **Barn 0.9.3**，当前行为汇总见 [Barn 0.9.3 变更](about/unreleased/)。可从以下入口快速开始：
+Barn 用于在本地创建和管理开发测试虚拟机。本文档适用于 **Barn 0.9.3**，当前行为汇总见 [Barn 0.9.3 变更](about/0.9.3-changes/)。可从以下入口快速开始：
 
 - [安装 Barn 0.9.3](start/installation/) — 在 macOS 或 Linux 上通过 Homebrew、固定版本安装脚本或原生软件包安装 CLI。
 - [Linux 快速上手](start/tutorial/) — 在 macOS（HVF）或 Linux（KVM）上基于 Ansible YAML 清单启动单节点或多节点固定 IP 实验集群。

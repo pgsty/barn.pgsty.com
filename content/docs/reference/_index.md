@@ -9,7 +9,7 @@ cascade:
   type: docs
 ---
 
-Use these pages to look up configuration fields, command flags, structured output schemas, and image catalog rules in **Barn 0.9.3**, with the 0.9.3 behavior summarized in [Barn 0.9.3 Changes](../about/unreleased/). For task-oriented walkthroughs, start with the [Guides](../start/).
+Use these pages to look up configuration fields, command flags, structured output schemas, and image catalog rules in **Barn 0.9.3**, with the 0.9.3 behavior summarized in [Barn 0.9.3 Changes](../about/0.9.3-changes/). For task-oriented walkthroughs, start with the [Guides](../start/).
 
 - [Linux Configuration](configuration/) — Inventory discovery, variables, defaults, data disks, host shares, and node drift rules
 - [CLI Reference](cli/) — Global flags, Linux lifecycle commands, structured JSON/YAML output, and exit codes

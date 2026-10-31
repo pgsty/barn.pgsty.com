@@ -13,7 +13,7 @@ lastmod: 2026-10-30
 This essay explains the Linux lab deployment model in Barn `0.9.3` ([macOS guests](/docs/start/macos/) are managed as independent named VMs).
 
 > [!NOTE]
-> **2026-10-30 update:** Barn 0.9.3 builds accept relative and symlinked `BARN_HOME` paths and hostname/IPv6 inventory keys on `vm_skip: true` external hosts. Use an absolute `BARN_HOME` when changing directories to keep the same deployment. See [Barn 0.9.3 Changes](/docs/about/unreleased/).
+> **2026-10-30 update:** Barn 0.9.3 builds accept relative and symlinked `BARN_HOME` paths and hostname/IPv6 inventory keys on `vm_skip: true` external hosts. Use an absolute `BARN_HOME` when changing directories to keep the same deployment. See [Barn 0.9.3 Changes](/docs/about/0.9.3-changes/).
 
 Early prototypes of Barn treated every working directory as a separate project: a hidden directory marker identified the project, a central registry tracked active project paths, and a host-wide lease table arbitrated private subnet collisions. While that model made sense for a generic multi-project VM runner, it fought against Barn's actual job: running a local Pigsty database lab with fixed IP addresses.
 

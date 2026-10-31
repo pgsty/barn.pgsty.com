@@ -41,7 +41,7 @@ barn version
 
 ## init 拒绝目录符号链接 {#linked-directory}
 
-Barn 0.9.3 报出 `atomic create parent is not a real directory: ...` 时，可能只是输出目录为符号链接，即使其目标是可写的真实目录也会触发。[Barn 0.9.3 路径修复](../../about/unreleased/#paths)已支持解析目录链接，并为 `init -o` 创建缺失的父目录。
+Barn 0.9.3 报出 `atomic create parent is not a real directory: ...` 时，可能只是输出目录为符号链接，即使其目标是可写的真实目录也会触发。[Barn 0.9.3 路径修复](../../about/0.9.3-changes/#paths)已支持解析目录链接，并为 `init -o` 创建缺失的父目录。
 
 使用 0.9.3 时，可临时改用物理目录路径输出：
 
@@ -116,7 +116,7 @@ barn status
 
 排除故障后再次运行 `barn up`，Barn 会仅重试未完成的阶段而不重启健康节点（若测试数据盘文件系统无法识别或已确认损坏，恢复流程可能会将其重新格式化；详见[数据盘说明](../../reference/configuration/#数据盘)）。若希望在首次准备失败时当场清理未完成产物，可在运行 `barn up` 时加上 `--rollback`。
 
-Linux 目录共享要求 QEMU 与客机内核均支持 9p；如果客机内核不支持，修正宿主路径也无法挂载，可改用 SSH/SCP/rsync 或支持 9p 的内核。macOS 宿主向 Linux 客机共享目录还需要[Barn 0.9.3 修复](../../about/unreleased/#sharing)；原生 macOS 客机使用独立的 VirtioFS。
+Linux 目录共享要求 QEMU 与客机内核均支持 9p；如果客机内核不支持，修正宿主路径也无法挂载，可改用 SSH/SCP/rsync 或支持 9p 的内核。macOS 宿主向 Linux 客机共享目录还需要[Barn 0.9.3 修复](../../about/0.9.3-changes/#sharing)；原生 macOS 客机使用独立的 VirtioFS。
 
 ## SSH 失败
 

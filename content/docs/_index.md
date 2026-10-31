@@ -8,7 +8,7 @@ cascade:
   type: docs
 ---
 
-Barn provisions local virtual machines for development and testing. This documentation covers **Barn 0.9.3**. Current behavior is summarized in [Barn 0.9.3 Changes](about/unreleased/). Choose a starting workflow below:
+Barn provisions local virtual machines for development and testing. This documentation covers **Barn 0.9.3**. Current behavior is summarized in [Barn 0.9.3 Changes](about/0.9.3-changes/). Choose a starting workflow below:
 
 - [Install Barn 0.9.3](start/installation/) — Install the CLI on macOS or Linux via Homebrew, the pinned installer script, or native packages.
 - [Linux Quick Start](start/tutorial/) — Boot a single Ubuntu 24.04 node or a multi-node fixed-IP lab from an Ansible YAML inventory on macOS (HVF) or Linux (KVM).

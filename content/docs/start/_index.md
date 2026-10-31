@@ -9,7 +9,7 @@ cascade:
   type: docs
 ---
 
-These guides cover **Barn 0.9.3**. The [Barn 0.9.3 Changes](../about/unreleased/) page collects the detailed behavior and upgrade boundaries. You can run both Linux labs and isolated macOS VMs on the same Apple Silicon Mac—each workflow manages its own VMs under `~/.barn`.
+These guides cover **Barn 0.9.3**. The [Barn 0.9.3 Changes](../about/0.9.3-changes/) page collects the detailed behavior and upgrade boundaries. You can run both Linux labs and isolated macOS VMs on the same Apple Silicon Mac—each workflow manages its own VMs under `~/.barn`.
 
 ## Get started
 

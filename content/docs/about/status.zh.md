@@ -14,7 +14,7 @@ Barn 专为**本地开发与测试**设计。在搭建实验环境前，可通�
 
 - **预发布渠道**：[Barn 0.9.3](https://github.com/pgsty/barn/releases/tag/v0.9.3) 于 2026-10-31 通过 Barn `0.x` 使用的 GitHub pre-release 渠道发布；使用安装脚本下载时请显式传入 `BARN_VERSION=0.9.3`。
 - **macOS 原生组件**：Darwin arm64 归档与 Apple Silicon Homebrew 安装均包含经过签名、公证的 `Barn.app` 及配套 CLI/helper，无需安装 Go 或 Xcode，详见 [macOS 客机指南](../../start/macos/#install)。
-- **Barn 0.9.3 变更**：路径、共享、节点选择、镜像、上限、资源调整与恢复行为见[Barn 0.9.3 变更](../unreleased/)。
+- **Barn 0.9.3 变更**：路径、共享、节点选择、镜像、上限、资源调整与恢复行为见[Barn 0.9.3 变更](../0.9.3-changes/)。
 - **历史验证记录**：早期版本的真机验收与测试记录归档在[验证历史](../history/)中。
 
 ## Linux 客机

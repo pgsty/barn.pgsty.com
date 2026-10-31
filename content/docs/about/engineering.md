@@ -20,7 +20,7 @@ When filing a bug report, include `barn version`, your host OS and architecture,
 
 ## Find the implementation
 
-Tag **`v0.9.3`** is the published baseline. Post-release behavior from commit `27f17bb` is described in [Barn 0.9.3 Changes](../unreleased/). Find each subsystem here:
+Tag **`v0.9.3`** is the published baseline. The Barn 0.9.3 behavior from source commit `27f17bb` is described in [Barn 0.9.3 Changes](../0.9.3-changes/). Find each subsystem here:
 
 | Subsystem | Source paths |
 |---|---|

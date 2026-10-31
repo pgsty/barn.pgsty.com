@@ -9,7 +9,7 @@ cascade:
   type: docs
 ---
 
-本章节指南面向 **Barn 0.9.3**，详细行为与升级边界汇总在[Barn 0.9.3 变更](../about/unreleased/)。你可以在同一台 Apple Silicon Mac 上同时使用 Linux 实验环境与 macOS 虚拟机，两套流程在 `~/.barn` 下各自独立管理虚拟机。
+本章节指南面向 **Barn 0.9.3**，详细行为与升级边界汇总在[Barn 0.9.3 变更](../about/0.9.3-changes/)。你可以在同一台 Apple Silicon Mac 上同时使用 Linux 实验环境与 macOS 虚拟机，两套流程在 `~/.barn` 下各自独立管理虚拟机。
 
 ## 快速上手
 
