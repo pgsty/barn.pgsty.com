@@ -18,7 +18,7 @@ At the 2026-09-29 checkpoint, Barn `0.9.0` was the first release candidate prepa
 | CLI and configuration | `barn`, `barn.yml`, `BARN_*` | Clean break from earlier internal names |
 | State and host resources | `~/.barn`, Barn networking, and `barn-hosts-helper` | Uses fresh `~/.barn` state without migrating pre-rename development directories |
 | Image repository | `/barn` on the official endpoints | Requires valid minisign catalog signatures |
-{.wide}
+{.wide .expand}
 
 ## macOS guests {#macos-guests}
 
@@ -65,7 +65,7 @@ Items deferred to subsequent release milestones at that checkpoint:
 | macOS `arm64` | HVF host, TCG rule for Rocky Linux 8.10 `arm64` | 2026-08-28 | Boot, `stop`/`start`, and SSH readiness in `44.2 s` passed |
 | Published Catalog `2026090501` | 9 families, 27 `qcow2` artifacts | 2026-09-05 | Artifact verification, embedded/public byte equality, and signed `barn update` against both official endpoints passed |
 | Published Catalog `2026082903` | 9 families, 27 signed `qcow2` artifacts | 2026-08-29 | Full 19 GiB SHA-256 sweep and clean-client `d13:stable` pull passed |
-{.wide}
+{.wide .expand}
 
 In the `0.8.0` four-host acceptance run, each host booted Rocky Linux 9.8 and 10.2, Debian 12.15 and 13.7, and Ubuntu 22.04.5, 24.04.5, and 26.04.1 (28 guest VMs total, all passing and cleaned up afterward). Both official endpoints served catalog `2026092001` with SHA-256 `23e8dbf6c19bd192d56c6d71eb30901f17945b3487e427a43abe108463780306`, verified via isolated `barn update` runs and HTTP `HEAD` content-length checks on the 10 new image objects.
 

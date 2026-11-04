@@ -71,7 +71,7 @@ Predictable filenames make it easy to inspect, mirror, or rsync a repository wit
 | `barn repo scan /srv/barn` | Read-only audit: reports tracked, `missing`, `untracked`, and `unsafe` files without modifying the repository |
 | `barn repo build /srv/barn` | Strictly validates `repo.yaml` and every declared `.qcow2` file, then atomically writes `catalog.json` |
 | `barn repo verify /srv/barn` | Rebuilds the catalog in memory and verifies that it matches the published `catalog.json` byte-for-byte |
-{.wide}
+{.wide .expand}
 
 `barn repo build` never modifies `repo.yaml` or `.qcow2` files, and `barn repo verify` catches any drift between `repo.yaml`, the `.qcow2` files on disk, and `catalog.json`. When publishing a repository update, always upload the immutable `.qcow2` files first, then publish `catalog.json` and `catalog.json.minisig` together so clients never see a catalog entry whose image file is not yet available.
 

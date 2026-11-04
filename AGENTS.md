@@ -2,7 +2,7 @@
 
 ## OINK build baseline
 
-As of 2026-10-31, this site uses OINK v1.4.0 and Hugo Extended from the current
+As of 2026-11-04, this site uses OINK v1.5.0 and Hugo Extended from the current
 release channel. Keep CI and local builds on the latest available Hugo; do not
 pin a patch version. If a deployment platform requires a literal version, use
 Hugo Extended 0.169.0 until that platform supports its latest channel. Do not

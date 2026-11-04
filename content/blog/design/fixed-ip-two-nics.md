@@ -22,7 +22,7 @@ At the same time, freshly booted cloud images need effortless outbound internet 
 |---|---|---|
 | Management NIC | QEMU user-mode NAT (`slirp`), DHCP | Outbound internet access, DNS, default route, and host-loopback SSH port forwarding |
 | Fixed-IP lab NIC (MAC-matched) | Static RFC1918 `/24` inventory IP | Host-to-node, node-to-node, Ansible, Pigsty services, and L2 VIP traffic |
-{.wide}
+{.wide .expand}
 
 Barn binds each interface inside the guest by its deterministic MAC address rather than relying on kernel interface names (`eth0`, `enp0s4`, etc., which vary across distributions):
 
@@ -41,7 +41,7 @@ All managed nodes in a deployment share one canonical RFC1918 `/24` subnet:
 | `.1` | Host gateway interface on the private lab subnet |
 | `.2`–`.8` | Reserved range (available for L2 VIPs; also bounds macOS `vmnet` DHCP) |
 | `.9`–`.254` | Static node addresses declared in `barn.yml` |
-{.wide}
+{.wide .expand}
 
 Because `cloud-init` writes the static inventory address directly from `barn.yml` (on macOS, `socket_vmnet`'s DHCP pool ends at `.8`; on Linux, the `barn0` bridge uses static guest addressing), node IPs never depend on a DHCP lease database. Ansible and Pigsty use the exact same IP from the first `barn up` through every subsequent reboot.
 

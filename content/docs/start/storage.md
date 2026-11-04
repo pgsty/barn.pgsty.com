@@ -56,6 +56,7 @@ Disk sizes (`size: 64` or `size: 64GiB`) are thin-provisioned virtual capacities
 | Compatible `recreate` | Replaced | Retained and reattached |
 | Ordinary `destroy` | Deleted | Retained |
 | Whole-deployment `destroy --delete-persistent` or `purge` | Deleted | Deleted (including retained disks) |
+{.wide .expand}
 
 Barn matches retained persistent disks by disk identity and specification: to reattach a retained disk across `recreate` or after `destroy`, keep the node name, mount `path`, `size`, and `fs` type identical. Barn rejects mismatched retained disks rather than attempting in-place resizing, renaming, or filesystem conversion.
 

@@ -26,7 +26,7 @@ icon: fa-solid fa-diagram-project
 | `el8` | 基础归一化 + 安装 Python 3、加载 SSH 配置片段、清理旧网络配置、配置 `chronyd` 与恢复 SELinux 标签 | 锁定的 RPM 依赖包集合 |
 | `el9` | 基础归一化 + 清理旧网络配置与恢复 SELinux 标签 | 无（拒绝传入软件包参数） |
 | `d12`、`d13` | 基础归一化 + 离线安装 XFS 用户态工具并生成 `en_US.UTF-8` / `C.UTF-8` 区域设置 | 锁定的 DEB 依赖包集合 |
-{.wide}
+{.wide .expand}
 
 `validate` 模式仅支持 `--profile base`。在 `offline` 模式下使用 `el8`、`d12` 或 `d13` 时，必须同时传入与方案及架构匹配的 `--package-lock` 和 `--package-cache`。构建官方镜像时，直接使用下方的 `build-official.py` 封装脚本即可自动传入锁定的软件包集合。
 
@@ -96,6 +96,6 @@ SOURCE_DATE_EPOCH=1787486400
 | `validation.json` | 处理前后的 `qcow2` 检查结果、客机标记校验与待完成的发布门禁项 |
 | `checksums.txt` | 产物包内所有文件的 SHA-256 校验和 |
 | `package-lock.json` | 使用锁定 RPM/DEB 软件包输入时附带的锁定清单 |
-{.wide}
+{.wide .expand}
 
 在输入文件与工具版本固定时，`validate` 模式可逐字节复现；使用 `offline` 模式准备发布证据时，请对同一候选镜像构建两次并比对结果。将候选镜像正式发布为 `supported` 状态时，还需在目标宿主与客机组合上完成真机启动测试、在 `repo.yaml` 中递增 `revision` 并更新状态、运行 `barn repo build` 与 `barn repo verify`、使用生产密钥签发 `catalog.json.minisig` 并验证公开仓库端点。

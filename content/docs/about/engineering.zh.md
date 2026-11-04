@@ -14,7 +14,7 @@ Barn 采用 Apache-2.0 开源许可证，欢迎参与命令行工具、macOS 原
 | 命令行行为、虚拟机生命周期、macOS 原生组件（`Barn.app`）、安装脚本与软件包 | [`pgsty/barn`](https://github.com/pgsty/barn) |
 | 文档网站、上手指南、命令参考手册与双语内容 | [`pgsty/barn.pgsty.com`](https://github.com/pgsty/barn.pgsty.com) |
 | 官方 Linux 镜像定义与离线归一化规则 | [`pgsty/barn`](https://github.com/pgsty/barn) 中的 `packaging/image-repository/` 与 `packaging/image-pipeline/` |
-{.wide}
+{.wide .expand}
 
 提交问题报告时，请附上 `barn version` 输出、宿主操作系统与架构、执行的完整命令以及脱敏后的报错信息（移除私钥与密码）。安全漏洞请按[安全政策](https://github.com/pgsty/barn/blob/main/SECURITY.md)私下报告。准备进行较大规模的实现调整前，建议先提交 Issue 对齐方案；代码规范与 PR 要求详见 [`CONTRIBUTING.md`](https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md)。
 
@@ -31,7 +31,7 @@ Barn 采用 Apache-2.0 开源许可证，欢迎参与命令行工具、macOS 原
 | 镜像目录验签、`qcow2` 结构检查与静态仓库构建工具 | `internal/image/`、`tools/catalogexport/`、`tools/catalogsign/` |
 | 原生 macOS 虚拟机生命周期与桌面应用 | `internal/macvm/`、`native/mac-runner/` |
 | 打包配置、CI 工作流与集成测试套件 | `packaging/`、`.github/workflows/`、`tests/` |
-{.wide}
+{.wide .expand}
 
 阅读实现代码时请同步查看同目录下的单元测试——测试完整界定了哪些故障支持自动恢复、哪些歧义状态必须安全中止。
 
@@ -64,7 +64,7 @@ make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 make check
 ```
 
-`make check` 会校验 Go 模块、在清除本地主题替换并关闭 Go workspace 的纯净环境下使用 Hugo Extended 与锁定的 OINK `v1.4.0` 构建全站，随后调用 `bin/check_internal_links.py public` 检查全部内部链接、标题锚点与静态资源。需要联调本地相邻的 OINK 主题工作区时，请使用 `make check-local` 或 `make build-local`。文中的命令行示例请对照 `barn <command> --help` 核验，YAML 清单示例请使用临时 `BARN_HOME` 跑通 `barn validate` 与 `barn plan`。
+`make check` 会校验 Go 模块、在清除本地主题替换并关闭 Go workspace 的纯净环境下使用 Hugo Extended 与锁定的 OINK `v1.5.0` 构建全站，随后调用 `bin/check_internal_links.py public` 检查全部内部链接、标题锚点与静态资源。需要联调本地相邻的 OINK 主题工作区时，请使用 `make check-local` 或 `make build-local`。文中的命令行示例请对照 `barn <command> --help` 核验，YAML 清单示例请使用临时 `BARN_HOME` 跑通 `barn validate` 与 `barn plan`。
 
 ## 发布产物与门禁
 

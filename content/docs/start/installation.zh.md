@@ -17,6 +17,7 @@ Barn 0.9.3 提供 macOS 与 Linux 的 **arm64 和 amd64** 归档包，以及 Lin
 | `barn` | 管理 Linux 实验环境与 macOS 虚拟机生命周期的 Go CLI | 四种平台归档及 Linux 软件包均包含 |
 | `barn-hosts-helper` | 负责 `/etc/hosts` 主机名集成的受限辅助程序 | 与同版本 CLI 配套打包 |
 | `Barn.app` | 基于 `Virtualization.framework` 的原生运行器与 macOS 客机桌面 | Darwin arm64 归档与 Apple Silicon Homebrew 安装包含；仅 macOS 客机需要 |
+{.wide .expand}
 
 ## 安装发行版本
 
@@ -60,7 +61,7 @@ barn version
 | Linux | macOS（Apple Silicon 或 Intel） | QEMU 8.2.1+、HVF |
 | Linux | Linux（arm64 或 amd64） | QEMU 6.2+、可用的 KVM、NetworkManager 或 systemd-networkd |
 | macOS 27 | Apple Silicon、macOS 27+、已登录图形桌面会话 | 原生应用包 `Barn.app`（无需 QEMU） |
-{.platform-table}
+{.platform-table .wide .expand}
 
 一台默认规格的 Linux 虚拟机分配 **2 vCPU 与 4 GiB 内存**，搭配按需增长的 `qcow2` 稀疏磁盘（64 GiB 根盘与 128 GiB 测试数据盘）。
 
@@ -124,5 +125,6 @@ Barn 将程序升级与客机镜像更新解耦，避免升级工具时意外改
 | Barn CLI、helper 与随包 App | 重新安装或 `brew upgrade` | 保留所有现有虚拟机磁盘与状态 |
 | Linux 镜像目录 | `barn update`（或 `barn update --mirror`） | 仅对新建或显式 `recreate` 的节点生效 |
 | macOS 基础镜像 | `barn mac image update` | 准备新基础镜像；已有虚拟机需执行 `barn mac recreate NAME --update` 才会切换 |
+{.wide .expand}
 
 如遇下载代理或 `PATH` 问题，请参阅[故障排查](../troubleshooting/#下载与-path-问题)；如需移除程序与宿主状态，请参阅[卸载与清理](../uninstall/)。

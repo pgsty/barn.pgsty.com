@@ -75,7 +75,7 @@ Barn 只读取节点 IPv4 键、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq
 | `vm_disks` | `[{path: /data}]` | 额外数据盘列表（默认挂载一块 128 GiB 非持久盘到 `/data`） |
 | `vm_alias` | `[]` | 写入客机 `/etc/hosts`、SSH 配置及可选宿主 `/etc/hosts` 的附加别名 |
 | `vm_shares` | `[]` | QEMU 9p 宿主目录共享（Linux 与 macOS 宿主） |
-{.wide}
+{.wide .expand}
 
 空节点条目（如 `10.10.10.10: {}`）即可使用默认参数定义一台完整虚拟机。不再另设 20 节点上限；托管节点须使用同一 `/24` 内互不重复的可用地址。
 

@@ -33,7 +33,7 @@ barn image pull --help
 | 宿主网络 | `network status/install/uninstall` |
 | macOS 客机 | `mac …` — 见 [Mac 命令](../mac/) |
 | 其他工具 | `version`、`completion` |
-{.wide}
+{.wide .expand}
 
 日常命令只读取本地已激活的镜像目录，不会隐式联网刷新。执行 `barn update` 可拉取、验签并激活所选仓库的最新镜像目录；需要从指定 URL 或本地文件恢复目录时，使用 `barn image sync`。这两条命令都不会更新 `barn` 可执行文件本身。
 
@@ -47,7 +47,7 @@ barn image pull --help
 | `ssh-config` | `sc` | `image` | `images`、`im` |
 | `doctor` | `dt` | `network` | `n`、`net` |
 | `exec` / `logs` | `ex` / `l` | `version` | `ver` |
-{.wide}
+{.wide .expand}
 
 `up`、`ssh`、`init`、`start`、`stop`、`restart`、`reload`、`provision`、`hosts`、`purge` 与 `completion` 不设顶层短别名（`rm` 也不是 `purge` 的别名）。在子命令命名空间内，`hosts` 与 `network` 的 `install`/`uninstall` 可简写为 `i`/`u`，`network status` 可简写为 `st`；`image` 下支持 `list=ls`、`info=in`、`pull=p`、`prune=pr`、`sync=sy` 与 `import=i`。
 
@@ -60,7 +60,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `validate` | 优先使用显式 `-f`，其次按目录发现；绝不回退到已应用状态 |
 | `plan`、`up`、`reload`、`recreate`、`resize` | 依次查找显式 `-f`、当前目录清单，最后回退到已应用的部署规格 |
 | 其他生命周期与访问命令 | 不读取清单文件，直接操作 `BARN_HOME` 中的已应用状态 |
-{.wide}
+{.wide .expand}
 
 当当前目录没有清单且 `BARN_HOME` 中也没有已部署环境时，交互式运行 `barn up` 可以自动生成默认 `meta` 清单、补齐缺失的宿主依赖并拉起未激活的 Barn 网络（涉及特权操作时 `sudo` 仍会提示输入系统密码）。若希望先检查宿主变更计划，请运行 `barn setup --dry-run`；在非交互脚本中请显式执行 `barn setup --yes`。
 
@@ -85,7 +85,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `--rollback`（`up`、`reload`） | 清理本次运行中准备失败、尚未提交状态的节点残留文件 |
 | `--delete-persistent` | 整体销毁部署时一并删除 `persistent: true` 的持久数据盘 |
 | `--purge` | 整体销毁部署时删除全部磁盘、密钥与状态，仅保留镜像缓存与宿主网络 |
-{.wide}
+{.wide .expand}
 
 各命令支持的局部参数如下表所示：
 
@@ -115,7 +115,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `network install` | `--cidr/-c`（默认 `10.10.10.0/24`）、`--mode/-m`（默认 `host`）、`--yes/-y`；macOS 专用 `--archive/-a`、`--interface-id/-i` |
 | `network status` | 可选 `--cidr/-c` |
 | `network uninstall`、`hosts install/uninstall` | `--yes/-y` |
-{.wide}
+{.wide .expand}
 
 参数使用说明：
 
@@ -197,7 +197,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `BARN_VERBOSE` | 诊断输出布尔开关默认值；命令行 `-v`/`--verbose` 优先 |
 | `BARN_VMNET_ARCHIVE` | macOS `setup` 使用的本地 `socket_vmnet` 归档路径；Barn 0.9.3 支持相对路径、`~/` 与符号链接（仍强制校验 SHA-256） |
 | `NO_COLOR` | 设为任意非空值时禁用终端颜色 |
-{.wide}
+{.wide .expand}
 
 ## SSH 透传与命令补全 {#ssh-透传与命令补全}
 
@@ -238,7 +238,7 @@ barn exec meta --json -- uname -a
 | `6` | `resource` | 宿主 IP、端口、网段或磁盘路径已被占用 |
 | `7` | `integrity` | 摘要、签名、实例身份或文件属主校验未通过 |
 | `130` | `cancelled` | 操作被 `SIGINT`/`SIGTERM` 中断，或在交互提示中拒绝确认 |
-{.wide}
+{.wide .expand}
 
 在 Barn `0.9.3` 中，若另一个 `barn` 命令正持有部署锁，修改类命令最多等待 10 分钟并指出持锁命令；等待超时则以退出码 `4`（`reason: "deployment_busy"`）退出。只读与访问类命令（`status`、`ssh`、`exec`、`ssh-config`、`hosts`）不会阻塞等待锁；其中 `status` 会展示最近一次提交的节点状态，并在 `note` 字段中注明正在并发执行的操作。
 

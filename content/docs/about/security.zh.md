@@ -16,7 +16,7 @@ Barn 面向受信任的本地开发工作站。同一套 Linux 实验环境中�
 | `barn setup`（安装 Linux 宿主依赖） | 调用发行版包管理器（`apt`/`dnf`）安装 QEMU、固件与 OpenSSH（macOS 上的 Homebrew 以普通用户身份运行） |
 | `barn network install` / `uninstall` | 安装或卸载宿主全局固定 IP 网络后端（Linux 上的 `barn0` 网桥，macOS 上的 `socket_vmnet` launchd 服务） |
 | `barn hosts install` / `uninstall` | 通过独立的 `barn-hosts-helper` 修改 `/etc/hosts` 中由 Barn 标记界定的区块 |
-{.wide}
+{.wide .expand}
 
 在请求 `sudo` 授权前，`setup`、`network` 与 `hosts` 都会先打印完整的变更计划。请确保 `barn` 与 `/opt/barn/libexec/barn-hosts-helper` 来自同一次构建：CLI 调用 helper 前会核对其内嵌 SHA-256 摘要，helper 在每次写入前后都会校验 `/etc/hosts` 的属主、权限、硬链接数及预期内容摘要。
 
@@ -33,7 +33,7 @@ Barn 针对三类 SSH 连接路径采用不同的主机密钥校验策略：
 | 宿主 → Linux 客机（经由 `barn` 或 `~/.ssh/barn_config`） | 使用独立 `known_hosts` 文件与虚拟机 UUID 别名，并启用 `StrictHostKeyChecking accept-new`（首次连接自动记录密钥，后续若密钥不匹配则拒绝连接；显式 `recreate` 会生成新的虚拟机 UUID） |
 | Linux 控制节点 → 实验环境其他节点 | 对 Barn 管理的节点别名配置 `StrictHostKeyChecking no` 与 `UserKnownHostsFile /dev/null`，使实验节点频繁重建后仍可直接连通 |
 | 宿主 → 已初始化的 macOS 客机 | 对照绑定到 `barn-mac-<instance_id>` 的单机专属 `known_hosts` 严格校验主机密钥，并禁用 SSH agent forwarding |
-{.wide}
+{.wide .expand}
 
 每台 macOS 虚拟机拥有独立的 Ed25519 SSH 密钥对与随机生成的桌面管理员密码（保存在虚拟机目录内权限为 `0600` 的 `password` 文件中，可通过 `barn mac password` 查看）。首次初始化完成后，Linux 与 macOS 客机均强制使用 SSH 公钥认证，关闭 SSH 密码认证与 root 远程登录，并为管理账号配置免密 `sudo`。提交 Issue 或分享配置时，请先剔除日志和状态文件中的私钥与密码。
 
@@ -52,7 +52,7 @@ Barn 将软件分发与镜像校验划分为四个彼此独立的信任机制：
 | macOS 发行包代码签名 | 0.9.3 Apple Silicon CLI、helper 与 `Barn.app` 均使用 Developer ID 签名并通过 Apple 公证，App 已装订票据；本地源码构建默认使用 ad-hoc 签名 |
 | Linux 镜像目录签名（`catalog.json.minisig`） | 使用二进制内置的 Ed25519 生产公钥校验 `catalog.json` 签名，并执行按仓库隔离的修订号防回滚检查 |
 | 镜像产物校验 | 在启用镜像前逐一核对 `.qcow2` 文件的字节大小、SHA-256 摘要、虚拟磁盘容量与独立 `qcow2` 结构安全性 |
-{.wide}
+{.wide .expand}
 
 两个官方镜像仓库（`https://repo.pigsty.io/barn` 与 `https://repo.pigsty.cc/barn`）无论通过默认配置还是 `--repo` 显式选中，均强制要求有效的 minisign 目录签名。通过 `--repo` 或 `BARN_REPO` 显式指定的自定义 HTTPS 仓库或本地目录仓库可以使用未签名目录，请仅添加你信任的镜像源（详见[镜像参考](../../reference/images/)）。
 

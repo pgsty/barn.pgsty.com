@@ -36,7 +36,7 @@ This reference covers the **Barn 0.9.3** command interface and `Barn.app` (runne
 | `image update` | Download and prepare Apple's latest macOS 27 build as the default base image |
 | `image prune` | List unused images, or delete them when `--yes` is passed |
 | `doctor` | Check host eligibility, `Barn.app`, base images, and every VM slot |
-{.wide}
+{.wide .expand}
 
 ### SSH and exec {#ssh-and-exec}
 
@@ -73,7 +73,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 | `setup` | `--ipsw`, `--disk`, `-y`/`--yes` |
 | `image update` | `--ipsw`, `-y`/`--yes` |
 | `image prune` | `--installers`, `-y`/`--yes` |
-{.wide}
+{.wide .expand}
 
 When a VM name is optional, omitting it selects the only existing VM or `mac1`; if multiple VMs exist and none is named `mac1`, Barn asks you to specify a name. `start` and `stop` accept multiple names or `--all`. `destroy` and `recreate` print what will be deleted and prompt for the command name on a terminal (pass `--force` in non-interactive scripts).
 
@@ -90,7 +90,7 @@ When a VM name is optional, omitting it selects the only existing VM or `mac1`; 
 | `--share` | `[name=]path[:ro\|:rw]`, repeatable; `name` defaults to the last path component and `~/` expands to your home directory |
 | `--clipboard` | `on` or `off` (also accepts `true`/`false`, `yes`/`no`; default `on`) |
 | `--subnet` | Canonical private `/24` such as `10.10.30.0/24`, or `auto` for the first free subnet |
-{.wide}
+{.wide .expand}
 
 If you run `up` on an existing VM with creation flags that differ from its recorded settings, `up` exits with `mac_configuration_conflict` and prints the exact `configure` or `recreate` command in `next:`:
 
@@ -118,7 +118,7 @@ Each VM's runner process creates an isolated user-space network at startup and t
 | Gateway | `.1` on the Mac host |
 | Guest IP | `.10`, assigned via a `vmnet` DHCP reservation for the VM's MAC address |
 | Topology | Host-to-guest routing and outbound NAT per VM subnet, with no LAN bridging or inbound port forwards |
-{.wide}
+{.wide .expand}
 
 If a newly added host route (such as a VPN) overlaps the VM's saved subnet, `start` refuses to boot with `mac_subnet_in_use`; run `barn mac configure NAME --subnet auto` to move the VM to a free subnet. Because Barn pins SSH host keys to `barn-mac-<instance_id>` rather than the IP address, changing subnets keeps SSH trust intact.
 
@@ -173,7 +173,7 @@ All `barn mac` commands except interactive `ssh` support `--json` and `--yaml` o
 | `observed` | Present when the running guest reports a macOS build different from its base image |
 | `window_visible` | Present while the VM's desktop window is open |
 | `error`, `warnings` | Last recorded failure on the slot and any SSH issues detected during this check |
-{.wide}
+{.wide .expand}
 
 ### Lifecycle results
 
@@ -190,7 +190,7 @@ Single-machine operations (`up`, `restart`, `open`, `recreate`, `configure`) ret
 | `forced` | `true` when `stop` timed out and powered off the VM |
 | `window` | `true` when the desktop window was opened |
 | `warnings` | Non-fatal notices, such as a clipboard change that takes effect on next start |
-{.wide}
+{.wide .expand}
 
 Other structured responses:
 
@@ -222,7 +222,7 @@ Exit codes follow the [Barn CLI exit code table](../cli/#exit-codes), and `ssh`/
 | `disk_full` | `6` | Insufficient free disk space to download or install the macOS base image |
 | `mac_machine_damaged` | `7` | An initialized VM slot is missing its disk or identity files (the slot directory is preserved for inspection) |
 | `mac_readiness_interrupted` | `130` | `barn mac stop` interrupted a first-boot SSH readiness wait |
-{.wide}
+{.wide .expand}
 
 ## Files
 

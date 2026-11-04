@@ -299,6 +299,7 @@ params:
   page_width: normal
   reading_width: normal
   ui:
+    compare: true
     preset: paper
     preset_menu: [paper, slate, ink, terminal]
     typography: technical

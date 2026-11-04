@@ -15,7 +15,7 @@ Barn 通过同一个命令行入口提供两套独立的虚拟化工作流：多
 | 状态目录 | `$BARN_HOME`（默认 `~/.barn`） | `$BARN_HOME/mac`（默认 `~/.barn/mac`） |
 | 网络模型 | 用户态管理网卡 + 共享固定 IP `/24` 实验子网 | 每台虚拟机独立的 `/24` NAT 子网与 `.10` DHCP 预留 |
 | 典型场景 | 数据库集群、Ansible 剧本演练、多节点 Linux 联调 | macOS 编译打包、桌面应用测试、隔离开发环境 |
-{.wide}
+{.wide .expand}
 
 下文概述 Linux 实验环境的核心设计；各模块的深层设计取舍请阅读[设计注记](/zh/blog/design/)，原生 macOS 工作流请查阅[macOS 客机指南](../../start/macos/)与 [Mac 命令参考](../../reference/mac/)。
 

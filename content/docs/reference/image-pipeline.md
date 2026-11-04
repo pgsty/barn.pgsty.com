@@ -26,7 +26,7 @@ Host requirements:
 | `el8` | Base normalization plus Python 3, SSH drop-in include, legacy network cleanup, `chronyd`, and SELinux relabeling | Locked RPM dependency set |
 | `el9` | Base normalization plus legacy network cleanup and SELinux relabeling | None (package flags rejected) |
 | `d12`, `d13` | Base normalization plus offline XFS userspace tools and `en_US.UTF-8` / `C.UTF-8` locale setup | Locked DEB dependency set |
-{.wide}
+{.wide .expand}
 
 `validate` mode accepts only `--profile base`. In `offline` mode, `el8`, `d12`, and `d13` require both `--package-lock` and `--package-cache` matching the profile and architecture. For official catalog targets, use `build-official.py` to drive these inputs automatically.
 
@@ -96,6 +96,6 @@ Each completed output bundle contains:
 | `validation.json` | Before/after `qcow2` checks, normalization marker results, and pending release gates |
 | `checksums.txt` | SHA-256 checksums of all files in the bundle |
 | `package-lock.json` | Included when the profile installs locked RPM/DEB packages |
-{.wide}
+{.wide .expand}
 
 With fixed inputs and tool versions, `validate` mode is byte-for-byte reproducible; for `offline` mode, build the candidate twice and compare the bundles when preparing release evidence. Promoting a candidate to a public `supported` release requires running live VM smoke tests across target host/guest combinations, updating `repo.yaml` with the new catalog `revision` and `supported` status, running `barn repo build` and `barn repo verify`, signing `catalog.json.minisig`, and verifying the published repository endpoints.

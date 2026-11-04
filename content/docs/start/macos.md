@@ -240,6 +240,7 @@ barn mac destroy dev
 | `configure` | Preserved | Updated as requested |
 | `recreate` | Replaced with a fresh macOS clone | Preserved (generates new login password and SSH keys) |
 | `destroy` | Deleted | Deleted (base image is retained) |
+{.wide .expand}
 
 ## macOS versions and disk space
 

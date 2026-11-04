@@ -46,7 +46,7 @@ lastmod: 2026-10-30
 | `recreate` | 节点的硬件规格、镜像、磁盘或共享目录定义发生变化 | 显式运行 `barn recreate <node>`（脚本中可加 `--force`） |
 | `missing` | 已提交的节点在当前清单中缺席，或被标为 `vm_skip: true` | 显式运行 `barn destroy <node>`，或在 `barn.yml` 中恢复该节点 |
 | 部署级信封漂移 | 子网、登录用户名、`vm_arch` 或全局运行时策略改变 | 整套部署执行 `barn recreate` |
-{.wide}
+{.wide .expand}
 
 `barn plan` 完全只读，并在文本模式下直接给出解决 `recreate` 或 `missing` 漂移所需的具体命令。
 

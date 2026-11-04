@@ -33,7 +33,7 @@ Running `barn` with no arguments prints a welcome summary and suggested next com
 | Host network | `network status/install/uninstall` |
 | macOS guests | `mac …` — see [Mac Commands](../mac/) |
 | Misc | `version`, `completion` |
-{.wide}
+{.wide .expand}
 
 Ordinary commands read the active local image catalog without contacting remote repositories. Run `barn update` to fetch, verify, and activate the configured repository's catalog, or `barn image sync` to recover a catalog from an exact URL or local file. Neither command replaces the `barn` executable.
 
@@ -47,7 +47,7 @@ Frequently used commands define short aliases within their scope:
 | `ssh-config` | `sc` | `image` | `images`, `im` |
 | `doctor` | `dt` | `network` | `n`, `net` |
 | `exec` / `logs` | `ex` / `l` | `version` | `ver` |
-{.wide}
+{.wide .expand}
 
 `up`, `ssh`, `init`, `start`, `stop`, `restart`, `reload`, `provision`, `hosts`, `purge`, and `completion` have no top-level shorthand (`rm` is not an alias for `purge`). Inside subcommand groups, `hosts` and `network` map `i`/`u` to `install`/`uninstall`, `network status` accepts `st`, and `image` maps `list=ls`, `info=in`, `pull=p`, `prune=pr`, `sync=sy`, and `import=i`.
 
@@ -60,7 +60,7 @@ Barn manages a single deployment per `BARN_HOME` (default `~/.barn`; see [Config
 | `validate` | Explicit `-f`, then local discovery; never falls back to applied state |
 | `plan`, `up`, `reload`, `recreate`, `resize` | Explicit `-f`, then local discovery, then the applied deployment specification |
 | Other lifecycle & access commands | Operate directly on applied state in `BARN_HOME` |
-{.wide}
+{.wide .expand}
 
 When neither an inventory file nor an applied deployment exists, an interactive `barn up` can generate the default `meta` inventory, install missing host dependencies, and bring up an inactive Barn host network (sudo may still prompt for your OS password). To inspect host preparation before applying it, run `barn setup --dry-run`; in non-interactive scripts, run `barn setup --yes` explicitly.
 
@@ -85,7 +85,7 @@ If the default `10.10.10.0/24` subnet conflicts with an existing host route whil
 | `--rollback` (`up`, `reload`) | Clean up uncommitted preparation artifacts for nodes that failed during the current run |
 | `--delete-persistent` | Delete `persistent: true` data disks during a whole-deployment `destroy` |
 | `--purge` | Delete all deployment disks, SSH keys, and state during a whole-deployment `destroy`, while keeping cached base images |
-{.wide}
+{.wide .expand}
 
 Each command exposes only the flags that apply to its operation:
 
@@ -115,7 +115,7 @@ Each command exposes only the flags that apply to its operation:
 | `network install` | `--cidr/-c` (default `10.10.10.0/24`), `--mode/-m` (default `host`), `--yes/-y`; macOS-only `--archive/-a`, `--interface-id/-i` |
 | `network status` | Optional `--cidr/-c` |
 | `network uninstall`, `hosts install/uninstall` | `--yes/-y` |
-{.wide}
+{.wide .expand}
 
 Notes on flag behavior:
 
@@ -197,7 +197,7 @@ When one or more nodes fail during a batch operation, Barn preserves any nodes t
 | `BARN_VERBOSE` | Boolean default for diagnostic output; overridden by `-v`/`--verbose` |
 | `BARN_VMNET_ARCHIVE` | Path to a local pinned `socket_vmnet` archive for macOS setup; Barn 0.9.3 also accepts relative paths, `~/`, and symlinks (SHA-256 verification still applies) |
 | `NO_COLOR` | Any non-empty value disables ANSI color output |
-{.wide}
+{.wide .expand}
 
 ## SSH passthrough and completion {#ssh-passthrough-and-completion}
 
@@ -238,7 +238,7 @@ Generate shell completion with `barn completion bash|zsh|fish|powershell` (for B
 | `6` | `resource` | Host IP address, port, subnet, or disk path is already in use |
 | `7` | `integrity` | Digest, signature, instance identity, or file ownership verification failed |
 | `130` | `cancelled` | Interrupted by `SIGINT`/`SIGTERM` or interactive confirmation declined |
-{.wide}
+{.wide .expand}
 
 When another `barn` process holds the deployment lock, mutating commands wait up to 10 minutes while reporting the lock holder, then exit `4` with `reason: "deployment_busy"` on timeout. Read-only and access commands (`status`, `ssh`, `exec`, `ssh-config`, `hosts`) do not wait on the lock; `status` displays the last committed state and notes the active operation in `note`.
 

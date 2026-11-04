@@ -14,7 +14,7 @@ Barn is an Apache-2.0 open-source project. Contributions to the CLI, native macO
 | CLI behavior, VM lifecycle, native macOS component (`Barn.app`), installer, and packages | [`pgsty/barn`](https://github.com/pgsty/barn) |
 | Documentation site, guides, command reference, and translations | [`pgsty/barn.pgsty.com`](https://github.com/pgsty/barn.pgsty.com) |
 | Official Linux image definitions or offline normalization rules | `packaging/image-repository/` and `packaging/image-pipeline/` in [`pgsty/barn`](https://github.com/pgsty/barn) |
-{.wide}
+{.wide .expand}
 
 When filing a bug report, include `barn version`, your host OS and architecture, the exact command you ran, and the error output with private keys and passwords removed. Report security vulnerabilities privately via the [security policy](https://github.com/pgsty/barn/blob/main/SECURITY.md). For major behavioral changes, open an issue first to align on the design, and see [`CONTRIBUTING.md`](https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md) for coding and pull-request conventions.
 
@@ -31,7 +31,7 @@ Tag **`v0.9.3`** is the published baseline. The Barn 0.9.3 behavior from source 
 | Image catalog trust, `qcow2` verification, and repository build tools | `internal/image/`, `tools/catalogexport/`, `tools/catalogsign/` |
 | Native macOS VM lifecycle and desktop app | `internal/macvm/`, `native/mac-runner/` |
 | Packaging, CI workflows, and integration suites | `packaging/`, `.github/workflows/`, `tests/` |
-{.wide}
+{.wide .expand}
 
 Read each package's tests alongside the implementation—they codify the exact boundary between automatic recovery and fail-closed safety checks.
 
@@ -64,7 +64,7 @@ Validate the website repository with:
 make check
 ```
 
-`make check` verifies the Go module graph, builds the site with Hugo Extended against the pinned OINK `v1.4.0` module (clearing any local theme replacements and disabling Go workspaces), and runs `bin/check_internal_links.py public` to verify all internal links, anchors, and assets. When testing against a local sibling OINK checkout, use `make check-local` or `make build-local`. Check CLI examples against `barn <command> --help` and test inventory examples with `barn validate` and `barn plan` using a temporary `BARN_HOME`.
+`make check` verifies the Go module graph, builds the site with Hugo Extended against the pinned OINK `v1.5.0` module (clearing any local theme replacements and disabling Go workspaces), and runs `bin/check_internal_links.py public` to verify all internal links, anchors, and assets. When testing against a local sibling OINK checkout, use `make check-local` or `make build-local`. Check CLI examples against `barn <command> --help` and test inventory examples with `barn validate` and `barn plan` using a temporary `BARN_HOME`.
 
 ## Release outputs and gates
 

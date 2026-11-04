@@ -71,7 +71,7 @@ images/d13-20260810.2566.0-arm64.qcow2
 | `barn repo scan /srv/barn` | 只读巡检：报告已跟踪、`missing`（缺失）、`untracked`（未声明）与 `unsafe`（不安全）的文件，不修改任何内容 |
 | `barn repo build /srv/barn` | 严格校验 `repo.yaml` 与全部声明的 `.qcow2` 文件，通过后原子生成 `catalog.json` |
 | `barn repo verify /srv/barn` | 在内存中重新构建目录，并要求与磁盘上已发布的 `catalog.json` 逐字节完全一致 |
-{.wide}
+{.wide .expand}
 
 `barn repo build` 绝不修改 `repo.yaml` 或 `.qcow2` 文件本身；而 `barn repo verify` 则能捕捉到策略文件、镜像文件与 `catalog.json` 之间的任何不一致。发布仓库更新时，请务必先上传不可变的 `.qcow2` 镜像文件，最后同步更新 `catalog.json` 与 `catalog.json.minisig`，避免客户端读到新目录时镜像文件尚未上传完毕。
 

@@ -17,7 +17,7 @@
   <a href="https://barn.pgsty.com/zh/">中文</a>
 </p>
 
-This repository contains the bilingual documentation and blog site for Barn, published in English at `/` and Simplified Chinese at `/zh/`. The site builds with the latest Hugo Extended release and the [OINK `v1.4.0`](https://oink.pgsty.com/) theme.
+This repository contains the bilingual documentation and blog site for Barn, published in English at `/` and Simplified Chinese at `/zh/`. The site builds with the latest Hugo Extended release and the [OINK `v1.5.0`](https://oink.pgsty.com/) theme.
 
 Paper is the default visual preset. Readers can switch between Paper, Slate, Ink, and Terminal independently of light or dark mode from the Appearance menu.
 

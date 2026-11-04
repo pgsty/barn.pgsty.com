@@ -68,6 +68,7 @@ barn recreate node-1            # rebuild a node whose VM specification changed
 | `resize` | Node CPU or memory changed | `barn resize <node>` |
 | `recreate` | Node image, disk, share, or other VM specification changed | `barn recreate <node>` |
 | `missing` | Provisioned node was removed from the inventory YAML | Restore the YAML entry, or run `barn destroy <node>` |
+{.wide .expand}
 
 In JSON output, `create`, `recreate`, and `missing` are node lists. The top-level `action` summarizes the plan (for example `converge`, `recreate`, or `blocked-removal`); `blocked`, when present, is an explanation string.
 

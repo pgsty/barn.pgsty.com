@@ -75,7 +75,7 @@ Barn reads node IPv4 keys, `nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node
 | `vm_disks` | `[{path: /data}]` | Extra data disks (defaults to one 128 GiB non-persistent disk mounted at `/data`) |
 | `vm_alias` | `[]` | Additional guest `/etc/hosts`, SSH config, and optional host `/etc/hosts` aliases |
 | `vm_shares` | `[]` | QEMU 9p host-directory shares on Linux and macOS hosts |
-{.wide}
+{.wide .expand}
 
 An empty host mapping (`10.10.10.10: {}`) is enough to define a complete VM with default settings. There is no separate 20-node ceiling; managed nodes need distinct usable addresses in the configured `/24`.
 

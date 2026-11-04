@@ -27,7 +27,7 @@ Barn `0.9.3` 内置镜像目录 `2026102802`，涵盖 9 个发行版系列、共
 | `u22` | `20261017.0.1` | `ubuntu22`、`ubuntu2204`、`jammy` |
 | `u24` | `20261017.0.1` | `ubuntu`、`ubuntu24`、`ubuntu2404`、`noble` |
 | `u26` | `20261016.0.1` | `ubuntu26`、`ubuntu2604`、`resolute` |
-{.wide}
+{.wide .expand}
 
 发行版说明：
 
@@ -46,7 +46,7 @@ Barn `0.9.3` 内置镜像目录 `2026102802`，涵盖 9 个发行版系列、共
 | `el10` | Rocky Linux 10.0 | `amd64`、`arm64` | UEFI | `deprecated` |
 | `d12`、`d13` | Debian 12 / 13 | `amd64`、`arm64` | UEFI | `supported` |
 | `u22`、`u24`、`u26` | Ubuntu 22.04 / 24.04 / 26.04 LTS | `amd64`、`arm64` | UEFI | `supported` |
-{.wide}
+{.wide .expand}
 
 ```bash
 barn image list

@@ -26,7 +26,7 @@ Piglet `1.0.0-rc.6` 是在两类 Tier 1 原生虚拟化平台（`macOS arm64 / H
 | 通道 | `development` |
 | 签名 / 证明 | `false` / `false` |
 | 指定 `full` 配置模板 SHA-256 | `912fea61bf1602c2a437570561a6ab4d0a5a8c152695147ad9e96ae831bc9336` |
-{.wide}
+{.wide .expand}
 
 ## 四个原生产品场景
 
@@ -36,7 +36,7 @@ Piglet `1.0.0-rc.6` 是在两类 Tier 1 原生虚拟化平台（`macOS arm64 / H
 | Linux `amd64` / KVM | Quick | PASS | Ubuntu 24.04.4、`dba` UID/GID 88、2 vCPU、64 GiB 根盘、64 GiB `/data` |
 | macOS `arm64` / HVF | 指定 `full` | PASS | `.10`–`.13`、UID 88、64 GiB 根盘、128 GiB 数据盘、2/1/1/1 vCPU、四节点互通 |
 | Linux `amd64` / KVM | 指定 `full` | PASS | `.10`–`.13`、UID 88、64 GiB 根盘、128 GiB 数据盘、2/1/1/1 vCPU、四节点互通 |
-{.wide}
+{.wide .expand}
 
 八台 `full` 场景客机全部正常启动 Ubuntu 24.04.4 并通过契约断言；测试结束后通过 CLI 正常销毁项目，并按预期保留了共享镜像缓存、项目标记与密钥。
 
@@ -68,7 +68,7 @@ macOS 默认支持模式为 `socket_vmnet` `host` 模式；`shared` 模式作为
 | Darwin `arm64` | `308310b0f2d179f98c8be78ea09f89d226167072c936387bc42d717a922ec0c6` |
 | Linux `amd64` | `547a61f6cc0768071df349cbf5c17d7ddfe3ab3cea59e6b4026e3e3e616a5550` |
 | Linux `arm64` | `afc9ce1043d377cc3b4ef8bdf77826a8139a8c839685025853e8bee8100c6a2e` |
-{.wide}
+{.wide .expand}
 
 ## 公开发布前待办项
 

@@ -22,7 +22,7 @@ Pigsty 主机清单依靠固定 IPv4 地址标识每个数据库节点：Postgre
 |---|---|---|
 | 管理网卡 | QEMU 用户态 NAT（`slirp`）、DHCP | 提供 DNS、默认路由、互联网出站访问与宿主回环端口 SSH 转发 |
 | 固定 IP 实验网卡（按 MAC 绑定） | 清单声明的 RFC1918 `/24` 静态地址 | 承载宿主到节点、节点与节点之间、Ansible、Pigsty 服务与二层 VIP 流量 |
-{.wide}
+{.wide .expand}
 
 Barn 通过确定性的 MAC 地址在客机内绑定两张虚拟网卡，而不依赖因发行版而异的内核网卡名（如 `eth0` 或 `enp0s4`）：
 
@@ -41,7 +41,7 @@ Barn 通过确定性的 MAC 地址在客机内绑定两张虚拟网卡，而不�
 | `.1` | 宿主侧私网网关地址 |
 | `.2`–`.8` | 保留地址段（可供二层 VIP 使用，同时作为 macOS `vmnet` 内置 DHCP 池的上限边界） |
 | `.9`–`.254` | `barn.yml` 中声明的节点固定地址 |
-{.wide}
+{.wide .expand}
 
 由于客机私网网卡不走 DHCP，而是由 `cloud-init` 直接写入 `barn.yml` 中声明的静态地址（macOS 上 `socket_vmnet` 的 DHCP 池截止到 `.8`；Linux 上 `barn0` 网桥直接使用静态地址），节点 IP 完全不依赖租约数据库，Ansible 从首次连接到后续重启始终使用同一个地址。
 

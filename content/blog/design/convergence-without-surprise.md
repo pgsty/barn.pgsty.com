@@ -46,7 +46,7 @@ Adding a second node leaves the first node's hash untouched, and editing upper-l
 | `recreate` | Node's hardware, image, disk, or share definition changed | `barn recreate <node>` (or `--force` in scripts) |
 | `missing` | Committed node is absent or marked `vm_skip: true` in the inventory | `barn destroy <node>`, or restore the node to `barn.yml` |
 | Envelope drift | Deployment subnet, login user, `vm_arch`, or runtime policy changed | Whole-deployment `barn recreate` |
-{.wide}
+{.wide .expand}
 
 `barn plan` is completely read-only and prints the exact command needed to resolve any `recreate` or `missing` drift.
 

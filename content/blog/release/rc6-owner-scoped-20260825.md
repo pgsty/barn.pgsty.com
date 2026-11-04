@@ -26,7 +26,7 @@ Piglet `1.0.0-rc.6` was a local development candidate that validated the Quick a
 | Channel | `development` |
 | Signature / attestation | `false` / `false` |
 | Exact `full` profile SHA-256 | `912fea61bf1602c2a437570561a6ab4d0a5a8c152695147ad9e96ae831bc9336` |
-{.wide}
+{.wide .expand}
 
 ## Four native product scenarios
 
@@ -36,7 +36,7 @@ Piglet `1.0.0-rc.6` was a local development candidate that validated the Quick a
 | Linux `amd64` / KVM | Quick | PASS | Ubuntu 24.04.4, `dba` UID/GID 88, 2 vCPU, 64 GiB root, 64 GiB `/data` |
 | macOS `arm64` / HVF | Exact `full` | PASS | `.10`–`.13`, UID 88, 64 GiB roots, 128 GiB data disks, 2/1/1/1 vCPU, 4-way peer mesh |
 | Linux `amd64` / KVM | Exact `full` | PASS | `.10`–`.13`, UID 88, 64 GiB roots, 128 GiB data disks, 2/1/1/1 vCPU, 4-way peer mesh |
-{.wide}
+{.wide .expand}
 
 All eight `full`-profile guests booted Ubuntu 24.04.4, passed contract assertions, and were cleanly destroyed afterward while retaining shared image caches, project markers, and keys.
 
@@ -68,7 +68,7 @@ Two independent local RC6 build trees produced byte-identical archives, checksum
 | Darwin `arm64` | `308310b0f2d179f98c8be78ea09f89d226167072c936387bc42d717a922ec0c6` |
 | Linux `amd64` | `547a61f6cc0768071df349cbf5c17d7ddfe3ab3cea59e6b4026e3e3e616a5550` |
 | Linux `arm64` | `afc9ce1043d377cc3b4ef8bdf77826a8139a8c839685025853e8bee8100c6a2e` |
-{.wide}
+{.wide .expand}
 
 ## Remaining work before public release
 

@@ -18,7 +18,7 @@ icon: fa-solid fa-clock-rotate-left
 | CLI 与配置文件 | `barn`、`barn.yml`、`BARN_*` | 全面启用新命令名与环境变量，不保留旧内部名称回退 |
 | 状态与宿主资源 | `~/.barn`、Barn 网络与 `barn-hosts-helper` | 使用全新 `~/.barn` 状态目录，不迁移更名前的旧开发状态 |
 | 镜像仓库 | 官方端点 `/barn` 路径 | 强制校验 minisign 镜像目录签名 |
-{.wide}
+{.wide .expand}
 
 ## macOS 客机 {#macos-guests}
 
@@ -65,7 +65,7 @@ icon: fa-solid fa-clock-rotate-left
 | macOS `arm64` | HVF 宿主、Rocky Linux 8.10 `arm64` TCG 兼容规则 | 2026-08-28 | 启动、`stop`/`start` 并在 `44.2 秒`内达到 SSH 就绪 |
 | 已发布镜像目录 `2026090501` | 9 个系列、27 个 `qcow2` 产物 | 2026-09-05 | 产物校验、内置与公网字节一致，以及两个官方端点的签名 `barn update` 通过 |
 | 已发布镜像目录 `2026082903` | 9 个系列、27 个签名 `qcow2` 产物 | 2026-08-29 | 19 GiB 全量 SHA-256 校验与干净客户端拉取 `d13:stable` 通过 |
-{.wide}
+{.wide .expand}
 
 在 `0.8.0` 四机验收中，每台宿主均实测了 Rocky Linux 9.8/10.2、Debian 12.15/13.7 与 Ubuntu 22.04.5/24.04.5/26.04.1（共 28 个客机实例全部通过，验收后已清理测试虚拟机）。两个公网端点提供的镜像目录 `2026092001` 摘要均为 `23e8dbf6c19bd192d56c6d71eb30901f17945b3487e427a43abe108463780306`，并通过了隔离客户端 `barn update` 验签以及 10 个新增镜像对象的 HTTP `HEAD` 长度核对。
 

@@ -17,6 +17,7 @@ Barn 0.9.3 ships archives for macOS and Linux on **arm64 and amd64**, along with
 | `barn` | Go CLI for Linux labs and macOS VM lifecycle | All four platform archives and Linux packages |
 | `barn-hosts-helper` | Companion binary for `/etc/hosts` name integration | Packaged alongside its matching CLI |
 | `Barn.app` | Native `Virtualization.framework` runner and macOS guest desktop | Included in the Darwin arm64 archive and Apple Silicon Homebrew install; macOS guests only |
+{.wide .expand}
 
 ## Install the release
 
@@ -60,7 +61,7 @@ When you run `barn up` interactively for the first time, Barn checks for any mis
 | Linux | macOS, Apple Silicon or Intel | QEMU 8.2.1+, HVF |
 | Linux | Linux, arm64 or amd64 | QEMU 6.2+, usable KVM, NetworkManager or systemd-networkd |
 | macOS 27 | Apple Silicon, macOS 27+, logged-in desktop session | `Barn.app` native component; no QEMU required |
-{.platform-table}
+{.platform-table .wide .expand}
 
 A default Linux VM uses **2 vCPUs and 4 GiB of memory**, backed by thin-provisioned `qcow2` disks (64 GiB root disk and 128 GiB test data disk) that grow as data is written.
 
@@ -124,5 +125,6 @@ Barn decouples CLI upgrades from guest image updates so existing VMs never chang
 | Barn CLI, helper & bundled app | Reinstall or `brew upgrade` | Preserves all VM disks and state |
 | Linux image catalog | `barn update` (or `barn update --mirror`) | Updates catalog for new or `recreate`d nodes |
 | macOS base image | `barn mac image update` | Prepares a new base image; apply to an existing VM with `barn mac recreate NAME --update` |
+{.wide .expand}
 
 For proxy or `PATH` issues, see [Troubleshooting](../troubleshooting/#download-and-path-problems). To remove Barn and its host state, see [Uninstall and Clean Up](../uninstall/).

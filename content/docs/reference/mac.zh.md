@@ -36,7 +36,7 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 | `image update` | 下载 Apple 最新的 macOS 27 构建并准备为默认基础镜像 |
 | `image prune` | 列出未使用的镜像；传入 `--yes` 时执行删除 |
 | `doctor` | 检查宿主环境、`Barn.app` 组件、基础镜像与每台虚拟机槽位 |
-{.wide}
+{.wide .expand}
 
 <span id="ssh-and-exec"></span>
 
@@ -75,7 +75,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 | `setup` | `--ipsw`、`--disk`、`-y`/`--yes` |
 | `image update` | `--ipsw`、`-y`/`--yes` |
 | `image prune` | `--installers`、`-y`/`--yes` |
-{.wide}
+{.wide .expand}
 
 对于名称可省略的命令，不传名称时会选中唯一的虚拟机或 `mac1`；若存在多台虚拟机且没有 `mac1`，命令会提示你显式指定名称。`start` 与 `stop` 支持传入多个名称或 `--all`。`destroy` 与 `recreate` 会先列出即将删除的内容，并在终端上要求输入命令名称确认（无终端脚本中请传 `--force`）。
 
@@ -92,7 +92,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 | `--share` | `[name=]path[:ro\|:rw]`，可重复指定，不再另设 8 个共享的上限；`name` 默认取路径最后一段，`~/` 会展开为用户主目录 |
 | `--clipboard` | `on` 或 `off`（也接受 `true`/`false`、`yes`/`no`；默认 `on`） |
 | `--subnet` | 规范的私有 `/24` 网段（如 `10.10.30.0/24`），或用 `auto` 自动选择第一个空闲网段 |
-{.wide}
+{.wide .expand}
 
 对已存在的虚拟机运行 `up` 时，若传入的创建参数与现有设置不一致，`up` 会以 `mac_configuration_conflict` 拒绝执行，并在 `next:` 行给出对应的 `configure` 或 `recreate` 命令：
 
@@ -120,7 +120,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 | 网关 | `.1`（宿主 Mac） |
 | 客机地址 | `.10`（按虚拟机 MAC 地址通过 `vmnet` DHCP 保留固定分配） |
 | 连通范围 | 支持宿主与客机互访及通过 NAT 访问外网；各虚拟机使用独立子网，不桥接物理局域网，也不做入站端口转发 |
-{.wide}
+{.wide .expand}
 
 如果宿主新增的路由（如 VPN 路由）占用了虚拟机已保存的网段，`start` 会以 `mac_subnet_in_use` 拒绝启动；此时执行 `barn mac configure NAME --subnet auto` 即可改换到空闲网段。由于 SSH 主机密钥绑定在虚拟机实例标识 `barn-mac-<instance_id>` 而非 IP 地址上，更换网段不会破坏 SSH 信任链。
 
@@ -175,7 +175,7 @@ macOS 的“本地网络”隐私权限有时会拦截第三方终端或 IDE 访
 | `observed` | 运行中客机报告的 macOS 版本与基础镜像不一致时出现 |
 | `window_visible` | 桌面窗口处于打开状态时出现 |
 | `error`、`warnings` | 最近一次记录的槽位错误，以及本次检查发现的 SSH 告警 |
-{.wide}
+{.wide .expand}
 
 ### 生命周期结果
 
@@ -192,7 +192,7 @@ macOS 的“本地网络”隐私权限有时会拦截第三方终端或 IDE 访
 | `forced` | 正常关机超时、转为强制断电时为 `true` |
 | `window` | 本次操作打开了桌面窗口时为 `true` |
 | `warnings` | 非致命提示（例如剪贴板变更将在下次启动时生效） |
-{.wide}
+{.wide .expand}
 
 其他命令的 JSON 输出：
 
@@ -224,7 +224,7 @@ macOS 的“本地网络”隐私权限有时会拦截第三方终端或 IDE 访
 | `disk_full` | `6` | 磁盘剩余空间不足以下载或安装 macOS 基础镜像 |
 | `mac_machine_damaged` | `7` | 已完成过初始化的虚拟机丢失了磁盘或身份文件（其槽位目录会原样保留供排查） |
 | `mac_readiness_interrupted` | `130` | `barn mac stop` 中断了首次启动期间的 SSH 就绪等待 |
-{.wide}
+{.wide .expand}
 
 ## 文件
 

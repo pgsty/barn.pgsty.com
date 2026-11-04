@@ -15,7 +15,7 @@ Barn provides two distinct virtualization workflows through one CLI: multi-node 
 | State directory | `$BARN_HOME` (default `~/.barn`) | `$BARN_HOME/mac` (default `~/.barn/mac`) |
 | Networking | User-mode management NIC + shared fixed-IP `/24` lab subnet | Dedicated `/24` NAT subnet and DHCP `.10` reservation per VM |
 | Primary workloads | Database clusters, Ansible playbooks, multi-node Linux testing | macOS builds, GUI testing, isolated desktop environments |
-{.wide}
+{.wide .expand}
 
 The sections below summarize the Linux lab architecture; for the deeper rationale behind each decision, see the [Design Essays](/blog/design/), and for macOS guests see [macOS Guests](../../start/macos/) and [Mac Commands](../../reference/mac/).
 
