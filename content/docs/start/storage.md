@@ -6,7 +6,7 @@ weight: 40
 icon: fa-solid fa-hard-drive
 ---
 
-This guide covers disk configuration, file transfer, and service access for Linux labs in **Barn 0.9.3**. It builds on the [Linux Quick Start](../tutorial/) using node `meta` at `10.10.10.10`.
+This guide covers disk configuration, file transfer, and service access for Linux labs. It builds on the [Linux Quick Start](../tutorial/) using node `meta` at `10.10.10.10`.
 
 ## Configure disks before creating the VM
 
@@ -61,7 +61,7 @@ Disk sizes (`size: 64` or `size: 64GiB`) are thin-provisioned virtual capacities
 Barn matches retained persistent disks by disk identity and specification: to reattach a retained disk across `recreate` or after `destroy`, keep the node name, mount `path`, `size`, and `fs` type identical. Barn rejects mismatched retained disks rather than attempting in-place resizing, renaming, or filesystem conversion.
 
 > [!WARNING]
-> **Persistent disks are still disposable test storage.** `persistent: true` preserves the disk across ordinary `destroy` and `recreate` runs, but during guest recovery `barn up` will still reformat a filesystem that is unrecognized or confirmed damaged (reporting the reset in `nodes[].repairs`). Transient device absences, failed probes, busy mounts, and host I/O errors never trigger formatting. Keep backups of valuable data on the host.
+> **Persistent disks are still disposable test storage.** `persistent: true` preserves the disk across ordinary `destroy` and `recreate` runs, but during guest recovery `barn up` still resets an ext4 or XFS data filesystem when the filesystem checker reports recognized corruption (reporting the reset in `nodes[].repairs`). A disk with a partition table, a signature without a UUID, unsupported filesystem features, or an unknown checker failure keeps its data and reports a warning, and transient device absences, failed probes, busy mounts, and host I/O errors never trigger formatting. Keep backups of valuable data on the host.
 
 Newly formatted data filesystems are owned by `root`. You can verify that data written to `/data` persists across a `stop` and `start` cycle:
 

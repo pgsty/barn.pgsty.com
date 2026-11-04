@@ -1,6 +1,6 @@
 ---
 title: Security and Trust
-description: Host privileges, guest credentials, shared folders, and the separate trust boundaries in Barn 0.9.3.
+description: Host privileges, guest credentials, shared folders, and the separate trust boundaries in Barn 1.0.0.
 weight: 25
 icon: fa-solid fa-shield-halved
 ---
@@ -18,7 +18,9 @@ Always run `barn` as your normal desktop or shell user. QEMU processes, `Barn.ap
 | `barn hosts install` / `uninstall` | Updates only Barn's marker-delimited block in `/etc/hosts` through the dedicated `barn-hosts-helper` binary |
 {.wide .expand}
 
-Before prompting for `sudo`, `setup`, `network`, and `hosts` display the exact plan they will execute. Keep `barn` and `/opt/barn/libexec/barn-hosts-helper` installed from the same release build: the CLI verifies the helper's embedded SHA-256 digest before invoking it, and the helper checks `/etc/hosts` ownership, permissions, link count, and pre/post content digests on every write.
+Before prompting for `sudo`, `setup`, `network`, and `hosts` display the exact plan they will execute. On a terminal, `up`, `start`, `restart`, and `reload` can offer to prepare a host that lacks a dependency or an intact Barn network; they run the same `setup` plan with the same single confirmation and never assume `--yes`. Without a terminal they only report what is missing, so run `barn setup --yes` for unattended preparation.
+
+Keep `barn` and `/opt/barn/libexec/barn-hosts-helper` installed from the same release build: the CLI verifies the helper's embedded SHA-256 digest before invoking it, and the helper checks `/etc/hosts` ownership, permissions, link count, and pre/post content digests on every write.
 
 By contrast, `barn mac` creates per-VM user-space `vmnet` networks on demand without any root daemon or privileged network setup (see [Design](../design/) and [Uninstall](../../start/uninstall/)).
 
@@ -40,7 +42,7 @@ Each macOS VM generates its own Ed25519 SSH keypair and random local administrat
 ## Shared folders and disposable disks
 
 - **Host directory shares**: Writable shares (`readonly: false` in Linux `vm_shares` or `:rw` in `barn mac --share`) grant guest processes direct write access to the shared host directory, and changes made inside the shared directory persist after the VM is destroyed. Share dedicated project folders and prefer read-only shares whenever guests do not need to modify host files.
-- **Persistent and disposable data disks**: Ordinary Linux `destroy` and `recreate` retain `persistent: true` data disks, while `up` automatically formats unrecognized or confirmed-corrupt data-disk filesystems during recovery. Keep important data backed up on the host (see [Storage and Access](../../start/storage/)).
+- **Persistent and disposable data disks**: Ordinary Linux `destroy` and `recreate` retain `persistent: true` data disks. During recovery, `up` formats a data disk without any signature and resets an existing ext4 or XFS filesystem, persistent or not, when the checker reports recognized corruption; other probe or checker failures keep the data and report a warning. Keep important data backed up on the host (see [Storage and Access](../../start/storage/)).
 
 ## Downloads and image trust
 
@@ -48,14 +50,16 @@ Barn separates trust verification across four independent mechanisms:
 
 | Mechanism | What it verifies |
 |---|---|
-| Release `checksums.txt` | Verifies that downloaded CLI archives and `.deb`/`.rpm` packages match the SHA-256 digests published for that GitHub Release |
-| macOS release signatures | The 0.9.3 Apple Silicon CLI, helper, and `Barn.app` use Developer ID signatures and Apple notarization; the app carries a stapled ticket. Local source builds default to ad-hoc signing |
+| Release `checksums.txt` | Lists the SHA-256 digests of every release asset—CLI archives, `.deb`/`.rpm` packages, SPDX SBOMs, the Homebrew formula, the installer, and release metadata; the installer verifies the selected archive against it |
+| macOS release signatures | The Apple Silicon release CLI, helper, and `Barn.app` use Developer ID signatures and Apple notarization; the app carries a stapled ticket. Local source builds default to ad-hoc signing |
 | Linux catalog signature (`catalog.json.minisig`) | Verifies with Barn's embedded Ed25519 public keys that `catalog.json` was signed by a trusted key and satisfies per-repository anti-rollback revision rules |
 | Image artifact verification | Verifies before use that every downloaded or imported `.qcow2` matches its catalog byte size, SHA-256 digest, virtual capacity, and standalone `qcow2` format rules |
 {.wide .expand}
+
+Release assets are built from the exact tag, by the tag workflow when its Mac signing secrets are configured and otherwise by the documented local release path. Source CI must pass on the release commit first, and both paths create the draft GitHub Release only after package, archive, SBOM, and checksum verification succeeds.
 
 The two official image repositories (`https://repo.pigsty.io/barn` and `https://repo.pigsty.cc/barn`) always require valid minisign catalog signatures, even when passed explicitly via `--repo`. Custom HTTPS or local directory repositories may use unsigned catalogs when explicitly selected with `--repo` or `BARN_REPO` (see [Linux Images](../../reference/images/)).
 
 ## Report a vulnerability
 
-Report security vulnerabilities privately via [GitHub Security Advisories](https://github.com/pgsty/barn/security/advisories/new) or by emailing [repo@pigsty.cc](mailto:repo@pigsty.cc) with `barn --json version`, your host OS and architecture, and a minimal reproduction with credentials removed. See [`SECURITY.md`](https://github.com/pgsty/barn/blob/main/SECURITY.md) for disclosure policy, and use [GitHub Issues](https://github.com/pgsty/barn/issues) for ordinary bug reports.
+Report security vulnerabilities privately via [GitHub Security Advisories](https://github.com/pgsty/barn/security/advisories/new) or by emailing [repo@pigsty.cc](mailto:repo@pigsty.cc) with `barn --json version`, your host OS and architecture, and a minimal reproduction with credentials removed. Security fixes land in the latest 1.x patch release; only the latest 1.x release is supported, and 0.x releases receive no further fixes. See [`SECURITY.md`](https://github.com/pgsty/barn/blob/main/SECURITY.md) for the full policy, and use [GitHub Issues](https://github.com/pgsty/barn/issues) for ordinary bug reports.

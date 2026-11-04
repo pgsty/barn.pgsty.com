@@ -7,7 +7,7 @@ sections:
   - cta
 
 hero:
-  eyebrow: Barn 0.9.3 · Pre-release · Apache-2.0
+  eyebrow: Barn 1.0.0 · Stable · Apache-2.0
   title_lines:
     - words:
         - { text: Launch Local VM Fleets }
@@ -28,10 +28,10 @@ hero:
   actions:
     - { label: Start a Linux lab, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: Run a macOS VM, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
-    - { label: Install 0.9.3, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
+    - { label: Install 1.0.0, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
   detail:
-    label: What's new in 0.9.3
-    url: blog/release/0.9.3/
+    label: What's new in 1.0.0
+    url: blog/release/1.0.0/
 
 capabilities:
   eyebrow: Core capabilities
@@ -84,7 +84,7 @@ capabilities:
       url: docs/start/images/
       motto: 17 verified Linux image artifacts across nine distributions
       bullets:
-        - 'Ubuntu, Debian, Rocky, Alma, Oracle, and CentOS'
+        - 'Ubuntu, Debian, Rocky Linux, and CentOS 7'
         - 'Verified by signed manifests and SHA-256 digests'
         - 'Cached once under `~/.barn`, cloned on every boot'
       value: Or import custom qcow2 images in one command.
@@ -95,8 +95,8 @@ capabilities:
         items:
           - { icon: fa-brands fa-ubuntu, title: Ubuntu, detail: '22.04 · 24.04 · 26.04', url: docs/start/images/ }
           - { icon: fa-brands fa-debian, title: Debian, detail: '12 · 13', url: docs/start/images/ }
-          - { icon: fa-brands fa-redhat, title: Rocky & Alma, detail: 'EL 8 · 9 · 10', url: docs/start/images/ }
-          - { icon: fa-solid fa-server, title: Oracle & CentOS, detail: 'EL 8 · 9 · 10', url: docs/start/images/ }
+          - { icon: fa-brands fa-redhat, title: Rocky Linux, detail: '8 · 9 · 10', url: docs/start/images/ }
+          - { icon: fa-solid fa-server, title: CentOS, detail: '7 · Linux amd64 hosts', url: docs/start/images/ }
           - { icon: fa-brands fa-apple, title: Native macOS, detail: 'macOS 27+ · Apple Silicon', url: docs/start/macos/ }
           - { icon: fa-solid fa-clone, title: Copy-on-Write, detail: 'qcow2 & APFS clones', url: docs/reference/images/ }
 
@@ -135,7 +135,7 @@ principles:
       desc: Use one standard Ansible YAML file for both Barn VMs and Pigsty playbooks.
     - icon: fa-solid fa-arrows-rotate
       title: Safe convergence
-      desc: Re-run barn up to reconcile guests in place; VMs restart only on CPU or RAM changes.
+      desc: Re-run barn up to add nodes and finish guest setup; resize, recreate, and destroy stay explicit.
     - icon: fa-solid fa-clone
       title: Copy-on-write disks
       desc: Base images stay cached once under ~/.barn; new nodes clone in seconds.
@@ -164,11 +164,14 @@ faq:
         under `$BARN_HOME` (`~/.barn` by default). Changing your working
         directory does not create a separate deployment unless you set a
         different `BARN_HOME`.
-    - question: Why does GitHub Releases show 0.9.3 as a pre-release?
+    - question: What does Barn 1.0 keep stable?
       answer: >-
-        All Barn `0.x` builds are published as GitHub pre-releases while the
-        CLI contract approaches `1.0`. Pin `v0.9.3` explicitly when downloading
-        release assets or running `install.sh`.
+        Across 1.x, command names, flags, exit codes, existing `--json` and
+        `--yaml` fields, the inventory format, `BARN_*` variables, and the state
+        under `BARN_HOME` stay compatible. Human-readable text may change, so
+        scripts should read structured output and exit codes. Upgrading from
+        0.9.3 keeps existing VMs; see the
+        [compatibility scope](blog/release/1.0.0/#compatibility).
 
 cta:
   title: Ready to build your local lab?

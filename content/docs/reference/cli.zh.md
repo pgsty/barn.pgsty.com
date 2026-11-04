@@ -6,7 +6,7 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-本页说明 **Barn 0.9.3** 的全局展示参数与 Linux 实验环境命令。macOS 客机命令请查阅 [Mac 命令](../mac/)。使用其他版本时，请先运行 `barn version` 核对版本号。
+本页说明 **Barn 1.0.0** 的全局展示参数与 Linux 实验环境命令。macOS 客机命令请查阅 [Mac 命令](../mac/)。使用其他版本时，请先运行 `barn version` 核对版本号。
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -20,7 +20,11 @@ barn setup --help
 barn image pull --help
 ```
 
-不带参数直接运行 `barn` 会打印简要欢迎信息与常用命令建议（JSON/YAML 模式下返回 `actions[]` 数组），并以退出码 `0` 返回。只输入命令分组而不带子命令（如 `barn image`）会以退出码 `2` 返回（文本模式输出帮助，JSON/YAML 模式输出结构化 `usage` 错误）。显式传入 `--help` 始终打印人类可读的帮助文本并以 `0` 退出。查看构建版本信息请使用 `barn --version` 或 `barn version`。
+不带参数直接运行 `barn` 会打印与 `barn --help` 相同的完整帮助并以退出码 `0` 返回；传入 `--json` 或 `--yaml` 时则返回由建议命令组成的 `actions[]` 数组。只输入命令分组而不带子命令（如 `barn image`）会以退出码 `2` 返回（文本模式输出帮助，JSON/YAML 模式输出结构化 `usage` 错误）。显式传入 `--help` 始终打印人类可读的帮助文本并以 `0` 退出。查看构建版本信息请使用 `barn --version` 或 `barn version`。
+
+## 1.x 兼容性 {#compatibility}
+
+自 1.0.0 起，以下内容的不兼容变更需要提升主版本号：命令名、别名、参数与参数语法（包括远程命令前的 `--`）；退出码以及结构化输出中的 `error`、`reason` 取值；`--json` 与 `--yaml` 输出的已有字段（可以新增字段）；清单格式以及已有 `vm_*` 键的含义；`BARN_*` 环境变量；`BARN_HOME` 下的部署状态与 Mac 状态，1.x 版本能直接读取更早的 1.x 及 0.9.3 写入的状态，无需重建虚拟机。面向人阅读的文本、帮助措辞、进度行与日志内容可能在任何版本中变化，脚本应依赖结构化输出与退出码。完整范围见 [1.0.0 发布说明](../../../blog/release/1.0.0/#compatibility)。
 
 ## 命令
 
@@ -62,7 +66,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | 其他生命周期与访问命令 | 不读取清单文件，直接操作 `BARN_HOME` 中的已应用状态 |
 {.wide .expand}
 
-当当前目录没有清单且 `BARN_HOME` 中也没有已部署环境时，交互式运行 `barn up` 可以自动生成默认 `meta` 清单、补齐缺失的宿主依赖并拉起未激活的 Barn 网络（涉及特权操作时 `sudo` 仍会提示输入系统密码）。若希望先检查宿主变更计划，请运行 `barn setup --dry-run`；在非交互脚本中请显式执行 `barn setup --yes`。
+在终端中，如果宿主缺少依赖或 Barn 网络，`up`、`start`、`restart` 与 `reload` 会像 `barn setup` 一样准备宿主：先展示宿主准备计划，在安装软件包或网络前询问一次（涉及特权操作时 `sudo` 仍会提示输入系统密码）。当前目录没有清单且 `BARN_HOME` 中也没有已部署环境时，交互式 `barn up` 还会先生成默认 `meta` 清单。没有终端时，这些命令只报告缺少的条件。运行 `barn setup --dry-run` 可查看准备计划，在脚本中请执行 `barn setup --yes` 准备宿主。
 
 对于全新、未修改的默认模板，若默认 `10.10.10.0/24` 网段与宿主现有路由冲突，`setup` 会自动改选另一个空闲的私有 `/24` 网段，并将原文件备份为 `barn.yml.before-network-change`。显式传入的 `-f` 清单、已手动编辑的模板以及已存在的部署始终保留各自配置的网段。
 
@@ -79,8 +83,8 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `--mirror` | 为 `setup`、镜像目录更新与拉取操作选用中国官方镜像源（`https://repo.pigsty.cc/barn`） |
 | `-m`、`--mode` | 在支持该参数的命令上选择 macOS `host` 或 `shared` 网络模式 |
 | `-d`、`--dry-run` | 仅打印 `setup` 或 `image prune` 的执行计划，不修改系统状态 |
-| `-y`、`--yes` | 确认执行已展示的宿主、初始化或镜像计划 |
-| `--force`（`init`、`destroy`、`recreate`） | 覆盖生成文件或跳过交互式确认词（因 `-f` 已用于选择清单，故仅设长参数） |
+| `--yes` | 确认宿主、初始化、镜像或销毁计划；仅下表标明的命令支持 `-y` |
+| `--force`（`init`、`destroy`、`recreate`、`purge`） | 覆盖已有清单（`init`）或跳过交互式确认词（因 `-f` 已用于选择清单，故仅设长参数） |
 | `-n`、`--no-wait` | QEMU 进程启动后立即返回，跳过客机 SSH 就绪检查、磁盘恢复与配置刷新 |
 | `--rollback`（`up`、`reload`） | 清理本次运行中准备失败、尚未提交状态的节点残留文件 |
 | `--delete-persistent` | 整体销毁部署时一并删除 `persistent: true` 的持久数据盘 |
@@ -96,14 +100,15 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `validate` | `--file/-f`、`--repo/-r`；不接受节点参数 |
 | `plan` | `--file/-f`、`--repo/-r` |
 | `up`、`reload` | `--file/-f`、`--repo/-r`、`--mirror`、`--no-wait/-n`、`--rollback` |
-| `recreate` | `--file/-f`、`--repo/-r`、`--mirror`、`--force`、`--no-wait/-n` |
+| `recreate` | `--file/-f`、`--repo/-r`、`--mirror`、`--yes`/`--force`、`--no-wait/-n` |
 | `resize` | `--file/-f` |
 | `start`、`restart` | `--no-wait/-n` |
 | `stop`、`status` | 仅接受节点选择器与全局展示参数 |
-| `destroy` | `--force`、`--delete-persistent`、`--purge`（后两者仅限整套部署） |
-| `purge`、`doctor`、`version` | 仅接受全局展示参数 |
+| `destroy` | `--yes`/`--force`、`--delete-persistent`、`--purge`（后两者仅限整套部署） |
+| `purge` | `--yes`/`--force` 跳过终端确认；不接受节点参数 |
+| `doctor`、`version` | 仅全局展示参数 |
 | `provision` | 必填 `--script/-s`；`--sudo`；`--parallel/-p` 正整数（默认 `1`）；`--timeout/-t` 正时长（默认 `1h`） |
-| `ssh-config` | `--install/-i` 与 `--remove` 互斥；`--name` 默认为 `barn`（`--remove` 不要求存在已部署环境） |
+| `ssh-config` | 可选节点选择器；`--install/-i` 与 `--remove` 互斥；`--name` 默认为 `barn`。`--remove` 不接受节点参数，也不要求存在部署状态 |
 | `logs` | `--source/-s serial\|qemu\|events`（默认 `serial`）；`--follow/-f`（`events` 为部署级日志，不接受节点名） |
 | `image info`、`image pull` | 可选镜像选择器、`--arch/-a amd64\|arm64`、`--repo/-r`；`pull` 额外支持 `--mirror` |
 | `image import` | `--sha256/-s`；命名导入（`--name local-*`）还必须同时传入 `--boot/-b bios\|uefi` 与 `--source-user/-u` |
@@ -121,9 +126,9 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 
 - `setup --dry-run` 与 `setup --yes` 互斥。`--cidr` 仅调整新生成模板的网段，不会改写显式指定的 `-f` 清单。若要在 `validate` 时对照中国镜像源校验，请传入 `--repo https://repo.pigsty.cc/barn`。
 - `--image` 仅适用于 `init` 或 `setup` 生成模板的场景，会写入 `all.vars.vm_image`；不能覆盖 `-f` 指定的已有清单或自动发现的清单。后续验证和生命周期命令仍从当前镜像目录解析该引用。
-- 在 Barn `0.9.3` 中，`network` 与 `hosts` 的 `install`/`uninstall` 会先展示变更计划并在终端请求确认（安装默认同意，卸载默认拒绝）；非终端环境下必须传入 `--yes` 才会执行。macOS 首次配置宿主网络请使用 `barn setup`。有节点运行时 `network uninstall` 会拒绝卸载网络；停止或销毁虚拟机不会卸载宿主网络。
+- `network` 与 `hosts` 的 `install`/`uninstall` 会先展示变更计划并在终端请求确认（安装默认同意，卸载默认拒绝）。未传 `--yes` 时，如果标准输入不是终端或输出为 `--json`/`--yaml`，命令只输出计划并退出 `0`；请检查结构化报告中的 `applied`，或传入 `--yes` 执行计划。macOS 首次配置宿主网络请使用 `barn setup`。有节点运行时 `network uninstall` 会拒绝卸载网络；停止或销毁虚拟机不会卸载宿主网络。在 Linux 上，若宿主还有其他网络链路，或无法确认 networkd 仅供 Barn 使用，`network uninstall` 会保留全局 networkd 单元状态；计划中报告 `preserve_networkd`，执行报告在 `checks.networkd` 中说明原因。
 - 涉及安全确认与仓库选择的开关（`--mirror`、`--force`、`--rollback`、`--remove`、`--allow-downgrade`、`--sudo`、`--delete-persistent`、`--purge`）只提供长参数。在 Linux 命令中，`-f` 表示 `--file`（`barn logs -f` 例外，表示 `--follow`），`-n` 表示 `--no-wait`（而 `barn mac logs -n` 表示日志行数），`-d` 表示 `--dry-run`。
-- `barn purge` 直接执行与 `barn destroy --force --purge` 相同的整体清理，且无需交互确认：它会删除所有节点、持久盘、密钥、部署状态与默认 SSH 配置片段，同时保留镜像缓存与宿主网络。当环境中尚无部署时，`barn purge` 与整体 `barn destroy` 均直接返回成功（`purge` 还会清理归属元数据完整的残留持久盘，而不会盲目删除身份不明的目录）。若部署状态文件已缺失，执行 `destroy --force --delete-persistent` 或 `destroy --force --purge` 会报错并提示改用 `barn purge`。
+- `barn purge` 执行与 `barn destroy --yes --purge` 相同的整体清理：它会删除所有节点、持久盘、密钥、部署状态与默认 SSH 配置片段，同时保留镜像缓存与宿主网络。在终端中，它会先列出清理范围并要求输入 `purge`；传入 `--yes` 或 `--force` 可跳过询问，没有终端时直接执行。当环境中尚无部署时，`barn purge` 与整体 `barn destroy` 均直接返回成功（`purge` 还会清理归属元数据完整的残留持久盘，而不会盲目删除身份不明的目录）。若部署状态文件已缺失，执行 `destroy --force --delete-persistent` 或 `destroy --force --purge` 会报错并提示改用 `barn purge`。
 
 ## 结构化失败
 
@@ -147,19 +152,23 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 - **`reload`**：先校验本次生效的期望规格与启动依赖，通过后再停止所选节点并对这些节点执行 `up`。该命令可以新增节点；需要替换已有虚拟机的变更仍需使用 `recreate`。
 - **`resize`**：只应用 `vm_cpu` 与 `vm_mem` 变更。支持的增加操作可以热插拔；减少资源、旧虚拟机或后端不支持时会自动停机再启动，同时保留虚拟机身份与磁盘。镜像、磁盘、网络、共享目录、创建、删除及部署级变更会被拒绝。
 - **`recreate`**：通过替换根盘和非持久数据盘来应用节点定义变更，同时保留兼容的[持久数据盘](../configuration/#数据盘)。显式选择节点执行 `plan`、`up`、`reload`、`recreate` 或 `resize` 时，其余节点保留已应用定义，即使 YAML 已修改或省略它们；未创建且未选中的节点不要求解析镜像。地址、别名、控制节点角色及部署公共设置的真实冲突仍会在预检时报错；省略选择器时则处理整份清单。
-- 当配置漂移需要执行破坏性变更时，`up` 与 `reload` 会返回 `conflict` 错误，并提示先运行 `barn plan`，再运行 `barn recreate <node>` 或 `barn destroy <node>`。在终端上，`recreate` 与 `destroy` 需要输入确认词，脚本可通过 `--force` 跳过确认。
+- 当配置漂移需要执行破坏性变更时，`up` 与 `reload` 会返回 `conflict` 错误，并提示先运行 `barn plan`，再运行 `barn recreate <node>` 或 `barn destroy <node>`。在终端上，`recreate` 与 `destroy` 会列出将被替换或删除的节点，并要求输入命令名确认，传入 `--yes`（或 `--force`）可跳过；没有终端且未传这两个参数时，命令以退出码 `2` 拒绝执行。不带节点参数时，两者都作用于整套部署。
+
+不带节点参数的 `recreate` 遇到清单缺少已有节点时，会在任何虚拟机停机前拒绝执行（`conflict`，reason `nodes_removed`，退出码 `4`）。需要删除该节点时请显式执行 `barn destroy <node>`，否则把它加回清单。Barn 会在销毁锁内再次核对范围；若预检期间已应用状态发生变化，recreate 以 reason `deployment_changed` 退出，请重新检查计划后重试。
+
+删除控制节点后，剩余的第一个节点接任控制节点。请在清单中把控制角色（`admin_ip`）改为该节点，再运行 `barn up` 安装其控制 SSH 访问；`--no-wait` 会推迟这一步。在此之前，仍把已删除节点设为控制节点的清单属于角色漂移，`up` 会拒绝执行；如需恢复原节点，请将其作为普通节点重新加入。接任节点存在无法完成的准备记录时，Barn 会在删除任何内容前拒绝删除控制节点，并在错误中指出接任节点。
 
 ### 计划
 
 `barn plan` 是只读命令，即便计算出的 `action` 为 `resize`、`recreate` 或 `blocked-removal`，也会以退出码 `0` 返回；自动化脚本应检查 `action`、`create`/`resize`/`recreate`/`start`/`missing` 数组，以及可选的 `blocked` 原因字符串。
 
-对于镜像目录中的标准镜像，`plan` 仅读取本地配置与镜像目录元数据，不依赖 QEMU 或宿主网络；对于已注册的 `local-*` 本地导入镜像，`plan` 还会调用 `qemu-img` 校验缓存文件。`plan` 不会下载镜像，并会展示精确的镜像版本、CPU/内存/磁盘资源总量、漂移原因以及每块数据盘的处理动作（Barn `0.9.3` 会显式列出默认的 128 GiB `/data` 盘）。
+对于镜像目录中的标准镜像，`plan` 仅读取本地配置与镜像目录元数据，不依赖 QEMU 或宿主网络；对于已注册的 `local-*` 本地导入镜像，`plan` 还会调用 `qemu-img` 校验缓存文件。`plan` 不会下载镜像，并会展示精确的镜像版本、CPU/内存/磁盘资源总量、漂移原因以及每块数据盘的处理动作（包括默认的 128 GiB `/data` 盘）。
 
 ### 启动与 SSH 配置
 
 `barn up` 会在执行前检查宿主虚拟化能力与地址可用性，依次创建缺失节点、启动已停止节点、检查运行中节点的 SSH 就绪状态，并根据完整的已应用部署重写宿主 SSH 客户端配置片段（`~/.ssh/barn_config`）以及运行中客机的 `/etc/hosts` 和控制节点 SSH 配置。`recreate` 同样会完整刷新上述配置；`start` 与 `restart` 也会刷新 SSH 别名；单节点 `destroy` 会移除对应条目，整体 `destroy` 则移除整份配置片段。
 
-若虚拟机生命周期操作已成功，但写入 `~/.ssh/config` 失败（或者 `~/.ssh/config` 是符号链接/硬链接，Barn `0.9.3` 不会直接修改链接文件），Barn 会写好独立的 `~/.ssh/barn_config` 片段、提示需手动添加的 `Include` 行，将告警记入 `warnings[]` 并以 `0` 退出（`barn ssh` 仍可正常连接）。
+若虚拟机生命周期操作已成功，但写入 `~/.ssh/config` 失败（或者 `~/.ssh/config` 是符号链接/硬链接，Barn 从不修改链接文件），Barn 会写好独立的 `~/.ssh/barn_config` 片段、提示需手动添加的 `Include` 行，将告警记入 `warnings[]` 并以 `0` 退出（`barn ssh` 仍可正常连接）。
 
 控制节点上由 Barn 管理的 SSH 条目不会把实验节点的主机密钥锁死在 `known_hosts` 中，从而保证节点重建后依然可以直接连通；用户在客机中自行添加的 SSH 配置会原样保留。
 
@@ -168,6 +177,8 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 管理 SSH 连通后，Barn 即判定 Linux 客机已就绪。非致命的客机初始化问题会记录在 `nodes[].warnings` 中，已自动完成的恢复动作（例如重置损坏的数据盘）会记录在 `nodes[].repairs` 中，命令退出码仍为 `0`。再次运行 `barn up` 可以在不重启 QEMU 进程的情况下，对运行中的节点重试未完成的初始化步骤。
 
 传入 `--no-wait` 时，命令在 QEMU 进程启动后立即返回，把客机就绪检查、数据盘恢复与 SSH/`/etc/hosts` 刷新留给下一次 `barn up`。
+
+哪些数据盘问题会被自动修复（记入 `repairs`）、哪些只报告（记入 `warnings`），见[数据盘](../configuration/#数据盘)。已有客机会在下一次 `barn up` 的就绪检查中获得当前的恢复脚本。
 
 ### 节点失败
 
@@ -184,10 +195,11 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 - **遗留持久盘**：先前移除节点后保留下来的受管持久盘不会阻塞其余节点的销毁；需要连同这些持久盘一并清理时，请执行 `destroy --delete-persistent` 或 `purge`。
 - **macOS 准备顺序**：在 macOS 上安装新网络时，`setup` 会先完成 Homebrew 查找/安装或下载固定版本的 `socket_vmnet` 归档，最后再请求管理员授权，避免安装或下载耗时导致先前的 `sudo` 凭据过期，也不会在下载失败时白白弹出密码框。
 - **PID 与日志对账**：如果记录的 QEMU PID 已被无关进程复用，Barn 会将该节点识别为 `stopped`；若停止操作中断但虚拟机进程仍在运行，Barn 会将其恢复为 `running`。其他中断状态会提示恢复命令（`destroy` 会直接完成中断清理）；首次 `up` 失败后，修改清单再重试时 Barn 会根据事务日志自动回滚未提交的残留产物。
+- **取消操作**：命令被取消时，Barn 向正在运行的外部程序发送 SIGTERM，`sudo` 会将其转发给特权命令；Barn 最多等待 10 秒，让该进程及其继承的输出管道结束。忽略 SIGTERM 的后代进程仍需外部监管。
 
 ## 日志与环境变量
 
-`barn logs` 默认读取客机串口控制台（`--source serial`）。指定 `--source qemu` 可读取 QEMU 诊断输出，指定 `--source events` 可读取部署级的定长事件日志。配合 `--follow`（`-f`）时，文本模式流式输出字节，JSON 模式输出 NDJSON 行，YAML 模式输出文档流。Barn `0.9.3` 默认将事件日志与 QEMU 日志格式化为简洁记录，仅在传入 `--verbose` 时展开完整的 QEMU 启动参数。
+`barn logs` 默认读取客机串口控制台（`--source serial`）。指定 `--source qemu` 可读取 QEMU 诊断输出，指定 `--source events` 可读取部署级的定长事件日志。配合 `--follow`（`-f`）时，文本模式流式输出字节，JSON 模式输出 NDJSON 行，YAML 模式输出文档流。Barn 默认将事件日志与 QEMU 日志格式化为简洁记录，仅在传入 `--verbose` 时展开完整的 QEMU 启动参数。
 
 | 环境变量 | 用途 |
 |---|---|
@@ -195,9 +207,11 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `BARN_REPO` | 默认镜像仓库 URL 或路径；可被命令行的 `--mirror` 与 `--repo` 依次覆盖 |
 | `BARN_OUTPUT` | 默认输出格式（`text`、`json` 或 `yaml`）；命令行展示参数优先 |
 | `BARN_VERBOSE` | 诊断输出布尔开关默认值；命令行 `-v`/`--verbose` 优先 |
-| `BARN_VMNET_ARCHIVE` | macOS `setup` 使用的本地 `socket_vmnet` 归档路径；Barn 0.9.3 支持相对路径、`~/` 与符号链接（仍强制校验 SHA-256） |
+| `BARN_VMNET_ARCHIVE` | macOS `setup` 使用的本地 `socket_vmnet` 归档路径；支持相对路径、`~/` 与符号链接（仍强制校验 SHA-256） |
 | `NO_COLOR` | 设为任意非空值时禁用终端颜色 |
 {.wide .expand}
+
+显式传入的 `--json`、`--yaml` 与 `-v`/`--verbose` 优先于 `BARN_OUTPUT` 和 `BARN_VERBOSE`；即使这两个变量取值无效，`--help` 仍可正常使用。其他命令在无效取值未被命令行参数覆盖时，以退出码 `2`（`usage`）报错。
 
 ## SSH 透传与命令补全 {#ssh-透传与命令补全}
 
@@ -236,10 +250,12 @@ barn exec meta --json -- uname -a
 | `4` | `conflict` | 当前部署状态不允许该操作，或另一个 `barn` 进程正持有部署锁 |
 | `5` | `partial` | 节点级批处理部分或全部失败；请检查 `failures[]`，已成功的节点保持不变 |
 | `6` | `resource` | 宿主 IP、端口、网段或磁盘路径已被占用 |
-| `7` | `integrity` | 摘要、签名、实例身份或文件属主校验未通过 |
+| `7` | `integrity` | 摘要、镜像目录签名或签名 revision、实例身份或文件属主校验未通过 |
 | `130` | `cancelled` | 操作被 `SIGINT`/`SIGTERM` 中断，或在交互提示中拒绝确认 |
 {.wide .expand}
 
-在 Barn `0.9.3` 中，若另一个 `barn` 命令正持有部署锁，修改类命令最多等待 10 分钟并指出持锁命令；等待超时则以退出码 `4`（`reason: "deployment_busy"`）退出。只读与访问类命令（`status`、`ssh`、`exec`、`ssh-config`、`hosts`）不会阻塞等待锁；其中 `status` 会展示最近一次提交的节点状态，并在 `note` 字段中注明正在并发执行的操作。
+镜像目录缺少签名或签名校验失败时返回 `reason: "catalog_signature"`；目录复用已接受或内置的 revision 号但内容字节不同时返回 `reason: "catalog_equivocation"`。读取缓存目录签名时遇到的权限或 I/O 错误属于运行时错误（退出码 `1`）。
+
+若另一个 `barn` 命令正持有部署锁，修改类命令最多等待 10 分钟并指出持锁命令；等待超时则以退出码 `4`（`reason: "deployment_busy"`）退出。只读与访问类命令（`status`、`ssh`、`exec`、`ssh-config`、`hosts`）不会阻塞等待锁；其中 `status` 会展示最近一次提交的节点状态，并在 `note` 字段中注明正在并发执行的操作。
 
 `ssh` 与 `exec` 会原样返回 SSH 子进程的退出码（包括 `255`，既可能表示 SSH 连接失败，也可能是远端命令自身返回 `255`），文本输出、JSON `exit_code` 与进程退出码三者始终保持一致。

@@ -14,7 +14,7 @@ Mac 虚拟机与 Linux 实验环境完全独立：它不读取 `barn.yml`，所�
 
 - 一台运行 **macOS 27 或更高版本**的 Apple Silicon Mac，且当前用户已登录图形桌面会话（客机同样运行 macOS 27）。
 - 首次创建约需 **65 GiB** 可用磁盘空间，用于存放从 Apple 下载的恢复镜像（`.ipsw`，约 25 GiB）、安装后的基础镜像（约 27 GiB）以及启动写入空间。后续每台虚拟机通过 APFS 写时复制克隆基础镜像，按实际改动增长（默认容量上限为 100 GiB）。
-- 与 `0.9.3` CLI 配套的原生应用包 **`Barn.app`**，Apple Silicon 发行包与 Homebrew 安装均已包含。
+- 与同一版本 CLI 配套的原生应用包 **`Barn.app`**，Apple Silicon 发行包与 Homebrew 安装均已包含。
 - 无需 `sudo` 权限。
 
 受 Apple Virtualization 框架限制，单台 Mac **最多同时运行两台 macOS 虚拟机**（其他虚拟化工具启动的实例及正在执行的 macOS 基础镜像安装均计入配额）。你可以创建更多已停止的虚拟机并按需启动其中任意两台（须遵守适用的 Apple 软件许可协议）。
@@ -62,7 +62,7 @@ shell:     barn mac ssh mac1
 desktop:   barn mac open mac1
 ```
 
-后续新建虚拟机都会直接克隆这份基础镜像，几秒内即可完成创建，无需重复执行漫长的系统恢复安装。Barn `0.9.3` 首次下载默认固定为 **macOS 27.0 (26A428)**；如需跟进更新的 macOS 27 版本，可显式运行 `barn mac image update`。
+后续新建虚拟机都会直接克隆这份基础镜像，几秒内即可完成创建，无需重复执行漫长的系统恢复安装。Barn 首次下载默认固定为 **macOS 27.0 (26A428)**；如需跟进更新的 macOS 27 版本，可显式运行 `barn mac image update`。
 
 如果本机已下载好 Apple 恢复镜像，可通过 `--ipsw` 直接传入（位于同一 APFS 卷时将直接克隆数据块而无需复制）：
 
@@ -227,7 +227,7 @@ barn mac configure dev --cpu 6 --memory 12G --subnet auto
 barn mac start dev
 ```
 
-`barn mac recreate` 会基于基础镜像用全新 macOS 替换虚拟机磁盘，同时保留机器名称、账号、资源规格、共享目录与 IP 地址；`barn mac destroy` 则会彻底删除虚拟机（非交互脚本请传入 `--force`）：
+`barn mac recreate` 会基于基础镜像用全新 macOS 替换虚拟机磁盘，同时保留机器名称、账号、资源规格、共享目录与 IP 地址；`barn mac destroy` 则会彻底删除虚拟机。两条命令在终端中都需要输入确认词，非交互脚本请传入 `--yes`：
 
 ```bash
 barn mac recreate dev

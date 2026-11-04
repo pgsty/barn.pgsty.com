@@ -1,6 +1,6 @@
 ---
 title: 安全与信任
-description: Barn 0.9.3 的宿主权限、客机凭据、共享目录，以及应用与镜像的独立信任边界。
+description: Barn 1.0.0 的宿主权限、客机凭据、共享目录，以及应用与镜像的独立信任边界。
 weight: 25
 icon: fa-solid fa-shield-halved
 ---
@@ -18,7 +18,9 @@ Barn 面向受信任的本地开发工作站。同一套 Linux 实验环境中�
 | `barn hosts install` / `uninstall` | 通过独立的 `barn-hosts-helper` 修改 `/etc/hosts` 中由 Barn 标记界定的区块 |
 {.wide .expand}
 
-在请求 `sudo` 授权前，`setup`、`network` 与 `hosts` 都会先打印完整的变更计划。请确保 `barn` 与 `/opt/barn/libexec/barn-hosts-helper` 来自同一次构建：CLI 调用 helper 前会核对其内嵌 SHA-256 摘要，helper 在每次写入前后都会校验 `/etc/hosts` 的属主、权限、硬链接数及预期内容摘要。
+在请求 `sudo` 授权前，`setup`、`network` 与 `hosts` 都会先打印完整的变更计划。在终端中，如果宿主缺少依赖或 Barn 网络不完整，`up`、`start`、`restart` 与 `reload` 会提议准备宿主：它们执行同一份 `setup` 计划、同样只询问一次，且从不默认 `--yes`。没有终端时这些命令只报告缺少的条件，无人值守准备请执行 `barn setup --yes`。
+
+请确保 `barn` 与 `/opt/barn/libexec/barn-hosts-helper` 来自同一次构建：CLI 调用 helper 前会核对其内嵌 SHA-256 摘要，helper 在每次写入前后都会校验 `/etc/hosts` 的属主、权限、硬链接数及预期内容摘要。
 
 相比之下，原生的 `barn mac` 工作流在虚拟机启动时按需创建用户态 `vmnet` 网络，不安装任何 root 守护进程或特权网络服务（详见[设计说明](../design/)与[卸载指南](../../start/uninstall/)）。
 
@@ -40,7 +42,7 @@ Barn 针对三类 SSH 连接路径采用不同的主机密钥校验策略：
 ## 共享文件与测试磁盘
 
 - **宿主目录共享**：可写共享（Linux `vm_shares` 中设 `readonly: false` 或 `barn mac --share` 使用 `:rw`）允许客机进程直接修改所挂载的宿主目录，且客机写入的内容在删除虚拟机后依然保留。请仅共享专门的工作目录；若客机无需写入宿主文件，请优先使用只读共享。
-- **持久盘与测试数据盘**：普通 Linux `destroy` 与 `recreate` 会保留 `persistent: true` 的持久数据盘，但客机恢复流程在遇到无法识别或已确认损坏的文件系统时仍会自动格式化重建。重要数据请在实验环境之外做好备份（详见[存储与访问](../../start/storage/)）。
+- **持久盘与测试数据盘**：普通 Linux `destroy` 与 `recreate` 会保留 `persistent: true` 的持久数据盘。恢复客机时，`up` 会格式化没有任何签名的数据盘；已有的 ext4 或 XFS 文件系统在检查工具报告可识别的损坏时会被重置，持久盘也不例外；其他探测或检查失败会保留数据并给出警告。重要数据请在实验环境之外做好备份（详见[存储与访问](../../start/storage/)）。
 
 ## 下载与镜像信任
 
@@ -48,14 +50,16 @@ Barn 将软件分发与镜像校验划分为四个彼此独立的信任机制：
 
 | 机制 | 校验范围 |
 |---|---|
-| 发布资产 `checksums.txt` | 核对下载的 CLI 归档与 `.deb`/`.rpm` 软件包是否与该 GitHub Release 公布的 SHA-256 摘要一致 |
-| macOS 发行包代码签名 | 0.9.3 Apple Silicon CLI、helper 与 `Barn.app` 均使用 Developer ID 签名并通过 Apple 公证，App 已装订票据；本地源码构建默认使用 ad-hoc 签名 |
+| 发布资产 `checksums.txt` | 列出每个发布资产的 SHA-256 摘要，包括 CLI 归档、`.deb`/`.rpm` 软件包、SPDX 物料清单、Homebrew Formula、安装脚本与发布元数据；安装脚本会按它校验所选归档 |
+| macOS 发行包代码签名 | 正式发布的 Apple Silicon CLI、helper 与 `Barn.app` 均使用 Developer ID 签名并通过 Apple 公证，App 已装订票据；本地源码构建默认使用 ad-hoc 签名 |
 | Linux 镜像目录签名（`catalog.json.minisig`） | 使用二进制内置的 Ed25519 生产公钥校验 `catalog.json` 签名，并执行按仓库隔离的修订号防回滚检查 |
 | 镜像产物校验 | 在启用镜像前逐一核对 `.qcow2` 文件的字节大小、SHA-256 摘要、虚拟磁盘容量与独立 `qcow2` 结构安全性 |
 {.wide .expand}
+
+发布资产均从对应标签的源码构建：配齐 Mac 签名密钥时由标签工作流构建，否则走文档中的本地发布流程。发布提交必须先通过源码 CI，两条路径都在软件包、归档、SBOM 与校验和全部验证通过后才创建 GitHub Release 草稿。
 
 两个官方镜像仓库（`https://repo.pigsty.io/barn` 与 `https://repo.pigsty.cc/barn`）无论通过默认配置还是 `--repo` 显式选中，均强制要求有效的 minisign 目录签名。通过 `--repo` 或 `BARN_REPO` 显式指定的自定义 HTTPS 仓库或本地目录仓库可以使用未签名目录，请仅添加你信任的镜像源（详见[镜像参考](../../reference/images/)）。
 
 ## 报告安全漏洞
 
-发现安全漏洞时，请通过 [GitHub 私密安全通告](https://github.com/pgsty/barn/security/advisories/new)或发送邮件至 [repo@pigsty.cc](mailto:repo@pigsty.cc) 私下报告，并附上 `barn --json version`、宿主系统与架构以及脱敏后的最小复现步骤。支持范围与披露流程见 [`SECURITY.md`](https://github.com/pgsty/barn/blob/main/SECURITY.md)；日常功能缺陷请提交至 [GitHub Issues](https://github.com/pgsty/barn/issues)。
+发现安全漏洞时，请通过 [GitHub 私密安全通告](https://github.com/pgsty/barn/security/advisories/new)或发送邮件至 [repo@pigsty.cc](mailto:repo@pigsty.cc) 私下报告，并附上 `barn --json version`、宿主系统与架构以及脱敏后的最小复现步骤。安全修复发布在最新的 1.x 补丁版本中：只有最新的 1.x 版本受支持，0.x 版本不再提供修复。完整政策见 [`SECURITY.md`](https://github.com/pgsty/barn/blob/main/SECURITY.md)；日常功能缺陷请提交至 [GitHub Issues](https://github.com/pgsty/barn/issues)。

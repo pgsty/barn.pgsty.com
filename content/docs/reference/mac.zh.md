@@ -11,7 +11,7 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 
 运行 macOS 客机需要搭载 Apple 芯片且运行 macOS 27 或更高版本的 Mac，并由当前登录桌面用户直接调用。需要调用原生 runner 的命令会以 `mac_root` 拒绝 `root` 身份，并以 `mac_host_unsupported` 拒绝不满足要求的宿主。在 Linux 与 Intel Mac 上，顶层 `--help` 默认隐藏 `mac` 命令；而 `barn mac image ls` 等只读取本地记录的子命令则无需启动原生 runner。不带子命令直接运行 `barn mac` 等同于 `barn mac ls`。
 
-本参考说明 **Barn 0.9.3** 命令接口与 `Barn.app`（runner 协议版本 `2`）。Apple Silicon 发行包与 Homebrew 安装已包含 App，安装步骤见 [macOS 客机指南](../../start/macos/#install)。
+本参考说明 **Barn 1.0.0** 的命令接口与 `Barn.app`（macOS 宿主上运行虚拟机的原生应用包，runner 协议版本 `2`）。Apple Silicon 发行包与 Homebrew 安装已包含 App，安装步骤见 [macOS 客机指南](../../start/macos/#install)。
 
 ## 命令
 
@@ -67,8 +67,8 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 | `stop` | `--all`、`--force` |
 | `restart` | `-n`/`--no-wait`、`--open` |
 | `configure` | `--cpu`、`--memory`、`--share`、`--unshare`、`--clipboard`、`--subnet` |
-| `recreate` | `--update`、`--force`、`-n`/`--no-wait` |
-| `destroy` | `--force` |
+| `recreate` | `--update`、`--yes`/`--force`、`-n`/`--no-wait` |
+| `destroy` | `--yes`/`--force` |
 | `password` | `-c`/`--copy` |
 | `ssh-config` | `-i`/`--install`、`--remove` |
 | `logs` | `-n`/`--lines` 正整数（默认 `100`），按请求行数读取，不再按 1 MiB 静默截断 |
@@ -77,7 +77,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 | `image prune` | `--installers`、`-y`/`--yes` |
 {.wide .expand}
 
-对于名称可省略的命令，不传名称时会选中唯一的虚拟机或 `mac1`；若存在多台虚拟机且没有 `mac1`，命令会提示你显式指定名称。`start` 与 `stop` 支持传入多个名称或 `--all`。`destroy` 与 `recreate` 会先列出即将删除的内容，并在终端上要求输入命令名称确认（无终端脚本中请传 `--force`）。
+对于名称可省略的命令，不传名称时会选中唯一的虚拟机或 `mac1`；若存在多台虚拟机且没有 `mac1`，命令会提示你显式指定名称。`start` 与 `stop` 支持传入多个名称或 `--all`。在终端中，`destroy` 与 `recreate` 会先列出即将删除的内容，并要求输入命令名称确认；`--yes`（或 `--force`）可跳过询问，没有终端时必须传入。这两条命令的 `--yes` 没有 `-y` 简写；`mac stop --force` 表示立即断电。
 
 `--no-wait` 会在虚拟机进程启动后立即返回；对于新建虚拟机，后续仍需运行一次不带 `--no-wait` 的 `barn mac up NAME` 以完成 SSH 密钥写入与 sudo 配置。普通 `start` 要求虚拟机已完成首次启动——若未完成首次启动的虚拟机已在运行，可执行 `barn mac open NAME` 查看首次启动画面；若已停止，则执行 `barn mac up NAME --open`。传入 `--recovery` 会跳过常规就绪等待，直接启动进入 macOS 恢复模式桌面。
 
@@ -96,7 +96,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 
 对已存在的虚拟机运行 `up` 时，若传入的创建参数与现有设置不一致，`up` 会以 `mac_configuration_conflict` 拒绝执行，并在 `next:` 行给出对应的 `configure` 或 `recreate` 命令：
 
-- 在虚拟机停止状态下使用 `barn mac configure` 修改 `--cpu`、`--memory`、`--share`/`--unshare`、`--subnet` 或 `--clipboard`（剪贴板配置也可在运行时修改并保存到下次启动生效；当前会话可通过菜单栏图标即时开关剪贴板同步）。**Barn 0.9.3**：共享名称支持空格与中文，须为 1–255 字节的有效 UTF-8，不能是 `.`、`..`，也不能包含 `/` 或 ASCII 控制字符；`configure --share` 复用已有名称时会更新其路径与读写属性，`--unshare` 则按名称移除对应共享。
+- 在虚拟机停止状态下使用 `barn mac configure` 修改 `--cpu`、`--memory`、`--share`/`--unshare`、`--subnet` 或 `--clipboard`（剪贴板配置也可在运行时修改并保存到下次启动生效；当前会话可通过菜单栏图标即时开关剪贴板同步）。共享名称支持空格与中文，须为 1–255 字节的有效 UTF-8，不能是 `.`、`..`，也不能包含 `/` 或 ASCII 控制字符；`configure --share` 复用已有名称时会更新其路径与读写属性，`--unshare` 则按名称移除对应共享。
 - 管理员账号（`--user`）与磁盘容量（`--disk`）在虚拟机整个生命周期内固定不变，`recreate` 也会保留它们；如需更改账号或磁盘大小，请创建一台新虚拟机。
 - 升级虚拟机的 macOS 版本时，先运行 `barn mac image update`，再执行 `barn mac recreate NAME --update`。由于 `recreate --update` 会保留原虚拟机的磁盘容量，若新 macOS 版本下还没有对应自定义容量（如 `200G`）的基础镜像，请先执行 `barn mac setup --disk 200G` 准备好该容量的基础镜像。
 
@@ -254,6 +254,8 @@ runtime/ # 全局状态锁与单机操作锁
 
 - **运行时套接字**：`/tmp/barn-mac-<uid>-<hash>/`。
 - **OpenSSH 配置片段**：`barn mac ssh-config` 负责维护 `~/.ssh/barn-mac_config` 以及 `~/.ssh/config` 中的 `# barn-mac:include` 区块（与 Linux 环境使用的 `# barn:include` 区块互不干扰）。执行 `barn mac ssh-config --remove` 会在 `config.json` 中写入 `ssh_config_off`，此后生命周期命令不会再自动写入 SSH 配置，直到你显式运行 `barn mac ssh-config --install`。
-- **桌面窗口偏好设置**：Barn `0.9.3` 将窗口位置保存在 `~/Library/Preferences/com.pgsty.barn.plist`（`0.9.0` 使用 `~/Library/Preferences/io.pgsty.barn.mac-runner.plist`）。
-- **Runner 查找机制**：CLI 根据解析符号链接后的自身可执行文件路径定位 runner，兼容 `Barn.app` 应用包、安装器与 Homebrew `libexec` 布局；开发调试时可通过环境变量 `BARN_MAC_RUNNER` 指定绝对路径、相对路径或 `~/` 路径。执行虚拟机操作前 CLI 会校验 runner 协议版本 `2`；`barn mac doctor` 还会检查 runner 的本地代码签名。
+- **桌面窗口偏好设置**：Barn 将窗口位置保存在 `~/Library/Preferences/com.pgsty.barn.plist`（`0.9.0` 使用 `~/Library/Preferences/io.pgsty.barn.mac-runner.plist`）。
+- **Runner 查找机制**：CLI 根据解析符号链接后的自身可执行文件路径定位 runner，兼容 `Barn.app` 应用包（`Barn.app/Contents/MacOS/barn-mac-runner`）、安装器与 Homebrew `libexec` 布局；开发调试时可通过环境变量 `BARN_MAC_RUNNER` 指定绝对路径、相对路径或 `~/` 路径。执行虚拟机操作前 CLI 会校验 runner 协议版本 `2`；`barn mac doctor` 还会检查 runner 的本地代码签名。
 - **客机内部配置文件**：Barn 在客机内写入 `~/.ssh/authorized_keys`、`/private/etc/sudoers.d/80-barn` 与 `/etc/ssh/sshd_config.d/000-barn.conf`，设置电脑名称与本地主机名，并通过 `pmset` 禁用休眠。
+
+镜像清理会保留中断的 recreate 仍在引用的基础镜像，直至恢复清理完成。恢复日志损坏时，`barn mac image ls`、`barn mac doctor` 的空间估算与镜像清理都会失败，直到日志修复，期间所有镜像原样保留。若某台机器的状态无法读取，`barn mac ls` 会整体失败，按名称操作其他机器不受影响。

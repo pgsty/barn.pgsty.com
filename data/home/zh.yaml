@@ -7,7 +7,7 @@ sections:
   - cta
 
 hero:
-  eyebrow: Barn 0.9.3 · 预发布版 · Apache-2.0
+  eyebrow: Barn 1.0.0 · 稳定版 · Apache-2.0
   title_lines:
     - words:
         - { text: 拉起本地虚拟机舰队 }
@@ -28,10 +28,10 @@ hero:
   actions:
     - { label: 启动 Linux 实验室, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: 运行 macOS 虚拟机, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
-    - { label: 安装 0.9.3, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
+    - { label: 安装 1.0.0, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
   detail:
-    label: 了解 0.9.3 的新变化
-    url: blog/release/0.9.3/
+    label: 了解 1.0.0 的新变化
+    url: blog/release/1.0.0/
 
 capabilities:
   eyebrow: 核心能力
@@ -84,7 +84,7 @@ capabilities:
       url: docs/start/images/
       motto: 覆盖九大 Linux 发行版系的 17 个已验证镜像制品
       bullets:
-        - '涵盖 Ubuntu、Debian、Rocky、Alma 与 Oracle'
+        - '涵盖 Ubuntu、Debian、Rocky Linux 与 CentOS 7'
         - '入库前强制通过签名清单与 SHA-256 摘要校验'
         - '全局缓存单份基础镜像，新节点秒级拉起'
       value: 亦可通过单条命令导入自定义 qcow2 镜像。
@@ -95,8 +95,8 @@ capabilities:
         items:
           - { icon: fa-brands fa-ubuntu, title: Ubuntu, detail: '22.04 · 24.04 · 26.04', url: docs/start/images/ }
           - { icon: fa-brands fa-debian, title: Debian, detail: '12 · 13', url: docs/start/images/ }
-          - { icon: fa-brands fa-redhat, title: Rocky & Alma, detail: 'EL 8 · 9 · 10', url: docs/start/images/ }
-          - { icon: fa-solid fa-server, title: Oracle & CentOS, detail: 'EL 8 · 9 · 10', url: docs/start/images/ }
+          - { icon: fa-brands fa-redhat, title: Rocky Linux, detail: '8 · 9 · 10', url: docs/start/images/ }
+          - { icon: fa-solid fa-server, title: CentOS, detail: '7 · 仅 Linux amd64 宿主', url: docs/start/images/ }
           - { icon: fa-brands fa-apple, title: 原生 macOS, detail: 'macOS 27+ · Apple Silicon', url: docs/start/macos/ }
           - { icon: fa-solid fa-clone, title: 写时复制, detail: 'qcow2 与 APFS 克隆', url: docs/reference/images/ }
 
@@ -135,7 +135,7 @@ principles:
       desc: 同一份标准 Ansible YAML 清单，同时驱动 Barn 与 Pigsty。
     - icon: fa-solid fa-arrows-rotate
       title: 安全就地收敛
-      desc: 重跑 barn up 即可在客机内就地收敛，仅在硬件变更时重启。
+      desc: 重跑 barn up 即可新增节点并补完客机初始化；resize、recreate 与 destroy 始终需要显式执行。
     - icon: fa-solid fa-clone
       title: 写时复制存储
       desc: 基础镜像在 ~/.barn 下只缓存一份，新节点数秒内完成克隆。
@@ -160,10 +160,9 @@ faq:
       answer: >-
         所有部署状态、SSH 密钥、基础镜像缓存与虚拟机磁盘均保存在 `$BARN_HOME`
         下（默认路径为 `~/.barn`）。除非显式指定不同的 `BARN_HOME`，切换工作目录不会新建另一套部署。
-    - question: 为什么 GitHub Releases 将 0.9.3 标记为 pre-release？
+    - question: Barn 1.0 保证哪些内容稳定？
       answer: >-
-        在 CLI 契约演进至 `1.0` 之前，所有 Barn `0.x` 版本均作为 GitHub
-        pre-release 发布。下载发布归档或运行 `install.sh` 时请显式固定 `v0.9.3`。
+        在 1.x 内，命令名、参数、退出码、`--json` 与 `--yaml` 的已有字段、清单格式、`BARN_*` 环境变量以及 `BARN_HOME` 下的状态保持兼容。面向人阅读的文本可能变化，脚本请读取结构化输出与退出码。从 0.9.3 升级无需重建已有虚拟机，详见[兼容性范围](blog/release/1.0.0/#compatibility)。
 
 cta:
   title: 准备好搭建本地实验环境了吗？

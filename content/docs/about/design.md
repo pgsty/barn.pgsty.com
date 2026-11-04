@@ -28,7 +28,7 @@ Each Unix user manages one Linux lab deployment stored in `BARN_HOME` (default `
 Barn computes a specification hash per node from the documented `vm_*` and Pigsty identity fields and records it alongside the node's committed state and QEMU process identity:
 
 - `barn up` creates newly added nodes, starts stopped nodes, retries unfinished guest setup on running nodes without restarting their QEMU processes, and refreshes managed `/etc/hosts` and SSH entries.
-- Changing an existing node's specification or removing a node from `barn.yml` never destroys a VM behind your back—modifications require `barn recreate`, and removals require `barn destroy` (see [Declarative Does Not Mean Destructive](/blog/design/convergence-without-surprise/)).
+- Changing an existing node's specification or removing a node from `barn.yml` never destroys a VM behind your back—CPU and memory changes use `barn resize`, other modifications require `barn recreate`, and removals require `barn destroy`. A whole-deployment `recreate` refuses an inventory that omits an existing node (see [Declarative Does Not Mean Destructive](/blog/design/convergence-without-surprise/)).
 
 ## Runtime selection
 
@@ -54,7 +54,7 @@ Desired configuration (`barn.yml`), applied deployment state (`$BARN_HOME`), and
 
 - Updating a catalog channel (`barn update`) does not rewrite existing VM root disks.
 - Verified base images are stored read-only and shared across nodes via per-node `qcow2` copy-on-write root overlays.
-- Ordinary `destroy` and `recreate` retain `persistent: true` data disks, while `up` automatically formats unrecognized or confirmed-corrupt data filesystems during guest recovery (see [Data Disks](../../reference/configuration/#data-disks) and [Storage and Access](../../start/storage/)).
+- Ordinary `destroy` and `recreate` retain `persistent: true` data disks. During guest recovery, `up` formats only a data disk without any signature or an ext4/XFS filesystem whose checker reports recognized corruption; anything it cannot classify keeps its data and reports a warning (see [Data Disks](../../reference/configuration/#data-disks) and [Storage and Access](../../start/storage/)).
 - `barn image prune` protects images referenced by the active catalog, applied nodes, and `local-*` aliases (see [Images](../../reference/images/)).
 
 ## Safety boundary

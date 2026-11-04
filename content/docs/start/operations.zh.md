@@ -6,7 +6,7 @@ icon: fa-solid fa-sliders
 aliases: [/docs/start/lifecycle/, /docs/start/provisioning/]
 ---
 
-本页介绍 **Barn 0.9.3** 下 Linux 实验环境的日常运维操作。macOS 虚拟机请参阅 [macOS 日常管理](../macos/#日常管理)。
+本页介绍 Linux 实验环境的日常运维操作。macOS 虚拟机请参阅 [macOS 日常管理](../macos/#日常管理)。
 
 ## 检查与访问
 
@@ -69,16 +69,22 @@ barn recreate node-1            # 重建规格发生变更的节点
 
 JSON 输出中的 `create`、`recreate` 与 `missing` 是节点列表，顶层 `action` 则概括整次计划（例如 `converge`、`recreate` 或 `blocked-removal`）；可选字段 `blocked` 是说明原因的字符串。
 
-删改 YAML 条目绝不会自动销毁虚拟机；修改 Barn 不消费的 Pigsty 服务级变量则会显示 `action: none`。当节点需要 `recreate` 时，Barn 会替换其根盘与非持久数据盘，并保留规格兼容的持久数据盘。在交互式终端中执行 `recreate` 和 `destroy` 需输入命令名确认，非交互脚本中则需传入 `--force`。
+删改 YAML 条目绝不会自动销毁虚拟机；修改 Barn 不消费的 Pigsty 服务级变量则会显示 `action: none`。当节点需要 `recreate` 时，Barn 会替换其根盘与非持久数据盘，并保留规格兼容的持久数据盘。在交互式终端中执行 `recreate` 和 `destroy` 需输入命令名确认，非交互脚本中则需传入 `--yes`（或 `--force`）。
 
 `recreate` 是显式的替换路径。Barn 会先校验新镜像、网络、共享目录以及持久
 数据盘的挂载契约，然后销毁选定节点的虚拟机产物，再按目标清单启动全新的
 虚拟机。根盘和非持久数据盘会被替换；兼容的持久数据盘继续保留并重新挂载。
 替换后的虚拟机会获得新的身份，同时刷新 SSH 主机密钥状态。
 
+不带节点名的 `recreate` 会替换部署中的全部节点，并在确认提示中逐一列出。
+如果清单缺少某个已有节点，它会在停止任何虚拟机前拒绝执行（退出码 `4`，
+`reason: nodes_removed`）：请用 `barn destroy <node>` 显式删除该节点，或把它
+加回清单。Barn 会在销毁锁内再次核对范围，预检期间已应用状态发生变化时报告
+`deployment_changed`。
+
 ### 分批应用节点变更 {#selected-nodes}
 
-**Barn 0.9.3**：可以一次编辑多个节点，再分批应用：
+可以一次编辑多个节点，再分批应用：
 
 ```bash
 barn plan node-1 -f barn.yml
@@ -88,7 +94,7 @@ barn plan node-2 -f barn.yml
 
 显式选择节点执行 `plan`、`up`、`reload`、`recreate` 或 `resize` 时，未选中节点保留已应用定义，即使 YAML 已修改或暂时省略它们。未创建且未选中的节点会在选中时才解析镜像。整份清单仍须通过语法解析，所选变更也不能与已应用节点的地址、别名、控制节点角色或部署公共设置发生冲突。
 
-不传节点名时，Barn 会检查整份清单：CPU 与内存变更使用 `resize`，其他已有节点规格变更需要 `recreate`，清单中缺失的节点需要恢复定义或显式销毁。详见[Barn 0.9.3 变更](../../about/0.9.3-changes/)。
+不传节点名时，Barn 会检查整份清单：CPU 与内存变更使用 `resize`，其他已有节点规格变更需要 `recreate`，清单中缺失的节点需要恢复定义或显式销毁。
 
 ## 并发命令
 
@@ -116,10 +122,10 @@ barn destroy --delete-persistent
 barn purge
 ```
 
-- `barn destroy <node>` 仅删除指定节点，并为剩余节点刷新 SSH 配置片段。
+- `barn destroy <node>` 仅删除指定节点，并为剩余节点刷新 SSH 配置片段。删除控制节点时，剩余的第一个节点接任控制节点，`ssh-config`、`hosts`、`exec` 与 `provision` 可继续使用；请将清单中的 `admin_ip` 改为该节点的地址（除非希望 `up` 重新创建已删除的节点，否则一并删除其条目），再执行 `barn up` 安装其控制 SSH 访问。
 - `barn destroy` 删除整套部署的虚拟机、根盘和非持久数据盘，同时保留持久数据盘、部署密钥、镜像缓存和宿主网络。
 - `barn destroy --delete-persistent` 与 `barn destroy --purge` 仅适用于整套部署（不支持与节点名称同用），其中 `--purge` 会一并删除持久数据盘、密钥和部署状态。
-- `barn purge` 等价于无需确认的 `barn destroy --force --purge`，可一键清空整套 Linux 实验环境及归属明确的遗留持久盘，同时保留镜像缓存与宿主网络。
+- `barn purge` 与 `barn destroy --purge` 一样清空整套 Linux 实验环境，并且在部署状态已不存在时也能删除归属明确的遗留持久盘。在终端中，它会列出清理范围并要求输入 `purge`；`--yes`（或 `--force`）跳过询问，没有终端时直接执行。镜像缓存与宿主网络保持安装。
 
 所有虚拟机移除后，如需卸载多用户共享的 Linux 宿主网络：
 

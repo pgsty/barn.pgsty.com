@@ -14,7 +14,7 @@ Mac VMs are managed independently from the Linux lab: they do not read `barn.yml
 
 - An Apple Silicon Mac running **macOS 27 or later** with an active logged-in desktop session (guests also run macOS 27).
 - Roughly **65 GiB** of free disk space for the first VM—covering Apple's ~25 GiB restore image (`.ipsw`), the ~27 GiB installed base image, and initial guest writes. Each VM clones the base image on APFS and grows up to its configured capacity (100 GiB by default).
-- The native **`Barn.app`** bundle paired with the `0.9.3` CLI, included in the Apple Silicon release and Homebrew installation.
+- The native **`Barn.app`** bundle paired with the CLI from the same release, included in the Apple Silicon release and Homebrew installation.
 - No `sudo` privileges required.
 
 Apple's Virtualization framework allows **at most two running macOS VMs at a time** per Mac across all virtualization tools (including an active macOS base-image installation). You can keep additional stopped VMs on disk and start any two at once, subject to the Apple software license.
@@ -62,7 +62,7 @@ shell:     barn mac ssh mac1
 desktop:   barn mac open mac1
 ```
 
-Subsequent VMs clone the prepared base image in seconds without repeating the IPSW restore. Barn `0.9.3` pins initial setup to **macOS 27.0 (26A428)**; use `barn mac image update` when you want to adopt a newer macOS 27 build.
+Subsequent VMs clone the prepared base image in seconds without repeating the IPSW restore. Barn pins initial setup to **macOS 27.0 (26A428)**; use `barn mac image update` when you want to adopt a newer macOS 27 build.
 
 If you already have a local copy of Apple's restore image, pass `--ipsw` to skip the download (Barn clones it without copying if it resides on the same APFS volume):
 
@@ -227,7 +227,7 @@ barn mac configure dev --cpu 6 --memory 12G --subnet auto
 barn mac start dev
 ```
 
-To reset a VM's disk to a clean clone of the base image while preserving its name, account, hardware settings, shares, and IP, run `barn mac recreate`. To delete the VM completely, run `barn mac destroy` (pass `--force` in non-interactive scripts):
+To reset a VM's disk to a clean clone of the base image while preserving its name, account, hardware settings, shares, and IP, run `barn mac recreate`. To delete the VM completely, run `barn mac destroy`. Both commands ask for typed confirmation on a terminal; pass `--yes` in non-interactive scripts:
 
 ```bash
 barn mac recreate dev

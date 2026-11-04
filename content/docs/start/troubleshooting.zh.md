@@ -5,7 +5,7 @@ weight: 70
 icon: fa-solid fa-life-ring
 ---
 
-本手册提供 **Barn 0.9.3** 下 Linux 实验环境的常见问题排查步骤。macOS 客机请运行 `barn mac doctor` 并参阅 [Mac 故障排查章节](../macos/#故障排查)。
+本手册提供 Linux 实验环境的常见问题排查步骤。macOS 客机请运行 `barn mac doctor` 并参阅 [Mac 故障排查章节](../macos/#故障排查)。
 
 排查问题时，建议先采集以下三份 JSON 诊断报告（当没有其他命令持有部署锁时，`barn status` 还会自动收敛中断的虚拟机状态）：
 
@@ -39,17 +39,13 @@ barn version
 
 若 `barn status` 提示 `no deployment state found`，说明当前 `BARN_HOME` 下尚无已应用部署（全新环境或刚执行过 `purge`）。
 
-## init 拒绝目录符号链接 {#linked-directory}
+## init 输出路径与符号链接 {#linked-directory}
 
-Barn 0.9.3 报出 `atomic create parent is not a real directory: ...` 时，可能只是输出目录为符号链接，即使其目标是可写的真实目录也会触发。[Barn 0.9.3 路径修复](../../about/0.9.3-changes/#paths)已支持解析目录链接，并为 `init -o` 创建缺失的父目录。
-
-使用 0.9.3 时，可临时改用物理目录路径输出：
+`barn init` 与 `barn setup` 可以经由目录符号链接写入，`barn init -o ./lab/config/barn.yml` 也会自动创建缺失的父目录。覆盖已有文件需要 `--force`。Barn 不会经由输出文件本身的符号链接写入：传入 `--force` 时会报告 `will not overwrite …: it is a symlink`，此时请改为传入链接指向的目标路径：
 
 ```bash
-barn init -o "$(pwd -P)/barn.yml"
+barn init -o "$(readlink -f barn.yml)" --force
 ```
-
-也可先执行 `cd -P .` 再运行 `barn init`，原目录符号链接可以保留。0.9.3 输出到多级新路径时，请先创建父目录。覆盖已有文件仍需 `--force`，写入操作不会跟随输出文件本身的符号链接。
 
 ## setup 需要 sudo
 
@@ -65,7 +61,7 @@ Homebrew 的 `qemu` 配方已同时包含 `arm64` 与 `amd64` 系统模拟器，
 
 ## 网络状态为 partial 或 invalid
 
-若宿主网络配置完整但处于未激活状态，交互式运行 `barn up` 即可自动恢复。若 `barn network status` 报告 `partial` 或 `invalid`，请通过内置卸载命令预览并清理受管资源，切勿手动删除系统网络配置文件：
+若宿主网络配置完整但处于未激活状态，交互式运行 `barn up` 会把重新启动网络列入宿主准备计划，询问一次后执行；没有终端时请运行 `barn setup --yes`。若 `barn network status` 报告 `partial` 或 `invalid`，请通过内置卸载命令预览并清理受管资源，切勿手动删除系统网络配置文件：
 
 ```bash
 barn network status --json --verbose
@@ -89,10 +85,10 @@ dpkg-statoverride --list /usr/lib/qemu/qemu-bridge-helper
 
 ## plan 报告 recreate 或 missing
 
-- **`recreate`**：节点的虚拟机规格定义已变更。请先查看 `barn plan` 并备份根盘或非持久数据盘上的文件，再运行 `barn recreate <node>`（非交互环境需加 `--force`）。
-- **`missing`**：已创建的节点从 YAML 清单中被移除。可恢复该节点的 YAML 条目，或执行 `barn destroy <node>` 将其销毁。
+- **`recreate`**：节点的虚拟机规格定义已变更。请先查看 `barn plan` 并备份根盘或非持久数据盘上的文件，再运行 `barn recreate <node>`（非交互环境需加 `--yes`）。
+- **`missing`**：已创建的节点从 YAML 清单中被移除。可恢复该节点的 YAML 条目，或执行 `barn destroy <node>` 将其销毁。存在缺失节点时，不带节点名的 `barn recreate` 会在停止任何虚拟机前拒绝执行（退出码 `4`，`reason: nodes_removed`）。
 
-采用[Barn 0.9.3 节点选择规则](../operations/#selected-nodes)后，`barn plan node-1` 与 `barn recreate node-1` 会保留未选中节点的已应用定义，无关节点的编辑不再要求一起重建。地址、别名、控制节点角色及部署公共设置的真实冲突仍需处理。
+使用[节点选择](../operations/#selected-nodes)时，`barn plan node-1` 与 `barn recreate node-1` 会保留未选中节点的已应用定义，无关节点的编辑不必一起重建。地址、别名、控制节点角色及部署公共设置的真实冲突仍需处理。
 
 ## 节点未就绪 {#节点未就绪}
 
@@ -109,14 +105,14 @@ barn status
 
 | 报告的功能限制 | 处理方法 |
 |---|---|
-| 数据盘不可用 | 排查设备缺失、文件系统工具、挂载繁忙或宿主 I/O 错误后，重新运行 `barn up` |
+| 数据盘不可用 | 排查设备缺失、文件系统工具、挂载繁忙或宿主 I/O 错误后，重新运行 `barn up`。带分区表、签名缺少 UUID 或使用不支持的文件系统特性的磁盘会保留数据且不挂载 |
 | 共享目录只读 | 核对宿主与客机的实际写权限后，重新运行 `barn up` |
 | 客机 hosts 或控制节点 SSH 未完成 | 重新运行 `barn up` 刷新客机内的托管文件 |
 | 私网网卡不可用 | 检查 `barn network status`，修复宿主网桥或 vmnet 后重新运行 `barn up` |
 
-排除故障后再次运行 `barn up`，Barn 会仅重试未完成的阶段而不重启健康节点（若测试数据盘文件系统无法识别或已确认损坏，恢复流程可能会将其重新格式化；详见[数据盘说明](../../reference/configuration/#数据盘)）。若希望在首次准备失败时当场清理未完成产物，可在运行 `barn up` 时加上 `--rollback`。
+排除故障后再次运行 `barn up`，Barn 会仅重试未完成的阶段而不重启健康节点。空白数据盘会被初始化；ext4 或 XFS 数据盘只有在文件系统检查工具报告可识别的损坏时才会重置（详见[数据盘说明](../../reference/configuration/#数据盘)）。若希望在首次准备失败时当场清理未完成产物，可在运行 `barn up` 时加上 `--rollback`。
 
-Linux 目录共享要求 QEMU 与客机内核均支持 9p；如果客机内核不支持，修正宿主路径也无法挂载，可改用 SSH/SCP/rsync 或支持 9p 的内核。macOS 宿主向 Linux 客机共享目录还需要[Barn 0.9.3 修复](../../about/0.9.3-changes/#sharing)；原生 macOS 客机使用独立的 VirtioFS。
+Linux 目录共享要求 QEMU 与客机内核均支持 9p；如果客机内核不支持，修正宿主路径也无法挂载，可改用 SSH/SCP/rsync 或支持 9p 的内核。该要求同样适用于 macOS 宿主；原生 macOS 客机使用独立的 VirtioFS。
 
 ## SSH 失败
 
@@ -129,11 +125,13 @@ Linux 目录共享要求 QEMU 与客机内核均支持 9p；如果客机内核�
 
 ## 镜像目录或镜像校验失败
 
-Barn 二进制内置了 active 与 standby Minisign 公钥，会严格拦截未知签名者、目录版本回滚、文件尺寸或 SHA-256 不匹配以及存在安全隐患的 `qcow2` 结构。请始终使用正确签名的镜像仓库，或通过 `barn image import --sha256 ...` 导入本地镜像，切勿直接将文件手动拷入 `~/.barn/images`。
+Barn 二进制内置了 active 与 standby Minisign 公钥，会严格拦截未知签名者、目录版本回滚、文件尺寸或 SHA-256 不匹配以及存在安全隐患的 `qcow2` 结构。目录签名或签名 revision 校验失败时退出码为 `7`（`error: integrity`，`reason: catalog_signature` 或 `catalog_equivocation`）；读取缓存签名时出现权限或 I/O 错误仍属于运行时错误（退出码 `1`）。请始终使用正确签名的镜像仓库，或通过 `barn image import --sha256 ...` 导入本地镜像，切勿直接将文件手动拷入 `~/.barn/images`。
 
 ## 命令被中断 {#命令被中断}
 
-请先运行 `barn status`：若后台仍有其他 Barn 命令持有部署锁，输出会附带 `note` 提示——请等待该命令自然结束，切勿将其视为异常中断。
+按下 `Ctrl-C` 或发送 `SIGTERM` 会取消命令，退出码为 `130`（`cancelled`）。Barn 会向它启动的进程发送 `SIGTERM`，`sudo` 会将其转发给特权命令；Barn 最多等待 10 秒，忽略 `SIGTERM` 的后代进程会继续运行，需要你自行停止。
+
+命令中断后，请先运行 `barn status`：若后台仍有其他 Barn 命令持有部署锁，输出会附带 `note` 提示——请等待该命令自然结束，切勿将其视为异常中断。
 
 当没有进程持锁时，`barn status` 会比对记录的 QEMU PID 与进程启动时间戳，确认进程真实身份后自动收敛状态：
 

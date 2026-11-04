@@ -6,7 +6,7 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-This reference covers global presentation options and Linux lab commands in **Barn 0.9.3**. For macOS guests, see [Mac Commands](../mac/). Run `barn version` when checking another version.
+This reference covers global presentation options and Linux lab commands in **Barn 1.0.0**. For macOS guests, see [Mac Commands](../mac/). Run `barn version` when checking another version.
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -20,7 +20,11 @@ barn setup --help
 barn image pull --help
 ```
 
-Running `barn` with no arguments prints a welcome summary and suggested next commands (or an `actions[]` array in JSON/YAML mode) and exits `0`. Invoking a command group without a subcommand—such as `barn image`—exits `2` (printing help in text mode or a usage error object in JSON/YAML mode). Explicit `--help` always prints human-readable help and exits `0`. Use `barn --version` or `barn version` to inspect the build identity.
+Running `barn` with no arguments prints the same complete help as `barn --help` and exits `0`; with `--json` or `--yaml` it returns an `actions[]` array of suggested next commands instead. Invoking a command group without a subcommand—such as `barn image`—exits `2` (printing help in text mode or a usage error object in JSON/YAML mode). Explicit `--help` always prints human-readable help and exits `0`. Use `barn --version` or `barn version` to inspect the build identity.
+
+## 1.x compatibility {#compatibility}
+
+From 1.0.0, an incompatible change to any of the following requires a new major version: command names, aliases, flags, and argument grammar (including `--` before a remote command); exit codes and the structured `error` and `reason` values; existing `--json` and `--yaml` fields (new fields may be added); the inventory format and the meaning of existing `vm_*` keys; `BARN_*` environment variables; and the deployment and Mac state under `BARN_HOME`, which a 1.x release reads from earlier 1.x releases and from 0.9.3 without recreating VMs. Human-readable text, help wording, progress lines, and log contents can change in any release, so scripts should rely on structured output and exit codes. The [1.0.0 release notes](../../../blog/release/1.0.0/#compatibility) record this scope.
 
 ## Commands
 
@@ -62,7 +66,7 @@ Barn manages a single deployment per `BARN_HOME` (default `~/.barn`; see [Config
 | Other lifecycle & access commands | Operate directly on applied state in `BARN_HOME` |
 {.wide .expand}
 
-When neither an inventory file nor an applied deployment exists, an interactive `barn up` can generate the default `meta` inventory, install missing host dependencies, and bring up an inactive Barn host network (sudo may still prompt for your OS password). To inspect host preparation before applying it, run `barn setup --dry-run`; in non-interactive scripts, run `barn setup --yes` explicitly.
+When a host dependency or the Barn network is missing, `up`, `start`, `restart`, and `reload` on a terminal prepare the host as `barn setup` does: they show the host-preparation plan and ask once before installing packages or the network (sudo may still prompt for your OS password). When neither an inventory file nor an applied deployment exists, an interactive `barn up` also generates the default `meta` inventory first. Without a terminal these commands only report what is missing. Run `barn setup --dry-run` to inspect the plan, and `barn setup --yes` to prepare the host from a script.
 
 If the default `10.10.10.0/24` subnet conflicts with an existing host route while preparing a fresh, unedited default template, `setup` selects another free RFC1918 `/24` and backs up the prior template as `barn.yml.before-network-change`. Explicit `-f` inventories, edited files, and existing deployments always keep their configured subnet.
 
@@ -79,8 +83,8 @@ If the default `10.10.10.0/24` subnet conflicts with an existing host route whil
 | `--mirror` | Use the China official repository (`https://repo.pigsty.cc/barn`) for setup, catalog updates, and image pulls |
 | `-m`, `--mode` | Select `host` or `shared` network mode on macOS |
 | `-d`, `--dry-run` | Print the execution plan for `setup` or `image prune` without modifying state |
-| `-y`, `--yes` | Confirm and apply a host, setup, or image plan |
-| `--force` (`init`, `destroy`, `recreate`) | Overwrite generated files or skip the interactive confirmation word (long-form only, as `-f` means `--file`) |
+| `--yes` | Confirm host, setup, image, or destruction plans; `-y` is available only where listed below |
+| `--force` (`init`, `destroy`, `recreate`, `purge`) | Overwrite an existing inventory (`init`) or skip the interactive confirmation word (long-form only, as `-f` means `--file`) |
 | `-n`, `--no-wait` | Return as soon as QEMU starts, skipping guest SSH readiness and recovery checks |
 | `--rollback` (`up`, `reload`) | Clean up uncommitted preparation artifacts for nodes that failed during the current run |
 | `--delete-persistent` | Delete `persistent: true` data disks during a whole-deployment `destroy` |
@@ -96,14 +100,15 @@ Each command exposes only the flags that apply to its operation:
 | `validate` | `--file/-f`, `--repo/-r`; accepts no node arguments |
 | `plan` | `--file/-f`, `--repo/-r` |
 | `up`, `reload` | `--file/-f`, `--repo/-r`, `--mirror`, `--no-wait/-n`, `--rollback` |
-| `recreate` | `--file/-f`, `--repo/-r`, `--mirror`, `--force`, `--no-wait/-n` |
+| `recreate` | `--file/-f`, `--repo/-r`, `--mirror`, `--yes`/`--force`, `--no-wait/-n` |
 | `resize` | `--file/-f` |
 | `start`, `restart` | `--no-wait/-n` |
 | `stop`, `status` | Node selectors and global presentation flags only |
-| `destroy` | `--force`, `--delete-persistent`, `--purge` (the last two require whole-deployment scope) |
-| `purge`, `doctor`, `version` | Global presentation flags only |
+| `destroy` | `--yes`/`--force`, `--delete-persistent`, `--purge` (the last two require whole-deployment scope) |
+| `purge` | `--yes`/`--force` skips the terminal confirmation; accepts no node arguments |
+| `doctor`, `version` | Global presentation flags only |
 | `provision` | Required `--script/-s`; `--sudo`; `--parallel/-p` positive integer (default `1`); `--timeout/-t` positive duration (default `1h`) |
-| `ssh-config` | `--install/-i` or `--remove` (mutually exclusive); `--name` (default `barn`; `--remove` requires no active deployment) |
+| `ssh-config` | Optional node selectors; `--install/-i` or `--remove` (mutually exclusive); `--name` (default `barn`). `--remove` takes no nodes and works without deployment state |
 | `logs` | `--source/-s serial\|qemu\|events` (default `serial`); `--follow/-f` (`events` is deployment-wide and takes no node) |
 | `image info`, `image pull` | Optional image selector, `--arch/-a amd64\|arm64`, `--repo/-r`; `pull` also accepts `--mirror` |
 | `image import` | `--sha256/-s`; named imports (`--name local-*`) also require `--boot/-b bios\|uefi` and `--source-user/-u` |
@@ -121,9 +126,9 @@ Notes on flag behavior:
 
 - `setup --dry-run` and `setup --yes` are mutually exclusive. `--cidr` adjusts generated templates and never rewrites an existing `-f` file. For `validate` against the China mirror, pass `--repo https://repo.pigsty.cc/barn`.
 - `--image` applies only when `init` or `setup` generates a template. It writes `all.vars.vm_image`; it cannot override an existing `-f` inventory or a discovered file. The image is still resolved from the active catalog by later validation and lifecycle commands.
-- In Barn `0.9.3`, `network` and `hosts` `install`/`uninstall` display a plan and prompt for confirmation on a terminal (`install` defaults to yes; `uninstall` defaults to no). Without a terminal, pass `--yes` to apply the plan. On macOS, first-time network installation is handled by `barn setup`. `network uninstall` refuses to remove the host network while VMs are running, and stopping or destroying a deployment leaves the host network installed.
+- `network` and `hosts` `install`/`uninstall` display a plan and prompt for confirmation on a terminal (`install` defaults to yes; `uninstall` defaults to no). Without `--yes`, they only print the plan and exit `0` when stdin is not a terminal or the output is `--json`/`--yaml`; check `applied` in the structured report, or pass `--yes` to apply the plan. On macOS, first-time network installation is handled by `barn setup`. `network uninstall` refuses to remove the host network while VMs are running, and stopping or destroying a deployment leaves the host network installed. On Linux, `network uninstall` keeps the global networkd unit state when other host links exist or exclusive Barn use cannot be established; the plan reports `preserve_networkd`, and the applied report explains the decision in `checks.networkd`.
 - Safety and repository flags (`--mirror`, `--force`, `--rollback`, `--remove`, `--allow-downgrade`, `--sudo`, `--delete-persistent`, `--purge`) are long-form only. On Linux commands, `-f` selects `--file` (except `barn logs -f`, where `-f` means `--follow`), `-n` means `--no-wait` (whereas `barn mac logs -n` sets the line count), and `-d` means `--dry-run`.
-- `barn purge` performs an immediate whole-deployment deletion equivalent to `barn destroy --force --purge` without prompting: it removes all nodes, persistent disks, SSH keys, deployment state, and the default SSH config fragment while preserving cached images and the host network. When no deployment exists, both `barn purge` and whole-deployment `barn destroy` succeed cleanly (`purge` also cleans up any retained persistent disks whose Barn ownership metadata is intact, while leaving unverified directories untouched). If deployment state is missing, `destroy --force --delete-persistent` and `destroy --force --purge` exit with an error directing you to `barn purge`.
+- `barn purge` performs whole-deployment deletion equivalent to `barn destroy --yes --purge`: it removes all nodes, persistent disks, SSH keys, deployment state, and the default SSH config fragment while preserving cached images and the host network. On a terminal it lists this scope and asks you to type `purge`; `--yes` or `--force` skips the question, and without a terminal it runs without asking. When no deployment exists, both `barn purge` and whole-deployment `barn destroy` succeed cleanly (`purge` also cleans up any retained persistent disks whose Barn ownership metadata is intact, while leaving unverified directories untouched). If deployment state is missing, `destroy --force --delete-persistent` and `destroy --force --purge` exit with an error directing you to `barn purge`.
 
 ## Structured failures
 
@@ -147,19 +152,23 @@ When invoked without node arguments, lifecycle commands target all managed nodes
 - **`reload`** validates the effective desired specification and startup dependencies before stopping selected nodes, then runs `up` for that selection. It can add nodes; changes that replace an existing VM still require `recreate`.
 - **`resize`** applies only `vm_cpu` and `vm_mem` changes. Supported increases may be hot-plugged; decreases, older VMs, and unsupported backends use a stop/start fallback while preserving the VM identity and disks. It refuses image, disk, network, share, create, remove, and deployment-wide changes.
 - **`recreate`** applies changed node definitions by replacing root disks and non-persistent data disks while reattaching compatible [persistent data disks](../configuration/#data-disks). Explicit `plan`, `up`, `reload`, `recreate`, and `resize` selections retain unselected peers' applied definitions, including peers edited or omitted in YAML. Uncreated, unselected nodes do not require image resolution. Conflicting addresses, aliases, control-node roles, or deployment-wide settings still fail preflight; omitting selectors applies the whole inventory.
-- When configuration drift requires a destructive action, `up` and `reload` exit with a `conflict` error pointing to `barn plan` and `barn recreate <node>` or `barn destroy <node>`. On a terminal, `recreate` and `destroy` require typing the confirmation word unless `--force` is passed.
+- When configuration drift requires a destructive action, `up` and `reload` exit with a `conflict` error pointing to `barn plan` and `barn recreate <node>` or `barn destroy <node>`. On a terminal, `recreate` and `destroy` list the nodes they replace or remove and require typing the command name unless `--yes` (or `--force`) is passed; without a terminal they exit `2` unless one of those flags is present. Without node arguments, both apply to the whole deployment.
+
+A whole-deployment `recreate` refuses an inventory that omits an existing node before any VM stops (`conflict`, reason `nodes_removed`, exit `4`). Remove that node explicitly with `barn destroy <node>`, or add it back to the inventory. Barn checks the scope again under the destruction lock; if the applied state changed during preflight, recreate exits with reason `deployment_changed`, and you can review the plan and retry.
+
+Destroying the control node makes the first remaining node the control node. Update the inventory's control role (`admin_ip`) to that node, then run `barn up` to install its control SSH access; `--no-wait` defers that step. Until you do, an inventory that still names the deleted node as control is role drift and `up` refuses it; to bring the old node back, add it as a regular node. Barn refuses to destroy the control node, before deleting anything, when the successor has an unfinished prepare record that cannot be completed, and the error names the successor.
 
 ### Planning
 
 `barn plan` is read-only and exits `0` even when its recommended `action` is `resize`, `recreate`, or `blocked-removal`; automation scripts should inspect `action`, the `create`, `resize`, `recreate`, `start`, and `missing` arrays, and the optional `blocked` explanation string.
 
-For catalog images, `plan` resolves configuration and catalog metadata locally without requiring QEMU or host networking; for `local-*` imported images, it also verifies the cached image via `qemu-img`. Plans never download images and display exact image versions, total CPU/memory/disk resources, drift reasons, and per-disk actions (including the default 128 GiB `/data` disk in Barn 0.9.3).
+For catalog images, `plan` resolves configuration and catalog metadata locally without requiring QEMU or host networking; for `local-*` imported images, it also verifies the cached image via `qemu-img`. Plans never download images and display exact image versions, total CPU/memory/disk resources, drift reasons, and per-disk actions (including the default 128 GiB `/data` disk).
 
 ### Starting and SSH configuration
 
 `barn up` verifies host capabilities and IP availability, creates new nodes, starts stopped nodes, verifies SSH readiness on running nodes, and refreshes Barn's host SSH client fragment (`~/.ssh/barn_config`) and guest `/etc/hosts` + control-node SSH entries. `recreate` performs the same full refresh; `start` and `restart` also refresh SSH aliases; per-node `destroy` removes the destroyed node's SSH entry; and whole-deployment `destroy` removes the fragment.
 
-If a VM lifecycle action succeeds but updating `~/.ssh/config` fails (or if `~/.ssh/config` is a symlink or hard link, which Barn 0.9.3 leaves untouched), Barn writes `~/.ssh/barn_config`, prints the `Include` line to add manually, records the notice in `warnings[]`, and exits `0` (`barn ssh` continues to work directly).
+If a VM lifecycle action succeeds but updating `~/.ssh/config` fails (or if `~/.ssh/config` is a symlink or hard link, which Barn never edits), Barn writes `~/.ssh/barn_config`, prints the `Include` line to add manually, records the notice in `warnings[]`, and exits `0` (`barn ssh` continues to work directly).
 
 On the control node, Barn-managed SSH entries accept replacement host keys without writing to `known_hosts`, keeping recreated lab nodes reachable while preserving any custom SSH entries you added yourself.
 
@@ -168,6 +177,8 @@ On the control node, Barn-managed SSH entries accept replacement host keys witho
 A Linux guest is considered ready once management SSH succeeds. Non-fatal post-boot issues are reported in `nodes[].warnings`, and completed recovery actions (such as formatting a damaged data disk) are recorded in `nodes[].repairs`; the command still exits `0`. Re-running `barn up` retries any unfinished guest setup steps on running VMs without restarting them.
 
 Passing `--no-wait` returns as soon as the QEMU process is running, deferring SSH readiness, disk recovery, and guest `/etc/hosts` updates to the next `barn up`.
+
+[Data disks](../configuration/#data-disks) describes which disk problems Barn repairs (reported in `repairs`) and which it only reports (in `warnings`). Existing guests receive the current recovery helper on their next `barn up` readiness check.
 
 ### Node failures
 
@@ -184,10 +195,11 @@ When one or more nodes fail during a batch operation, Barn preserves any nodes t
 - **Retained persistent disks**: Persistent disks left behind by a previously removed node do not block destroying the remaining nodes; use `destroy --delete-persistent` or `purge` to remove them.
 - **macOS setup ordering**: On macOS, `setup` finishes Homebrew discovery/installation or the pinned `socket_vmnet` archive download before prompting for administrator privileges, so downloads neither expire an earlier `sudo` token nor prompt for a password when a download fails.
 - **PID and journal reconciliation**: If a recorded QEMU PID has been reused by an unrelated process, Barn marks the node `stopped`; if a `stop` was interrupted while the VM process remained alive, Barn marks it `running`. Other interrupted transitions print the recovery command (`destroy` resolves interrupted state directly), and a failed initial `up` automatically rolls back uncommitted journal artifacts on the next run.
+- **Cancellation**: When a command is cancelled, Barn sends SIGTERM to the external program it is running, which `sudo` forwards to the privileged command, and waits at most 10 seconds for that process and its inherited output pipes. Descendants that ignore SIGTERM need external supervision.
 
 ## Logs and environment
 
-`barn logs` reads the guest serial console (`--source serial`) by default. Pass `--source qemu` for QEMU stderr diagnostics or `--source events` for the deployment-wide bounded event log. Adding `--follow` (`-f`) streams raw bytes in text mode, NDJSON lines in `--json` mode, or YAML documents in `--yaml` mode. In Barn 0.9.3, QEMU argv is omitted from normal log output unless `--verbose` is set.
+`barn logs` reads the guest serial console (`--source serial`) by default. Pass `--source qemu` for QEMU stderr diagnostics or `--source events` for the deployment-wide bounded event log. Adding `--follow` (`-f`) streams raw bytes in text mode, NDJSON lines in `--json` mode, or YAML documents in `--yaml` mode. QEMU argv is omitted from normal log output unless `--verbose` is set.
 
 | Environment variable | Purpose |
 |---|---|
@@ -195,9 +207,11 @@ When one or more nodes fail during a batch operation, Barn preserves any nodes t
 | `BARN_REPO` | Default image repository URL or path; overridden by `--mirror` and `--repo` |
 | `BARN_OUTPUT` | Default output format (`text`, `json`, or `yaml`); overridden by `--json`/`--yaml` |
 | `BARN_VERBOSE` | Boolean default for diagnostic output; overridden by `-v`/`--verbose` |
-| `BARN_VMNET_ARCHIVE` | Path to a local pinned `socket_vmnet` archive for macOS setup; Barn 0.9.3 also accepts relative paths, `~/`, and symlinks (SHA-256 verification still applies) |
+| `BARN_VMNET_ARCHIVE` | Path to a local pinned `socket_vmnet` archive for macOS setup; accepts relative paths, `~/`, and symlinks (SHA-256 verification still applies) |
 | `NO_COLOR` | Any non-empty value disables ANSI color output |
 {.wide .expand}
+
+Explicit `--json`, `--yaml`, and `-v`/`--verbose` override `BARN_OUTPUT` and `BARN_VERBOSE`, and `--help` works even when those variables hold invalid values. Any other command exits `2` (`usage`) while an invalid value is not overridden on the command line.
 
 ## SSH passthrough and completion {#ssh-passthrough-and-completion}
 
@@ -236,9 +250,11 @@ Generate shell completion with `barn completion bash|zsh|fish|powershell` (for B
 | `4` | `conflict` | Operation conflicts with current deployment state or another active `barn` process |
 | `5` | `partial` | Node-level batch failure; inspect `failures[]` (successful peer nodes remain intact) |
 | `6` | `resource` | Host IP address, port, subnet, or disk path is already in use |
-| `7` | `integrity` | Digest, signature, instance identity, or file ownership verification failed |
+| `7` | `integrity` | Digest, catalog signature or signed revision, instance identity, or file ownership verification failed |
 | `130` | `cancelled` | Interrupted by `SIGINT`/`SIGTERM` or interactive confirmation declined |
 {.wide .expand}
+
+An image catalog whose signature is missing or does not verify fails with `reason: "catalog_signature"`, and a catalog that reuses an accepted or embedded revision number with different bytes fails with `reason: "catalog_equivocation"`. Permission and I/O errors while reading a cached catalog signature are runtime failures (exit `1`).
 
 When another `barn` process holds the deployment lock, mutating commands wait up to 10 minutes while reporting the lock holder, then exit `4` with `reason: "deployment_busy"` on timeout. Read-only and access commands (`status`, `ssh`, `exec`, `ssh-config`, `hosts`) do not wait on the lock; `status` displays the last committed state and notes the active operation in `note`.
 

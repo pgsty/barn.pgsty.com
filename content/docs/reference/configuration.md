@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-This reference describes Barn 0.9.3. Run `barn version` to check your build.
+This reference describes Barn 1.0.0. Run `barn version` to check your build.
 
 ## Discovery
 
@@ -47,7 +47,7 @@ barn --json validate -f barn.yml
 barn plan -f barn.yml
 ```
 
-`validate` checks YAML syntax, field rules, and image catalog references (accepting `--repo` in Barn 0.9.3) without starting VMs or downloading images. Its JSON output includes `valid`, `source`, `spec_hash`, and `resolved`; if the local image catalog cannot be read, it emits a warning and leaves image selectors unresolved. During `up`, Barn verifies `local-*` imported image bytes, host capabilities, shared directories, networking, and guest SSH readiness.
+`validate` checks YAML syntax, field rules, and image catalog references (pass `--repo` to check against another repository's catalog) without starting VMs or downloading images. Its JSON output includes `valid`, `source`, `spec_hash`, and `resolved`; if the local image catalog cannot be read, it emits a warning and leaves image selectors unresolved. During `up`, Barn verifies `local-*` imported image bytes, host capabilities, shared directories, networking, and guest SSH readiness.
 
 ## What Barn reads
 
@@ -87,10 +87,10 @@ Use `vm_version` when you want to keep the image family and version prefix in se
 
 ```yaml {title="barn.yml"}
 vm_image: el9
-vm_version: "9.7"
+vm_version: "9.8"
 ```
 
-If an exact version match exists in the catalog, Barn selects it; otherwise it matches dot-separated numeric prefixes and picks the highest version (`9.7` selects the latest `9.7.*` build, `9` selects the latest `9.x` release, and `9.10` sorts after `9.9`). Use `vm_version` only with a bare family name in `vm_image` (without `:channel` or `@version`).
+If an exact version match exists in the catalog, Barn selects it; otherwise it matches dot-separated numeric prefixes and picks the highest version (`9.8` selects the latest `9.8.*` build, `9` selects the latest `9.x` release, and `9.10` sorts after `9.9`). Use `vm_version` only with a bare family name in `vm_image` (without `:channel` or `@version`).
 
 `vm_arch` applies to the entire deployment and should be set once under `all.vars`. Changing `vm_arch` requires recreating the deployment. On Linux hosts, `barn setup` installs the native QEMU emulator; running a foreign guest architecture requires installing the corresponding `qemu-system-*` binary and UEFI firmware packages.
 
@@ -112,7 +112,7 @@ Each entry in `vm_disks` configures an additional virtual block device:
 - **`persistent`**: When `true`, ordinary `barn destroy` and `barn recreate` keep the disk image on the host so the recreated node reattaches it when the disk identity and definition remain compatible. Set `vm_disks: []` to create a node with no extra data disks.
 
 > [!IMPORTANT]
-> **Data disks are disposable test storage.** During `up`, if a data disk has an unrecognized or confirmed-corrupt filesystem, Barn formats it to the configured `fs` type and reports the reset in `nodes[].repairs` (including for `persistent: true` disks). Transient probe errors, missing block devices, busy mounts, and host I/O errors never trigger formatting, and root disks or host shares are never auto-formatted.
+> **Data disks are disposable test storage.** During `up`, Barn formats a blank data disk with the configured `fs`. It resets an existing ext4 or XFS filesystem, `persistent: true` disks included, only when the guest's read-only check (`e2fsck -fn` or `xfs_repair -n`) reports recognized corruption, and records the reset in `nodes[].repairs`. A disk with a partition table, a signature without a filesystem UUID, another filesystem type, features the guest tools do not support, or an unrecognized checker failure keeps its data and gets a warning in `nodes[].warnings`; so do transient probe errors, missing block devices, busy mounts, and host I/O errors. Root disks and host shares are never formatted.
 
 ## Shares
 

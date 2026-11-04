@@ -5,7 +5,7 @@ weight: 70
 icon: fa-solid fa-life-ring
 ---
 
-This guide covers Linux lab diagnostics for **Barn 0.9.3**. For macOS guests, run `barn mac doctor` and see the [Mac troubleshooting section](../macos/#troubleshooting).
+This guide covers Linux lab diagnostics. For macOS guests, run `barn mac doctor` and see the [Mac troubleshooting section](../macos/#troubleshooting).
 
 Start by collecting the three JSON diagnostic reports (`barn status` also reconciles interrupted process state when no other command holds the lock):
 
@@ -39,17 +39,13 @@ Without `-f`, `plan`, `up`, `reload`, and `recreate` check the current directory
 
 If `barn status` reports `no deployment state found`, the active `BARN_HOME` has no applied deployment (either fresh or previously purged).
 
-## init rejects a directory symlink {#linked-directory}
+## init output paths and symlinks {#linked-directory}
 
-`atomic create parent is not a real directory: ...` in Barn 0.9.3 can mean that the output directory is a symlink, even when its target is a writable directory. The [Barn 0.9.3 path fix](../../about/0.9.3-changes/#paths) resolves directory aliases and creates missing parents for `init -o`.
-
-With 0.9.3, use the physical directory path for the output:
+`barn init` and `barn setup` work through directory symlinks, and `barn init -o ./lab/config/barn.yml` creates missing parent directories. An existing output file requires `--force`. Barn never writes through an output-file symlink: with `--force` it reports `will not overwrite …: it is a symlink`, so pass the link's target path instead:
 
 ```bash
-barn init -o "$(pwd -P)/barn.yml"
+barn init -o "$(readlink -f barn.yml)" --force
 ```
-
-You can also run `cd -P .` before `barn init`; the directory symlink can remain in place. For a nested output path on 0.9.3, create its parent directory first. Existing output files still require `--force`, and output-file symlinks are not followed for writes.
 
 ## Setup needs sudo
 
@@ -65,7 +61,7 @@ Homebrew's `qemu` formula includes both `arm64` and `amd64` system emulators, wh
 
 ## Network is partial or invalid
 
-An intact but stopped Barn host network is restarted automatically by an interactive `barn up`. If `barn network status` reports a `partial` or `invalid` state, inspect and apply Barn's managed cleanup plan instead of deleting system network files by hand:
+When the Barn host network is intact but stopped, an interactive `barn up` includes the restart in its host-preparation plan and asks once before applying it; without a terminal, run `barn setup --yes`. If `barn network status` reports a `partial` or `invalid` state, inspect and apply Barn's managed cleanup plan instead of deleting system network files by hand:
 
 ```bash
 barn network status --json --verbose
@@ -89,10 +85,10 @@ dpkg-statoverride --list /usr/lib/qemu/qemu-bridge-helper
 
 ## Plan reports recreate or missing
 
-- **`recreate`**: The node's inventory specification changed. Inspect `barn plan` and back up any data on the root or non-persistent disks before running `barn recreate <node>` (pass `--force` in non-interactive scripts).
-- **`missing`**: A provisioned node was removed from the YAML inventory. Either restore its YAML entry or run `barn destroy <node>` to delete the VM.
+- **`recreate`**: The node's inventory specification changed. Inspect `barn plan` and back up any data on the root or non-persistent disks before running `barn recreate <node>` (pass `--yes` in non-interactive scripts).
+- **`missing`**: A provisioned node was removed from the YAML inventory. Either restore its YAML entry or run `barn destroy <node>` to delete the VM. While a node is missing, `barn recreate` without node names refuses to run before any VM stops (exit `4`, `reason: nodes_removed`).
 
-With the [Barn 0.9.3 node-selection changes](../operations/#selected-nodes), `barn plan node-1` and `barn recreate node-1` retain unselected peers' applied definitions. An unrelated peer edit no longer requires rebuilding it together. Real conflicts in addresses, aliases, control-node roles, or deployment-wide settings still need to be resolved.
+With [node selectors](../operations/#selected-nodes), `barn plan node-1` and `barn recreate node-1` retain unselected peers' applied definitions, so an unrelated peer edit does not have to be rebuilt at the same time. Real conflicts in addresses, aliases, control-node roles, or deployment-wide settings still need to be resolved.
 
 ## A node did not become ready {#a-node-did-not-become-ready}
 
@@ -109,14 +105,14 @@ Secondary guest stages—data disks, Virtio-9p shares, hostname, `/etc/hosts`, c
 
 | Reported limitation | Remediation |
 |---|---|
-| Data disk unavailable | Resolve the missing device, filesystem tool, busy mount, or host I/O error, then re-run `barn up` |
+| Data disk unavailable | Resolve the missing device, filesystem tool, busy mount, or host I/O error, then re-run `barn up`. A disk with a partition table, a signature without a UUID, or unsupported filesystem features keeps its data and stays unmounted |
 | Shared directory is read-only | Check host and guest write permissions, then re-run `barn up` |
 | Guest hosts or control-node SSH incomplete | Re-run `barn up` to refresh the managed files inside the guest |
 | Private interface unavailable | Check `barn network status`, repair the host bridge/vmnet, and re-run `barn up` |
 
-Re-running `barn up` retries only the unfinished stages without restarting healthy VMs (and may reformat unrecognized or confirmed damaged test data filesystems; see [Data disks](../../reference/configuration/#data-disks)). Pass `--rollback` to `barn up` if you want failed initial preparation artifacts removed in the same run.
+Re-running `barn up` retries only the unfinished stages without restarting healthy VMs. It initializes blank data disks and resets an ext4 or XFS data filesystem only when the filesystem checker reports recognized corruption (see [Data disks](../../reference/configuration/#data-disks)). Pass `--rollback` to `barn up` if you want failed initial preparation artifacts removed in the same run.
 
-For Linux shared folders, both QEMU and the guest kernel need 9p support. A valid host path cannot make an unsupported guest kernel mount 9p; use SSH/SCP/rsync or a kernel with 9p support. Linux-guest sharing on a macOS host also requires the [Barn 0.9.3 fix](../../about/0.9.3-changes/#sharing); native macOS guests use VirtioFS separately.
+For Linux shared folders, both QEMU and the guest kernel need 9p support. A valid host path cannot make an unsupported guest kernel mount 9p; use SSH/SCP/rsync or a kernel with 9p support. This applies on macOS hosts as well as Linux hosts; native macOS guests use VirtioFS separately.
 
 ## SSH fails
 
@@ -129,11 +125,13 @@ Check `barn status`, `barn ssh-config`, and `barn logs <node>`.
 
 ## Catalog or image verification fails
 
-Barn embeds active and standby Minisign public keys and rejects unknown signers, catalog revision rollbacks, file size or SHA-256 mismatches, and malformed `qcow2` files. Always pull from a validly signed repository or register local images through `barn image import --sha256 ...` rather than copying files directly into `~/.barn/images`.
+Barn embeds active and standby Minisign public keys and rejects unknown signers, catalog revision rollbacks, file size or SHA-256 mismatches, and malformed `qcow2` files. A catalog signature or signed revision that does not verify exits `7` (`error: integrity`, `reason: catalog_signature` or `catalog_equivocation`); a permission or I/O error while reading a cached signature remains a runtime failure (exit `1`). Always pull from a validly signed repository or register local images through `barn image import --sha256 ...` rather than copying files directly into `~/.barn/images`.
 
 ## A command was killed {#a-command-was-killed}
 
-First run `barn status`. If another Barn process currently holds the deployment lock, `status` displays a `note`—wait for that operation to finish before intervening.
+Pressing `Ctrl-C` or sending `SIGTERM` cancels a command with exit `130` (`cancelled`). Barn sends `SIGTERM` to the processes it started, which `sudo` forwards to privileged commands, and waits at most 10 seconds for them; a descendant that ignores `SIGTERM` keeps running until you stop it.
+
+After an interruption, run `barn status` first. If another Barn process currently holds the deployment lock, `status` displays a `note`—wait for that operation to finish before intervening.
 
 When no command holds the lock, `barn status` verifies each recorded QEMU process identity (matching both PID and process start time) and reconciles the state automatically:
 

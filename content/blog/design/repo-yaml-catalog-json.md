@@ -42,7 +42,7 @@ images:
           arm64: {}
 ```
 
-Because `repo.yaml` stays compact and free of generated hashes, pull requests clearly show channel promotions, deprecations, and provenance updates (see [Image Repositories](/docs/start/images/) for a complete walkthrough and [Linux Images](/docs/reference/images/) for the current `2026102802` catalog).
+Because `repo.yaml` stays compact and free of generated hashes, pull requests clearly show channel promotions, deprecations, and provenance updates (see [Image Repositories](/docs/start/images/) for a complete walkthrough and [Linux Images](/docs/reference/images/) for the current `2026110502` catalog).
 
 > [!NOTE]
 > Repository authoring and client verification are covered in [Linux Images](/docs/reference/images/); offline candidate normalization is covered in [Image Pipeline](/docs/reference/image-pipeline/).
@@ -77,7 +77,7 @@ Predictable filenames make it easy to inspect, mirror, or rsync a repository wit
 
 ## Movable selectors, immutable resolved identities
 
-In `barn.yml` or CLI commands, selectors like `d13:stable`, `el9@9`, and `el9@9.7` provide convenient moving targets (comparing dot-separated version components as integers so `9.10` sorts after `9.9`).
+In `barn.yml` or CLI commands, selectors like `d13:stable`, `el9@9`, and `el9@9.8` provide convenient moving targets (comparing dot-separated version components as integers so `9.10` sorts after `9.9`).
 
 Once `barn plan` or `barn up` resolves a selector for a node, Barn records the exact version, architecture, byte size, and SHA-256 digest in committed state. Updating a channel in a future catalog never mutates an already created VM behind your back.
 

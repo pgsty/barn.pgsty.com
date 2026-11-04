@@ -7,13 +7,15 @@ weight: 30
 categories: [Design]
 tags: [Lifecycle, Drift, Safety]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-10-30
+lastmod: 2026-11-04
 ---
 
 This essay explains the Linux VM convergence model in Barn `0.9.3` ([macOS guests](/docs/start/macos/) are managed independently).
 
 > [!NOTE]
 > **2026-10-30 update:** The Barn 0.9.3 changes scope `plan`, `up`, `reload`, and `recreate` to explicit node selections and retain unselected peers' applied definitions. The whole-inventory drift rules described below still apply when no nodes are selected. See [selected-node operations](/docs/start/operations/#selected-nodes).
+>
+> **2026-11-04 update:** Barn 1.0.0 also stops whole-deployment `recreate` from destroying by omission: an inventory that no longer lists an existing node is refused before any VM stops (`conflict`, reason `nodes_removed`, exit 4), where 0.9.3 destroyed the omitted node. Data disks are reset only when they carry no signature or hold an ext4/XFS filesystem with recognized corruption; other failures keep the data and report a warning. See the [1.0.0 release notes](/blog/release/1.0.0/).
 
 A declarative tool compares live state against a configuration file—but in daily development, that file might be temporarily edited for debugging, checked out on another git branch, or missing a YAML group after a merge. If a local VM manager treats an omitted YAML block as permission to destroy a virtual machine, a single typo can wipe out a database node.
 

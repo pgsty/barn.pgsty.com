@@ -13,6 +13,6 @@ cascade:
   toc_taxonomies: false
 ---
 
-**[Barn 0.9.3](0.9.3/)** (2026-10-31) is the current release. All Barn `0.x` builds are published as GitHub pre-releases while the CLI contract approaches `1.0`—see [Install Barn](/docs/start/installation/) for pinned installation commands and asset verification.
+**[Barn 1.0.0](1.0.0/)** (2026-11-05) is the current release and the first stable one. Earlier `0.x` builds were GitHub pre-releases. See [Install Barn](/docs/start/installation/) for installation commands and asset verification.
 
-This archive covers every release and validation milestone from the initial `2026-08-24` development snapshot through `v0.9.3`.
+This archive covers every release and validation milestone from the initial `2026-08-24` development snapshot through `v1.0.0`.

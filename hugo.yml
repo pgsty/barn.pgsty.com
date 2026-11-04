@@ -40,8 +40,8 @@ languages:
               icon: fa-brands fa-apple
               keywords: [mac, macos, apple silicon, virtualization, desktop, share]
             - id: install
-              title: Install Barn 0.9.3
-              description: Install via Homebrew, pinned installer script, or native packages
+              title: Install Barn 1.0.0
+              description: Install via Homebrew, the installer script, or DEB/RPM packages
               url: /docs/start/installation/
               icon: fa-solid fa-download
               keywords: [install, brew, download, upgrade, package]
@@ -58,11 +58,11 @@ languages:
               icon: fa-solid fa-laptop-code
               keywords: [barn mac, runtime, clone, open, configure]
             - id: release_notes
-              title: Release Notes (0.9.3)
-              description: Signed Barn.app in Homebrew and release archives, plus SSH/exec argument rules
-              url: /blog/release/0.9.3/
+              title: Release Notes (1.0.0)
+              description: First stable release, 1.x compatibility scope, and upgrade from 0.9.3
+              url: /blog/release/1.0.0/
               icon: fa-solid fa-tag
-              keywords: [release, changelog, 0.9.3, upgrade, notarized]
+              keywords: [release, changelog, 1.0.0, stable, upgrade, compatibility]
     menus:
       main:
         - identifier: docs
@@ -152,8 +152,8 @@ languages:
               icon: fa-brands fa-apple
               keywords: [mac, macos, apple silicon, 虚拟化, 桌面, 共享目录]
             - id: install
-              title: 安装 Barn 0.9.3
-              description: 通过 Homebrew、固定版本安装脚本或原生软件包安装
+              title: 安装 Barn 1.0.0
+              description: 通过 Homebrew、安装脚本或 DEB/RPM 软件包安装
               url: /zh/docs/start/installation/
               icon: fa-solid fa-download
               keywords: [install, brew, 安装, 下载, 升级]
@@ -170,11 +170,11 @@ languages:
               icon: fa-solid fa-laptop-code
               keywords: [barn mac, 运行时, 克隆, open, configure]
             - id: release_notes
-              title: 发布说明 (0.9.3)
-              description: Homebrew 与发行包内置签名公证 Barn.app，明确 SSH/exec 参数规范
-              url: /zh/blog/release/0.9.3/
+              title: 发布说明 (1.0.0)
+              description: 首个稳定版、1.x 兼容性范围与从 0.9.3 升级
+              url: /zh/blog/release/1.0.0/
               icon: fa-solid fa-tag
-              keywords: [release, 发布说明, 0.9.3, 升级, 公证]
+              keywords: [release, 发布说明, 1.0.0, 稳定版, 升级, 兼容性]
     menus:
       main:
         - identifier: docs
@@ -284,7 +284,7 @@ params:
   github_repo: https://github.com/pgsty/barn.pgsty.com
   github_project_repo: https://github.com/pgsty/barn
   github_branch: main
-  version: 0.9.3
+  version: 1.0.0
   copyright:
     authors: '[PGSTY](https://pgsty.com/) and Barn contributors'
     from_year: 2026

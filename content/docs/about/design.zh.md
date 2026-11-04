@@ -28,7 +28,7 @@ Barn 通过同一个命令行入口提供两套独立的虚拟化工作流：多
 Barn 根据文档规定的 `vm_*` 字段与 Pigsty 身份字段为每个节点计算规格哈希，并将其与已提交状态及 QEMU 进程身份一同落盘：
 
 - `barn up` 会创建新增节点、启动已停止节点、在不中断运行中 QEMU 进程的前提下重试未完成的客机初始化，并刷新受管的 `/etc/hosts` 与 SSH 配置。
-- 修改已有节点的规格或从 `barn.yml` 中删去节点绝不会在后台静默销毁虚拟机——变更配置需显式运行 `barn recreate`，删除节点需显式运行 `barn destroy`（详见[声明式不等于破坏式](/zh/blog/design/convergence-without-surprise/)）。
+- 修改已有节点的规格或从 `barn.yml` 中删去节点绝不会在后台静默销毁虚拟机——CPU 与内存变更使用 `barn resize`，其他配置变更需显式运行 `barn recreate`，删除节点需显式运行 `barn destroy`。清单缺少已有节点时，整套部署 `recreate` 会拒绝执行（详见[声明式不等于破坏式](/zh/blog/design/convergence-without-surprise/)）。
 
 ## 运行时选择
 
@@ -54,7 +54,7 @@ Barn 根据文档规定的 `vm_*` 字段与 Pigsty 身份字段为每个节点�
 
 - 更新镜像目录通道（`barn update`）不会改写已创建节点的根盘。
 - 通过校验的基础镜像以只读权限共享，每台虚拟机将根盘写入各自独立的写时复制层（root overlay）。
-- 普通 `destroy` 与 `recreate` 会保留 `persistent: true` 的持久数据盘，而客机恢复流程在遇到无法识别或确认损坏的数据盘文件系统时会自动重格式化（详见[数据盘配置](../../reference/configuration/#数据盘)与[存储与访问](../../start/storage/)）。
+- 普通 `destroy` 与 `recreate` 会保留 `persistent: true` 的持久数据盘。恢复客机时，`up` 只会格式化没有任何签名的数据盘，或检查工具报告可识别损坏的 ext4/XFS 文件系统；无法判定的情况会保留数据并给出警告（详见[数据盘配置](../../reference/configuration/#数据盘)与[存储与访问](../../start/storage/)）。
 - `barn image prune` 自动保护活动镜像目录、已应用节点与 `local-*` 别名所引用的镜像（详见[镜像参考](../../reference/images/)）。
 
 ## 安全边界

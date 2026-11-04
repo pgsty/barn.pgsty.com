@@ -6,7 +6,7 @@ weight: 60
 icon: fa-solid fa-gears
 ---
 
-本指南介绍如何在无人值守脚本与 CI 流水线中调用 **Barn 0.9.3**。请始终以拥有该部署的普通 Unix 用户身份执行命令，并在每次调用时传入相同的 `-f <清单>` 与 `BARN_HOME`。
+本指南介绍如何在无人值守脚本与 CI 流水线中调用 Barn。请始终以拥有该部署的普通 Unix 用户身份执行命令，并在每次调用时传入相同的 `-f <清单>` 与 `BARN_HOME`。
 
 ## 准备可预测的实验环境
 
@@ -34,13 +34,13 @@ barn up -f barn.yml --json > up.json
 
 生成新清单时，可以使用 `barn init [模板] --image <引用>` 将镜像引用写入
 `all.vars.vm_image`，让所有生成节点继承同一个镜像。引用可以是目录别名
-（`el9`）、频道（`u24:stable`）或版本选择器（`u24@24.04`）。该参数只修改
+（`el9`）、频道（`u24:stable`）或版本选择器（`u24@20261017.0.1`）。该参数只修改
 清单；目录查询、签名校验和镜像下载仍由现有的 `validate`/`plan`/`up` 流程完成。
 准备宿主机并生成模板时，`barn setup [模板] --image <引用>` 也提供同样的参数。
 对于 `-f` 指定的已有清单或自动发现的已有清单，`--image` 会拒绝执行，必须
 由用户显式编辑清单。
 
-`barn setup --yes` 用于自动确认宿主准备计划；而非交互模式下的 `barn up` 不会自动触发首次宿主准备，要求宿主依赖和私有网络已提前就绪。
+`barn setup --yes` 会直接接受宿主准备计划，不再询问。在终端中，`up`、`start`、`restart` 与 `reload` 安装软件包或 Barn 网络前会展示同样的计划并询问一次；没有终端时它们只报告缺少的条件，因此请先执行 `barn setup --yes`。
 
 ## 结合退出码校验 JSON 结果
 
@@ -73,12 +73,14 @@ fi
 
 请结合[命令行退出码](../../reference/cli/#退出码)与各命令的 JSON 结构判断执行结果：
 
-- **退出码 `2`（`usage`）**：首次运行缺少配置文件、参数非法或镜像别名未知。
-- **退出码 `4`（`conflict`）**：清单发生需要显式处理的漂移（`reason: recreate_required` 或 `nodes_removed`），或等待部署锁超过 10 分钟（`reason: deployment_busy`）。
+- **退出码 `2`（`usage`）**：首次运行缺少配置文件、参数非法、镜像别名未知，或标准输入不是终端时执行 `destroy`/`recreate` 却未传 `--yes`（`purge` 则直接执行，不会询问）。
+- **退出码 `4`（`conflict`）**：清单发生需要显式处理的漂移（`reason: recreate_required` 或 `nodes_removed`），`recreate` 预检期间已应用状态发生变化（`reason: deployment_changed`），或等待部署锁超过 10 分钟（`reason: deployment_busy`）。
 - **退出码 `5`（`partial`）**：多节点 `up` 或 `provision` 部分成功、部分失败——重试前请先检查 `nodes[]` 或 `results[]`。
+- **退出码 `7`（`integrity`）**：摘要、签名或身份校验失败，包括目录签名或签名 revision 校验失败（`reason: catalog_signature` 或 `catalog_equivocation`）。
 - **专用报告格式**：
   - `barn doctor --json` 在宿主计算能力检查通过时即退出 `0`，即使 `class: network` 检查报错；若工作流依赖私网通信，请同时检查 `checks[]` 与 `barn network status --json`。
   - `barn ssh` 和 `barn exec` 直接透传远端命令的退出码（含 OpenSSH 连接失败的 `255`），并在 `--json` 模式下通过 `success`、`exit_code`、`stdout` 和 `stderr` 返回结果。
+  - 未传 `--yes` 时，如果标准输入不是终端或输出为 `--json`/`--yaml`，`network` 与 `hosts` 的 `install`/`uninstall` 只输出计划并退出 `0`；请检查结果中的 `applied`，或传入 `--yes`。
 
 ## 执行单条命令或批量脚本
 

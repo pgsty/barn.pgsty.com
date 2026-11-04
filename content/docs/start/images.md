@@ -5,9 +5,9 @@ weight: 50
 icon: fa-solid fa-boxes-stacked
 ---
 
-This guide covers Linux guest image selection, mirrors, static repositories, and cache management in **Barn 0.9.3**.
+This guide covers Linux guest image selection, mirrors, static repositories, and cache management.
 
-With the default inventory, `barn up` automatically resolves `u24:stable` for your host architecture and downloads the matching verified `qcow2` image on demand. Barn starts with the image catalog embedded in the binary; run `barn update` whenever you want to fetch, verify, and activate the latest catalog from the repository (or `barn image sync` to load an exact catalog URL or local file).
+With the default inventory, `barn up` automatically resolves `u24:stable` for your host architecture and downloads the matching verified `qcow2` image on demand. Barn starts with the signed image catalog embedded in the binary (revision `2026110502`, 17 artifacts across 9 distribution families); run `barn update` whenever you want to fetch, verify, and activate the latest catalog from the repository (or `barn image sync` to load an exact catalog URL or local file).
 
 ## Choose an image
 
@@ -25,17 +25,17 @@ Barn provides nine built-in distribution families: `el7`, `el8`, `el9`, `el10`, 
 all:
   vars:
     vm_image: el9
-    vm_version: "9.7"
+    vm_version: "9.8"
 ```
 
-Here `"9.7"` selects the newest `9.7.x` build in the active catalog, while `"9"` selects the newest `9.x` build (quote numeric `vm_version` values in YAML so they remain strings). Do not combine `vm_version` with a `:channel` or `@version` suffix in `vm_image`.
+Here `"9.8"` selects the newest `9.8.x` build in the active catalog, while `"9"` selects the newest `9.x` build (quote numeric `vm_version` values in YAML so they remain strings). Do not combine `vm_version` with a `:channel` or `@version` suffix in `vm_image`.
 
 For strict reproducibility across catalog updates, pin the full version string reported by `barn image info`:
 
 ```yaml {title="barn.yml"}
 all:
   vars:
-    vm_image: d13@20261026.2643.1
+    vm_image: d13@20261103.2651.1
 ```
 
 After changing `vm_image` or `vm_version`, preview the change with `barn plan`. Existing nodes keep their current root disk until you run `barn recreate <node>`; updating the catalog with `barn update` only affects newly created or recreated nodes.
@@ -46,7 +46,7 @@ After changing `vm_image` or `vm_version`, preview the change with `barn plan`. 
 - **`el8` on `arm64`** automatically runs under QEMU TCG software emulation on Apple Silicon because the stock RHEL/Rocky 8 `arm64` kernel requires a 64 KiB page granule that macOS HVF does not support. See [Runtime rules](../troubleshooting/#native-acceleration-or-compatibility-runtime-is-unavailable) for foreign-architecture emulator requirements.
 
 > [!NOTE]
-> All image versions in the `0.9.3` embedded catalog carry `supported` status except legacy compatibility builds marked `deprecated`: EOL `el7`, EL9 `9.3` / `9.6`, and EL10 `10.0`.
+> All image versions in the embedded catalog carry `supported` status except the EOL `el7` compatibility build, which is marked `deprecated`.
 
 ## Use a mirror
 

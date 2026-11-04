@@ -11,7 +11,7 @@ Create an Ubuntu 24.04 VM on your Mac or Linux host, connect over SSH, and scale
 
 ## Before you start {#install}
 
-[Install Barn 0.9.3](../installation/) and make sure your host has at least 4 GiB of free memory for the guest. Run all commands as your normal user in an interactive terminal—Barn prepares QEMU and the private host network automatically, prompting for `sudo` only when a host change requires administrator privileges. (For non-interactive CI runs, see [Automation](../automation/).)
+[Install Barn](../installation/) and make sure your host has at least 4 GiB of free memory for the guest. Run all commands as your normal user in an interactive terminal: when QEMU or the private host network is missing, `barn up` shows the host-preparation plan and asks once before installing anything, prompting for `sudo` only when a host change requires administrator privileges. (For non-interactive CI runs, see [Automation](../automation/).)
 
 ## Start and connect
 
@@ -21,7 +21,7 @@ barn up
 barn ssh
 ```
 
-When neither an inventory file nor an active deployment exists, `barn up` generates a starter `barn.yml` with one `meta` node, configures any missing host dependencies, downloads and verifies the base image, and waits until SSH is ready:
+When neither an inventory file nor an active deployment exists, `barn up` shows a setup plan that writes a starter `barn.yml` with one `meta` node and installs any missing host dependencies. After you confirm it once, Barn downloads and verifies the base image and waits until SSH is ready:
 
 ```text
   ✓  1 node ready
@@ -54,7 +54,7 @@ barn ssh meta
 `barn status` inspects the running VM processes, while `barn up` verifies management SSH and reports any guest-stage warnings (such as an unavailable data disk or private interface). If setup is interrupted or you fix a host issue, run `barn up` again—healthy VMs stay running while Barn converges unfinished steps. In mainland China, pass `barn up --mirror` to pull images from the China mirror.
 
 > [!WARNING]
-> Data disks are disposable test storage. During guest recovery, `barn up` may reformat an unrecognized or confirmed damaged test filesystem (including persistent disks). Keep important files on the host; see [Storage and Access](../storage/) for disk retention and recovery boundaries.
+> Data disks are disposable test storage. During guest recovery, `barn up` resets an ext4 or XFS data filesystem when the filesystem checker reports recognized corruption, including on persistent disks. Keep important files on the host; see [Storage and Access](../storage/) for disk retention and recovery boundaries.
 
 ## Customize before the first start
 

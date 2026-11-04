@@ -20,7 +20,7 @@ When filing a bug report, include `barn version`, your host OS and architecture,
 
 ## Find the implementation
 
-Tag **`v0.9.3`** is the published baseline. The Barn 0.9.3 behavior from source commit `27f17bb` is described in [Barn 0.9.3 Changes](../0.9.3-changes/). Find each subsystem here:
+Tag **`v1.0.0`** is the current stable release; its changes since 0.9.3 are listed in the [1.0.0 release notes](/blog/release/1.0.0/). Find each subsystem here:
 
 | Subsystem | Source paths |
 |---|---|
@@ -68,15 +68,15 @@ make check
 
 ## Release outputs and gates
 
-Releases prior to `1.0.0` are published as GitHub pre-releases. Each release ships `darwin`/`linux` `.tar.gz` archives (containing `bin/barn`, `bin/barn-hosts-helper`, and `licenses/`), Linux `.deb` and `.rpm` packages (installing `/usr/bin/barn` and `/opt/barn/libexec/barn-hosts-helper`), `checksums.txt`, `release.json`, and SPDX SBOMs.
+Stable versions from `1.0.0` on are published as the latest GitHub release; versions below `1.0.0` and versions with a prerelease suffix are GitHub pre-releases and need an explicit `BARN_VERSION` in the installer. Each release ships `darwin`/`linux` `.tar.gz` archives (containing `bin/barn`, `bin/barn-hosts-helper`, and `licenses/`), Linux `.deb` and `.rpm` packages (installing `/usr/bin/barn` and `/opt/barn/libexec/barn-hosts-helper`), `checksums.txt`, `release.json`, and SPDX SBOMs.
 
-Starting with **0.9.3**, the Darwin arm64 archive also contains `bin/Barn.app`. Its CLI, helper, and app use Developer ID signatures and Apple notarization. Homebrew installs the app under `libexec`; ordinary installation needs no Go or Xcode.
+Since **0.9.2**, the Darwin arm64 archive also contains `bin/Barn.app`. Its CLI, helper, and app use Developer ID signatures and Apple notarization. Homebrew installs the app under `libexec`; ordinary installation needs no Go or Xcode.
 
-The automatic release workflow requires all six Apple signing/notarization secrets and a successful native build. With none configured, it skips automatic release creation and maintainers can use the documented local signed-release process; partial configuration fails. See [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v0.9.3/docs/mac-release.md).
+The automatic release workflow requires all six Apple signing/notarization secrets and a successful native build. With none configured, it skips automatic release creation and maintainers can use the documented local signed-release process; partial configuration fails. See [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-release.md).
 
 Before publishing a release:
 
-1. Fetch and verify the latest signed official image catalog, synchronize the embedded snapshot and revision, compare every stable artifact's path/architecture/digest/size with the repository, and run catalog tests plus `barn update` with a fresh temporary `BARN_HOME`.
+1. Run `make catalog-check`: it verifies both official mirrors' signatures in fresh temporary data roots, requires the exact embedded catalog bytes, and checks all stable artifact URLs and sizes. If the catalog changed, synchronize the embedded snapshot, revision, date, and `repo.yaml` first. Run catalog tests and `barn update` with a fresh temporary `BARN_HOME`; `go run ./tools/catalogcheck -verify-bytes` also downloads and hashes every stable artifact without retaining it. Formal native builds and both release paths enforce the catalog gate.
 2. Run the source CI and packaging workflows on the target commit and verify version strings, paired `barn-hosts-helper` digests, licenses, SBOMs, and `checksums.txt`.
 3. Run live Linux VM acceptance tests (and live macOS VM acceptance when shipping `Barn.app`).
 4. Publish the GitHub Release and update the Homebrew tap (`pgsty/infra/barn`), then publish the documentation site and verify the public download and package installation paths.
@@ -92,4 +92,4 @@ To export the binary's embedded schema-3 catalog to a new path:
 go run ./tools/catalogexport /absolute/new/catalog.json
 ```
 
-`catalogexport` writes atomically to a non-existent target path. **Barn 0.9.3:** It also accepts relative paths, `~/`, and directory symlinks and creates missing parent directories. Use `make catalog-sign` and `make catalog-verify` with the offline Minisign keypair (keeping production private keys outside Git and CI). See [Linux Images](../../reference/images/) for the repository and client verification rules.
+`catalogexport` writes atomically to a non-existent target path; it accepts relative paths, `~/`, and directory symlinks and creates missing parent directories. Use `make catalog-sign` and `make catalog-verify` with the offline Minisign keypair (keeping production private keys outside Git and CI). See [Linux Images](../../reference/images/) for the repository and client verification rules.

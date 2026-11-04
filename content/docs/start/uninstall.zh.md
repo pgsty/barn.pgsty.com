@@ -14,7 +14,7 @@ Barn 分别独立管理 Linux 实验环境与 macOS 虚拟机。**`barn purge` �
 | 停止运行中的虚拟机并保留磁盘 | `barn stop`；Mac 虚拟机使用 `barn mac stop --all` |
 | 删除单个 Linux 节点 | `barn destroy <node>` |
 | 删除 Linux 实验环境，保留持久数据盘 | `barn destroy` |
-| 删除 Linux 实验环境、持久数据盘与密钥 | `barn purge`（无需交互确认） |
+| 删除 Linux 实验环境、持久数据盘与密钥 | `barn purge`（终端中需输入 `purge` 确认） |
 | 删除指定的 Mac 虚拟机 | `barn mac destroy <name...>`（需输入确认词） |
 
 执行删除前，请先通过 `barn status`（Linux 节点）和 `barn mac ls`（Mac 虚拟机）核对名称，并将需要保留的文件备份到宿主。
@@ -29,7 +29,7 @@ Barn 分别独立管理 Linux 实验环境与 macOS 虚拟机。**`barn purge` �
    barn purge
    ```
 
-   如果还创建过 macOS 虚拟机，先查看列表再按名称逐一销毁：
+   在终端中，`purge` 会列出清理范围并要求输入 `purge`；传入 `--yes` 可跳过询问。如果还创建过 macOS 虚拟机，先查看列表再按名称逐一销毁：
 
    ```bash
    barn mac ls
@@ -68,6 +68,8 @@ Barn 分别独立管理 Linux 实验环境与 macOS 虚拟机。**`barn purge` �
    barn network uninstall --json
    barn network uninstall --yes
    ```
+
+   宿主网络由 systemd-networkd 管理时，如果存在其他宿主网络接口或无法确认由 Barn 独占，卸载会保留全局 networkd 单元状态；计划中会报告 `preserve_networkd`，执行结果在 `checks.networkd` 中说明原因。
 
 5. **卸载 Barn 程序与剩余文件**
 

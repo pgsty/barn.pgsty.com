@@ -1,7 +1,7 @@
 ---
 title: Platforms and Limits
 linkTitle: Platforms and Limits
-description: Barn 0.9.3 host requirements, Linux guest compatibility, macOS requirements, and storage limits.
+description: Barn 1.0.0 host requirements, Linux guest compatibility, macOS requirements, and storage limits.
 weight: 10
 icon: fa-solid fa-laptop-code
 ---
@@ -10,11 +10,12 @@ Barn is built for **local development and testing**. Use this page to check host
 
 ## Version {#documentation-baseline}
 
-This documentation covers **Barn 0.9.3** (see the [Installation Guide](../../start/installation/) and [0.9.3 Release Notes](/blog/release/0.9.3/)). Run `barn version` to check your installed binary; the Linux image catalog updates independently via `barn update`.
+This documentation covers **Barn 1.0.0**, the first stable release (see the [Installation Guide](../../start/installation/) and [1.0.0 Release Notes](/blog/release/1.0.0/)). Run `barn version` to check your installed binary; the Linux image catalog updates independently via `barn update`.
 
-- **Pre-release channel**: [Barn 0.9.3](https://github.com/pgsty/barn/releases/tag/v0.9.3) was published on 2026-10-31 on the GitHub pre-release channel used by Barn `0.x`. Pass `BARN_VERSION=0.9.3` explicitly when using the download installer script.
+- **Stable channel**: [Barn 1.0.0](https://github.com/pgsty/barn/releases/tag/v1.0.0) was published on 2026-11-05 as a regular GitHub release, so `releases/latest`, the download installer without `BARN_VERSION`, and the Homebrew formula select it; DEB and RPM packages are downloaded from the release. Set `BARN_VERSION=1.0.0` to pin it.
 - **Native macOS component**: The Darwin arm64 archive and Apple Silicon Homebrew install include the signed, notarized `Barn.app` alongside the matching CLI and helper. Go and Xcode are not required; see [macOS Guests](../../start/macos/#install).
-- **Barn 0.9.3 changes**: Path, sharing, node-selection, image, limit, resize, and recovery changes are documented in [Barn 0.9.3 Changes](../0.9.3-changes/).
+- **1.x compatibility**: Command names, flags, exit codes, `error`/`reason` values, existing `--json`/`--yaml` fields, the inventory format, `BARN_*` variables, and `BARN_HOME` state stay compatible across 1.x; human-readable text may change in any release. See the [compatibility scope](/blog/release/1.0.0/#compatibility).
+- **Changes since 0.9.3**: Whole-deployment `recreate` refuses an inventory that omits an existing node, on a terminal `up` asks before preparing the host and `purge` asks you to type `purge`, data disks are reset only on recognized corruption, and catalog signature failures exit 7. Upgrading from 0.9.3 keeps existing VMs; earlier changes are recorded in [Barn 0.9.3 Changes](../0.9.3-changes/).
 - **Historical verification**: Dated test records for earlier releases are archived in [Validation History](../history/).
 
 ## Linux guests
@@ -27,12 +28,12 @@ This documentation covers **Barn 0.9.3** (see the [Installation Guide](../../sta
 
 Barn builds release binaries for all four host targets, with primary live-hypervisor test coverage on `darwin/arm64` and `linux/amd64`. On Linux hosts, Barn requires accessible `/dev/kvm` and either NetworkManager or `systemd-networkd`. Run `barn doctor` to inspect host readiness or `barn setup --dry-run` to preview dependency and network setup.
 
-The catalog embedded in Barn 0.9.3, `2026102802`, provides **9 distribution families and 17 image artifacts**: Ubuntu 22.04/24.04/26.04 LTS, Debian 12/13, Rocky Linux 8/9/10, and CentOS 7 (see [Linux Images](../../reference/images/) for exact versions):
+The catalog embedded in Barn 1.0.0, revision `2026110502`, provides **9 distribution families and 17 image artifacts** with `u24:stable` as the default: Ubuntu 22.04/24.04/26.04 LTS, Debian 12/13, Rocky Linux 8/9/10, and CentOS 7 (see [Linux Images](../../reference/images/) for exact versions):
 
-- **Barn 0.9.3:** Each user manages one Linux lab in a private RFC1918 `/24`; the separate 20-node ceiling has been removed.
+- Each user manages one Linux lab in a private RFC1918 `/24`; the node count is limited only by the subnet's usable addresses and host resources.
 - Foreign-architecture guests run under QEMU TCG software emulation. Rocky Linux 8 `arm64` also uses TCG on Apple Silicon because its 64 KiB page-size kernel is incompatible with Apple HVF.
 - CentOS 7 (`el7`) is a `deprecated` compatibility image restricted to native `linux/amd64`.
-- **Barn 0.9.3:** `vm_shares` (QEMU Virtio-9p) supports Linux and macOS hosts when QEMU and the guest kernel support 9p. SSH/SCP/rsync remain alternatives when a guest kernel lacks 9p.
+- `vm_shares` (QEMU Virtio-9p) supports Linux and macOS hosts when QEMU and the guest kernel support 9p. SSH/SCP/rsync remain alternatives when a guest kernel lacks 9p.
 
 ## macOS guests {#macos-guests}
 
@@ -42,6 +43,7 @@ The catalog embedded in Barn 0.9.3, `2026102802`, provides **9 distribution fami
 - **Concurrency limit**: Apple's framework allows at most two running macOS VMs at a time per Mac (counting VMs across all apps and any active `.ipsw` base installation); you can keep additional VMs in the `stopped` state.
 - **Isolation and sharing**: Each macOS VM gets its own private `/24` NAT subnet, SSH keypair, login password, and APFS copy-on-write disk, plus VirtioFS directory shares (`--share`) and plain-text clipboard sync.
 - **Framework boundaries**: USB passthrough, VM snapshots, and suspend/resume are not supported, and Apple Account sign-in inside a virtual machine may be restricted by macOS.
+- **Damaged Mac state**: A malformed recovery journal stops `barn mac image ls`, the space estimate in `barn mac doctor`, and image pruning until it is repaired. One unreadable machine state stops `barn mac ls`, while the other machines stay usable by name.
 
 Use `barn mac doctor` and `barn mac ls` to inspect macOS VMs; top-level `barn status`, `destroy`, and `purge` apply only to the Linux lab.
 
@@ -49,7 +51,7 @@ Use `barn mac doctor` and `barn mac ls` to inspect macOS VMs; top-level `barn st
 
 Keep important work backed up on the host or in version control:
 
-- **Linux lab**: `barn recreate` replaces root disks and non-persistent data disks while retaining `persistent: true` disks; `barn destroy` removes root and non-persistent disks; and `barn up` automatically formats unrecognized or confirmed-corrupt data-disk filesystems during recovery (see [Storage and Access](../../start/storage/)).
+- **Linux lab**: `barn recreate` replaces root disks and non-persistent data disks while retaining `persistent: true` disks, and a whole-deployment `recreate` refuses an inventory that omits an existing node; `barn destroy` removes root and non-persistent disks. During recovery, `barn up` formats a data disk that carries no signature and resets an existing ext4 or XFS filesystem only when the checker reports recognized corruption. A partition table, a signature without a UUID, unsupported filesystem features, or an unknown checker failure keeps the data and reports a warning (see [Storage and Access](../../start/storage/)).
 - **macOS VMs**: `barn mac recreate` replaces the VM's disk with a fresh clone from the base image, and `barn mac destroy` deletes the VM's disk, keys, and state while leaving shared host directories untouched.
 
 For diagnostics, see [Troubleshooting](../../start/troubleshooting/); for privilege and trust boundaries, see [Security and Trust](../security/); and for build and release workflows, see [Contributing](../engineering/).

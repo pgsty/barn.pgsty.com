@@ -20,6 +20,6 @@ cascade:
 
 Engineering updates, architectural essays, and release records for Barn. For step-by-step usage guides and command references, see the [Documentation](/docs/).
 
-- [Release Notes](release/) — Version highlights, upgrade instructions, compatibility boundaries, and dated validation records. Current release: **[Barn 0.9.3](release/0.9.3/)**.
+- [Release Notes](release/) — Version highlights, upgrade instructions, compatibility boundaries, and dated validation records. Current release: **[Barn 1.0.0](release/1.0.0/)**, the first stable release.
 - [Design Notes](design/) — Architectural decisions behind Barn's single-deployment model, Ansible inventory compatibility, in-place convergence, and host networking.
 {.cards}

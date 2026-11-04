@@ -14,7 +14,7 @@ Barn manages Linux labs and macOS VMs independently. **`barn purge` removes only
 | Stop running VMs while keeping disks | `barn stop`; `barn mac stop --all` for Mac VMs |
 | Delete a single Linux node | `barn destroy <node>` |
 | Delete the Linux lab, keeping persistent disks | `barn destroy` |
-| Delete the Linux lab, persistent disks, and keys | `barn purge` (no confirmation prompt) |
+| Delete the Linux lab, persistent disks, and keys | `barn purge` (type `purge` to confirm on a terminal) |
 | Delete named Mac VMs | `barn mac destroy <name...>` (prompts for confirmation) |
 
 Check `barn status` (for Linux nodes) and `barn mac ls` (for Mac VMs), and copy any files you want to keep onto the host before destroying machines.
@@ -29,7 +29,7 @@ Check `barn status` (for Linux nodes) and `barn mac ls` (for Mac VMs), and copy 
    barn purge
    ```
 
-   If you also created macOS VMs, list and destroy them by name:
+   On a terminal, `purge` lists what it deletes and asks you to type `purge`; pass `--yes` to skip the question. If you also created macOS VMs, list and destroy them by name:
 
    ```bash
    barn mac ls
@@ -68,6 +68,8 @@ Check `barn status` (for Linux nodes) and `barn mac ls` (for Mac VMs), and copy 
    barn network uninstall --json
    barn network uninstall --yes
    ```
+
+   When Barn uses systemd-networkd, the uninstall leaves the global networkd unit state unchanged if other host links exist or exclusive Barn use cannot be established; the plan reports `preserve_networkd`, and the applied report explains the decision in `checks.networkd`.
 
 5. **Uninstall the Barn application and remaining state**
 

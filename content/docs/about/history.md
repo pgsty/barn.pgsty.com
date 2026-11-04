@@ -6,7 +6,7 @@ icon: fa-solid fa-clock-rotate-left
 ---
 
 > [!NOTE]
-> This page archives the pre-0.9.0 validation baseline (documentation commit `4c03fc9`, 2026-09-29) alongside dated verification records for earlier releases (`0.1.0` through `0.8.0`). For current host support and release notes, see [Platforms and Limits](../status/) and the [Barn 0.9.3 Release Notes](/blog/release/0.9.3/).
+> This page archives the pre-0.9.0 validation baseline (documentation commit `4c03fc9`, 2026-09-29) alongside dated verification records for earlier releases (`0.1.0` through `0.8.0`). For current host support and release notes, see [Platforms and Limits](../status/) and the [Barn 1.0.0 Release Notes](/blog/release/1.0.0/).
 
 At the 2026-09-29 checkpoint, Barn `0.9.0` was the first release candidate prepared under the `barn` name prior to publication. For current installation commands, use the [Quick Start](../../start/installation/).
 

@@ -8,23 +8,23 @@ icon: fa-solid fa-compact-disc
 Barn resolves Linux guest images from a static catalog and immutable `qcow2` artifacts. Official and HTTP repositories require Ed25519/minisign catalog signatures, while explicitly selected local directory and HTTPS repositories may be unsigned. You can activate newer image catalogs with `barn update` without replacing the `barn` binary; the binary defines the trusted signing public keys and `qcow2` safety rules.
 
 > [!WARNING]
-> `el7`, `el9` (`9.3` / `9.6`), and `el10` (`10.0`) are `deprecated` compatibility images. All other built-in catalog versions are `supported`.
+> `el7` (CentOS Linux 7.9) is a `deprecated` compatibility image. Every other version in the embedded catalog is `supported`.
 
 ## Aliases and pull order
 
-Barn `0.9.3` embeds image catalog `2026102802`, covering 9 distribution families and 17 image artifacts (`el7` is `amd64`-only; every other family provides both `amd64` and `arm64`, with `el9` offering `9.3`, `9.6`, `9.7`, and `9.8` and `el10` offering `10.0`, `10.1`, and `10.2`). When no image is specified, Barn selects `u24:stable` (Ubuntu 24.04 LTS) on the host's native architecture.
+Barn 1.0.0 embeds image catalog `2026110502`, including Debian 13 image `20261103.2651.1`. It covers 9 distribution families with one `stable` version each, for 17 image artifacts: `el7` is `amd64`-only, and every other family provides both `amd64` and `arm64`. When no image is specified, Barn selects `u24:stable` (Ubuntu 24.04 LTS) on the host's native architecture.
 
-The table below lists the `stable` channel targets in embedded catalog `2026102802`. Run `barn update` followed by `barn image list` to inspect the latest catalog published on your selected repository, and see [Platforms and Limits](../../about/status/) for host support details.
+The table below lists the `stable` channel targets in embedded catalog `2026110502`. Run `barn update` followed by `barn image list` to inspect the latest catalog published on your selected repository, and see [Platforms and Limits](../../about/status/) for host support details.
 
 | Family | Embedded `stable` | Accepted aliases |
 |---|---|---|
 | `d12` | `20261026.2643.1` | `debian12`, `bookworm` |
-| `d13` | `20261026.2643.1` | `debian13`, `debian`, `trixie` |
+| `d13` | `20261103.2651.1` | `debian13`, `debian`, `trixie` |
 | `el7` | `7.9.20221112.0` | `c7`, `centos7`, `centos79` |
 | `el8` | `8.10.20240528.3` | `rocky8` |
 | `el9` | `9.8.20260525.2` | `rocky9`, `rocky` |
 | `el10` | `10.2.20260525.0` | `rocky10` |
-| `u22` | `20261017.0.1` | `ubuntu22`, `ubuntu2204`, `jammy` |
+| `u22` | `20261020.0.1` | `ubuntu22`, `ubuntu2204`, `jammy` |
 | `u24` | `20261017.0.1` | `ubuntu`, `ubuntu24`, `ubuntu2404`, `noble` |
 | `u26` | `20261016.0.1` | `ubuntu26`, `ubuntu2604`, `resolute` |
 {.wide .expand}
@@ -40,10 +40,8 @@ Distribution notes:
 |---|---|---|---:|---|
 | `el7` | CentOS Linux 7.9 / 2211 | `amd64` | BIOS | `deprecated` |
 | `el8` | Rocky Linux 8.10 | `amd64`, `arm64` | UEFI | `supported` |
-| `el9` | Rocky Linux 9.7 / 9.8 | `amd64`, `arm64` | UEFI | `supported` |
-| `el9` | Rocky Linux 9.3 / 9.6 | `amd64`, `arm64` | UEFI | `deprecated` |
-| `el10` | Rocky Linux 10.1 / 10.2 | `amd64`, `arm64` | UEFI | `supported` |
-| `el10` | Rocky Linux 10.0 | `amd64`, `arm64` | UEFI | `deprecated` |
+| `el9` | Rocky Linux 9.8 | `amd64`, `arm64` | UEFI | `supported` |
+| `el10` | Rocky Linux 10.2 | `amd64`, `arm64` | UEFI | `supported` |
 | `d12`, `d13` | Debian 12 / 13 | `amd64`, `arm64` | UEFI | `supported` |
 | `u22`, `u24`, `u26` | Ubuntu 22.04 / 24.04 / 26.04 LTS | `amd64`, `arm64` | UEFI | `supported` |
 {.wide .expand}
@@ -52,8 +50,8 @@ Distribution notes:
 barn image list
 barn image info d13
 barn image info d13:stable
-barn image info el9@9.7
-barn image pull d13@20261026.2643.1
+barn image info el9@9.8
+barn image pull d13@20261103.2651.1
 barn image pull d13 --arch arm64
 barn update
 ```
@@ -90,7 +88,7 @@ BARN_REPO=/absolute/local/repository barn up
 
 ## Trust and verification
 
-Release binaries embed both production Ed25519 public verification keys (private signing keys live outside the source repository). Catalog activation rejects unknown signing keys, malformed JSON, conflicting content at the same revision number (equivocation), and revisions lower than the repository's highest accepted revision unless `--allow-downgrade` is passed to `barn image sync`.
+Release binaries embed both production Ed25519 public verification keys (private signing keys live outside the source repository). Catalog activation rejects unknown signing keys, malformed JSON, conflicting content at the same revision number (equivocation), and revisions lower than the repository's highest accepted revision unless `--allow-downgrade` is passed to `barn image sync`. A missing or failed signature and an equivocating revision exit `7` (`integrity`; see [exit codes](../cli/#exit-codes)). A new trusted signature over identical catalog bytes is accepted, which also repairs a damaged cached signature.
 
 Every cached or imported image must be a standalone `qcow2` file matching its declared byte size and SHA-256 digest, with no backing file, external data file, encryption, or unknown incompatible `qcow2` feature bits. Barn marks verified base images read-only and creates copy-on-write overlay disks for each VM node.
 
@@ -142,11 +140,11 @@ Repository management rules (`barn repo scan|build|verify /absolute/repo`):
 
 - Repository roots accept relative paths, `~/`, and directory symlinks. The root and `images/` may be shared writable directories. `repo.yaml` may link to a non-empty regular file up to 4 MiB. Artifact entries remain regular files; `catalog.json` output symlinks are not overwritten.
 - Boot mode inherits along `variant` → `family` → `defaults.boot`; status inherits along `variant` → `version` → `unknown`. Every family must define the default channel pointing to an existing version, and family/alias names must be unique and cannot start with `local-`. Avoid reassigning built-in aliases (`ubuntu`, `debian`, `rocky`, etc.) to different families, because [inventory parsing](../configuration/#vm-variables) normalizes built-in aliases via the embedded catalog first.
-- Channels and dot-separated numeric prefixes (`el9@9.7`, `el9@9`) resolve to an exact version key when present or the highest matching numeric version, yielding an immutable artifact identity `(image, exact version, arch)`:
+- Channels and dot-separated numeric prefixes (`el9@9.8`, `el9@9`) resolve to an exact version key when present or the highest matching numeric version, yielding an immutable artifact identity `(image, exact version, arch)`:
   ```text
   d13:stable + native
-    -> d13@20261026.2643.1 + arm64
-    -> images/d13-20261026.2643.1-arm64.qcow2
+    -> d13@20261103.2651.1 + arm64
+    -> images/d13-20261103.2651.1-arm64.qcow2
   ```
 - **`barn repo scan`** is read-only and does not require `qemu-img`; it exits `0` while reporting any `missing`, `unsafe`, or `untracked` files in its output arrays (automation must check that `missing` and `unsafe` are empty).
 - **`barn repo build`** and **`barn repo verify`** require `qemu-img`. `build` validates `repo.yaml`, inspects every `qcow2` artifact, and atomically writes `catalog.json` (failing if any declared artifact is `missing` or `unsafe`, and omitting `untracked` files). `verify` checks that the existing `catalog.json` matches a fresh build byte-for-byte. Increment `revision` whenever catalog contents change, upload immutable `.qcow2` files before updating `catalog.json` and `catalog.json.minisig`, and publish the catalog and signature together.
@@ -163,7 +161,7 @@ local-images.json # Registry of named local-* image aliases
 local/
   <sha256>.qcow2 # Imported local qcow2 files indexed by content digest
 d13/
-  d13-20261026.2643.1-arm64.qcow2 # Verified read-only catalog artifacts by family
+  d13-20261103.2651.1-arm64.qcow2 # Verified read-only catalog artifacts by family
 u24/
   u24-20261017.0.1-arm64.qcow2
 ```

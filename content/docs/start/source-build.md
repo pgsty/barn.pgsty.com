@@ -1,6 +1,6 @@
 ---
 title: Build from Source
-description: Build Barn 0.9.3 or the development branch, including the native Mac component, and run the contributor checks.
+description: Build Barn 1.0.0 or the development branch, including the native Mac component, and run the contributor checks.
 weight: 80
 icon: fa-solid fa-hammer
 ---
@@ -9,28 +9,28 @@ Build Barn from source when developing a change or auditing a release tag. For p
 
 ## Check out the source
 
-Clone tag **v0.9.3** to reproduce the documented release (or omit `--branch v0.9.3` to work on `main`), and record `git log -1 --oneline` and `git status --short` alongside any build report:
+Clone tag **v1.0.0** to reproduce the documented release (or omit `--branch v1.0.0` to work on `main`), and record `git log -1 --oneline` and `git status --short` alongside any build report:
 
 ```bash
-git clone --branch v0.9.3 https://github.com/pgsty/barn.git
+git clone --branch v1.0.0 https://github.com/pgsty/barn.git
 cd barn
 ```
 
-Tag `v0.9.3` reproduces the published release, including the changes summarized in [Barn 0.9.3 Changes](../../about/0.9.3-changes/). Leave `BARN_VERSION` unset for a development build.
+Tag `v1.0.0` reproduces the published release described in the [Barn 1.0.0 release notes](/blog/release/1.0.0/). Leave `BARN_VERSION` unset for a development build.
 
 ## Build the CLI
 
-Barn `0.9.3` pins **Go 1.27.3** in `go.mod` and `packaging/toolchain.env`, and requires Git, Make, Bash, and standard C/POSIX build tools (compiling the CLI does not require QEMU or host-network setup):
+Barn `1.0.0` pins **Go 1.27.3** in `go.mod` and `packaging/toolchain.env`, and requires Git, Make, Bash, and standard C/POSIX build tools (compiling the CLI does not require QEMU or host-network setup):
 
 ```bash
-BARN_VERSION=0.9.3 make build
+BARN_VERSION=1.0.0 make build
 export PATH="$PWD/bin:$PATH"
 barn version
 ```
 
 `make build` compiles both `barn` and `barn-hosts-helper` into `bin/.barn-releases/`, embeds the helper's SHA-256 digest into the CLI, and creates entry-point symlinks under `bin/`. Always use `make build` rather than a bare `go build ./cmd/barn`, and keep `bin/.barn-releases/` alongside the `bin/` links if you move the build output.
 
-Without `BARN_VERSION`, development builds report `dev` (or use `BARN_VERSION=0.9.3-dev.1` for a local test build), and the commit field marks modified working trees as `uncommitted`.
+Without `BARN_VERSION`, development builds report `dev` (or use `BARN_VERSION=1.0.0-dev.1` to stamp a local candidate), and the commit field marks modified working trees as `uncommitted`.
 
 To cross-compile the Go CLI and helper for all four supported targets (`darwin_amd64`, `darwin_arm64`, `linux_amd64`, and `linux_arm64`), run `make cross`. Keep build artifacts (`bin/`, `dist/`, `.goreleaser-*/`) and lab inventories out of version control; check ignore rules before generating them in the working tree.
 
@@ -43,7 +43,7 @@ Before rebuilding a local Mac bundle, stop any running Mac VMs that use it.
 On an Apple Silicon Mac running macOS 27+ with **Xcode 27+** selected for `xcrun` (providing the macOS 27 SDK and Swift compiler), run:
 
 ```bash
-BARN_VERSION=0.9.3 make mac-build
+BARN_VERSION=1.0.0 make mac-build
 export PATH="$PWD/bin/mac:$PATH"
 barn mac doctor
 ```
@@ -53,9 +53,9 @@ barn mac doctor
 | Source tag | Native app bundle | Bundle identifier |
 |---|---|---|
 | `v0.9.0` | `Barn Mac.app` | `io.pgsty.barn.mac-runner` |
-| `v0.9.1`, `v0.9.3` | `Barn.app` | `com.pgsty.barn` |
+| `v0.9.1` and later | `Barn.app` | `com.pgsty.barn` |
 
-The `0.9.3` CLI discovers both `Barn.app` and legacy `Barn Mac.app` bundles, whereas the `0.9.0` CLI only looks for `Barn Mac.app`—always use the `barn` CLI and native app built together in `bin/mac`.
+The current CLI discovers both `Barn.app` and legacy `Barn Mac.app` bundles, whereas the `0.9.0` CLI only looks for `Barn Mac.app`—always use the `barn` CLI and native app built together in `bin/mac`.
 
 ### Code signing and notarization
 
@@ -63,7 +63,7 @@ When signing environment variables are unset, `make mac-build` applies an **ad-h
 
 - Set `BARN_CODESIGN_IDENTITY` to sign `Barn.app` with a Developer ID certificate.
 - Set `BARN_NOTARY_PROFILE` and `BARN_MAC_REQUIRE_NOTARIZATION=1` to submit `Barn.app` for Apple notarization, staple the ticket, and verify Gatekeeper acceptance.
-- `make mac-build` signs the native components; the Go CLI/helper need the formal release process in [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v0.9.3/docs/mac-release.md). That process signs the helper first, embeds its final SHA-256 in the CLI, signs the CLI, and submits the matched payload for notarization. See [Release Engineering](../../about/engineering/).
+- `make mac-build` signs the native components; the Go CLI/helper need the formal release process in [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-release.md). That process signs the helper first, embeds its final SHA-256 in the CLI, signs the CLI, and submits the matched payload for notarization. See [Release Engineering](../../about/engineering/).
 
 ## Run contributor checks
 

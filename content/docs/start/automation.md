@@ -6,7 +6,7 @@ weight: 60
 icon: fa-solid fa-gears
 ---
 
-This guide shows how to drive **Barn 0.9.3** from unattended scripts and CI pipelines. Run all commands as the Unix user who owns the deployment, and pass the same `-f <inventory>` and `BARN_HOME` across invocations.
+This guide shows how to drive Barn from unattended scripts and CI pipelines. Run all commands as the Unix user who owns the deployment, and pass the same `-f <inventory>` and `BARN_HOME` across invocations.
 
 ## Prepare a predictable lab
 
@@ -35,14 +35,14 @@ barn up -f barn.yml --json > up.json
 For a generated inventory, `barn init [template] --image <reference>` writes
 `vm_image` under `all.vars`, so every generated node inherits the same image.
 The reference can be a catalog alias (`el9`), a channel (`u24:stable`), or a
-version selector (`u24@24.04`). This only edits the inventory; catalog lookup,
+version selector (`u24@20261017.0.1`). This only edits the inventory; catalog lookup,
 signature checks, and image download still happen through the normal
 `validate`/`plan`/`up` flow. `barn setup [template] --image <reference>` provides
 the same option while preparing a generated template. `--image` is rejected
 with `-f` or an automatically discovered existing inventory, which must be
 edited explicitly.
 
-`barn setup --yes` accepts the host-preparation confirmation prompt, whereas non-interactive `barn up` skips first-run host setup and expects the host dependencies and private network to be ready already.
+`barn setup --yes` accepts the host-preparation plan without asking. On a terminal, `up`, `start`, `restart`, and `reload` show the same plan and ask once before installing packages or the Barn network; without a terminal they only report what is missing, so run `barn setup --yes` before them.
 
 ## Validate JSON output alongside the exit code
 
@@ -75,12 +75,14 @@ When a subsequent pipeline step requires ready guests, omit `--no-wait` on `barn
 
 Pair [CLI exit codes](../../reference/cli/#exit-codes) with each command's JSON schema:
 
-- **Exit `2` (`usage`)**: Missing inventory on first run, invalid flags, or unknown image aliases.
-- **Exit `4` (`conflict`)**: Inventory drift requiring explicit action (`reason: recreate_required` or `nodes_removed`), or a deployment lock timeout (`reason: deployment_busy` after waiting up to 10 minutes).
+- **Exit `2` (`usage`)**: Missing inventory on first run, invalid flags, unknown image aliases, or `destroy`/`recreate` without `--yes` when stdin is not a terminal (`purge` runs without asking).
+- **Exit `4` (`conflict`)**: Inventory drift requiring explicit action (`reason: recreate_required` or `nodes_removed`), applied state that changed during a `recreate` preflight (`reason: deployment_changed`), or a deployment lock timeout (`reason: deployment_busy` after waiting up to 10 minutes).
 - **Exit `5` (`partial`)**: Multi-node `up` or `provision` where some nodes succeeded and others failed—inspect `nodes[]` or `results[]` before retrying.
+- **Exit `7` (`integrity`)**: A digest, signature, or identity check failed, including a catalog signature or signed revision that does not verify (`reason: catalog_signature` or `catalog_equivocation`).
 - **Command-specific reports**:
   - `barn doctor --json` exits `0` when host compute passes even if a `class: network` check reports an error; check `checks[]` and `barn network status --json` before relying on the private bridge.
   - `barn ssh` and `barn exec` return the remote command's exit status (or `255` on OpenSSH transport failure) and record `success`, `exit_code`, `stdout`, and `stderr` in `--json` mode.
+  - `network` and `hosts` `install`/`uninstall` without `--yes` only print the plan and exit `0` when stdin is not a terminal or the output is `--json`/`--yaml`; check `applied` in the result, or pass `--yes`.
 
 ## Run single commands or batch scripts
 
