@@ -7,7 +7,7 @@ weight: 30
 categories: [Design]
 tags: [Lifecycle, Drift, Safety]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-11-04
+lastmod: 2026-11-06
 ---
 
 This essay explains the Linux VM convergence model in Barn `0.9.3` ([macOS guests](/docs/start/macos/) are managed independently).
@@ -35,26 +35,27 @@ When reading `barn.yml`, Barn extracts the fields in its contract, fills default
 Adding a second node leaves the first node's hash untouched, and editing upper-layer Pigsty variables (`pg_version`, `node_packages`, `pg_role`) produces zero VM drift.
 
 > [!NOTE]
-> `barn up` converges additions and stopped nodes automatically, while specification changes and node removals use explicit `barn recreate` and `barn destroy` commands. See [Daily Operations](/docs/start/operations/) for the command workflow.
+> `barn up` converges additions and stopped nodes automatically. CPU and memory changes use `barn resize`; other specification changes and node removals use explicit `barn recreate` and `barn destroy` commands. See [Daily Operations](/docs/start/operations/) for the command workflow.
 
-## Five explicit `barn plan` outcomes
+## Six explicit `barn plan` outcomes
 
-`barn plan` compares the desired inventory against committed deployment and node state and classifies every node into one of five outcomes:
+`barn plan` compares the desired inventory against committed deployment and node state and classifies every node into one of six outcomes:
 
 | Outcome | Meaning | Resolution command |
 |---|---|---|
 | `create` | Node exists in the inventory with no committed VM state | `barn up` creates and boots the node |
 | `unchanged` | Resolved definition and runtime policy match committed state | `barn up` keeps running nodes untouched and starts stopped nodes |
-| `recreate` | Node's hardware, image, disk, or share definition changed | `barn recreate <node>` (or `--force` in scripts) |
+| `resize` | Only the node's `vm_cpu` or `vm_mem` changed | `barn resize <node>` hot-plugs supported increases, otherwise stops and starts the same VM |
+| `recreate` | Node's image, disk, share, or other hardware definition changed | `barn recreate <node>` (or `--yes` in scripts) |
 | `missing` | Committed node is absent or marked `vm_skip: true` in the inventory | `barn destroy <node>`, or restore the node to `barn.yml` |
 | Envelope drift | Deployment subnet, login user, `vm_arch`, or runtime policy changed | Whole-deployment `barn recreate` |
 {.wide .expand}
 
-`barn plan` is completely read-only and prints the exact command needed to resolve any `recreate` or `missing` drift.
+`barn plan` is completely read-only and prints the exact command needed to resolve any `resize`, `recreate`, or `missing` drift.
 
 ## Why `barn up` stops on node drift
 
-Rather than hot-plugging vCPUs/memory or silently rebuilding a root disk when `vm_image` changes, `barn up` stops with a `conflict` error whenever an existing node's specification has drifted. Requiring an explicit `barn recreate <node>` gives you two guarantees:
+Rather than resizing a running VM or silently rebuilding a root disk when `vm_image` changes, `barn up` stops with a `conflict` error whenever an existing node's specification has drifted. CPU and memory changes go through `barn resize <node>`, which keeps the VM identity and disks. Every other change requires an explicit `barn recreate <node>`, which gives you two guarantees:
 
 1. Every change that replaces a guest's root filesystem goes through one visible, confirmed command.
 2. Barn validates all prerequisites—target QEMU emulator, accelerator policy, UEFI firmware, cached or downloadable image bytes, network backend, shared directory paths, and persistent-disk compatibility—**before** stopping or deleting the existing VM. If a foreign-architecture emulator is missing or a share path is invalid, the running VM stays untouched.
@@ -74,7 +75,7 @@ When you do destroy or recreate nodes, data-disk lifetimes follow clear boundari
 
 - Ordinary `barn destroy` and `barn recreate` preserve `persistent: true` data disks on disk.
 - Whole-deployment `barn destroy --delete-persistent` removes persistent data disks as well, and `barn purge` (or `barn destroy --purge`) removes all disks, SSH keys, and deployment state in one step.
-- During `barn up` recovery, unrecognized or confirmed-corrupt data-disk filesystems are automatically formatted to the configured `fs` type (see [Data Disks](/docs/reference/configuration/#data-disks)).
+- During `barn up` recovery, Barn formats a data disk that carries no signature and resets an ext4 or XFS filesystem only when the checker reports recognized corruption; a partition table, unsupported features, or an unknown checker failure keeps the data and reports a warning (see [Data Disks](/docs/reference/configuration/#data-disks)).
 
 ## Incremental convergence without collateral damage
 

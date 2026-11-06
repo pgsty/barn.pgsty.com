@@ -32,7 +32,7 @@ icon: fa-solid fa-diagram-project
 
 ## 官方候选镜像矩阵
 
-`packaging/image-pipeline/build-official.py` 封装了八个官方离线归一化目标——Debian 12/13（`d12`、`d13`）与 Rocky Linux 8/9（`el8`、`el9`）各自的 `amd64` 与 `arm64` 变体，所有上游 `qcow2` URL、RPM/DEB 依赖包、发布版本号、SHA-256 摘要与 `SOURCE_DATE_EPOCH` 均锁定在 `official-v1.json` 中（Ubuntu 直接使用固定日期的官方原始云镜像，不经过此离线定制矩阵）。
+`packaging/image-pipeline/build-official.py` 封装了八个官方离线归一化目标——Debian 12/13（`d12`、`d13`）与 Rocky Linux 8/9（`el8`、`el9`）各自的 `amd64` 与 `arm64` 变体，所有上游 `qcow2` URL、RPM/DEB 依赖包、发布版本号、SHA-256 摘要与 `SOURCE_DATE_EPOCH` 均锁定在 `official-v1.json` 中（目录中的 Ubuntu 制品由 `pipeline.py` 直接按同一配方构建；Ubuntu 云镜像自带 `xfsprogs`，无需离线依赖包锁定）。
 
 ```bash
 ./packaging/image-pipeline/build-official.py --list
@@ -47,7 +47,7 @@ icon: fa-solid fa-diagram-project
 使用说明：
 
 - 运行前请预先创建好 `--source-cache`、`--package-cache` 与 `--output` 目录，并传入规范化的绝对路径。加上 `--fetch` 时，脚本会从锁定的 HTTPS URL 下载缺失输入并在调用 `virt-customize --no-network` 前校验 SHA-256；不加 `--fetch` 时，所有锁定输入必须已存在于两个缓存目录中。
-- 省略 `--target` 会构建全部八个目标，重复指定 `--target` 可构建指定子集。`--list` 会列出当前源码锁定的精确版本（当前为 Debian `20260923.2610.1` / `20260914.2601.2` 与 Rocky Linux `8.10.20240528.3` / `9.8.20260525.2`）。
+- 省略 `--target` 会构建全部八个目标，重复指定 `--target` 可构建指定子集。`--list` 会列出当前源码锁定的精确版本。
 
 八个目标全部构建完成后，将**包含各产物包目录的父目录**传给 `--assemble-from`（若分散在多个父目录可重复传入 `--assemble-from`），即可组装出静态候选仓库：
 

@@ -31,9 +31,9 @@ Barn 1.0.0 内置镜像目录 `2026110502`，包含 Debian 13 镜像 `20261103.2
 
 发行版说明：
 
-- `u22`、`u24`、`u26` 分别对应 Ubuntu 22.04、24.04、26.04 LTS，直接采用 Canonical 官方原始云镜像，并在首次启动时由 `cloud-init` 完成账号与网络配置。
-- `d12` 与 `d13` 预装了离线 XFS 工具集并预生成 `en_US.UTF-8` 区域设置，默认区域设置保持为 `C.UTF-8`。
-- `el7` 为 CentOS Linux 7.9（`amd64` BIOS），`el8`、`el9`、`el10` 为 Rocky Linux（`amd64` 与 `arm64` UEFI）。
+- `u22`、`u24`、`u26` 分别对应 Ubuntu 22.04、24.04、26.04 LTS，`d12` 与 `d13` 对应 Debian 12 与 13。它们由 Barn 镜像配方基于发行版官方云镜像构建：镜像内置 `dba` 用户（UID/GID 88），已带 XFS 用户态工具，并提供 `en_US.UTF-8` 区域设置，默认区域设置保持为 `C.UTF-8`。
+- `el7` 为 CentOS Linux 7.9（`amd64` BIOS），`el8`、`el9`、`el10` 为 Rocky Linux（`amd64` 与 `arm64` UEFI）。`el8` 与 `el9` 同样经过该配方处理（`dba`，UID/GID 88）；`el10` 与 `el7` 直接使用发行版未经修改的云镜像。
+- 所有镜像都在首次启动时由 `cloud-init` 完成账号与网络配置。
 - 运行 `barn update` 只会更新新节点的 `:stable` 或版本前缀解析结果，已运行的虚拟机和显式锁定 `@version` 的节点继续使用原有基础镜像。若现有清单使用的通道或版本前缀在新目录中指向了新版本，后续执行 `barn plan` 或 `barn up` 会报告镜像漂移，需显式运行 `barn recreate` 才会替换节点。
 
 | 别名 | 发行版 | 架构 | 引导方式 | 状态 |

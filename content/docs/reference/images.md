@@ -31,9 +31,9 @@ The table below lists the `stable` channel targets in embedded catalog `20261105
 
 Distribution notes:
 
-- `u22`, `u24`, and `u26` correspond to Ubuntu 22.04, 24.04, and 26.04 LTS using Canonical's unmodified upstream cloud images; `cloud-init` configures accounts and networking on first boot.
-- `d12` and `d13` include offline-installed XFS userspace tools and a pre-generated `en_US.UTF-8` locale while keeping `C.UTF-8` as the default locale.
-- `el7` is CentOS Linux 7.9 (`amd64` BIOS), and `el8`, `el9`, and `el10` are Rocky Linux (`amd64` and `arm64` UEFI).
+- `u22`, `u24`, and `u26` are Ubuntu 22.04, 24.04, and 26.04 LTS; `d12` and `d13` are Debian 12 and 13. Barn's image recipe builds them from the distributions' cloud images: the image ships a `dba` user (UID/GID 88), XFS userspace tools are present, and `en_US.UTF-8` is available while `C.UTF-8` stays the default locale.
+- `el7` is CentOS Linux 7.9 (`amd64` BIOS), and `el8`, `el9`, and `el10` are Rocky Linux (`amd64` and `arm64` UEFI). `el8` and `el9` go through the same recipe (`dba`, UID/GID 88); `el10` and `el7` are the distributions' unmodified cloud images.
+- `cloud-init` configures accounts and networking on first boot for every image.
 - Running `barn update` updates what `:stable` or a numeric prefix resolves to for new nodes without altering running VMs or pinned `@version` selectors. If an existing inventory uses a channel or prefix whose target changed in the updated catalog, `barn plan` and `barn up` report the image drift and require `barn recreate` before replacing any node.
 
 | Alias | Distribution | Architectures | Boot | Status |

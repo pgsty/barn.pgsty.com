@@ -80,9 +80,9 @@ macOS 客机的目录共享用法请参阅 [macOS 虚拟机教程](../macos/#共
 
 ```bash
 barn ssh-config > barn-ssh.conf
-ssh -F ./barn-ssh.conf barn-meta hostname
-scp -F ./barn-ssh.conf ./storage.yml barn-meta:/tmp/storage.yml
-scp -F ./barn-ssh.conf barn-meta:/data/barn-retention.txt ./barn-retention.txt
+ssh -F ./barn-ssh.conf meta hostname
+scp -F ./barn-ssh.conf ./storage.yml meta:/tmp/storage.yml
+scp -F ./barn-ssh.conf meta:/data/barn-retention.txt ./barn-retention.txt
 ```
 
 生成的配置片段引用当前回环 SSH 端口、部署密钥路径以及按实例隔离的 `known_hosts` 文件，不会内嵌私钥原文。重建节点或管理端口变动后请重新导出，或执行 `barn ssh-config --install` 将别名写入 `~/.ssh/config`，从而免去 `-F` 参数。
@@ -95,7 +95,7 @@ scp -F ./barn-ssh.conf barn-meta:/data/barn-retention.txt ./barn-retention.txt
 
 ```bash
 ssh -F ./barn-ssh.conf -N \
-  -L 127.0.0.1:15432:127.0.0.1:5432 barn-meta
+  -L 127.0.0.1:15432:127.0.0.1:5432 meta
 ```
 
 保持该终端运行，宿主本地客户端即可连接 `127.0.0.1:15432`（按 `Ctrl-C` 关闭隧道）。
@@ -124,6 +124,6 @@ vm_shares:
 
 `host` 支持相对清单真实文件目录的路径、`~/` 与目录符号链接。目录须已存在、当前用户可访问且不与 `BARN_HOME` 重叠，无须归当前用户所有；多个客机可以读写同一目录，由用户协调写入。
 
-宿主 QEMU 与客机内核须支持 9p。可写共享还受客机用户权限约束；无法写入时会降级只读并报告警告，不会修改宿主属主。修改已有节点共享后执行 `barn recreate <node>`。原生 macOS 客机使用 `barn mac --share` 提供的 VirtioFS。
+宿主 QEMU 与客机内核须支持 9p。可写共享还受客机用户权限约束；无法写入时会降级只读并报告警告，不会修改宿主属主。修改已有节点共享后执行 `barn recreate <node>`。原生 macOS 客机通过 `barn mac up --share` 或 `barn mac configure --share` 使用 VirtioFS。
 
 完整的磁盘与共享字段约束请参阅[配置参考](../../reference/configuration/#数据盘)。

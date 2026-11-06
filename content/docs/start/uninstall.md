@@ -62,7 +62,7 @@ Check `barn status` (for Linux nodes) and `barn mac ls` (for Mac VMs), and copy 
 
 4. **Uninstall Linux host networking**
 
-   Preview and remove the shared Linux host network (requires all Linux VMs to be stopped and removed first; Mac VM networks tear down automatically when the VM stops):
+   Preview and remove the shared Linux host network (it stops while any Linux VM is running, so destroy the lab first; Mac VM networks tear down automatically when the VM stops):
 
    ```bash
    barn network uninstall --json

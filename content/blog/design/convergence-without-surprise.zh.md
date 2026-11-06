@@ -7,7 +7,7 @@ weight: 30
 categories: [设计]
 tags: [生命周期, 配置差异, 安全]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-11-04
+lastmod: 2026-11-06
 ---
 
 本文阐述 Barn `0.9.3` 的 Linux 虚拟机收敛模型（[Mac 虚拟机](/zh/docs/start/macos/)独立管理）。
@@ -35,26 +35,27 @@ lastmod: 2026-11-04
 因此，扩容新增节点不会改变已有节点的哈希；修改 PostgreSQL 版本、软件包列表或服务角色等上层 Pigsty 变量，也完全不会产生虚拟机层的配置漂移。
 
 > [!NOTE]
-> `barn up` 会自动收敛新增节点与已停止节点，而节点配置变更与移除则必须通过显式的 `barn recreate` 与 `barn destroy` 执行。日常操作流程见[日常管理](/zh/docs/start/operations/)。
+> `barn up` 会自动收敛新增节点与已停止节点。CPU 与内存变更使用 `barn resize`，其他节点配置变更与节点移除则必须通过显式的 `barn recreate` 与 `barn destroy` 执行。日常操作流程见[日常管理](/zh/docs/start/operations/)。
 
-## `barn plan` 的五种规划结果
+## `barn plan` 的六种规划结果
 
-`barn plan` 对比期望配置、已应用部署状态与已提交节点状态，将每个节点归类为以下五种结果之一：
+`barn plan` 对比期望配置、已应用部署状态与已提交节点状态，将每个节点归类为以下六种结果之一：
 
 | 结果 | 含义 | 处理命令 |
 |---|---|---|
 | `create` | 清单中新增的节点，尚无已提交的虚拟机状态 | 运行 `barn up` 创建并启动 |
 | `unchanged` | 解析后的节点定义与运行时策略均未变化 | `barn up` 保持运行中节点不动，并启动已停止节点 |
-| `recreate` | 节点的硬件规格、镜像、磁盘或共享目录定义发生变化 | 显式运行 `barn recreate <node>`（脚本中可加 `--force`） |
+| `resize` | 节点只修改了 `vm_cpu` 或 `vm_mem` | 运行 `barn resize <node>`，支持时热插拔扩容，否则停止并重新启动同一台虚拟机 |
+| `recreate` | 节点的镜像、磁盘、共享目录或其他硬件定义发生变化 | 显式运行 `barn recreate <node>`（脚本中可加 `--yes`） |
 | `missing` | 已提交的节点在当前清单中缺席，或被标为 `vm_skip: true` | 显式运行 `barn destroy <node>`，或在 `barn.yml` 中恢复该节点 |
 | 部署级信封漂移 | 子网、登录用户名、`vm_arch` 或全局运行时策略改变 | 整套部署执行 `barn recreate` |
 {.wide .expand}
 
-`barn plan` 完全只读，并在文本模式下直接给出解决 `recreate` 或 `missing` 漂移所需的具体命令。
+`barn plan` 完全只读，并在文本模式下直接给出解决 `resize`、`recreate` 或 `missing` 漂移所需的具体命令。
 
 ## 为什么 `barn up` 遇到配置漂移会主动停下
 
-当既有节点的 CPU、内存或镜像发生变化时，`barn up` 不会尝试热修改硬件或在后台静默重做根盘，而是直接返回类型化的 `conflict` 冲突错误。要求显式执行 `barn recreate <node>` 有两个直接好处：
+当既有节点的 CPU、内存或镜像发生变化时，`barn up` 不会调整运行中虚拟机的规格，也不会在后台静默重做根盘，而是直接返回类型化的 `conflict` 冲突错误。CPU 与内存变更交给 `barn resize <node>`，它会保留虚拟机身份与磁盘；其余变更都要求显式执行 `barn recreate <node>`，这带来两个直接好处：
 
 1. 所有会替换客机根盘的破坏性变更都集中到同一个需要确认的显式动作中。
 2. Barn 可以在**停止或删除现有虚拟机之前**完成全部前置检查——包括核验目标 QEMU 模拟器、加速策略、UEFI 固件、镜像缓存字节、网络后端、共享源目录以及持久盘兼容性。一旦缺少跨架构模拟器或共享目录不合法，原有的虚拟机将完好无损地保留下来。
@@ -74,7 +75,7 @@ lastmod: 2026-11-04
 
 - 普通 `barn destroy` 与 `barn recreate` 默认保留 `persistent: true` 的持久数据盘。
 - 整套部署执行 `barn destroy --delete-persistent` 会一并删除受管的持久盘；执行 `barn purge`（或 `barn destroy --purge`）则会一次性删除所有磁盘、密钥与部署状态。
-- 在 `barn up` 客机恢复期间，无法识别或确认损坏的数据盘文件系统会自动按配置的 `fs` 类型重新格式化（详见[数据盘配置](/zh/docs/reference/configuration/#数据盘)）。
+- 在 `barn up` 客机恢复期间，Barn 只会格式化没有任何签名的数据盘，并且仅在检查工具报告可识别的损坏时重置 ext4 或 XFS 文件系统；遇到分区表、不支持的文件系统特性或未知的检查失败时，数据保持原样并报告警告（详见[数据盘配置](/zh/docs/reference/configuration/#数据盘)）。
 
 ## 无连带影响的增量收敛
 

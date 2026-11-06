@@ -81,9 +81,9 @@ Export a standalone OpenSSH configuration from the running deployment to use `ss
 
 ```bash
 barn ssh-config > barn-ssh.conf
-ssh -F ./barn-ssh.conf barn-meta hostname
-scp -F ./barn-ssh.conf ./storage.yml barn-meta:/tmp/storage.yml
-scp -F ./barn-ssh.conf barn-meta:/data/barn-retention.txt ./barn-retention.txt
+ssh -F ./barn-ssh.conf meta hostname
+scp -F ./barn-ssh.conf ./storage.yml meta:/tmp/storage.yml
+scp -F ./barn-ssh.conf meta:/data/barn-retention.txt ./barn-retention.txt
 ```
 
 The exported fragment points to the current loopback SSH port, deployment key path, and instance-scoped `known_hosts` file without embedding private key material. Regenerate `barn-ssh.conf` if you recreate a node or its loopback port changes, or run `barn ssh-config --install` so `ssh meta` and `scp` work without `-F`.
@@ -96,7 +96,7 @@ If a service binds only to `127.0.0.1` inside the guest, forward a local host po
 
 ```bash
 ssh -F ./barn-ssh.conf -N \
-  -L 127.0.0.1:15432:127.0.0.1:5432 barn-meta
+  -L 127.0.0.1:15432:127.0.0.1:5432 meta
 ```
 
 While that command remains running, connect local clients on the host to `127.0.0.1:15432` (press `Ctrl-C` to close the tunnel).
@@ -125,6 +125,6 @@ vm_shares:
 
 `host` accepts paths relative to the inventory’s real file, `~/`, and directory symlinks. The directory must exist, be accessible, and not overlap `BARN_HOME`; it need not belong to the Barn user. Multiple guests may write the same tree, with writes coordinated by the user.
 
-Host QEMU and the guest kernel must support 9p. Writable shares also depend on guest permissions; failed writable mounts fall back to read-only with a warning without changing host ownership. After changing existing shares, run `barn recreate <node>`. Native macOS guests use VirtioFS through `barn mac --share`.
+Host QEMU and the guest kernel must support 9p. Writable shares also depend on guest permissions; failed writable mounts fall back to read-only with a warning without changing host ownership. After changing existing shares, run `barn recreate <node>`. Native macOS guests use VirtioFS through `barn mac up --share` or `barn mac configure --share`.
 
 See [Linux Configuration](../../reference/configuration/#data-disks) for the complete disk and share schema.

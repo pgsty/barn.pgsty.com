@@ -136,7 +136,7 @@ Shared sources use the invoking user’s actual filesystem permissions:
 
 ## Names and addresses
 
-Barn resolves each node's name from the first available source: explicit `nodename`, `<pg_cluster>-<pg_seq>`, or `node-<last-octet>`. Node names must be unique across the deployment, be 1–63 characters long, contain only lowercase letters, digits, and hyphens, and neither start nor end with `-`. `vm_alias` accepts additional lowercase DNS labels that must be distinct from all node names and other aliases.
+Barn resolves each node's name from the first available source: explicit `nodename`, `<pg_cluster>-<pg_seq>`, or `node-<last-octet>`. Node names must be unique across the deployment, be 1–63 characters long, contain only lowercase letters, digits, and hyphens, and neither start nor end with `-`. `vm_alias` accepts additional lowercase DNS names (dots allowed) that must be distinct from all node names and other aliases.
 
 All managed nodes in a deployment must belong to a single RFC1918 `/24` subnet: `.1` is the host gateway, `.2`–`.8` are reserved, and `.9`–`.254` are available for nodes. Inside the guest, the fixed-IP NIC carries the configured inventory address (inspectable via `ip -br addr`).
 

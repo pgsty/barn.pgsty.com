@@ -70,7 +70,7 @@ barn recreate node-1            # rebuild a node whose VM specification changed
 | `missing` | Provisioned node was removed from the inventory YAML | Restore the YAML entry, or run `barn destroy <node>` |
 {.wide .expand}
 
-In JSON output, `create`, `recreate`, and `missing` are node lists. The top-level `action` summarizes the plan (for example `converge`, `recreate`, or `blocked-removal`); `blocked`, when present, is an explanation string.
+In JSON output, `start`, `create`, `resize`, `recreate`, and `missing` are node lists. The top-level `action` summarizes the plan as one of `create`, `start`, `converge`, `resize`, `recreate`, `blocked-removal`, `repair`, or `none`; `blocked`, when present, is an explanation string.
 
 Editing or deleting YAML entries never destroys a VM automatically, and changes to service-level Pigsty variables that Barn does not consume report `action: none`. When a node requires `recreate`, Barn replaces its root overlay and non-persistent data disks while preserving compatible persistent disks. Interactive `recreate` and `destroy` prompt you to type the command name to confirm; pass `--yes` (or `--force`) in non-interactive scripts.
 
@@ -129,7 +129,7 @@ barn purge
 ```
 
 - `barn destroy <node>` deletes only the named node and refreshes SSH aliases for the remaining nodes. If it removes the control node, the first remaining node becomes the control node, so `ssh-config`, `hosts`, `exec`, and `provision` keep working; set `admin_ip` in the inventory to that node's address (and remove the destroyed entry unless you want `up` to create it again), then run `barn up` to install its control SSH access.
-- `barn destroy` removes all VMs along with their root overlays and non-persistent data disks, while retaining persistent disks, deployment keys, cached images, and host networking.
+- `barn destroy` removes all VMs along with their root overlays and non-persistent data disks, the deployment state, and the SSH aliases Barn installed, while retaining persistent disks, deployment keys, cached images, and host networking. Run `barn up` again to build a fresh lab from the inventory.
 - `barn destroy --delete-persistent` and `barn destroy --purge` apply to the entire deployment (they cannot be combined with node names). `--purge` also removes persistent disks, SSH keys, and deployment state.
 - `barn purge` discards the entire Linux deployment like `barn destroy --purge`, and also removes retained persistent disks left without deployment state. On a terminal it lists the purge scope and asks you to type `purge`; `--yes` (or `--force`) skips the question, and without a terminal it runs without prompting. The image cache and host network stay installed.
 

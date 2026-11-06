@@ -104,7 +104,7 @@ Extract the archive and add its `bin/` directory to `PATH`. Keep the packaged la
 
 To work on Barn or compile the native `Barn.app` bundle for macOS guests, see [Build from Source](../source-build/).
 
-## Upgrade Barn
+## Upgrade Barn {#upgrade-barn}
 
 Upgrading from 0.9.3 to **1.0.0** requires no recreation: VM disks, SSH keys, state, and configuration stay under `~/.barn`. Stop running Mac VMs first, then replace the CLI, `barn-hosts-helper`, and `Barn.app` together through your installation channel. Existing guests receive the updated data-disk helper on their next `barn up`. Check scripts for four behavior changes: catalog signature failures exit `7` instead of `1`, a whole-deployment `recreate` exits `4` when the inventory omits an existing node, interactive `up` asks before preparing the host, and `purge` asks for confirmation on a terminal. Scripts written for releases before 0.9.2 also need `--` before SSH/exec remote commands, for example `barn exec meta -- hostname`. See the [1.0.0 release notes](/blog/release/1.0.0/).
 

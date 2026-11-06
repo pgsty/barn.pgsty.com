@@ -32,7 +32,7 @@ Host requirements:
 
 ## Official candidate matrix
 
-`packaging/image-pipeline/build-official.py` builds the eight offline-normalized official targets—Debian 12/13 (`d12`, `d13`) and Rocky Linux 8/9 (`el8`, `el9`) on `amd64` and `arm64`—using the upstream URLs, package locks, release versions, SHA-256 digests, and `SOURCE_DATE_EPOCH` pinned in `official-v1.json` (Ubuntu images use unmodified upstream cloud images outside this offline matrix).
+`packaging/image-pipeline/build-official.py` builds the eight offline-normalized official targets—Debian 12/13 (`d12`, `d13`) and Rocky Linux 8/9 (`el8`, `el9`) on `amd64` and `arm64`—using the upstream URLs, package locks, release versions, SHA-256 digests, and `SOURCE_DATE_EPOCH` pinned in `official-v1.json` (the catalog's Ubuntu artifacts come from the same recipe run directly by `pipeline.py`; Ubuntu cloud images already ship `xfsprogs`, so they need no offline package lock).
 
 ```bash
 ./packaging/image-pipeline/build-official.py --list
@@ -47,7 +47,7 @@ Host requirements:
 Usage notes:
 
 - Create `--source-cache`, `--package-cache`, and `--output` beforehand and pass canonical absolute paths. With `--fetch`, the wrapper downloads any missing pinned HTTPS inputs and verifies their SHA-256 digests before running `virt-customize --no-network`; without `--fetch`, all locked inputs must already be present in the cache directories.
-- Omit `--target` to build all eight targets, or repeat `--target` to build a subset. `--list` prints the pinned releases in your checkout (currently Debian `20260923.2610.1` / `20260914.2601.2` and Rocky Linux `8.10.20240528.3` / `9.8.20260525.2`).
+- Omit `--target` to build all eight targets, or repeat `--target` to build a subset. `--list` prints the exact releases pinned in your checkout.
 
 Once all eight target bundles have been built, assemble them into a candidate static repository by passing the **parent directory** (or repeating `--assemble-from` across multiple parent directories) that contains the bundle directories:
 

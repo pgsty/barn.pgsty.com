@@ -16,7 +16,6 @@ Barn (**Bootstrap And Run Nodes**) is an Apache-2.0 virtual machine manager for 
 - [Security and Trust](security/) — Host privileges, SSH credentials, shared folders, and image verification boundaries
 - [Contributing](engineering/) — Source layout, local build and test gates, packaging snapshots, and catalog maintenance
 - [Barn 1.0.0 Release](/blog/release/1.0.0/) — The first stable release: 1.x compatibility scope, changes since 0.9.3, and upgrade steps
-- [Barn 0.9.3 Changes](0.9.3-changes/) — Released changes to paths, sharing, selected nodes, and development limits
 - [Validation History](history/) — Dated release verification records and native hypervisor test matrices
 {.cards}
 

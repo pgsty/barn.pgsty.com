@@ -19,9 +19,9 @@ Barn 用于在本地创建和管理开发测试虚拟机。本文档适用于首
 
 - [日常操作](start/operations/) — 查看状态、启停节点、通过 `plan` 预览配置变更，以及重建或销毁虚拟机。
 - [存储与服务访问](start/storage/) — 挂载持久化测试数据盘、配置 Virtio-9p 宿主共享目录与访问客机端口。
-- [镜像与仓库](start/images/) — 从 9 个 Linux 发行版系中选择镜像、切换国内加速源或导入自定义 `qcow2` 镜像。
+- [镜像与仓库](start/images/) — 从 9 个 Linux 发行版系中选择镜像、更新镜像目录或导入自定义 `qcow2` 镜像。
 - [脚本与自动化](start/automation/) — 使用 `--yes`、`--json` 与结构化退出码在脚本或 CI 中驱动 Barn。
-- [故障排查](start/troubleshooting/) — 使用 `barn doctor` 诊断宿主机依赖、桥接网络、SSH 密钥与中断操作。
+- [故障排查](start/troubleshooting/) — 使用 `barn doctor` 诊断宿主就绪状态、网络、SSH 与中断的生命周期操作。
 - [1.0.0 版本更新](../blog/release/1.0.0/) — 了解 1.x 兼容性范围、更安全的重建与数据盘恢复、新增确认流程与升级步骤。
 {.cards}
 

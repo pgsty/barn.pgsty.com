@@ -80,7 +80,7 @@ If the default `10.10.10.0/24` subnet conflicts with an existing host route whil
 | `--image` | Select the image reference for a generated `init`/`setup` template (`el9`, `u24:stable`, or `u24@version`) |
 | `-f`, `--file` | Select an inventory file for commands that read desired state |
 | `-r`, `--repo` | Select an image repository URL or path, overriding `--mirror` and `BARN_REPO` (`validate` supports `--repo` as of 0.9.0) |
-| `--mirror` | Use the China official repository (`https://repo.pigsty.cc/barn`) for setup, catalog updates, and image pulls |
+| `--mirror` | Use the China official repository (`https://repo.pigsty.cc/barn`) for `setup`, `up`, `reload`, `recreate`, `update`, and `image pull` |
 | `-m`, `--mode` | Select `host` or `shared` network mode on macOS |
 | `-d`, `--dry-run` | Print the execution plan for `setup` or `image prune` without modifying state |
 | `--yes` | Confirm host, setup, image, or destruction plans; `-y` is available only where listed below |

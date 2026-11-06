@@ -62,7 +62,7 @@ Barn 分别独立管理 Linux 实验环境与 macOS 虚拟机。**`barn purge` �
 
 4. **卸载 Linux 宿主网络**
 
-   当所有 Linux 虚拟机均已停止并移除后，预览并卸载多用户共享的 Linux 宿主网络（Mac 虚拟机的私有网络会随虚拟机停止自动释放，无需单独卸载）：
+   先销毁 Linux 实验环境（只要还有 Linux 虚拟机在运行，该命令就会中止），再预览并卸载多用户共享的 Linux 宿主网络（Mac 虚拟机的私有网络会随虚拟机停止自动释放，无需单独卸载）：
 
    ```bash
    barn network uninstall --json

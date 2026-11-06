@@ -80,7 +80,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `--image` | 为生成的 `init`/`setup` 模板选择镜像引用（如 `el9`、`u24:stable` 或 `u24@version`） |
 | `-f`、`--file` | 为读取期望状态的命令指定清单文件 |
 | `-r`、`--repo` | 指定镜像仓库 URL 或本地路径，优先级高于 `--mirror` 与 `BARN_REPO`（`validate` 自 0.9.0 起支持） |
-| `--mirror` | 为 `setup`、镜像目录更新与拉取操作选用中国官方镜像源（`https://repo.pigsty.cc/barn`） |
+| `--mirror` | 为 `setup`、`up`、`reload`、`recreate`、`update` 与 `image pull` 选用中国官方镜像源（`https://repo.pigsty.cc/barn`） |
 | `-m`、`--mode` | 在支持该参数的命令上选择 macOS `host` 或 `shared` 网络模式 |
 | `-d`、`--dry-run` | 仅打印 `setup` 或 `image prune` 的执行计划，不修改系统状态 |
 | `--yes` | 确认宿主、初始化、镜像或销毁计划；仅下表标明的命令支持 `-y` |

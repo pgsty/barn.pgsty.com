@@ -104,7 +104,7 @@ shasum -a 256 -c checksums.txt --ignore-missing
 
 如需参与开发或自行编译 macOS 原生应用包 `Barn.app`，请参阅[从源码构建](../source-build/)。
 
-## 升级 Barn
+## 升级 Barn {#upgrade-barn}
 
 从 0.9.3 升级至 **1.0.0** 无需重建虚拟机：虚拟机磁盘、SSH 密钥、状态与配置仍保存在 `~/.barn`。请先停止正在运行的 Mac 虚拟机，再通过原安装渠道同步替换 CLI、`barn-hosts-helper` 与 `Barn.app`。已有客机会在下一次 `barn up` 时获得更新后的数据盘脚本。请检查脚本是否受以下四项行为变化影响：目录签名校验失败时退出码由 `1` 变为 `7`；清单缺少已有节点时，整套部署 `recreate` 退出 `4`；交互式 `up` 准备宿主前会询问；在终端中执行 `purge` 会要求确认。为 0.9.2 之前版本编写的脚本还需在 SSH/exec 远端命令前加入 `--`，例如 `barn exec meta -- hostname`。详情见 [1.0.0 发布说明](/zh/blog/release/1.0.0/)。
 
