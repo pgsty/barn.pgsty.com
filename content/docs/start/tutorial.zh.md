@@ -56,7 +56,16 @@ mkdir -p ~/barn-lab && cd ~/barn-lab
 barn up
 ```
 
-首次运行且既没有配置文件也没有已有部署时，`barn up` 会在改动任何东西之前打印准备计划：`config` 行给出将要写入的单节点 `barn.yml`，`dependencies` 行列出需要安装的 QEMU、UEFI 固件与 OpenSSH 软件包，`network` 行说明固定 IP 宿主网络，`privileges` 行列出需要 `sudo` 的步骤。在 `Continue with this setup? [Y/n]` 处确认一次后，Barn 会下载并校验基础镜像，随后等待 SSH 就绪：
+首次运行且既没有配置文件也没有已有部署时，`barn up` 会在改动任何东西之前打印一份简短的准备计划，只列出适用的行：`install` 列出缺少的软件包（QEMU、UEFI 固件、OpenSSH）及所用的包管理器，`network` 给出要准备的固定 IP 网段，`config` 给出将要写入的单节点 `barn.yml`，`sudo` 说明哪些步骤需要 root 权限。在已经装有 QEMU 的宿主上，计划如下：
+
+```text
+  network       prepare 10.10.10.0/24
+  config        create /home/alice/barn-lab/barn.yml
+  sudo          network (root-owned barn0 bridge)
+Continue with this setup? [Y/n]
+```
+
+确认一次后，`sudo` 可能会要求输入密码。随后 Barn 会下载并校验基础镜像，等待 SSH 就绪：
 
 ```text
   ✓  1 node ready

@@ -16,8 +16,12 @@ These are Barn site code, not OINK features:
 
 - `layouts/_partials/landing/barn-quickstart.html` renders the home quick start
   (`{type: markdown, key: quickstart, partial: …}` in `data/home/<lang>.yaml`):
-  default-node facts beside a Markdown body whose code tabs use the
-  `barn-host` group.
+  default-node facts beside the `demo` recording, with the macOS and Linux
+  commands from `body` in a row underneath.
+- `static/images/barn-first-run.cast` is a real first run recorded on `m3`;
+  `bin/first-run-cast/` holds the driver, timing scripts, and re-recording
+  steps. Re-record it when the first-run output changes, and keep the typed
+  commands identical to the Linux commands in `body`.
 - Home-page styles in `assets/scss/_styles_project.scss` are scoped under
   `.td-home` or `.barn-quickstart`. Capability transcripts on the home page
   must match real Barn 1.0 output; check them against `cmd/barn` before

@@ -1,0 +1,70 @@
+#!/usr/bin/expect -f
+# Drive a real Barn 1.0 first run on m3 for the home-page recording.
+# Typing is simulated; every command and its output are real.
+set timeout 60
+set send_human {.05 .09 1 .03 .22}
+log_user 1
+set host_prompt {barn-lab\x1b\[0m\$ $}
+set guest_prompt {\$ $}
+
+proc type_line {text} {
+  send -h -- $text
+  sleep 0.45
+  send -- "\r"
+}
+
+proc run {text wait} {
+  global host_prompt timeout
+  type_line $text
+  set timeout $wait
+  expect {
+    -re $host_prompt {}
+    timeout { send_user "\n!! timeout after: $text\n"; exit 3 }
+  }
+  sleep 1.3
+}
+
+set host [expr {[info exists env(BARN_CAST_HOST)] ? $env(BARN_CAST_HOST) : "m3"}]
+spawn -noecho ssh -q -tt -o BatchMode=yes $host "bash --rcfile /tmp/barn-demo.rc -i"
+expect -re $host_prompt
+sleep 1.5
+
+run {curl -fLO https://github.com/pgsty/barn/releases/latest/download/install.sh} 120
+run {bash install.sh} 300
+run {export PATH="$HOME/.local/bin:$PATH"} 20
+run {barn version} 30
+
+type_line {barn up}
+set timeout 1500
+expect {
+  -ex {[Y/n]} {
+    sleep 1.6
+    send -h -- "y"
+    sleep 0.3
+    send -- "\r"
+    exp_continue
+  }
+  -ex {Password:} { send_user "\n!! unexpected sudo prompt\n"; exit 3 }
+  -re $host_prompt {}
+  timeout { send_user "\n!! barn up timeout\n"; exit 3 }
+}
+sleep 1.6
+
+type_line {barn ssh}
+set timeout 120
+expect {
+  -re {meta.*\$ $} {}
+  timeout { send_user "\n!! no guest prompt\n"; exit 3 }
+}
+sleep 1.2
+type_line {df -h /data}
+expect -re {meta.*\$ $}
+sleep 1.4
+type_line {exit}
+expect -re $host_prompt
+sleep 1.2
+
+run {barn status} 60
+sleep 2.5
+send -- "exit\r"
+expect eof

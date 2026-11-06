@@ -43,20 +43,22 @@ quickstart:
   links:
     - { label: 安装选项, url: docs/start/installation/ }
     - { label: Linux 快速上手, url: docs/start/tutorial/ }
+  demo: |-
+    {{< asciinema file="images/barn-first-run.cast" title="Barn 1.0.0 首次运行 · Ubuntu 26.04" poster="npt:0:30" >}}
+
+    在一台 Ubuntu 26.04 宿主上真实录制的首次运行，镜像下载与启动等待部分已加速播放。
   body: |-
-    ```bash {tab="macOS" group="barn-host" value="macos"}
+    ```bash {title="macOS · Homebrew"}
     # 安装 CLI、Barn.app 与 QEMU
     brew install pgsty/infra/barn
-
     barn up
     barn ssh
     ```
 
-    ```bash {tab="Linux" value="linux"}
+    ```bash {title="Linux · install.sh"}
     # 安装到 ~/.local/bin，无需 sudo
     curl -fLO https://github.com/pgsty/barn/releases/latest/download/install.sh
     bash install.sh && export PATH="$HOME/.local/bin:$PATH"
-
     barn up
     barn ssh
     ```

@@ -56,7 +56,16 @@ mkdir -p ~/barn-lab && cd ~/barn-lab
 barn up
 ```
 
-When neither an inventory file nor an active deployment exists, `barn up` prints a setup plan before it changes anything: `config` names the one-node `barn.yml` it writes, `dependencies` lists the QEMU, UEFI firmware, and OpenSSH packages to install, `network` shows the fixed-IP host network, and `privileges` lists the steps that use `sudo`. Answer `Continue with this setup? [Y/n]` once; Barn then downloads and verifies the base image and waits until SSH is ready:
+When neither an inventory file nor an active deployment exists, `barn up` prints a short setup plan before it changes anything. Only the rows that apply appear: `install` lists missing packages (QEMU, UEFI firmware, OpenSSH) and the package manager, `network` names the fixed-IP subnet it prepares, `config` names the one-node `barn.yml` it writes, and `sudo` says which steps need root. On a host that already has QEMU:
+
+```text
+  network       prepare 10.10.10.0/24
+  config        create /home/alice/barn-lab/barn.yml
+  sudo          network (root-owned barn0 bridge)
+Continue with this setup? [Y/n]
+```
+
+Answer once; `sudo` may then ask for your password. Barn downloads and verifies the base image and waits until SSH is ready:
 
 ```text
   ✓  1 node ready

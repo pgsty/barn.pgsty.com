@@ -169,9 +169,10 @@
     gap: clamp(28px, 4vw, 56px);
     align-items: center;
 
-    // The Linux installer URL is 75 columns; side by side only where it fits.
-    @media (min-width: 1280px) {
-      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    // The 80-column recording needs about 640px to stay readable, so the
+    // columns sit side by side only from 1100px.
+    @media (min-width: 1100px) {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     }
   }
 
@@ -251,24 +252,61 @@
     }
   }
 
-  &__code {
+  // The recording uses the theme's asciinema player; drop the window lights
+  // as the home codeplates do, and keep its caption quiet.
+  &__demo {
+    width: 100%;
+    max-width: 760px;
     min-width: 0;
-    background: transparent;
+    justify-self: center;
 
-    > :last-child {
-      margin-block-end: 0;
+    .td-asciinema {
+      margin: 0;
     }
 
-    // data-bs-theme="dark" scopes Bootstrap and Chroma; plain code text
-    // still reads the page's --td tokens, so pin it to the codeplate ink.
-    pre,
-    pre code {
-      color: #c9d6e8;
+    .td-asciinema__lights {
+      display: none;
+    }
+
+    p {
+      margin: 0.55rem 0 0;
+      color: var(--td-soft);
+      font-size: 0.82rem;
+      text-wrap: balance;
+    }
+  }
+
+  // macOS commands sit under the facts and Linux commands under the Linux
+  // recording, on the same column ratio. Side by side only from 1320px,
+  // where the 75-column installer line fits without scrolling.
+  &__code {
+    min-width: 0;
+    margin-block-start: clamp(24px, 3vw, 40px);
+
+    > .td-content {
+      display: grid;
+      gap: 1rem clamp(28px, 4vw, 56px);
+
+      @media (min-width: 1320px) {
+        grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      }
+    }
+
+    .td-code {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      margin: 0;
+
+      > :last-child {
+        flex: 1 1 auto;
+      }
     }
 
     pre {
-      font-size: 0.86rem;
-      line-height: 1.75;
+      height: 100%;
+      font-size: 0.84rem;
+      line-height: 1.7;
     }
   }
 }
