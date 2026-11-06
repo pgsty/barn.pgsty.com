@@ -64,7 +64,7 @@ Validate the website repository with:
 make check
 ```
 
-`make check` verifies the Go module graph, builds the site with Hugo Extended against the pinned OINK `v1.5.0` module (clearing any local theme replacements and disabling Go workspaces), and runs `bin/check_internal_links.py public` to verify all internal links, anchors, and assets. When testing against a local sibling OINK checkout, use `make check-local` or `make build-local`. Check CLI examples against `barn <command> --help` and test inventory examples with `barn validate` and `barn plan` using a temporary `BARN_HOME`.
+`make check` verifies the Go module graph, builds the site with Hugo Extended against the pinned OINK `v1.5.1` module (clearing any local theme replacements and disabling Go workspaces), and runs `bin/check_internal_links.py public` to verify all internal links, anchors, and assets. When testing against a local sibling OINK checkout, use `make check-local` or `make build-local`. Check CLI examples against `barn <command> --help` and test inventory examples with `barn validate` and `barn plan` using a temporary `BARN_HOME`.
 
 ## Release outputs and gates
 

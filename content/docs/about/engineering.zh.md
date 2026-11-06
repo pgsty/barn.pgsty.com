@@ -64,7 +64,7 @@ make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 make check
 ```
 
-`make check` 会校验 Go 模块、在清除本地主题替换并关闭 Go workspace 的纯净环境下使用 Hugo Extended 与锁定的 OINK `v1.5.0` 构建全站，随后调用 `bin/check_internal_links.py public` 检查全部内部链接、标题锚点与静态资源。需要联调本地相邻的 OINK 主题工作区时，请使用 `make check-local` 或 `make build-local`。文中的命令行示例请对照 `barn <command> --help` 核验，YAML 清单示例请使用临时 `BARN_HOME` 跑通 `barn validate` 与 `barn plan`。
+`make check` 会校验 Go 模块、在清除本地主题替换并关闭 Go workspace 的纯净环境下使用 Hugo Extended 与锁定的 OINK `v1.5.1` 构建全站，随后调用 `bin/check_internal_links.py public` 检查全部内部链接、标题锚点与静态资源。需要联调本地相邻的 OINK 主题工作区时，请使用 `make check-local` 或 `make build-local`。文中的命令行示例请对照 `barn <command> --help` 核验，YAML 清单示例请使用临时 `BARN_HOME` 跑通 `barn validate` 与 `barn plan`。
 
 ## 发布产物与门禁
 

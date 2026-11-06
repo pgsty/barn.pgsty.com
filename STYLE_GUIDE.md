@@ -51,7 +51,7 @@ If the answer is "nothing", delete it immediately.
 
 Use "Linux lab" / "Linux 实验环境" for the user's environment, and "deployment" / "部署" when explaining configuration or runtime state. Keep terminology consistent across pages.
 
-## Use OINK v1.5.0 components purposefully
+## Use OINK v1.5.1 components purposefully
 
 - Use ```` ```filetree ```` fences with `#` comments for directory layouts (`$BARN_HOME/images/`, `$BARN_HOME/mac/`).
 - Add `{title="barn.yml"}` or script filenames to configuration and script code blocks, and use `{tab="..." group="..." value="..."}` on adjacent code fences for multi-platform command comparisons.
