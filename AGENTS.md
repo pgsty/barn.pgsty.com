@@ -10,6 +10,21 @@ enable `--panicOnWarning` or `HUGO_PANICONWARNING`; keep warnings visible and
 review them. The upstream LibSass deprecation warning is accepted. No external
 Sass compiler is required.
 
+## Site extensions
+
+These are Barn site code, not OINK features:
+
+- `layouts/_partials/landing/barn-quickstart.html` renders the home quick start
+  (`{type: markdown, key: quickstart, partial: …}` in `data/home/<lang>.yaml`):
+  default-node facts beside a Markdown body whose code tabs use the
+  `barn-host` group.
+- Home-page styles in `assets/scss/_styles_project.scss` are scoped under
+  `.td-home` or `.barn-quickstart`. Capability transcripts on the home page
+  must match real Barn 1.0 output; check them against `cmd/barn` before
+  editing.
+- Write Chinese prose in `.zh.md` and `data/*/zh.yaml` without hard line breaks
+  between Chinese characters; browsers render each break as a space.
+
 ## Git 内容与大文件规则
 
 用户于 2026-10-10 明确的通用仓库规则：

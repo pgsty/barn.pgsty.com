@@ -1,8 +1,8 @@
 sections:
   - hero
+  - { type: markdown, key: quickstart, partial: landing/barn-quickstart.html }
   - capabilities
-  - steps
-  - principles
+  - { type: cards, key: design }
   - faq
   - cta
 
@@ -10,14 +10,12 @@ hero:
   eyebrow: Barn 1.0.0 · 稳定版 · Apache-2.0
   title_lines:
     - words:
-        - { text: 拉起本地虚拟机舰队 }
+        - { text: 多节点 Linux 实验环境 }
     - words:
-        - { text: Linux 与 macOS 皆可 }
+        - { text: 与原生 macOS 虚拟机 }
   title_size: 3.3rem
-  lead: >-
-    在 macOS 与 Linux 上用一份 Ansible 清单拉起多节点 Linux 实验环境，或在
-    Apple Silicon 上运行相互隔离的原生 macOS 虚拟机。
-  note: Bootstrap And Run Nodes · HVF 与 KVM · Apple Virtualization
+  lead: 用一份 Ansible 清单定义固定 IP 节点，在 macOS 或 Linux 上拉起；也能在 Apple Silicon 上运行相互隔离的 macOS 27 虚拟机。
+  note: Bootstrap And Run Nodes · QEMU（HVF / KVM）· Apple Virtualization
   image:
     src: images/barn-hero.svg
     alt: 黄昏时的红色 Barn，门内亮着服务器，旁边是蓝色 Silo
@@ -26,148 +24,185 @@ hero:
     max_width: 520px
     hide_below: lg
   actions:
-    - { label: 启动 Linux 实验室, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
+    - { label: 启动 Linux 实验环境, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: 运行 macOS 虚拟机, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
-    - { label: 安装 1.0.0, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
   detail:
     label: 了解 1.0.0 的新变化
     url: blog/release/1.0.0/
 
+quickstart:
+  eyebrow: 快速上手
+  title: 第一台 Linux 虚拟机
+  desc: >-
+    在全新宿主上，`barn up` 会写出单节点 `barn.yml`，改动宿主前先确认一次。
+  facts:
+    - { label: 节点, value: '`meta`，地址 `10.10.10.10`' }
+    - { label: 镜像, value: 'Ubuntu 24.04 · `u24:stable`' }
+    - { label: 规格, value: 2 个 vCPU · 4 GiB 内存 }
+    - { label: 磁盘, value: '64 GiB 根盘 · 128 GiB `/data`' }
+  links:
+    - { label: 安装选项, url: docs/start/installation/ }
+    - { label: Linux 快速上手, url: docs/start/tutorial/ }
+  body: |-
+    ```bash {tab="macOS" group="barn-host" value="macos"}
+    # 安装 CLI、Barn.app 与 QEMU
+    brew install pgsty/infra/barn
+
+    barn up
+    barn ssh
+    ```
+
+    ```bash {tab="Linux" value="linux"}
+    # 安装到 ~/.local/bin，无需 sudo
+    curl -fLO https://github.com/pgsty/barn/releases/latest/download/install.sh
+    bash install.sh && export PATH="$HOME/.local/bin:$PATH"
+
+    barn up
+    barn ssh
+    ```
+
 capabilities:
   eyebrow: 核心能力
   title: 两套工作流，一个 CLI。
-  text: 声明式 Linux 实验集群与 Apple Silicon 原生 macOS 虚拟机。
+  text: 声明式 Linux 实验环境与原生 macOS 虚拟机，装一次即可使用。
   items:
-    - ref: 01 / LINUX 实验集群
-      title: 声明式 Linux 集群
+    - ref: Linux 实验环境
+      title: 声明式 Linux 实验环境
       url: docs/start/tutorial/
       motto: 一份 YAML 清单，拉起固定 IP 节点
       bullets:
-        - '在 [`barn.yml`](docs/reference/configuration/) 中按节点声明 CPU、内存与数据盘'
-        - '自带固定私网 IP、免密 SSH 与 `/etc/hosts` 解析'
-        - '修改配置后重跑 [`barn up`](docs/reference/cli/) 即可就地收敛状态'
-      value: 直接复用同一份清单运行 Pigsty 与 Ansible 剧本。
+        - '在 [`barn.yml`](docs/reference/configuration/) 中声明节点、CPU、内存与磁盘'
+        - '固定私网 IP，自动配好 SSH 密钥与 `/etc/hosts`'
+        - '重跑 [`barn up`](docs/reference/cli/) 即可收敛，删除始终显式执行'
+      value: 同一份文件可以直接交给 Pigsty 或 `ansible-playbook -i`。
       visual:
         type: code
-        aria_label: 在 barn.yml 中声明三节点 Linux 实验环境并启动
-        title: barn.yml  →  barn up
+        aria_label: 用 barn up 启动四节点的 barn.yml 主机清单
+        title: barn.yml  ·  barn up
         lines:
-          - { class: c, prefix: '# barn.yml 中的三节点 Linux 实验室', text: '' }
-          - { class: k, prefix: 'pg-test: ', text: '{ hosts: { 10.10.10.11: {}, 10.10.10.12: {}, 10.10.10.13: {} } }' }
+          - { class: c, prefix: '# barn init full', text: '' }
+          - { class: k, prefix: 'all:', text: '' }
+          - { class: k, prefix: '  vars: ', text: '{ admin_ip: 10.10.10.10 }' }
+          - { class: k, prefix: '  children:', text: '' }
+          - { class: k, prefix: '    nodes:', text: '' }
+          - { class: k, prefix: '      hosts:', text: '' }
+          - { class: k, prefix: '        10.10.10.10: ', text: '{ nodename: meta }' }
+          - { class: k, prefix: '        10.10.10.11: ', text: '{ nodename: node-1 }' }
+          - { class: k, prefix: '        10.10.10.12: ', text: '{ nodename: node-2 }' }
+          - { class: k, prefix: '        10.10.10.13: ', text: '{ nodename: node-3 }' }
           - { class: p, prefix: '$ ', text: 'barn up' }
-          - { class: ok, prefix: '✓ ', text: 'node-1  10.10.10.11  u24-arm64  4 vCPU · 8 GiB  ready' }
-          - { class: ok, prefix: '✓ ', text: 'node-2  10.10.10.12  u24-arm64  4 vCPU · 8 GiB  ready' }
-          - { class: ok, prefix: '✓ ', text: 'node-3  10.10.10.13  u24-arm64  4 vCPU · 8 GiB  ready' }
-          - { class: p, prefix: '$ ', text: 'barn ssh 10.10.10.11' }
-    - ref: 02 / 原生 MACOS
+          - { class: ok, prefix: '  ✓  ', text: '4 nodes ready' }
+          - { class: c, prefix: 'connect:   ', text: 'barn ssh meta' }
+    - ref: macOS 客机
       title: 原生 macOS 虚拟机
       url: docs/start/macos/
-      motto: 基于 Apple Virtualization 的隔离桌面与终端
+      motto: 基于 Apple Virtualization 的隔离 Apple Silicon 客机
       bullets:
-        - 'Homebrew 与发行包内置已签名公证的 `Barn.app`'
-        - '共享 macOS 27+ 母盘，APFS 写时复制秒级克隆'
-        - '支持 [`barn mac open`](docs/reference/mac/) 原生窗口、SSH、目录共享与剪贴板'
-      value: 在不污染宿主 Mac 的前提下验证安装包与构建产物。
+        - 'Homebrew 与 arm64 发行包已内置签名的 `Barn.app`'
+        - '从 Apple 安装一份 macOS 27 母盘，新机器秒级克隆'
+        - '桌面窗口、[`ssh`](docs/reference/mac/)、共享目录与剪贴板'
+      value: 每台机器都有独立的磁盘、密钥与私有子网。
       visual:
         type: code
-        aria_label: 在 Apple Silicon 上创建并打开隔离的 macOS 虚拟机
+        aria_label: 创建、打开并连接一台 macOS 虚拟机
         title: barn mac  ·  Apple Virtualization
         lines:
-          - { class: p, prefix: '$ ', text: 'barn mac up dev --cpu 4 --mem 8 --share ~/work' }
-          - { class: ok, prefix: '✓ ', text: 'macOS 27 runtime ready  ·  APFS copy-on-write clone' }
-          - { class: ok, prefix: '✓ ', text: 'dev  192.168.64.5  running  VirtioFS: work' }
-          - { class: p, prefix: '$ ', text: 'barn mac open dev' }
-          - { class: p, prefix: '$ ', text: 'barn mac ssh dev -- uname -mr' }
-          - { class: c, prefix: '  ', text: '26.0.0 arm64' }
-    - ref: 03 / 客机镜像目录
-      title: 签名校验客机镜像
+          - { class: p, prefix: '$ ', text: 'barn mac up dev --cpu 8 --memory 16G --share ~/src' }
+          - { class: ok, prefix: '  ✓  ', text: 'dev created and ready · macOS 27.0 (26A428)' }
+          - { class: c, prefix: 'shell:     ', text: 'barn mac ssh dev' }
+          - { class: c, prefix: 'desktop:   ', text: 'barn mac open dev' }
+          - { class: p, prefix: '$ ', text: 'barn mac ssh dev -- sw_vers -productVersion' }
+          - { class: c, prefix: '', text: '27.0' }
+    - ref: 客机镜像
+      title: 经过校验的客机镜像
       url: docs/start/images/
-      motto: 覆盖九大 Linux 发行版系的 17 个已验证镜像制品
+      motto: '签名目录 `2026110502` · 9 个发行版本 · 17 个镜像制品'
       bullets:
-        - '涵盖 Ubuntu、Debian、Rocky Linux 与 CentOS 7'
-        - '入库前强制通过签名清单与 SHA-256 摘要校验'
-        - '全局缓存单份基础镜像，新节点秒级拉起'
-      value: 亦可通过单条命令导入自定义 qcow2 镜像。
+        - 'Ubuntu、Debian 与 Rocky Linux，覆盖 `amd64` 和 `arm64`'
+        - '启动前校验签名元数据、SHA-256 与 qcow2 结构'
+        - '在 `~/.barn` 中只缓存一份，每个节点使用独立写时复制层'
+      value: 也可以用 `barn image import` 导入自己的 qcow2 镜像。
       visual:
         type: components
-        aria_label: 支持的客机操作系统与架构
+        aria_label: 客机操作系统及其镜像别名
         columns: 2
         items:
-          - { icon: fa-brands fa-ubuntu, title: Ubuntu, detail: '22.04 · 24.04 · 26.04', url: docs/start/images/ }
-          - { icon: fa-brands fa-debian, title: Debian, detail: '12 · 13', url: docs/start/images/ }
-          - { icon: fa-brands fa-redhat, title: Rocky Linux, detail: '8 · 9 · 10', url: docs/start/images/ }
-          - { icon: fa-solid fa-server, title: CentOS, detail: '7 · 仅 Linux amd64 宿主', url: docs/start/images/ }
-          - { icon: fa-brands fa-apple, title: 原生 macOS, detail: 'macOS 27+ · Apple Silicon', url: docs/start/macos/ }
-          - { icon: fa-solid fa-clone, title: 写时复制, detail: 'qcow2 与 APFS 克隆', url: docs/reference/images/ }
+          - { icon: fa-brands fa-ubuntu, title: Ubuntu, detail: 'u22 · u24 · u26', url: docs/reference/images/ }
+          - { icon: fa-brands fa-debian, title: Debian, detail: 'd12 · d13', url: docs/reference/images/ }
+          - { icon: fa-brands fa-redhat, title: Rocky Linux, detail: 'el8 · el9 · el10', url: docs/reference/images/ }
+          - { icon: fa-solid fa-server, title: CentOS 7, detail: 'el7 · 仅限 amd64 Linux 宿主', url: docs/reference/images/ }
+          - { icon: fa-brands fa-apple, title: macOS 27, detail: 'Apple 恢复镜像', url: docs/start/macos/ }
+          - { icon: fa-solid fa-file-import, title: 自有 qcow2, detail: 'barn image import', url: docs/start/images/ }
 
-steps:
-  eyebrow: 快速上手
-  title: 三条命令启动环境
-  desc: 安装 CLI，拉起 Linux 实验节点或原生 macOS 虚拟机，并通过 SSH 连接。
+design:
+  eyebrow: 设计随笔
+  title: 可预期，来自设计
+  desc: 每条规则都链接到一篇说明其取舍的设计随笔。
+  columns: 3
   items:
-    - icon: fa-solid fa-download
-      title: 安装 Barn
-      desc: macOS 可用 Homebrew 安装，Linux 可运行[安装脚本](docs/start/installation/)。
-      cmd:
-        code: brew install pgsty/infra/barn
-    - icon: fa-solid fa-terminal
-      title: 启动 Linux 实验室
-      desc: 拉起默认 Ubuntu 节点或 [`barn.yml` 集群](docs/start/tutorial/)，并直连 SSH。
-      cmd:
-        code: barn up && barn ssh
-    - icon: fa-brands fa-apple
-      title: 运行原生 macOS
-      desc: 在 Apple Silicon 上启动挂载共享目录的 [macOS 27+ 客机](docs/start/macos/)。
-      cmd:
-        code: barn mac up dev --share ~/work
-
-principles:
-  eyebrow: 工程原则
-  title: 默认可预期
-  desc: 四项核心设计取舍，让本地虚拟机始终保持快速、可复现、易排查。
-  columns: 4
-  items:
-    - icon: fa-solid fa-location-dot
-      title: 固定私网 IP
-      desc: 节点始终保持清单声明的私网 IP，自动配齐 SSH 与 /etc/hosts。
-    - icon: fa-solid fa-file-code
-      title: 单份 YAML 清单
-      desc: 同一份标准 Ansible YAML 清单，同时驱动 Barn 与 Pigsty。
-    - icon: fa-solid fa-arrows-rotate
-      title: 安全就地收敛
-      desc: 重跑 barn up 即可新增节点并补完客机初始化；resize、recreate 与 destroy 始终需要显式执行。
-    - icon: fa-solid fa-clone
-      title: 写时复制存储
-      desc: 基础镜像在 ~/.barn 下只缓存一份，新节点数秒内完成克隆。
+    - icon: fa-solid fa-network-wired
+      title: 固定 IP 走第二张网卡
+      desc: 管理出网走第一张网卡，宿主、节点与 Pigsty 使用的固定地址走第二张。
+      url: blog/design/fixed-ip-two-nics/
+    - icon: fa-solid fa-house-chimney
+      title: 每个用户一套部署
+      desc: 每个用户只有一套实验环境，保存在 `~/.barn`，切换目录不会分出第二套。
+      url: blog/design/one-deployment-no-projects/
+    - icon: fa-solid fa-shield-halved
+      title: 配置缺席不等于删除
+      desc: 从 YAML 中移除的主机只会被报告，只有 `destroy` 才删除虚拟机。
+      url: blog/design/convergence-without-surprise/
+    - icon: fa-solid fa-fingerprint
+      title: 先确认身份，再看 PID
+      desc: QMP 身份与操作日志一致时，Barn 才会向虚拟机进程发信号或删除文件。
+      url: blog/design/identity-before-pid/
+    - icon: fa-solid fa-file-signature
+      title: 镜像以签名为证
+      desc: '`repo.yaml` 表达意图，签名的 `catalog.json` 证明镜像字节。'
+      url: blog/design/repo-yaml-catalog-json/
+    - icon: fa-solid fa-code-compare
+      title: 稳定的 1.x 契约
+      desc: 命令、参数、退出码与已有的 `--json` 字段在整个 1.x 系列内保持兼容。
+      url: blog/release/1.0.0/#compatibility
 
 faq:
   eyebrow: 开始之前
   title: 常见问题
-  flat: true
+  style: flat
   items:
-    - question: Barn 支持哪些宿主机平台？
+    - question: Barn 支持哪些宿主平台？
       answer: >-
-        Linux 实验环境支持 macOS（Apple Silicon 与 Intel，基于 QEMU + HVF）和
-        Linux（`amd64` 与 `arm64`，基于 QEMU + KVM）。原生 macOS 虚拟机（`barn mac`）
-        支持运行 macOS 27+ 的 Apple Silicon Mac，Homebrew 配方与 Darwin `arm64`
-        发行归档已内置签名公证的 `Barn.app`。详见[平台支持矩阵](docs/about/status/)。
+        Linux 实验环境可运行在 macOS（Apple Silicon 或 Intel，QEMU 搭配 HVF）与
+        Linux（`amd64` 或 `arm64`，QEMU 搭配 KVM）上。macOS 客机需要运行 macOS 27
+        或更高版本的 Apple Silicon Mac，签名的 `Barn.app` 随 Homebrew 配方与
+        Darwin `arm64` 归档一起提供。详见[平台与限制](docs/about/status/)。
+    - question: Barn 会改动宿主上的哪些东西？
+      answer: >-
+        首次运行 `barn up` 时，Barn 会列出需要安装的 QEMU 软件包、UEFI 固件与私有宿主网络，确认一次后才会执行；只有需要管理员权限的步骤才会触发 `sudo`。可以先用
+        `barn setup --dry-run` 预览计划，撤销方法见[卸载与清理](docs/start/uninstall/)。
     - question: Barn 与 Pigsty、Ansible 是什么关系？
       answer: >-
-        `barn.yml` 直接采用标准 Ansible YAML 清单结构（`all.vars`、
-        `all.children.<group>.hosts`）。你可以将同一份清单直接传给
-        `ansible-playbook -i barn.yml` 或 Pigsty 部署剧本，无需维护两套配置。
-    - question: Barn 将镜像与虚拟机磁盘存放在哪里？
+        `barn.yml` 就是标准的 Ansible YAML 主机清单（`all.vars`、
+        `all.children.<group>.hosts`），同一份文件可以直接用于
+        `ansible-playbook -i barn.yml` 和 Pigsty 剧本。Barn 负责准备机器与 SSH 访问，
+        Pigsty 负责安装服务；Barn 也可以单独使用。
+    - question: Barn 把镜像与虚拟机磁盘存放在哪里？
       answer: >-
-        所有部署状态、SSH 密钥、基础镜像缓存与虚拟机磁盘均保存在 `$BARN_HOME`
-        下（默认路径为 `~/.barn`）。除非显式指定不同的 `BARN_HOME`，切换工作目录不会新建另一套部署。
+        部署状态、SSH 密钥、基础镜像缓存与虚拟机磁盘都保存在 `$BARN_HOME`
+        下（默认 `~/.barn`）。除非设置了不同的 `BARN_HOME`，切换工作目录不会新建另一套部署。
     - question: Barn 1.0 保证哪些内容稳定？
       answer: >-
-        在 1.x 内，命令名、参数、退出码、`--json` 与 `--yaml` 的已有字段、清单格式、`BARN_*` 环境变量以及 `BARN_HOME` 下的状态保持兼容。面向人阅读的文本可能变化，脚本请读取结构化输出与退出码。从 0.9.3 升级无需重建已有虚拟机，详见[兼容性范围](blog/release/1.0.0/#compatibility)。
+        在 1.x 内，命令名、参数、退出码、`--json` 与 `--yaml` 的已有字段、清单格式、`BARN_*` 环境变量以及 `BARN_HOME` 下的状态保持兼容。面向人阅读的文本可能变化，脚本请读取结构化输出与退出码。从 0.9.3 升级会保留已有虚拟机，详见[兼容性范围](blog/release/1.0.0/#compatibility)。
+    - question: 如何从 0.9.3 升级？
+      answer: >-
+        先停止正在运行的 macOS 虚拟机，再执行 `brew upgrade pgsty/infra/barn`
+        或重新运行 `install.sh`。`~/.barn` 下的虚拟机磁盘、密钥与状态原样保留。脚本需要适应两处变化：镜像目录签名校验失败时退出码为 `7`，交互终端中的
+        `up` 与 `purge` 会先请求确认。详见[升级 Barn](docs/start/installation/#upgrade-barn)。
 
 cta:
   title: 准备好搭建本地实验环境了吗？
-  desc: 跟随分步教程创建 Linux 集群、启动原生 macOS 虚拟机，或查阅完整 CLI 手册。
+  desc: 从安装到清理，跟着 Linux 教程走一遍；也可以启动 macOS 虚拟机，或直接查阅命令。
   actions:
-    - { label: Linux 实验室教程, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
+    - { label: Linux 实验环境教程, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: 原生 macOS 指南, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
     - { label: CLI 命令参考, url: docs/reference/cli/, icon: fa-solid fa-book, style: ghost }

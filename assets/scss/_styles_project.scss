@@ -1,62 +1,275 @@
-// Barn-specific presentation layered on top of OINK v1.4.0.
+// Barn-specific presentation layered on top of OINK v1.5.0. Home-page rules
+// are scoped under .td-home; the quick start is a site partial
+// (layouts/_partials/landing/barn-quickstart.html), not an OINK section type.
 
 // Swap the navbar wordmark to its light-ink outline in dark mode.
 [data-bs-theme='dark'] .td-nav-wordmark {
   content: url('/images/barn-wordmark-dark.svg');
 }
 
-// Frame the 1800x1080 hero illustration at its native 5:3 aspect ratio without
-// the theme's default 1.1x emblem bleed.
-.td-landing-hero--with-media {
-  .td-landing-hero__title {
-    letter-spacing: -0.028em;
-    line-height: 1.08;
+.td-home {
+  // Frame the 1800x1080 hero illustration at its native 5:3 aspect ratio
+  // without the theme's default 1.1x emblem bleed.
+  .td-landing-hero--with-media {
+    .td-landing-hero__title {
+      letter-spacing: -0.028em;
+      line-height: 1.08;
+    }
+
+    .td-landing-hero__media {
+      aspect-ratio: 5 / 3;
+      transform: none;
+      background-size: cover;
+      border: 1px solid var(--td-line-strong);
+      border-radius: var(--td-radius-md);
+      box-shadow: var(--td-shadow-lg);
+      overflow: hidden;
+    }
   }
 
-  .td-landing-hero__media {
-    aspect-ratio: 5 / 3;
-    transform: none;
-    background-size: cover;
-    border: 1px solid var(--td-line-strong);
-    border-radius: var(--td-radius-md);
-    box-shadow: var(--td-shadow-lg);
-    overflow: hidden;
+  // Hero title lines are nowrap in OINK; between lg and xl the text column is
+  // narrower than a 3.3rem line, so scale the title with the viewport there.
+  @media (min-width: 992px) and (max-width: 1279.98px) {
+    .td-landing-hero--with-media .td-landing-hero__title {
+      font-size: clamp(2.4rem, 4.2vw, 3.3rem);
+    }
   }
-}
 
-// Keep capability titles, subtitles, bullets, and value lines on one line
-// when desktop width permits.
-.td-landing-module__copy {
-  h3 {
+  // Short copy that must wrap splits into balanced lines instead of
+  // leaving a word or two on the last line.
+  .td-landing-hero__lead,
+  .td-landing-hero__note > span,
+  .td-landing-section__description,
+  .td-landing-faq--flat h3,
+  .td-landing-module__copy li,
+  .td-landing-module__motto,
+  .td-landing-module__value,
+  .td-landing-component-board small,
+  .td-landing-card__description p,
+  .td-landing-final-cta span,
+  .barn-quickstart__facts dd {
+    text-wrap: balance;
+
+    // Keep short tokens such as `--json` or `barn.yml` whole.
+    code {
+      white-space: nowrap;
+    }
+
+    // Break Chinese short copy at spaces and punctuation, not inside words.
+    &:lang(zh) {
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  // Transcripts are real Barn output: drop the window chrome, and scroll
+  // instead of clipping when a line is wider than a narrow screen.
+  .td-landing-codeplate {
+    .td-landing-codeplate__head > span {
+      display: none;
+    }
+
+    pre {
+      overflow-x: auto;
+      padding: clamp(18px, 2.4vw, 30px);
+      font-size: clamp(0.74rem, 1.05vw, 0.84rem);
+    }
+
+    .k {
+      color: #7fb8e8;
+    }
+
+    .s,
+    .v {
+      color: #e0a35c;
+    }
+  }
+
+  .td-landing-faq__answer p {
+    text-wrap: pretty;
+  }
+
+  .td-landing-module__copy h3 {
     font-size: clamp(1.5rem, 2.2vw, 1.95rem);
     letter-spacing: -0.02em;
   }
 
-  @media (min-width: 1100px) {
-    h3,
-    .td-landing-module__motto,
-    .td-landing-module__value,
-    li {
-      white-space: nowrap;
+  // Design notes: each card is one link to its essay.
+  .td-landing-cards-section .td-landing-card {
+    position: relative;
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+
+    h3 {
+      margin-block-end: 0.4rem;
+      font-size: 1.08rem;
+    }
+
+    .td-landing-card__description p {
+      margin-block-end: 0;
+      color: var(--td-soft);
+    }
+
+    > .td-landing-card-link {
+      position: static;
+      margin: 0;
+      padding: 0;
+      font-size: 0;
+      line-height: 0;
+
+      > i {
+        position: absolute;
+        inset-block-start: clamp(18px, 2.2vw, 24px);
+        inset-inline-end: clamp(18px, 2.2vw, 24px);
+        color: var(--td-soft);
+        font-size: 0.8rem;
+        opacity: 0;
+        transition:
+          opacity 180ms ease,
+          transform 180ms ease;
+      }
+
+      &::after {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        content: '';
+      }
+
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    &:hover {
+      border-color: var(--td-copper-dim);
+      box-shadow: var(--td-shadow);
+      transform: translateY(-2px);
+
+      > .td-landing-card-link > i {
+        color: var(--td-copper);
+        opacity: 1;
+        transform: translateX(2px);
+      }
+    }
+
+    &:has(> .td-landing-card-link:focus-visible) {
+      outline: 2px solid var(--td-copper);
+      outline-offset: 3px;
     }
   }
 }
 
-// Keep Quick Start step descriptions compact (max 2 lines on desktop).
-.td-landing-step__desc {
-  @media (min-width: 992px) {
-    max-width: 34ch;
-  }
-}
+// Quick start: what the first `barn up` creates, beside the commands to run.
+.barn-quickstart {
+  &__grid {
+    display: grid;
+    gap: clamp(28px, 4vw, 56px);
+    align-items: center;
 
-.td-landing-codeplate {
-  .k {
-    color: #7fb8e8;
+    // The Linux installer URL is 75 columns; side by side only where it fits.
+    @media (min-width: 1280px) {
+      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    }
   }
 
-  .s,
-  .v {
-    color: #e0a35c;
+  &__copy .td-landing-section__head {
+    margin-block-end: 1.5rem;
+  }
+
+  &__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--td-line);
+    border-radius: var(--td-radius-md);
+    background: var(--td-line);
+
+    > div {
+      padding: 0.8rem 1rem;
+      background: var(--td-surface, var(--bs-body-bg));
+    }
+
+    dt {
+      margin-block-end: 0.2rem;
+      color: var(--td-soft);
+      font-family: var(--td-meta-font-family);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    dd {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    // Phones: one label/value row per fact instead of four cramped cells.
+    @media (max-width: 575.98px) {
+      grid-template-columns: minmax(0, 1fr);
+
+      > div {
+        display: grid;
+        grid-template-columns: 4.25rem minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: baseline;
+        padding-block: 0.65rem;
+      }
+
+      dt {
+        margin: 0;
+      }
+    }
+  }
+
+  &__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin: 1.25rem 0 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    a {
+      text-decoration: none;
+
+      i {
+        margin-inline-start: 0.4em;
+        font-size: 0.8em;
+        transition: transform 160ms ease;
+      }
+
+      &:hover i {
+        transform: translateX(3px);
+      }
+    }
+  }
+
+  &__code {
+    min-width: 0;
+    background: transparent;
+
+    > :last-child {
+      margin-block-end: 0;
+    }
+
+    // data-bs-theme="dark" scopes Bootstrap and Chroma; plain code text
+    // still reads the page's --td tokens, so pin it to the codeplate ink.
+    pre,
+    pre code {
+      color: #c9d6e8;
+    }
+
+    pre {
+      font-size: 0.86rem;
+      line-height: 1.75;
+    }
   }
 }
 
@@ -68,12 +281,8 @@
   }
 }
 
-.td-landing-landing-steps > li > i {
-  margin-inline-start: 0.5em;
-}
-
 @media (max-width: 420px) {
-  .td-landing-hero__title {
+  .td-home .td-landing-hero__title {
     font-size: clamp(1.75rem, 7.8vw, 2.3rem);
   }
 }

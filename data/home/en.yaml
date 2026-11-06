@@ -1,8 +1,8 @@
 sections:
   - hero
+  - { type: markdown, key: quickstart, partial: landing/barn-quickstart.html }
   - capabilities
-  - steps
-  - principles
+  - { type: cards, key: design }
   - faq
   - cta
 
@@ -10,14 +10,14 @@ hero:
   eyebrow: Barn 1.0.0 · Stable · Apache-2.0
   title_lines:
     - words:
-        - { text: Launch Local VM Fleets }
+        - { text: Multi-Node Linux Labs }
     - words:
-        - { text: Across Linux and macOS }
+        - { text: and Native macOS VMs }
   title_size: 3.3rem
   lead: >-
-    Boot multi-node Linux labs from an Ansible inventory on macOS and Linux, or
-    run isolated native macOS machines on Apple Silicon.
-  note: Bootstrap And Run Nodes · HVF & KVM · Apple Virtualization
+    Define fixed-IP nodes in one Ansible inventory and boot them on macOS or
+    Linux, or run isolated macOS 27 machines on Apple Silicon.
+  note: Bootstrap And Run Nodes · QEMU with HVF or KVM · Apple Virtualization
   image:
     src: images/barn-hero.svg
     alt: A red Barn with servers in its doorway beside a blue Silo at dusk
@@ -28,142 +28,178 @@ hero:
   actions:
     - { label: Start a Linux lab, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: Run a macOS VM, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
-    - { label: Install 1.0.0, url: docs/start/installation/, icon: fa-solid fa-download, style: ghost }
   detail:
     label: What's new in 1.0.0
     url: blog/release/1.0.0/
 
+quickstart:
+  eyebrow: Quick start
+  title: Your first Linux VM
+  desc: >-
+    On a fresh host, `barn up` writes a one-node `barn.yml` and asks once
+    before it changes the host.
+  facts:
+    - { label: Node, value: '`meta` at `10.10.10.10`' }
+    - { label: Image, value: 'Ubuntu 24.04 · `u24:stable`' }
+    - { label: Size, value: 2 vCPUs · 4 GiB memory }
+    - { label: Disks, value: '64 GiB root · 128 GiB `/data`' }
+  links:
+    - { label: Installation options, url: docs/start/installation/ }
+    - { label: Linux quick start, url: docs/start/tutorial/ }
+  body: |-
+    ```bash {tab="macOS" group="barn-host" value="macos"}
+    # Installs the CLI, Barn.app, and QEMU
+    brew install pgsty/infra/barn
+
+    barn up
+    barn ssh
+    ```
+
+    ```bash {tab="Linux" value="linux"}
+    # Installs into ~/.local/bin without sudo
+    curl -fLO https://github.com/pgsty/barn/releases/latest/download/install.sh
+    bash install.sh && export PATH="$HOME/.local/bin:$PATH"
+
+    barn up
+    barn ssh
+    ```
+
 capabilities:
   eyebrow: Core capabilities
   title: Two workflows. One CLI.
-  text: Declarative Linux labs and native macOS machines.
+  text: Declarative Linux labs and native macOS machines share one install.
   items:
-    - ref: 01 / LINUX LABS
+    - ref: Linux labs
       title: Declarative Linux Labs
       url: docs/start/tutorial/
       motto: One YAML inventory for fixed-IP nodes
       bullets:
-        - 'Declare CPU, memory, and disks in [`barn.yml`](docs/reference/configuration/)'
-        - 'Fixed private IPs with prewired SSH and `/etc/hosts`'
-        - 'Re-run [`barn up`](docs/reference/cli/) to converge guest changes in place'
-      value: Built for Pigsty, Ansible, and cluster testing.
+        - 'Nodes, CPU, memory, and disks in one [`barn.yml`](docs/reference/configuration/)'
+        - 'Fixed private IPs, SSH keys, and `/etc/hosts` wired in'
+        - 'Re-run [`barn up`](docs/reference/cli/) to converge; deletion stays explicit'
+      value: Pass the same file to Pigsty or `ansible-playbook -i`.
       visual:
         type: code
-        aria_label: Declare a 3-node Linux lab in barn.yml and boot it
-        title: barn.yml  →  barn up
+        aria_label: A four-node barn.yml inventory started with barn up
+        title: barn.yml  ·  barn up
         lines:
-          - { class: c, prefix: '# 3-node Linux lab in barn.yml', text: '' }
-          - { class: k, prefix: 'pg-test: ', text: '{ hosts: { 10.10.10.11: {}, 10.10.10.12: {}, 10.10.10.13: {} } }' }
+          - { class: c, prefix: '# barn init full', text: '' }
+          - { class: k, prefix: 'all:', text: '' }
+          - { class: k, prefix: '  vars: ', text: '{ admin_ip: 10.10.10.10 }' }
+          - { class: k, prefix: '  children:', text: '' }
+          - { class: k, prefix: '    nodes:', text: '' }
+          - { class: k, prefix: '      hosts:', text: '' }
+          - { class: k, prefix: '        10.10.10.10: ', text: '{ nodename: meta }' }
+          - { class: k, prefix: '        10.10.10.11: ', text: '{ nodename: node-1 }' }
+          - { class: k, prefix: '        10.10.10.12: ', text: '{ nodename: node-2 }' }
+          - { class: k, prefix: '        10.10.10.13: ', text: '{ nodename: node-3 }' }
           - { class: p, prefix: '$ ', text: 'barn up' }
-          - { class: ok, prefix: '✓ ', text: 'node-1  10.10.10.11  u24-arm64  4 vCPU · 8 GiB  ready' }
-          - { class: ok, prefix: '✓ ', text: 'node-2  10.10.10.12  u24-arm64  4 vCPU · 8 GiB  ready' }
-          - { class: ok, prefix: '✓ ', text: 'node-3  10.10.10.13  u24-arm64  4 vCPU · 8 GiB  ready' }
-          - { class: p, prefix: '$ ', text: 'barn ssh 10.10.10.11' }
-    - ref: 02 / NATIVE MACOS
+          - { class: ok, prefix: '  ✓  ', text: '4 nodes ready' }
+          - { class: c, prefix: 'connect:   ', text: 'barn ssh meta' }
+    - ref: macOS guests
       title: Native macOS Machines
       url: docs/start/macos/
-      motto: Isolated Apple Silicon guests via Virtualization
+      motto: Isolated Apple Silicon guests on Apple Virtualization
       bullets:
-        - 'Signed `Barn.app` included in Homebrew and release archives'
-        - 'Clone macOS 27+ VMs in seconds on APFS storage'
-        - 'Cocoa desktop window, [`ssh`](docs/reference/mac/), VirtioFS shares, and clipboard'
-      value: Test macOS builds without polluting your host.
+        - 'Signed `Barn.app` ships with Homebrew and the arm64 archive'
+        - 'One macOS 27 base from Apple; new machines clone in seconds'
+        - 'Desktop window, [`ssh`](docs/reference/mac/), shared folders, and clipboard'
+      value: Each machine has its own disk, keys, and private subnet.
       visual:
         type: code
-        aria_label: Boot and open an isolated macOS virtual machine on Apple Silicon
+        aria_label: Create, open, and connect to a macOS virtual machine
         title: barn mac  ·  Apple Virtualization
         lines:
-          - { class: p, prefix: '$ ', text: 'barn mac up dev --cpu 4 --mem 8 --share ~/work' }
-          - { class: ok, prefix: '✓ ', text: 'macOS 27 runtime ready  ·  APFS copy-on-write clone' }
-          - { class: ok, prefix: '✓ ', text: 'dev  192.168.64.5  running  VirtioFS: work' }
-          - { class: p, prefix: '$ ', text: 'barn mac open dev' }
-          - { class: p, prefix: '$ ', text: 'barn mac ssh dev -- uname -mr' }
-          - { class: c, prefix: '  ', text: '26.0.0 arm64' }
-    - ref: 03 / GUEST CATALOG
+          - { class: p, prefix: '$ ', text: 'barn mac up dev --cpu 8 --memory 16G --share ~/src' }
+          - { class: ok, prefix: '  ✓  ', text: 'dev created and ready · macOS 27.0 (26A428)' }
+          - { class: c, prefix: 'shell:     ', text: 'barn mac ssh dev' }
+          - { class: c, prefix: 'desktop:   ', text: 'barn mac open dev' }
+          - { class: p, prefix: '$ ', text: 'barn mac ssh dev -- sw_vers -productVersion' }
+          - { class: c, prefix: '', text: '27.0' }
+    - ref: Guest images
       title: Verified Guest Images
       url: docs/start/images/
-      motto: 17 verified Linux image artifacts across nine distributions
+      motto: 'Signed catalog `2026110502` · 9 releases · 17 artifacts'
       bullets:
-        - 'Ubuntu, Debian, Rocky Linux, and CentOS 7'
-        - 'Verified by signed manifests and SHA-256 digests'
-        - 'Cached once under `~/.barn`, cloned on every boot'
-      value: Or import custom qcow2 images in one command.
+        - 'Ubuntu, Debian, and Rocky Linux on `amd64` and `arm64`'
+        - 'Signed metadata, SHA-256, and qcow2 checks before boot'
+        - 'Cached once in `~/.barn`; each node gets its own overlay'
+      value: Import your own qcow2 with `barn image import`.
       visual:
         type: components
-        aria_label: Supported guest operating systems and architectures
+        aria_label: Guest operating systems and their image aliases
         columns: 2
         items:
-          - { icon: fa-brands fa-ubuntu, title: Ubuntu, detail: '22.04 · 24.04 · 26.04', url: docs/start/images/ }
-          - { icon: fa-brands fa-debian, title: Debian, detail: '12 · 13', url: docs/start/images/ }
-          - { icon: fa-brands fa-redhat, title: Rocky Linux, detail: '8 · 9 · 10', url: docs/start/images/ }
-          - { icon: fa-solid fa-server, title: CentOS, detail: '7 · Linux amd64 hosts', url: docs/start/images/ }
-          - { icon: fa-brands fa-apple, title: Native macOS, detail: 'macOS 27+ · Apple Silicon', url: docs/start/macos/ }
-          - { icon: fa-solid fa-clone, title: Copy-on-Write, detail: 'qcow2 & APFS clones', url: docs/reference/images/ }
+          - { icon: fa-brands fa-ubuntu, title: Ubuntu, detail: 'u22 · u24 · u26', url: docs/reference/images/ }
+          - { icon: fa-brands fa-debian, title: Debian, detail: 'd12 · d13', url: docs/reference/images/ }
+          - { icon: fa-brands fa-redhat, title: Rocky Linux, detail: 'el8 · el9 · el10', url: docs/reference/images/ }
+          - { icon: fa-solid fa-server, title: CentOS 7, detail: 'el7 · amd64 Linux hosts', url: docs/reference/images/ }
+          - { icon: fa-brands fa-apple, title: macOS 27, detail: 'Apple restore image', url: docs/start/macos/ }
+          - { icon: fa-solid fa-file-import, title: Your own qcow2, detail: 'barn image import', url: docs/start/images/ }
 
-steps:
-  eyebrow: Quick start
-  title: Up and running in three commands
-  desc: Install the CLI, boot a Linux lab or native macOS machine, and connect over SSH.
+design:
+  eyebrow: Design notes
+  title: Predictable by design
+  desc: Each rule links to the note that explains its trade-offs.
+  columns: 3
   items:
-    - icon: fa-solid fa-download
-      title: Install Barn
-      desc: Install via Homebrew on macOS, or run the [installer script](docs/start/installation/) on Linux.
-      cmd:
-        code: brew install pgsty/infra/barn
-    - icon: fa-solid fa-terminal
-      title: Boot a Linux lab
-      desc: Start the default Ubuntu node or a [`barn.yml` lab](docs/start/tutorial/) and connect via SSH.
-      cmd:
-        code: barn up && barn ssh
-    - icon: fa-brands fa-apple
-      title: Run native macOS
-      desc: Launch an isolated [macOS 27+ guest](docs/start/macos/) on Apple Silicon with shared folders.
-      cmd:
-        code: barn mac up dev --share ~/work
-
-principles:
-  eyebrow: Engineering principles
-  title: Predictable by default
-  desc: Four design choices keep local virtual machines fast, reproducible, and easy to reason about.
-  columns: 4
-  items:
-    - icon: fa-solid fa-location-dot
-      title: Fixed private IPs
-      desc: Every node keeps its inventory IP, with SSH keys and /etc/hosts wired automatically.
-    - icon: fa-solid fa-file-code
-      title: One YAML inventory
-      desc: Use one standard Ansible YAML file for both Barn VMs and Pigsty playbooks.
-    - icon: fa-solid fa-arrows-rotate
-      title: Safe convergence
-      desc: Re-run barn up to add nodes and finish guest setup; resize, recreate, and destroy stay explicit.
-    - icon: fa-solid fa-clone
-      title: Copy-on-write disks
-      desc: Base images stay cached once under ~/.barn; new nodes clone in seconds.
+    - icon: fa-solid fa-network-wired
+      title: Fixed IPs on a second NIC
+      desc: Management egress and the fixed lab network never share an interface.
+      url: blog/design/fixed-ip-two-nics/
+    - icon: fa-solid fa-house-chimney
+      title: One deployment per user
+      desc: Each user keeps one Linux lab under `~/.barn`; switching directories never forks it.
+      url: blog/design/one-deployment-no-projects/
+    - icon: fa-solid fa-shield-halved
+      title: Omission never deletes
+      desc: A host removed from YAML is only reported; deleting a VM always takes `barn destroy`.
+      url: blog/design/convergence-without-surprise/
+    - icon: fa-solid fa-fingerprint
+      title: Identity before PID
+      desc: Barn signals or deletes a VM only after its QMP identity and journal agree.
+      url: blog/design/identity-before-pid/
+    - icon: fa-solid fa-file-signature
+      title: Signed image evidence
+      desc: '`repo.yaml` states intent; the signed `catalog.json` proves the bytes.'
+      url: blog/design/repo-yaml-catalog-json/
+    - icon: fa-solid fa-code-compare
+      title: A stable 1.x contract
+      desc: Commands, flags, exit codes, and existing `--json` fields stay compatible across 1.x.
+      url: blog/release/1.0.0/#compatibility
 
 faq:
   eyebrow: Before you begin
   title: Common questions
-  flat: true
+  style: flat
   items:
     - question: What hosts does Barn support?
       answer: >-
-        Linux labs run on macOS (Apple Silicon and Intel via QEMU + HVF) and
-        Linux (`amd64` and `arm64` via QEMU + KVM). Native macOS VMs (`barn mac`)
-        run on Apple Silicon Macs with macOS 27+, and the signed and notarized
-        `Barn.app` ships directly in the Homebrew formula and Darwin `arm64`
-        release archive. See the [platform support matrix](docs/about/status/).
+        Linux labs run on macOS (Apple Silicon or Intel, QEMU with HVF) and on
+        Linux (`amd64` or `arm64`, QEMU with KVM). macOS guests need an Apple
+        Silicon Mac running macOS 27 or later; the signed `Barn.app` ships with
+        the Homebrew formula and the Darwin `arm64` archive. See
+        [Platforms and Limits](docs/about/status/).
+    - question: What does Barn change on my host?
+      answer: >-
+        The first `barn up` lists the QEMU packages, UEFI firmware, and private
+        host network it needs, then asks once before applying them; `sudo`
+        prompts only for steps that need it. Preview the plan with
+        `barn setup --dry-run`, and see [Uninstall and Clean Up](docs/start/uninstall/)
+        to reverse it.
     - question: How does Barn relate to Pigsty and Ansible?
       answer: >-
-        `barn.yml` uses the standard Ansible YAML inventory schema (`all.vars`,
-        `all.children.<group>.hosts`). You can pass the same file directly to
-        `ansible-playbook -i barn.yml` or Pigsty deployment playbooks without
-        maintaining a separate VM config.
+        `barn.yml` is a standard Ansible YAML inventory (`all.vars`,
+        `all.children.<group>.hosts`), so the same file works with
+        `ansible-playbook -i barn.yml` and Pigsty playbooks. Barn prepares the
+        machines and SSH access; Pigsty installs the services. Barn also works
+        on its own.
     - question: Where does Barn store images and VM disks?
       answer: >-
-        All deployment state, SSH keys, cached base images, and VM disks live
-        under `$BARN_HOME` (`~/.barn` by default). Changing your working
-        directory does not create a separate deployment unless you set a
-        different `BARN_HOME`.
+        Deployment state, SSH keys, cached base images, and VM disks live under
+        `$BARN_HOME` (`~/.barn` by default). Changing your working directory
+        does not create a separate deployment unless you set a different
+        `BARN_HOME`.
     - question: What does Barn 1.0 keep stable?
       answer: >-
         Across 1.x, command names, flags, exit codes, existing `--json` and
@@ -172,10 +208,17 @@ faq:
         scripts should read structured output and exit codes. Upgrading from
         0.9.3 keeps existing VMs; see the
         [compatibility scope](blog/release/1.0.0/#compatibility).
+    - question: How do I upgrade from 0.9.3?
+      answer: >-
+        Stop any running macOS VMs, then run `brew upgrade pgsty/infra/barn` or
+        re-run `install.sh`. VM disks, keys, and state under `~/.barn` stay in
+        place. Scripts should expect exit `7` for catalog signature failures and
+        a confirmation prompt from interactive `up` and `purge`. See
+        [Upgrade Barn](docs/start/installation/#upgrade-barn).
 
 cta:
   title: Ready to build your local lab?
-  desc: Start with the step-by-step Linux tutorial, boot a native macOS VM, or inspect the CLI reference.
+  desc: Follow the Linux tutorial from install to teardown, boot a native macOS VM, or look up a command.
   actions:
     - { label: Linux Lab Tutorial, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: Native macOS Guide, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }

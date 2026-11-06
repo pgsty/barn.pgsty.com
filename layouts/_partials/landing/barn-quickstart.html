@@ -1,0 +1,35 @@
+{{- /* Barn site extension (not an OINK section type): the quick start puts the
+       default-node facts beside a Markdown body. The body renders inside
+       .td-content so fenced code tabs keep the documentation's highlighting,
+       copy button, tab runtime, and saved selection. */ -}}
+{{- $page := .page -}}
+{{- $data := .data -}}
+{{- $id := .id -}}
+{{- $scope := printf "landing-%s" $id -}}
+<section id="{{ $id }}" class="td-landing-section barn-quickstart{{ with $data.class }} {{ . }}{{ end }}"{{ with $data.title }} aria-labelledby="{{ $id }}-title"{{ end }}>
+  <div class="td-site-container barn-quickstart__grid">
+    <div class="barn-quickstart__copy">
+      {{- partial "landing/heading.html" (dict "page" $page "data" $data "id" $id) }}
+      {{- with $data.facts }}
+      <dl class="barn-quickstart__facts">
+        {{- range $index, $fact := . }}
+        <div>
+          <dt>{{ $fact.label }}</dt>
+          <dd>{{ partial "landing/markdown.html" (dict "page" $page "scope" (printf "%s-fact-%d" $scope $index) "value" $fact.value) }}</dd>
+        </div>
+        {{- end }}
+      </dl>
+      {{- end }}
+      {{- with $data.links }}
+      <p class="barn-quickstart__links">
+        {{- range . }}
+        <a href="{{ .url | relLangURL }}">{{ .label }}<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+        {{- end }}
+      </p>
+      {{- end }}
+    </div>
+    <div class="barn-quickstart__code td-content" data-bs-theme="dark">
+      {{ partial "landing/markdown-block.html" (dict "page" $page "scope" (printf "%s-body" $scope) "value" $data.body) }}
+    </div>
+  </div>
+</section>
