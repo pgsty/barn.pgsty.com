@@ -1,40 +1,30 @@
-# 项目代理说明
+# Barn 伴生文档站
 
-## OINK build baseline
+本仓库维护 `barn.pgsty.com` 的英文（`/`）与简体中文（`/zh/`）文档、设计文章和发布记录；产品源码在 `../barn`。写作规范见 [STYLE_GUIDE.md](STYLE_GUIDE.md)，构建入口见 [Makefile](Makefile)。
 
-As of 2026-11-07, this site uses OINK v1.5.1 and Hugo Extended from the current
-release channel. Keep CI and local builds on the latest available Hugo; do not
-pin a patch version. If a deployment platform requires a literal version, use
-Hugo Extended 0.169.0 until that platform supports its latest channel. Do not
-enable `--panicOnWarning` or `HUGO_PANICONWARNING`; keep warnings visible and
-review them. The upstream LibSass deprecation warning is accepted. No external
-Sass compiler is required.
+## 内容归属
 
-## Site extensions
+- `content/docs/start/` 放任务指南，`content/docs/reference/` 放命令与配置契约，`content/docs/about/` 放项目说明。
+- 新的架构设计、方案取舍和可复用研究结论统一维护在 `content/blog/design/`，注明日期、实现状态、代码/官方来源与验收条件。`content/blog/release/` 维护发布记录；源码仓库保留既有工程说明与历史证据。
+- 每篇英文 `page.md` 与中文 `page.zh.md` 成对维护；路由、日期、权重、显式标题锚点、命令和技术事实对齐。中文段落不在汉字之间硬换行。
+- 按 `../barn` 的当前代码、测试和已发布标签核对行为，明确区分稳定版、未发布的 `main` 与未来提案。临时研究笔记放仓库外，不再建立 `reports/`、`research_notes/` 归档。
 
-These are Barn site code, not OINK features:
+## 构建与检查
 
-- `layouts/_partials/landing/barn-quickstart.html` renders the home quick start
-  (`{type: markdown, key: quickstart, partial: …}` in `data/home/<lang>.yaml`):
-  default-node facts beside the `demo` recording, with the macOS and Linux
-  commands from `body` in a row underneath.
-- `static/images/barn-first-run.cast` is a real first run recorded on `m3`;
-  `bin/first-run-cast/` holds the driver, timing scripts, and re-recording
-  steps. Re-record it when the first-run output changes, and keep the typed
-  commands identical to the Linux commands in `body`.
-- Home-page styles in `assets/scss/_styles_project.scss` are scoped under
-  `.td-home` or `.barn-quickstart`. Capability transcripts on the home page
-  must match real Barn 1.0 output; check them against `cmd/barn` before
-  editing.
-- Write Chinese prose in `.zh.md` and `data/*/zh.yaml` without hard line breaks
-  between Chinese characters; browsers render each break as a space.
+- OINK 版本以 `go.mod` 为准（当前 `v1.5.1`）；使用最新 Hugo Extended。CI 使用 latest 通道；部署平台必须填字面版本时，当前为 `0.169.0`。
+- `make check` 校验模块、使用锁定主题构建生产站点并检查内链、锚点和资源；它会清除主题替换并关闭 Go/Hugo workspace。`make dev`、`make check-local` 用于联调相邻 `../oink`。
+- 保留并审查构建警告；上游 LibSass 弃用提示可接受，不启用 `--panicOnWarning` / `HUGO_PANICONWARNING`，不要求额外 Sass 编译器。
+- CLI/YAML 示例对照源码和帮助校验；需要执行 Barn 时使用临时 `BARN_HOME`。本地构建、提交、推送、部署与公开验收分别报告，修改文档不自动发布站点。
 
-## Git 内容与大文件规则
+## 本站扩展
 
-用户于 2026-10-10 明确的通用仓库规则：
+- `layouts/_partials/landing/barn-quickstart.html` 渲染首页快速上手，数据来自 `data/home/<lang>.yaml`；默认节点说明与录像并排，下方显示 macOS/Linux 命令。
+- `static/images/barn-first-run.cast` 是真实首跑录像；重录方法在 `bin/first-run-cast/`。首跑输出变化后重新录制，输入命令与首页 Linux 命令一致。
+- 首页终端示例必须匹配对应 Barn 版本的真实输出；样式在 `assets/scss/_styles_project.scss`，作用域限定为 `.td-home` 或 `.barn-quickstart`。这些都是本站代码。
 
-- 仓库默认保存源代码、配置和必要的轻量文档、元数据。构建产物、可执行文件、软件包、容器/虚拟机镜像、下载压缩包、数据库导出和大体积原始数据默认不进入 Git；文本格式的数据大文件同样需要检查。
-- 在工作树内下载或生成上述文件之前，先选择仓库外的制品/数据位置，或补上合理的 `.gitignore` 规则并验证实际路径已被忽略，防止暂存和代理恢复/差异快照将它们写入 Git 对象库。
-- 暂存、提交前检查新增文件的大小、类型和 staged 文件列表，只加入本次需要的源文件；不得用强制添加绕过忽略规则。优先保留来源清单、校验值及可复现的下载/构建方法。
-- 对二进制素材、数据集或生成文件是否应纳入版本控制拿不准时，先问用户，再暂存或提交；确需例外时也先取得用户明确指示。
-- 本规则不授权删除已有文件、stash、恢复快照或改写 Git 历史。忽略规则不会清除已存在的 Git 对象，历史清理需要单独明确范围。
+## Git 与制品
+
+- 修改前检查 Git 状态，保留其他未提交工作，不自动 reset/stash/clean。
+- Git 只收源代码、配置、必要的轻量文档与元数据。构建输出、可执行文件、包、镜像、压缩包、数据库导出和大体积数据放仓库外，或先设忽略规则并用 `git check-ignore` 验证。
+- 暂存或提交前核对新增文件的类型、大小和 staged 列表，不强制添加被忽略文件；优先保留来源、摘要和复现方法。二进制素材、数据集或生成文件是否入库不明确时先询问用户，例外须明确授权。
+- 忽略规则不授权删除已有文件、stash、恢复快照、清理 Git 对象或改写历史；清理须另有明确范围。

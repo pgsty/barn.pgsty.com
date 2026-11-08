@@ -15,7 +15,7 @@ Create an Ubuntu 24.04 VM on your Mac or Linux host, connect over SSH, and scale
 
 ## Customize before the first start {#customize}
 
-The default lab is one Ubuntu node; to keep it, skip to [Start and connect](#start). To choose the topology, subnet, or OS image first, write and edit the inventory before the first `barn up`:
+The default lab is one Ubuntu node using the host architecture: `arm64` on Apple Silicon, `amd64` on Intel/AMD. No architecture setting is needed for normal use; see [image and architecture settings](../../reference/configuration/#image-and-architecture) for cross-architecture selection and precedence. To keep the defaults, skip to [Start and connect](#start). To choose the topology, subnet, or OS image first, write and edit the inventory before the first `barn up`:
 
 1. Generate a starter `barn.yml` (`dual`, `trio`, or `full` creates 2, 3, or 4 nodes; `-c 10.20.30.0/24` selects a custom subnet, and `--image el9` writes one image for every node):
 

@@ -6,7 +6,10 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-本页说明 **Barn 1.0.0** 的全局展示参数与 Linux 实验环境命令。macOS 客机命令请查阅 [Mac 命令](../mac/)。使用其他版本时，请先运行 `barn version` 核对版本号。
+本页跟随 **Barn `main`** 的全局展示参数与 Linux 实验环境命令。macOS 客机命令请查阅 [Mac 命令](../mac/)。请运行 `barn version` 与命令的 `--help` 核对当前构建。
+
+> [!NOTE]
+> `--image/-I`、`--arch/-A` 的扩展与 `purge --ask` 是 1.0.0 之后尚未发布的改动。1.0.0 的 `purge` 在终端中仍要求输入 `purge`，并支持 `--yes`/`--force`；下文记录 `main` 的新行为，历史行为见 [1.0.0 发布说明](../../../blog/release/1.0.0/)。
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -77,14 +80,16 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `--json`、`--yaml` | 在 stdout 输出机器可读结果，进度信息仍输出到 stderr（仅提供长参数） |
 | `-v`、`--verbose` | 在 stderr 输出定长截断的诊断详情 |
 | `-c`、`--cidr` | 为 `init`/`setup` 模板或宿主 `network` 检查/安装指定 RFC1918 `/24` 网段 |
-| `--image` | 为生成的 `init`/`setup` 模板选择镜像引用（如 `el9`、`u24:stable` 或 `u24@version`） |
+| `-I`、`--image` | 为生成模板选择镜像，或在支持覆盖的命令中替代所选节点的 `vm_image`/`vm_version` |
+| `-A`、`--arch` | 选择客机或镜像架构：`native`、`amd64`（`x86_64`、`x64`）、`arm64`（`aarch64`、`a64`） |
 | `-f`、`--file` | 为读取期望状态的命令指定清单文件 |
 | `-r`、`--repo` | 指定镜像仓库 URL 或本地路径，优先级高于 `--mirror` 与 `BARN_REPO`（`validate` 自 0.9.0 起支持） |
 | `--mirror` | 为 `setup`、`up`、`reload`、`recreate`、`update` 与 `image pull` 选用中国官方镜像源（`https://repo.pigsty.cc/barn`） |
 | `-m`、`--mode` | 在支持该参数的命令上选择 macOS `host` 或 `shared` 网络模式 |
 | `-d`、`--dry-run` | 仅打印 `setup` 或 `image prune` 的执行计划，不修改系统状态 |
 | `--yes` | 确认宿主、初始化、镜像或销毁计划；仅下表标明的命令支持 `-y` |
-| `--force`（`init`、`destroy`、`recreate`、`purge`） | 覆盖已有清单（`init`）或跳过交互式确认词（因 `-f` 已用于选择清单，故仅设长参数） |
+| `--force`（`init`、`destroy`、`recreate`） | 覆盖已有清单（`init`）或跳过交互式确认词（因 `-f` 已用于选择清单，故仅设长参数） |
+| `--ask`（`purge`） | 删除前展示虚拟机列表与清理范围，要求输入 `y`/`yes` 确认 |
 | `-n`、`--no-wait` | QEMU 进程启动后立即返回，跳过客机 SSH 就绪检查、磁盘恢复与配置刷新 |
 | `--rollback`（`up`、`reload`） | 清理本次运行中准备失败、尚未提交状态的节点残留文件 |
 | `--delete-persistent` | 整体销毁部署时一并删除 `persistent: true` 的持久数据盘 |
@@ -95,23 +100,23 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 
 | 命令 | 专用参数 |
 |---|---|
-| `init` | `--output/-o`（默认 `./barn.yml`，`-` 表示输出到 stdout）、`--cidr/-c`、`--image`、`--force` |
-| `setup [meta\|dual\|trio\|full]` | `--file/-f`、`--cidr/-c`、`--image`、`--repo/-r`、`--mirror`、`--mode/-m`、`--dry-run/-d`、`--yes/-y`（默认模板为 `meta`） |
-| `validate` | `--file/-f`、`--repo/-r`；不接受节点参数 |
-| `plan` | `--file/-f`、`--repo/-r` |
-| `up`、`reload` | `--file/-f`、`--repo/-r`、`--mirror`、`--no-wait/-n`、`--rollback` |
-| `recreate` | `--file/-f`、`--repo/-r`、`--mirror`、`--yes`/`--force`、`--no-wait/-n` |
-| `resize` | `--file/-f` |
+| `init` | `--output/-o`（默认 `./barn.yml`，`-` 表示输出到 stdout）、`--cidr/-c`、`--image/-I`、`--arch/-A`、`--force` |
+| `setup [meta\|dual\|trio\|full]` | `--file/-f`、`--cidr/-c`、`--image/-I`、`--arch/-A`、`--repo/-r`、`--mirror`、`--mode/-m`、`--dry-run/-d`、`--yes/-y`（默认模板为 `meta`） |
+| `validate` | `--file/-f`、`--repo/-r`、`--image/-I`、`--arch/-A`；不接受节点参数 |
+| `plan` | `--file/-f`、`--repo/-r`、`--image/-I`、`--arch/-A` |
+| `up`、`reload` | `--file/-f`、`--repo/-r`、`--image/-I`、`--arch/-A`、`--mirror`、`--no-wait/-n`、`--rollback` |
+| `recreate` | `--file/-f`、`--repo/-r`、`--image/-I`、`--arch/-A`、`--mirror`、`--yes`/`--force`、`--no-wait/-n` |
+| `resize` | `--file/-f`、`--image/-I`、`--arch/-A`（仍只应用 CPU/内存变更） |
 | `start`、`restart` | `--no-wait/-n` |
 | `stop`、`status` | 仅接受节点选择器与全局展示参数 |
 | `destroy` | `--yes`/`--force`、`--delete-persistent`、`--purge`（后两者仅限整套部署） |
-| `purge` | `--yes`/`--force` 跳过终端确认；不接受节点参数 |
+| `purge` | 默认直接删除；`--ask` 开启确认；不接受节点参数或 `--yes`、`-y`、`--force` |
 | `doctor`、`version` | 仅全局展示参数 |
 | `provision` | 必填 `--script/-s`；`--sudo`；`--parallel/-p` 正整数（默认 `1`）；`--timeout/-t` 正时长（默认 `1h`） |
 | `ssh-config` | 可选节点选择器；`--install/-i` 与 `--remove` 互斥；`--name` 默认为 `barn`。`--remove` 不接受节点参数，也不要求存在部署状态 |
 | `logs` | `--source/-s serial\|qemu\|events`（默认 `serial`）；`--follow/-f`（`events` 为部署级日志，不接受节点名） |
-| `image info`、`image pull` | 可选镜像选择器、`--arch/-a amd64\|arm64`、`--repo/-r`；`pull` 额外支持 `--mirror` |
-| `image import` | `--sha256/-s`；命名导入（`--name local-*`）还必须同时传入 `--boot/-b bios\|uefi` 与 `--source-user/-u` |
+| `image info`、`image pull` | 可选镜像选择器、`--arch/-A`（兼容旧 `-a`）、`--repo/-r`；`pull` 额外支持 `--mirror` |
+| `image import` | `--sha256/-s`；命名导入（`--name local-*`）还必须同时传入 `--boot/-b bios\|uefi` 与 `--source-user/-u`，可用 `--arch/-A` 记录客机架构 |
 | `image prune` | `--dry-run/-d` 与 `--yes/-y` 互斥；`--repo/-r` |
 | `image sync` | 源 URL 或本地路径、`--repo/-r`、可选 `--allow-downgrade` |
 | `update` | `--repo/-r`、`--mirror` |
@@ -125,10 +130,11 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 参数使用说明：
 
 - `setup --dry-run` 与 `setup --yes` 互斥。`--cidr` 仅调整新生成模板的网段，不会改写显式指定的 `-f` 清单。若要在 `validate` 时对照中国镜像源校验，请传入 `--repo https://repo.pigsty.cc/barn`。
-- `--image` 仅适用于 `init` 或 `setup` 生成模板的场景，会写入 `all.vars.vm_image`；不能覆盖 `-f` 指定的已有清单或自动发现的清单。后续验证和生命周期命令仍从当前镜像目录解析该引用。
+- `init` 与生成模板的 `setup` 将 `-I`、`-A` 写入 `all.vars.vm_image`、`all.vars.vm_arch`；`setup` 遇到已有清单时拒绝这两个生成参数。`up`、`plan`、`reload`、`recreate`、`resize` 与 `validate` 则在内存中覆盖本次期望配置，不改写清单。镜像覆盖作用于所选节点，架构覆盖作用于整套部署；详见[覆盖优先级与默认值](../configuration/#image-and-architecture)。
+- 独立的 `image info/pull/import` 默认取宿主架构，不读取清单的 `vm_arch`；用 `-A` 显式选择。`image import -A` 必须与 `--name` 同用；qcow2 元数据不能识别客机 CPU，所填架构须与实际镜像一致。
 - `network` 与 `hosts` 的 `install`/`uninstall` 会先展示变更计划并在终端请求确认（安装默认同意，卸载默认拒绝）。未传 `--yes` 时，如果标准输入不是终端或输出为 `--json`/`--yaml`，命令只输出计划并退出 `0`；请检查结构化报告中的 `applied`，或传入 `--yes` 执行计划。macOS 首次配置宿主网络请使用 `barn setup`。有节点运行时 `network uninstall` 会拒绝卸载网络；停止或销毁虚拟机不会卸载宿主网络。在 Linux 上，若宿主还有其他网络链路，或无法确认 networkd 仅供 Barn 使用，`network uninstall` 会保留全局 networkd 单元状态；计划中报告 `preserve_networkd`，执行报告在 `checks.networkd` 中说明原因。
-- 涉及安全确认与仓库选择的开关（`--mirror`、`--force`、`--rollback`、`--remove`、`--allow-downgrade`、`--sudo`、`--delete-persistent`、`--purge`）只提供长参数。在 Linux 命令中，`-f` 表示 `--file`（`barn logs -f` 例外，表示 `--follow`），`-n` 表示 `--no-wait`（而 `barn mac logs -n` 表示日志行数），`-d` 表示 `--dry-run`。
-- `barn purge` 执行与 `barn destroy --yes --purge` 相同的整体清理：它会删除所有节点、持久盘、密钥、部署状态与默认 SSH 配置片段，同时保留镜像缓存与宿主网络。在终端中，它会先列出清理范围并要求输入 `purge`；传入 `--yes` 或 `--force` 可跳过询问，没有终端时直接执行。当环境中尚无部署时，`barn purge` 与整体 `barn destroy` 均直接返回成功（`purge` 还会清理归属元数据完整的残留持久盘，而不会盲目删除身份不明的目录）。若部署状态文件已缺失，执行 `destroy --force --delete-persistent` 或 `destroy --force --purge` 会报错并提示改用 `barn purge`。
+- 涉及安全确认与仓库选择的开关（`--ask`、`--mirror`、`--force`、`--rollback`、`--remove`、`--allow-downgrade`、`--sudo`、`--delete-persistent`、`--purge`）只提供长参数。在 Linux 命令中，`-f` 表示 `--file`（`barn logs -f` 例外，表示 `--follow`），`-n` 表示 `--no-wait`（而 `barn mac logs -n` 表示日志行数），`-d` 表示 `--dry-run`。
+- `barn purge` 默认立即执行整套清理，删除所有节点、持久盘、密钥、部署状态与默认 SSH 配置片段，保留镜像缓存与宿主网络。只有传入 `--ask` 时才先展示节点列表与清理范围：输入 `y`/`yes` 确认，`n`/`no`、空行或 EOF 取消并返回 `130`；不再要求输入 `purge`，也不接受 `--yes`、`-y` 或 `--force`。当环境中尚无部署时，默认 `barn purge` 与整体 `barn destroy` 均直接返回成功（`purge` 还会清理归属元数据完整的残留持久盘）。无法确认残留目录归属时仍会拒绝删除。若部署状态文件已缺失，执行 `destroy --force --delete-persistent` 或 `destroy --force --purge` 会报错并提示改用 `barn purge`。
 
 ## 结构化失败
 
@@ -142,7 +148,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 - `message`：可读的错误说明。
 - 可选上下文字段：`reason`、`next`、`operation_id`，以及记录外部命令失败详情的 `command`（含 `name`、`argv`、`exit_status`、`signal`、`timed_out`、`stderr`）。
 
-单次命令调用在 stdout 上绝不会追加输出第二份 JSON 或 YAML 文档。
+单次结果命令输出一份 JSON 或 YAML 文档；`logs --follow` 使用 NDJSON 或 YAML 文档流，结构化模式的交互 SSH 将会话输出送往 stderr，最终报告送往 stdout。设计理由见 [CLI 契约](/zh/blog/design/cli-contracts/)。
 
 ## 生命周期结果
 

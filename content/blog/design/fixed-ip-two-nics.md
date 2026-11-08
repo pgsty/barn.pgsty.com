@@ -7,7 +7,7 @@ weight: 20
 categories: [Design]
 tags: [Networking, QEMU, Pigsty]
 icon: fa-solid fa-network-wired
-lastmod: 2026-10-26
+lastmod: 2026-11-08
 ---
 
 This essay explains the Linux lab network architecture in Barn `0.9.3` ([macOS guests](/docs/start/macos/) use independent per-VM `vmnet` NAT subnets).
@@ -69,6 +69,10 @@ Because a host bridge or `socket_vmnet` service persists across CLI runs and req
 {.steps}
 
 Barn never hijacks an existing non-Barn interface that happens to use `.1/24`, never overwrites modified files outside its recorded digest, and refuses `network uninstall` while lab VMs are running.
+
+### 1.0 update: recheck shared service ownership {#shared-networkd}
+
+The installation snapshot is not permanent authority over a host-wide service. In `1.0.0`, uninstall checks current links as well as files: a running link may still depend on networkd after its `.network` file has been removed. When other non-loopback links exist or exclusive Barn use cannot be established, uninstall removes Barn-owned resources while preserving the global unit state. The plan exposes `preserve_networkd`; the applied report explains it in `checks.networkd`. An administrator can later change the retained unit state after checking the other links. See the [hardening record](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md).
 
 ## Why this split works
 

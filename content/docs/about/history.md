@@ -6,7 +6,39 @@ icon: fa-solid fa-clock-rotate-left
 ---
 
 > [!NOTE]
-> This page archives the pre-0.9.0 validation baseline (documentation commit `4c03fc9`, 2026-09-29) alongside dated verification records for earlier releases (`0.1.0` through `0.8.0`). For current host support and release notes, see [Platforms and Limits](../status/) and the [Barn 1.0.0 Release Notes](/blog/release/1.0.0/).
+> This page collects dated source, packaging, VM, and public-installation evidence through `1.0.0`. Each entry retains its tested revision and scope. For current host support and release behavior, see [Platforms and Limits](../status/) and the [release notes](/blog/release/).
+
+## Barn 1.0.0 final acceptance — 2026-11-05 {#release-1-0-0}
+
+The [final acceptance record](https://github.com/pgsty/barn/blob/86e1a658edef87e70fabc2ff163c6923cd6c008f/docs/release-1.0-acceptance.md) binds the downloaded artifacts and public installation checks to this release identity:
+
+| Item | Recorded identity |
+|---|---|
+| Tag and commit | `v1.0.0` → `69ef7f1d6ffc7c6fbffffe178b2fa48e799dc02d` |
+| Build time | `2026-11-04T17:54:45Z`; `SOURCE_DATE_EPOCH=1793814885` |
+| GitHub Release | ID `434268111`; published `2026-11-04T23:18:10Z` as stable/latest |
+| Signed catalog | Revision `2026110502`; SHA-256 `d41e46d20bc57cb1b071e3919a27a8f7f703df2addca879970a528e7ab004065` |
+{.wide}
+
+- **Source and downloaded assets:** The final commit passed [source/Mac CI](https://github.com/pgsty/barn/actions/runs/41881906207) and [packaging CI](https://github.com/pgsty/barn/actions/runs/41881906313). The release used local Developer ID signing because automated signing secrets were absent. All 20 uploaded attachments were downloaded again, matched their original sizes and SHA-256 digests, and passed the 19-entry checksum manifest plus archive/package, CLI/helper, architecture, permission, SBOM, and identity checks.
+- **Catalog bytes:** Both official catalogs verified and matched the embedded bytes. Streaming all 17 stable artifacts from each mirror produced 34 successful size/digest checks. A fresh `BARN_HOME` activated the catalog with `barn update`.
+- **Packaged Mac acceptance:** The downloaded CLI/helper/app passed Developer ID, notarization, staple, and Gatekeeper checks, including after installation and relocation into the Homebrew layout. An isolated `0.9.3 → 1.0.0` installer upgrade retained the old release and existing VM identities, SSH keys, and data sentinels. A new VM passed SSH, write, stop/start, identity/data retention, and destruction checks.
+- **Linux acceptance:** On `linux/amd64`, the downloaded binaries created two Debian 13 guests in a fresh state root. Fixed IPs, accounts, XFS data disks, stop/start/restart, argument boundaries, and remote exit `17` passed. Missing-node recreation failed before stopping VMs; control-node deletion elected a successor; destruction followed by `up` rotated machine identity while preserving a persistent-disk sentinel.
+- **Public channels:** After publication, both the default installer and explicit `BARN_VERSION=1.0.0` installed the public release. Real Homebrew upgraded `0.9.2 → 1.0.0` and passed `brew test`, online audit, and tap tests. The [tap update](https://github.com/pgsty/homebrew-infra/commit/8910347) and [site update](https://github.com/pgsty/barn.pgsty.com/commit/34befa8) were published, and the public bilingual release and installation pages were checked.
+
+Physical runtime coverage was `darwin/arm64` and `linux/amd64`. `darwin/amd64` and `linux/arm64` received cross-build and artifact checks. GUI, clipboard, and fault-injection experiments from the preceding candidate run retain that earlier identity below.
+
+### Hardening and candidate rehearsals — 2026-11-04–05 {#release-1-0-candidates}
+
+The [hardening checkpoint](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md) at `377061c` passed source checks and a `0.9.4-next` packaging snapshot without a native Mac payload. Subsequent physical-host tests began with `0.9.4-next`; fixes received focused retests, followed by a signed and notarized `1.0.0-rc.1` build using catalog `2026102802`. The [candidate record](https://github.com/pgsty/barn/blob/86e1a658edef87e70fabc2ff163c6923cd6c008f/docs/release-1.0-acceptance.md) covers disk-preservation checks, lock release after cancelled sudo work, shared-networkd uninstall, the 15-stage Mac lifecycle, GUI/clipboard, and interrupted-recreate recovery. Final release assembly later used catalog `2026110502` and the identity above.
+
+The record retains failed attempts as well as successful reruns. A short SSH probe needed bounded retry; a resource-constrained build and a shared module-cache failure needed environment corrections; one acceptance assertion incorrectly required a `stdout` field when successful empty output could omit it. The `dm-error` experiment was rejected by the whole-disk guard before reaching the filesystem checker. These observations identify which product path actually ran and which failure belonged to the harness or environment.
+
+## Barn 0.9.1 local candidate acceptance — 2026-10-22 {#release-0-9-1}
+
+The [0.9.1 record](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-0.9.1.md) reports `make check`, native component tests, four-platform packaging, and an ad-hoc native payload. The CLI candidate was `0.9.1-dev.1`; the complete snapshot was `0.9.1-next`. An isolated upgrade from a real `0.9.0` archive used a local download fixture and verified repeated installation, retained releases, helper pairing, and app discovery. Homebrew checks covered the `bin`/`libexec` layout; native tests and `mac doctor` did not start a VM. The public `0.9.1` assets contained CLI/helper archives and Linux packages, without `Barn.app`; the original record's public-release checklist describes the subsequent process, not completed runtime evidence.
+
+## Pre-0.9.0 checkpoint — 2026-09-29 {#pre-0-9-0}
 
 At the 2026-09-29 checkpoint, Barn `0.9.0` was the first release candidate prepared under the `barn` name prior to publication. For current installation commands, use the [Quick Start](../../start/installation/).
 
@@ -26,6 +58,8 @@ At the 2026-09-29 checkpoint, `barn mac` ran macOS 27 guests on Apple Silicon vi
 
 Following the rename on 2026-09-29, local CLI and `barn-hosts-helper` unit suites, native bridge/image/exit-prompt/menu tests, the runner bundle build, ad-hoc code-signature verification, and `probe` checks all passed, building on the full 16-phase live macOS VM acceptance run recorded earlier that day.
 
+The [rename record](https://github.com/pgsty/barn/blob/v1.0.0/docs/rename-barn-0.9.0.md) explicitly limits the renamed build's evidence to those checks: its VM lifecycle was not replayed. The 2026-10-03 archive correction retained the original dates, versions, commits, and test scope rather than attributing earlier VM runs to the renamed build.
+
 ## Remaining pre-0.9.0 release checks
 
 At the 2026-09-29 checkpoint, the remaining pre-publication gates for `0.9.0` were:
@@ -34,6 +68,11 @@ At the 2026-09-29 checkpoint, the remaining pre-publication gates for `0.9.0` we
 - Fresh host setup and Linux/macOS VM lifecycle and cleanup verification under the renamed binary and paths.
 - macOS Developer ID signing, notarization, and release publication.
 - Verification of the public GitHub repository, Homebrew tap, official `/barn` image endpoints, and `barn.pgsty.com`.
+
+## Earlier Mac implementation records {#early-mac-records}
+
+- **2026-09-26–27:** The [initial implementation log](https://github.com/pgsty/barn/blob/v1.0.0/docs/history/mac-implementation-20260928.md) records a full IPSW download and CLI restore, base-image immutability, dual-guest lifecycle tests, and installer rejection of a modified package. The final 12-stage run took `140.305 s` starting with already initialized guests. It used the retired fixed-slot/shared-network implementation and an ad-hoc development signature.
+- **2026-09-28:** The [complexity review](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-complexity-review.md) retained identity, locking, and recovery safeguards while simplifying the implementation. Regression checks verified that readiness did not rewrite SSH material. An initial shutdown timeout coincided with high guest load; the full rerun passed without forced power-off or timeout changes. The record treats the load as an observation, not a proven cause.
 
 ## Barn Mac native record: 2026-09-29
 
@@ -48,6 +87,8 @@ Items deferred to subsequent release milestones at that checkpoint:
 - Developer ID signing, Apple notarization, and public distribution of the app bundle.
 - End-to-end IPSW download + base preparation via first-time `barn mac up` or `barn mac image update`.
 - Desktop menu **Restart…** and **Shut Down…** actions, additional Apple Silicon models, and host reboot persistence.
+
+The same [named-machine record](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-implementation-log.md) includes a later `07ebfd4` candidate rerun: all 16 phases passed in `298.9 s` after an initial five-second SSH probe failed and the guest answered on a later observation. Both runs reused an existing `26A428` base; fresh download and restore remained outside that checkpoint's coverage.
 
 ## Pre-rename Linux validation summary {#summary}
 

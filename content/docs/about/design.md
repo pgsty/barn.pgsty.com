@@ -17,7 +17,7 @@ Barn provides two distinct virtualization workflows through one CLI: multi-node 
 | Primary workloads | Database clusters, Ansible playbooks, multi-node Linux testing | macOS builds, GUI testing, isolated desktop environments |
 {.wide .expand}
 
-The sections below summarize the Linux lab architecture; for the deeper rationale behind each decision, see the [Design Essays](/blog/design/), and for macOS guests see [macOS Guests](../../start/macos/) and [Mac Commands](../../reference/mac/).
+The sections below summarize the Linux lab architecture; for the deeper rationale behind each decision, see the [Design Essays](/blog/design/). The [native Mac lifecycle essay](/blog/design/native-mac-lifecycle/) explains network ownership, locks, credentials, and recovery; usage is in [macOS Guests](../../start/macos/) and [Mac Commands](../../reference/mac/).
 
 ## One Linux lab per user
 
@@ -31,6 +31,8 @@ Barn computes a specification hash per node from the documented `vm_*` and Pigst
 - Changing an existing node's specification or removing a node from `barn.yml` never destroys a VM behind your back—CPU and memory changes use `barn resize`, other modifications require `barn recreate`, and removals require `barn destroy`. A whole-deployment `recreate` refuses an inventory that omits an existing node (see [Declarative Does Not Mean Destructive](/blog/design/convergence-without-surprise/)).
 
 ## Runtime selection
+
+On `main`, `--arch/-A` overrides inventory `vm_arch` for an invocation. With neither set, the guest follows the host; `-A native` overrides the inventory and restores that default. Image flag `-I` does not change architecture, and switching an existing VM requires recreation; see [configuration rules](../../reference/configuration/#image-and-architecture).
 
 `vm_arch` applies across the entire deployment (`native` uses the host CPU architecture; explicit `amd64` or `arm64` selects that architecture from the catalog). Barn uses hardware acceleration (HVF on macOS, KVM on Linux) whenever guest and host architectures match, switching to QEMU TCG only for foreign architectures or catalog-declared kernel incompatibilities (`el8` `arm64` on Apple Silicon). If native HVF/KVM fails for any other reason, Barn fails closed rather than silently degrading to software emulation.
 

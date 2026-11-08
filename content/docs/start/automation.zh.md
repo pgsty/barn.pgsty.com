@@ -32,8 +32,11 @@ barn setup -f barn.yml --yes
 barn up -f barn.yml --json > up.json
 ```
 
-生成新清单时，可以使用 `barn init [模板] --image <引用>` 将镜像引用写入
-`all.vars.vm_image`，让所有生成节点继承同一个镜像。引用可以是目录别名（`el9`）、频道（`u24:stable`）或版本选择器（`u24@20261017.0.1`）。该参数只修改清单；目录查询、签名校验和镜像下载仍由现有的 `validate`/`plan`/`up` 流程完成。准备宿主机并生成模板时，`barn setup [模板] --image <引用>` 也提供同样的参数。对于 `-f` 指定的已有清单或自动发现的已有清单，`--image` 会拒绝执行，必须由用户显式编辑清单。
+生成新清单时，`barn init [模板] --image <引用>` 将镜像引用写入 `all.vars.vm_image`，让所有生成节点继承同一个镜像。引用可以是目录别名（`el9`）、频道（`u24:stable`）或版本选择器（`u24@20261017.0.1`）。`barn setup [模板] --image <引用>` 也支持生成时选镜像，但遇到已有清单时会拒绝该生成参数。
+
+`main` 新增 `--image/-I`、`--arch/-A` 的统一用法：`barn init full -I u24 -A amd64` 将两项选择保存到新清单；`validate`、`plan`、`up`、`reload`、`recreate` 和 `resize` 的同名参数则只覆盖本次期望配置。例如 `barn plan -f barn.yml -I u24 -A arm64 --json`，执行时传入相同的覆盖参数。`setup` 的 `-I/-A` 仍只适用于生成模板。这些扩展尚未包含在 1.0.0 中，请检查当前二进制的 `--help`。
+
+未指定架构时使用清单的 `vm_arch`，清单也未设置时跟随宿主；`-A native` 可以覆盖清单，恢复宿主架构。已有 VM 改镜像或架构需要 `recreate`。长期使用的 CI 配置宜保存 `vm_image`、`vm_arch` 与精确镜像版本，详见[配置参考](../../reference/configuration/#image-and-architecture)。
 
 `barn setup --yes` 会直接接受宿主准备计划，不再询问。在终端中，`up`、`start`、`restart` 与 `reload` 安装软件包或 Barn 网络前会展示同样的计划并询问一次；没有终端时它们只报告缺少的条件，因此请先执行 `barn setup --yes`。
 

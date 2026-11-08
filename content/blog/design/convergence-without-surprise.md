@@ -7,10 +7,10 @@ weight: 30
 categories: [Design]
 tags: [Lifecycle, Drift, Safety]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-11-06
+lastmod: 2026-11-08
 ---
 
-This essay explains the Linux VM convergence model in Barn `0.9.3` ([macOS guests](/docs/start/macos/) are managed independently).
+This essay explains the Linux VM convergence model in Barn `0.9.3`, with the `1.0.0` recovery rules below ([macOS guests](/docs/start/macos/) are managed independently).
 
 > [!NOTE]
 > **2026-10-30 update:** The Barn 0.9.3 changes scope `plan`, `up`, `reload`, and `recreate` to explicit node selections and retain unselected peers' applied definitions. The whole-inventory drift rules described below still apply when no nodes are selected. See [selected-node operations](/docs/start/operations/#selected-nodes).
@@ -76,6 +76,20 @@ When you do destroy or recreate nodes, data-disk lifetimes follow clear boundari
 - Ordinary `barn destroy` and `barn recreate` preserve `persistent: true` data disks on disk.
 - Whole-deployment `barn destroy --delete-persistent` removes persistent data disks as well, and `barn purge` (or `barn destroy --purge`) removes all disks, SSH keys, and deployment state in one step.
 - During `barn up` recovery, Barn formats a data disk that carries no signature and resets an ext4 or XFS filesystem only when the checker reports recognized corruption; a partition table, unsupported features, or an unknown checker failure keeps the data and reports a warning (see [Data Disks](/docs/reference/configuration/#data-disks)).
+
+## 1.0 recovery: distinguish role changes from drift {#control-role-recovery}
+
+Deleting the control node elects the first remaining node. `SpecHash` describes its current applied definition; `GuestSpecHash` describes the guest's existing readiness marker. A control-role change can therefore make these hashes differ while the VM identity and disks remain valid.
+
+Before marking any node for deletion, Barn must finish the successor's committed prepare journal. It then atomically publishes the deployment as the role-change commit record and updates the successor's definition hash. If interrupted between those writes, recovery under the deployment lock accepts only a hash difference exactly explained by flipping `Control`; unrelated drift still fails. It does not create missing state, rotate the VM UUID, or change disk/process identity. See the [1.0 hardening record](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md) and [control recovery tests](https://github.com/pgsty/barn/blob/v1.0.0/internal/private/control_test.go).
+
+Update the inventory's control role before the next `barn up` installs control SSH access. General live role migration would also need old-credential revocation, offline retries, and partial-failure semantics; accepting arbitrary hash changes would conceal that unfinished convergence.
+
+## 1.0 recovery: require evidence of corruption {#disk-recovery-evidence}
+
+Filesystem-checker exit codes alone cannot authorize formatting. ext4 codes `4`/`12` and XFS code `1` must accompany recognized corruption diagnostics. Unsupported features, permissions, I/O or memory failures, partition tables, and unknown diagnostics preserve the disk and produce a guest warning. `persistent` controls disk retention during destroy/recreate; it does not exempt recognized corruption from the documented reset policy.
+
+The [disk recovery tests](https://github.com/pgsty/barn/blob/v1.0.0/internal/cloudinit/disk_recovery_test.go) check whether `mkfs` actually ran using a sentinel, while physical-host acceptance compares disk contents. This tests the destructive effect as well as the warning text; the dated coverage is in [validation history](/docs/about/history/#release-1-0-candidates).
 
 ## Incremental convergence without collateral damage
 

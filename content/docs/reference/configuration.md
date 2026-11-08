@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-This reference describes Barn 1.0.0. Run `barn version` to check your build.
+This reference follows Barn `main`. The image and architecture command overrides below are unreleased changes after 1.0.0; check your build with `barn version` and each command's `--help`.
 
 ## Discovery
 
@@ -68,7 +68,7 @@ Barn reads node IPv4 keys, `nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node
 | `vm_skip` | `false` | Skip virtualization for this physical or external host |
 | `vm_image` | `u24` | Image family, `:channel` reference, or `image@version` selector |
 | `vm_version` | unset | Newest numeric version matching this prefix, such as `9` or `9.7` |
-| `vm_arch` | `native` | Deployment-wide guest architecture: `native`, `amd64`, or `arm64` |
+| `vm_arch` | `native` | Deployment-wide guest architecture; follows the host unless explicitly set to `amd64` or `arm64` |
 | `vm_cpu` | `2` | vCPU count (`1`–`256`) |
 | `vm_mem` | `4096` | Memory size: bare integer in MiB, or an explicit unit string such as `8GiB` (minimum `512MiB`) |
 | `vm_disk` | `64` | Root disk capacity: bare integer in GiB, or an explicit unit string such as `64GiB` |
@@ -92,7 +92,32 @@ vm_version: "9.8"
 
 If an exact version match exists in the catalog, Barn selects it; otherwise it matches dot-separated numeric prefixes and picks the highest version (`9.8` selects the latest `9.8.*` build, `9` selects the latest `9.x` release, and `9.10` sorts after `9.9`). Use `vm_version` only with a bare family name in `vm_image` (without `:channel` or `@version`).
 
-`vm_arch` applies to the entire deployment and should be set once under `all.vars`. Changing `vm_arch` requires recreating the deployment. On Linux hosts, `barn setup` installs the native QEMU emulator; running a foreign guest architecture requires installing the corresponding `qemu-system-*` binary and UEFI firmware packages.
+## Image and architecture overrides {#image-and-architecture}
+
+Guests default to the host architecture: `arm64` on Apple Silicon and `amd64` on Intel/AMD hosts. Another architecture is selected only when explicitly requested in the inventory or command line. Precedence is **`--arch/-A` → inventory `vm_arch` → `native` (host architecture)**. Use `-A native` to override a fixed inventory architecture and follow the host again.
+
+| Architecture | Aliases | Meaning |
+|---|---|---|
+| `native` | — | Follow the current host; also the default when unset |
+| `amd64` | `x86_64`, `x64` | Select an x86-64 guest |
+| `arm64` | `aarch64`, `a64` | Select an ARM64 guest |
+
+`vm_arch` applies to the entire deployment; define it once under `all.vars`. Every managed node must resolve to the same architecture. Node variables and selectors cannot create a deployment with mixed architectures.
+
+`--image/-I` overrides `vm_image` and `vm_version` for selected nodes without changing the architecture. The catalog must provide the requested architecture variant; a missing variant is an error and never selects another architecture automatically.
+
+```bash
+barn plan -I u24                 # Ubuntu 24.04; retain the inventory or host architecture
+barn up -I u24 -A amd64          # Use amd64 Ubuntu 24.04 for this invocation
+barn plan -A native              # Override the inventory architecture with the host's
+barn init full -I u24 -A arm64   # Save both choices in a new inventory
+```
+
+Overrides on `up`, `plan`, `reload`, `recreate`, `resize`, and `validate` change only the desired configuration for that invocation. To keep a choice, set `all.vars.vm_arch` and the relevant node or group `vm_image`, removing any superseded `vm_version`. `init` and template-generating `setup` write the choices into the new inventory. Setup's `-I/-A` flags cannot be used with an existing inventory.
+
+When no inventory file exists, lifecycle commands use the saved deployment specification before applying explicit overrides. `start` and `restart` always use applied state. Omitting `-A` or editing the inventory never converts an existing VM: `up` reports drift, and switching architecture requires `recreate` with all existing nodes selected. Although `resize` accepts overrides to check desired state, it still applies only CPU and memory changes.
+
+Guests whose architecture differs from the host use QEMU TCG. On Linux, `barn setup` installs the native emulator; install the target `qemu-system-*` binary and UEFI firmware before starting a foreign guest. See [Runtime policy](../images/#runtime-policy) for acceleration and image exceptions.
 
 ## Data disks {#data-disks}
 

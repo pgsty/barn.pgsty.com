@@ -17,7 +17,7 @@ Barn 通过同一个命令行入口提供两套独立的虚拟化工作流：多
 | 典型场景 | 数据库集群、Ansible 剧本演练、多节点 Linux 联调 | macOS 编译打包、桌面应用测试、隔离开发环境 |
 {.wide .expand}
 
-下文概述 Linux 实验环境的核心设计；各模块的深层设计取舍请阅读[设计注记](/zh/blog/design/)，原生 macOS 工作流请查阅[macOS 客机指南](../../start/macos/)与 [Mac 命令参考](../../reference/mac/)。
+下文概述 Linux 实验环境的核心设计，各模块的深层取舍见[设计注记](/zh/blog/design/)。[原生 Mac 生命周期](/zh/blog/design/native-mac-lifecycle/)解释网络归属、锁、凭据与恢复机制，具体用法见[macOS 客机指南](../../start/macos/)与 [Mac 命令参考](../../reference/mac/)。
 
 ## 每位用户一套 Linux 实验环境
 
@@ -31,6 +31,8 @@ Barn 根据文档规定的 `vm_*` 字段与 Pigsty 身份字段为每个节点�
 - 修改已有节点的规格或从 `barn.yml` 中删去节点绝不会在后台静默销毁虚拟机——CPU 与内存变更使用 `barn resize`，其他配置变更需显式运行 `barn recreate`，删除节点需显式运行 `barn destroy`。清单缺少已有节点时，整套部署 `recreate` 会拒绝执行（详见[声明式不等于破坏式](/zh/blog/design/convergence-without-surprise/)）。
 
 ## 运行时选择
+
+`main` 支持用 `--arch/-A` 临时覆盖清单的 `vm_arch`；二者都未指定时跟随宿主，`-A native` 可覆盖清单并恢复跟随宿主。镜像参数 `-I` 不改变架构，已有 VM 切换架构需要重建，详见[配置规则](../../reference/configuration/#image-and-architecture)。
 
 `vm_arch` 作用于整套部署（省略或设为 `native` 时取宿主架构；显式指定 `amd64` 或 `arm64` 时选用对应架构镜像）。当客机与宿主架构一致时，Barn 默认使用 HVF/KVM 原生硬件加速；仅在跨架构运行或命中目录声明的内核兼容例外（Apple Silicon 上的 `el8` `arm64`）时才使用 QEMU TCG。若原生加速因其他原因失败，Barn 会直接报错停止，而不会静默退化到软件模拟。
 

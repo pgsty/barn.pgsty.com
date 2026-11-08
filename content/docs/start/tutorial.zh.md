@@ -15,7 +15,7 @@ aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 
 ## 首次启动前定制配置 {#customize}
 
-默认实验环境只有一个 Ubuntu 节点；保持默认即可直接跳到[启动并连接](#start)。如果希望先自定义拓扑、网段或操作系统镜像，请在首次 `barn up` 之前生成并编辑清单：
+默认实验环境只有一个 Ubuntu 节点，架构跟随宿主：Apple Silicon 为 `arm64`，Intel/AMD 为 `amd64`。日常使用无需指定架构；跨架构选择与覆盖优先级见[镜像与架构配置](../../reference/configuration/#image-and-architecture)。保持默认即可直接跳到[启动并连接](#start)。如果希望先自定义拓扑、网段或操作系统镜像，请在首次 `barn up` 之前生成并编辑清单：
 
 1. 生成初始配置文件（`dual`、`trio`、`full` 分别生成 2、3、4 节点模板，`-c 10.20.30.0/24` 指定网段，`--image el9` 为所有节点写入同一个镜像）：
 

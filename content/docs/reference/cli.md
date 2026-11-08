@@ -6,7 +6,10 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-This reference covers global presentation options and Linux lab commands in **Barn 1.0.0**. For macOS guests, see [Mac Commands](../mac/). Run `barn version` when checking another version.
+This reference follows **Barn `main`** for global presentation options and Linux lab commands. For macOS guests, see [Mac Commands](../mac/). Check your build with `barn version` and each command's `--help`.
+
+> [!NOTE]
+> The expanded `--image/-I`, `--arch/-A`, and `purge --ask` options are unreleased changes after 1.0.0. In 1.0.0, `purge` still asks terminal users to type `purge` and accepts `--yes`/`--force`. This page describes the new `main` behavior; see the [1.0.0 release notes](../../../blog/release/1.0.0/) for that release.
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -77,14 +80,16 @@ If the default `10.10.10.0/24` subnet conflicts with an existing host route whil
 | `--json`, `--yaml` | Emit structured output on stdout while keeping progress on stderr (long-form only) |
 | `-v`, `--verbose` | Emit bounded diagnostic logs on stderr |
 | `-c`, `--cidr` | Set the RFC1918 `/24` subnet for `init`/`setup` templates or `network` inspection/installation |
-| `--image` | Select the image reference for a generated `init`/`setup` template (`el9`, `u24:stable`, or `u24@version`) |
+| `-I`, `--image` | Choose an image for a generated template or override selected nodes' `vm_image`/`vm_version` on commands listed below |
+| `-A`, `--arch` | Select guest or artifact architecture: `native`, `amd64` (`x86_64`, `x64`), or `arm64` (`aarch64`, `a64`) |
 | `-f`, `--file` | Select an inventory file for commands that read desired state |
 | `-r`, `--repo` | Select an image repository URL or path, overriding `--mirror` and `BARN_REPO` (`validate` supports `--repo` as of 0.9.0) |
 | `--mirror` | Use the China official repository (`https://repo.pigsty.cc/barn`) for `setup`, `up`, `reload`, `recreate`, `update`, and `image pull` |
 | `-m`, `--mode` | Select `host` or `shared` network mode on macOS |
 | `-d`, `--dry-run` | Print the execution plan for `setup` or `image prune` without modifying state |
 | `--yes` | Confirm host, setup, image, or destruction plans; `-y` is available only where listed below |
-| `--force` (`init`, `destroy`, `recreate`, `purge`) | Overwrite an existing inventory (`init`) or skip the interactive confirmation word (long-form only, as `-f` means `--file`) |
+| `--force` (`init`, `destroy`, `recreate`) | Overwrite an existing inventory (`init`) or skip the interactive confirmation word (long-form only, as `-f` means `--file`) |
+| `--ask` (`purge`) | Display the VM list and deletion scope, then require `y`/`yes` before deleting |
 | `-n`, `--no-wait` | Return as soon as QEMU starts, skipping guest SSH readiness and recovery checks |
 | `--rollback` (`up`, `reload`) | Clean up uncommitted preparation artifacts for nodes that failed during the current run |
 | `--delete-persistent` | Delete `persistent: true` data disks during a whole-deployment `destroy` |
@@ -95,23 +100,23 @@ Each command exposes only the flags that apply to its operation:
 
 | Command | Local controls |
 |---|---|
-| `init` | `--output/-o` (default `./barn.yml`; `-` writes to stdout), `--cidr/-c`, `--image`, `--force` |
-| `setup [meta\|dual\|trio\|full]` | `--file/-f`, `--cidr/-c`, `--image`, `--repo/-r`, `--mirror`, `--mode/-m`, `--dry-run/-d`, `--yes/-y` (defaults to `meta`) |
-| `validate` | `--file/-f`, `--repo/-r`; accepts no node arguments |
-| `plan` | `--file/-f`, `--repo/-r` |
-| `up`, `reload` | `--file/-f`, `--repo/-r`, `--mirror`, `--no-wait/-n`, `--rollback` |
-| `recreate` | `--file/-f`, `--repo/-r`, `--mirror`, `--yes`/`--force`, `--no-wait/-n` |
-| `resize` | `--file/-f` |
+| `init` | `--output/-o` (default `./barn.yml`; `-` writes to stdout), `--cidr/-c`, `--image/-I`, `--arch/-A`, `--force` |
+| `setup [meta\|dual\|trio\|full]` | `--file/-f`, `--cidr/-c`, `--image/-I`, `--arch/-A`, `--repo/-r`, `--mirror`, `--mode/-m`, `--dry-run/-d`, `--yes/-y` (defaults to `meta`) |
+| `validate` | `--file/-f`, `--repo/-r`, `--image/-I`, `--arch/-A`; accepts no node arguments |
+| `plan` | `--file/-f`, `--repo/-r`, `--image/-I`, `--arch/-A` |
+| `up`, `reload` | `--file/-f`, `--repo/-r`, `--image/-I`, `--arch/-A`, `--mirror`, `--no-wait/-n`, `--rollback` |
+| `recreate` | `--file/-f`, `--repo/-r`, `--image/-I`, `--arch/-A`, `--mirror`, `--yes`/`--force`, `--no-wait/-n` |
+| `resize` | `--file/-f`, `--image/-I`, `--arch/-A` (still applies only CPU/memory changes) |
 | `start`, `restart` | `--no-wait/-n` |
 | `stop`, `status` | Node selectors and global presentation flags only |
 | `destroy` | `--yes`/`--force`, `--delete-persistent`, `--purge` (the last two require whole-deployment scope) |
-| `purge` | `--yes`/`--force` skips the terminal confirmation; accepts no node arguments |
+| `purge` | Deletes immediately; `--ask` enables confirmation; accepts no node arguments or `--yes`, `-y`, `--force` |
 | `doctor`, `version` | Global presentation flags only |
 | `provision` | Required `--script/-s`; `--sudo`; `--parallel/-p` positive integer (default `1`); `--timeout/-t` positive duration (default `1h`) |
 | `ssh-config` | Optional node selectors; `--install/-i` or `--remove` (mutually exclusive); `--name` (default `barn`). `--remove` takes no nodes and works without deployment state |
 | `logs` | `--source/-s serial\|qemu\|events` (default `serial`); `--follow/-f` (`events` is deployment-wide and takes no node) |
-| `image info`, `image pull` | Optional image selector, `--arch/-a amd64\|arm64`, `--repo/-r`; `pull` also accepts `--mirror` |
-| `image import` | `--sha256/-s`; named imports (`--name local-*`) also require `--boot/-b bios\|uefi` and `--source-user/-u` |
+| `image info`, `image pull` | Optional image selector, `--arch/-A` (legacy `-a` also works), `--repo/-r`; `pull` also accepts `--mirror` |
+| `image import` | `--sha256/-s`; named imports (`--name local-*`) also require `--boot/-b bios\|uefi` and `--source-user/-u`, with optional `--arch/-A` to record guest architecture |
 | `image prune` | `--dry-run/-d` or `--yes/-y` (mutually exclusive); `--repo/-r` |
 | `image sync` | Source URL or file path, `--repo/-r`, and optional `--allow-downgrade` |
 | `update` | `--repo/-r`, `--mirror` |
@@ -125,10 +130,11 @@ Each command exposes only the flags that apply to its operation:
 Notes on flag behavior:
 
 - `setup --dry-run` and `setup --yes` are mutually exclusive. `--cidr` adjusts generated templates and never rewrites an existing `-f` file. For `validate` against the China mirror, pass `--repo https://repo.pigsty.cc/barn`.
-- `--image` applies only when `init` or `setup` generates a template. It writes `all.vars.vm_image`; it cannot override an existing `-f` inventory or a discovered file. The image is still resolved from the active catalog by later validation and lifecycle commands.
+- `init` and template-generating `setup` write `-I` and `-A` into `all.vars.vm_image` and `all.vars.vm_arch`; `setup` rejects these generation flags when using an existing inventory. `up`, `plan`, `reload`, `recreate`, `resize`, and `validate` apply overrides in memory for that invocation. Image overrides affect selected nodes; architecture affects the whole deployment. See [precedence and defaults](../configuration/#image-and-architecture).
+- Standalone `image info/pull/import` default to the host architecture without reading inventory `vm_arch`; select another with `-A`. `image import -A` requires `--name`. Since qcow2 metadata cannot identify the guest CPU, the declared architecture must match the actual image.
 - `network` and `hosts` `install`/`uninstall` display a plan and prompt for confirmation on a terminal (`install` defaults to yes; `uninstall` defaults to no). Without `--yes`, they only print the plan and exit `0` when stdin is not a terminal or the output is `--json`/`--yaml`; check `applied` in the structured report, or pass `--yes` to apply the plan. On macOS, first-time network installation is handled by `barn setup`. `network uninstall` refuses to remove the host network while VMs are running, and stopping or destroying a deployment leaves the host network installed. On Linux, `network uninstall` keeps the global networkd unit state when other host links exist or exclusive Barn use cannot be established; the plan reports `preserve_networkd`, and the applied report explains the decision in `checks.networkd`.
-- Safety and repository flags (`--mirror`, `--force`, `--rollback`, `--remove`, `--allow-downgrade`, `--sudo`, `--delete-persistent`, `--purge`) are long-form only. On Linux commands, `-f` selects `--file` (except `barn logs -f`, where `-f` means `--follow`), `-n` means `--no-wait` (whereas `barn mac logs -n` sets the line count), and `-d` means `--dry-run`.
-- `barn purge` performs whole-deployment deletion equivalent to `barn destroy --yes --purge`: it removes all nodes, persistent disks, SSH keys, deployment state, and the default SSH config fragment while preserving cached images and the host network. On a terminal it lists this scope and asks you to type `purge`; `--yes` or `--force` skips the question, and without a terminal it runs without asking. When no deployment exists, both `barn purge` and whole-deployment `barn destroy` succeed cleanly (`purge` also cleans up any retained persistent disks whose Barn ownership metadata is intact, while leaving unverified directories untouched). If deployment state is missing, `destroy --force --delete-persistent` and `destroy --force --purge` exit with an error directing you to `barn purge`.
+- Safety and repository flags (`--ask`, `--mirror`, `--force`, `--rollback`, `--remove`, `--allow-downgrade`, `--sudo`, `--delete-persistent`, `--purge`) are long-form only. On Linux commands, `-f` selects `--file` (except `barn logs -f`, where `-f` means `--follow`), `-n` means `--no-wait` (whereas `barn mac logs -n` sets the line count), and `-d` means `--dry-run`.
+- `barn purge` deletes immediately by default: all nodes, persistent disks, SSH keys, deployment state, and the default SSH config fragment are removed; cached images and the host network remain. Only `--ask` displays the node list and deletion scope before prompting: `y`/`yes` confirms; `n`/`no`, an empty line, or EOF cancels with exit `130`. It no longer asks for the word `purge` or accepts `--yes`, `-y`, or `--force`. With no deployment, default `barn purge` and whole-deployment `barn destroy` succeed cleanly; purge also removes retained persistent disks with intact Barn ownership metadata. Unverifiable retained directories still prevent deletion. If deployment state is missing, `destroy --force --delete-persistent` and `destroy --force --purge` direct you to `barn purge`.
 
 ## Structured failures
 
@@ -142,7 +148,7 @@ In `--json` or `--yaml` mode, commands that define their own report schema (`doc
 - `message`: Human-readable summary.
 - Optional context fields: `reason`, `next`, `operation_id`, and `command` (`name`, `argv`, `exit_status`, `signal`, `timed_out`, `stderr`).
 
-Barn never emits more than one JSON or YAML document per invocation.
+Single-result commands emit one JSON or YAML document. `logs --follow` uses NDJSON or a YAML document stream; structured interactive SSH sends session output to stderr and its final report to stdout. The design rationale is in [CLI contracts](/blog/design/cli-contracts/).
 
 ## Lifecycle results
 

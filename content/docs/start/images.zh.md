@@ -40,7 +40,20 @@ all:
 
 修改 `vm_image` 或 `vm_version` 后，先运行 `barn plan` 查看变更。已有节点会保留当前根盘，直到显式执行 `barn recreate <node>`；运行 `barn update` 仅影响后续新建或重建的节点。
 
-`barn image list` 会列出所有架构，而 `info` 和 `pull` 默认按宿主架构查询（可通过 `--arch amd64` 或 `--arch arm64` 指定）：
+### 临时覆盖与架构选择 {#architecture}
+
+以下 `-I/-A` 扩展属于 `main` 中尚未发布的改动，1.0.0 用户请先检查命令的 `--help`。
+
+默认使用宿主架构；只有显式配置 `vm_arch` 或传入 `--arch/-A` 时才覆盖。优先级为 `-A` → `vm_arch` → 宿主架构；`-A native` 表示忽略清单中的固定架构，恢复跟随宿主。`amd64` 接受 `x86_64`、`x64` 别名，`arm64` 接受 `aarch64`、`a64` 别名。
+
+```bash
+barn plan -I u24 -A amd64
+barn up -I u24 -A amd64
+```
+
+`-I u24` 替代所选节点的 `vm_image` 与 `vm_version`，不改变架构。这些覆盖不会改写清单；要长期保留，请设置 `vm_image` 与 `all.vars.vm_arch`，移除被替代的 `vm_version`，或用 `barn init -I u24 -A amd64` 生成新清单。已有节点改镜像或架构仍需 `recreate`，架构变更必须覆盖全部已有节点。完整规则见[配置参考](../../reference/configuration/#image-and-architecture)。
+
+`barn image list` 会列出所有架构；独立的 `info` 和 `pull` 默认按宿主架构查询，不读取清单的 `vm_arch`，可用 `--arch/-A` 指定（旧 `-a` 仍兼容）。镜像缺少目标架构变体时会报错，不会改选其他架构。当前 Barn 接受的客机架构只有 `amd64` 与 `arm64`：
 
 - **`el7`** 仅支持在原生 `linux/amd64` 宿主上运行。
 - **Apple Silicon 上的 `el8`（`arm64`）** 会自动启用 QEMU TCG 软件模拟，因为上游 RHEL/Rocky 8 `arm64` 内核要求 64 KiB 页粒度，而 macOS HVF 硬件加速不支持该页大小。跨架构模拟器与固件要求见[运行时排查](../troubleshooting/#原生加速或兼容运行时不可用)。
@@ -126,7 +139,7 @@ barn image pull d13 --arch arm64 --repo /srv/barn
 
 ## 导入本地镜像与清理缓存
 
-如果只需在宿主原生架构下使用单个自定义 `qcow2` 镜像，无需搭建静态仓库，可直接将其作为 `local-*` 别名导入本地缓存：
+如果只需使用单个自定义 `qcow2` 镜像，无需搭建静态仓库，可直接将其作为 `local-*` 别名导入本地缓存，默认记录宿主架构：
 
 ```bash
 barn image import --name local-mybase --boot uefi \
@@ -134,6 +147,8 @@ barn image import --name local-mybase --boot uefi \
 ```
 
 注册别名时需同时指定 `--name`（必须以 `local-` 开头）、`--boot`（`uefi` 或 `bios`）和 `--source-user`；省略这组参数则仅校验镜像并按内容摘要缓存。导入的镜像必须已预装并启用 cloud-init。命名别名一旦注册即不可变——重新制作镜像后请注册新的 `local-*` 名称，并在 `barn.yml` 中通过 `vm_image: local-mybase` 引用。
+
+在 `main` 中，命名导入支持 `-A`，例如 `barn image import /path/to/arm64.qcow2 --name local-arm64 --boot uefi --source-user ubuntu -A arm64`。它记录你声明的架构，不会转换镜像或检测客机 CPU；使用该镜像时，也要让清单的 `vm_arch` 或生命周期命令的 `-A` 与之匹配。不带 `--name` 时不能传入 `-A`。
 
 清理未被使用的缓存镜像与中断下载暂存文件：
 

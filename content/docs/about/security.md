@@ -39,6 +39,8 @@ Barn applies distinct OpenSSH host-key policies across its three connection path
 
 Each macOS VM generates its own Ed25519 SSH keypair and random local administrator password (stored in a `0600` `password` file inside the VM slot directory and readable via `barn mac password`). Once guest initialization completes, both Linux and macOS guests enforce SSH public-key authentication, disable SSH password authentication and root SSH login, and grant passwordless `sudo` to the configured admin user. Strip private keys, passwords, and sensitive state before sharing logs or inventories in bug reports.
 
+On first Mac contact, trust comes from the runner-owned private network and runner identity checks before and after the SSH connection; the observed host key is then pinned to the instance UUID. The GUI password shares the SSH key's file-permission boundary: that key already grants guest sudo, so storing only the password in Keychain would add signing and lock-state failures without protecting additional guest authority. See [Native Mac lifecycle](/blog/design/native-mac-lifecycle/#credentials).
+
 ## Shared folders and disposable disks
 
 - **Host directory shares**: Writable shares (`readonly: false` in Linux `vm_shares` or `:rw` in `barn mac --share`) grant guest processes direct write access to the shared host directory, and changes made inside the shared directory persist after the VM is destroyed. Share dedicated project folders and prefer read-only shares whenever guests do not need to modify host files.
@@ -56,7 +58,9 @@ Barn separates trust verification across four independent mechanisms:
 | Image artifact verification | Verifies before use that every downloaded or imported `.qcow2` matches its catalog byte size, SHA-256 digest, virtual capacity, and standalone `qcow2` format rules |
 {.wide .expand}
 
-Release assets are built from the exact tag, by the tag workflow when its Mac signing secrets are configured and otherwise by the documented local release path. Source CI must pass on the release commit first, and both paths create the draft GitHub Release only after package, archive, SBOM, and checksum verification succeeds.
+Release assets are built from the exact tag, by the tag workflow when its Mac signing secrets are configured and otherwise by the documented local release path. Source CI must pass on the release commit first. Both paths require package, archive, SBOM, and checksum verification before creating a draft GitHub Release; local publication follows the [Mac release handbook](../mac-release/).
+
+In `1.0.0`, `release.json` records `signed:false, attested:false` for the general release envelope. The Git tag and general checksums/release metadata have no separate cryptographic signature or attestation. Catalog Minisign verification and Apple Silicon code signing/notarization retain the distinct scopes listed above; the [final acceptance record](../history/#release-1-0-0) verifies them separately.
 
 The two official image repositories (`https://repo.pigsty.io/barn` and `https://repo.pigsty.cc/barn`) always require valid minisign catalog signatures, even when passed explicitly via `--repo`. Custom HTTPS or local directory repositories may use unsigned catalogs when explicitly selected with `--repo` or `BARN_REPO` (see [Linux Images](../../reference/images/)).
 

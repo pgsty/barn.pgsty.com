@@ -14,7 +14,7 @@ Barn manages Linux labs and macOS VMs independently. **`barn purge` removes only
 | Stop running VMs while keeping disks | `barn stop`; `barn mac stop --all` for Mac VMs |
 | Delete a single Linux node | `barn destroy <node>` |
 | Delete the Linux lab, keeping persistent disks | `barn destroy` |
-| Delete the Linux lab, persistent disks, and keys | `barn purge` (type `purge` to confirm on a terminal) |
+| Delete the Linux lab, persistent disks, and keys | `barn purge` (`main` deletes immediately; `--ask` enables confirmation) |
 | Delete named Mac VMs | `barn mac destroy <name...>` (prompts for confirmation) |
 
 Check `barn status` (for Linux nodes) and `barn mac ls` (for Mac VMs), and copy any files you want to keep onto the host before destroying machines.
@@ -29,7 +29,7 @@ Check `barn status` (for Linux nodes) and `barn mac ls` (for Mac VMs), and copy 
    barn purge
    ```
 
-   On a terminal, `purge` lists what it deletes and asks you to type `purge`; pass `--yes` to skip the question. If you also created macOS VMs, list and destroy them by name:
+   On `main`, this deletes immediately. Use `barn purge --ask` to review the VM list and deletion scope, then enter `y`/`yes` to confirm or `n`/`no` to cancel. It accepts no `--yes`, `-y`, or `--force`. This change is unreleased; 1.0.0 still asks terminal users to type `purge` (`--yes` skips that prompt). If you also created macOS VMs, list and destroy them by name:
 
    ```bash
    barn mac ls

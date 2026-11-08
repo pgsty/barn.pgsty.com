@@ -115,7 +115,7 @@ barn purge
 - `barn destroy <node>` 仅删除指定节点，并为剩余节点刷新 SSH 配置片段。删除控制节点时，剩余的第一个节点接任控制节点，`ssh-config`、`hosts`、`exec` 与 `provision` 可继续使用；请将清单中的 `admin_ip` 改为该节点的地址（除非希望 `up` 重新创建已删除的节点，否则一并删除其条目），再执行 `barn up` 安装其控制 SSH 访问。
 - `barn destroy` 删除整套部署的虚拟机、根盘、非持久数据盘、部署状态以及 Barn 安装的 SSH 别名，同时保留持久数据盘、部署密钥、镜像缓存和宿主网络。之后再次运行 `barn up` 即可根据清单重建实验环境。
 - `barn destroy --delete-persistent` 与 `barn destroy --purge` 仅适用于整套部署（不支持与节点名称同用），其中 `--purge` 会一并删除持久数据盘、密钥和部署状态。
-- `barn purge` 与 `barn destroy --purge` 一样清空整套 Linux 实验环境，并且在部署状态已不存在时也能删除归属明确的遗留持久盘。在终端中，它会列出清理范围并要求输入 `purge`；`--yes`（或 `--force`）跳过询问，没有终端时直接执行。镜像缓存与宿主网络保持安装。
+- `main` 中的 `barn purge` 默认立即清空整套 Linux 实验环境，并删除归属明确的遗留持久盘、密钥与部署状态，保留镜像缓存与宿主网络。需要查看节点列表和清理范围后再确认时，运行 `barn purge --ask`，输入 `y`/`yes` 确认或 `n`/`no` 取消；空行和 EOF 也会取消。它不接受 `--yes`、`-y` 或 `--force`。此改动尚未发布；1.0.0 仍在终端中要求输入 `purge`。
 
 所有虚拟机移除后，如需卸载多用户共享的 Linux 宿主网络：
 

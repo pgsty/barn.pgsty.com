@@ -14,6 +14,6 @@ cascade:
   toc_taxonomies: false
 ---
 
-这五篇设计随笔阐述了 Barn Linux 实验环境的核心工程取舍：涵盖 `~/.barn` 单部署状态模型、Pigsty/Ansible 清单复用、运行中客机的就地收敛、镜像目录签名校验，以及 macOS 与 Linux 宿主网络拓扑。
+这里记录 Barn 的状态模型、客机收敛、镜像信任、宿主网络、[CLI 契约](cli-contracts/)与[原生 Mac 生命周期](native-mac-lifecycle/)，也收录 Pigsty/Vagrant 开发循环、Windows 宿主和未来客机架构的设计提案。每份提案分别说明实现进度与验证状态。
 
-关于 Barn `0.7.0` 引入的 Apple Silicon 原生 macOS 虚拟化子系统（`barn mac`），请参阅[原生 macOS 虚拟机](/zh/docs/start/macos/)、[`barn mac` 命令参考](/zh/docs/reference/mac/)与[设计](/zh/docs/about/design/)。
+Apple Silicon 原生 macOS 虚拟化子系统（`barn mac`）从 Barn `0.9.0` 引入，签名 App 从 `0.9.2` 起随 Apple Silicon 归档交付。请参阅[原生 macOS 虚拟机](/zh/docs/start/macos/)、[`barn mac` 命令参考](/zh/docs/reference/mac/)与 [Mac 发布手册](/zh/docs/about/mac-release/)。

@@ -63,7 +63,7 @@ Catalog `status` values indicate support tier (`supported`, `testing`, `deprecat
 When pulling an image, Barn executes four steps:
 
 1. **Load the active catalog** — Reads the selected repository's active local catalog once for the command (either the binary's embedded catalog or the revision last activated for that repository by `barn update` or `barn image sync`).
-2. **Resolve the selector and architecture** — Resolves `image[:channel]` or `image@version-prefix` (defaulting to `u24:stable` on the official catalog) and the target architecture (`--arch` for standalone `image pull`, or `vm_arch` for lifecycle commands).
+2. **Resolve the selector and architecture** — Resolves `image[:channel]` or `image@version-prefix` (defaulting to `u24:stable` on the official catalog) and the target architecture. Standalone `image pull` defaults to the host; lifecycle commands use `vm_arch`, also defaulting to the host when unset. On `main`, `--arch/-A` overrides either choice; see [configuration precedence](../configuration/#image-and-architecture).
 3. **Verify the local cache** — Reuses an existing cached file immediately if its byte size, SHA-256 digest, and `qemu-img` structural checks all pass.
 4. **Download with resume and digest checks** — Downloads the artifact from the selected repository with automatic retries and HTTP range resumption, verifying the final size, SHA-256, and `qcow2` header before moving it into the cache. The two official mirrors (`https://repo.pigsty.io/barn` and `https://repo.pigsty.cc/barn`) can fall back to each other during artifact downloads, while custom `--repo` sources download exclusively from the specified root. Upstream URLs recorded in the catalog serve as provenance metadata only.
 {.steps}
@@ -76,7 +76,9 @@ Barn automatically restores read-only permissions (`0444`) on verified cache fil
 
 ## Runtime policy
 
-When guest and host architectures match, Barn uses hardware virtualization (Apple HVF on macOS, KVM on Linux) with one built-in exception: the stock Rocky Linux 8 `arm64` kernel uses a 64 KiB page size that Apple HVF does not support, so Barn automatically runs `el8` on Apple Silicon under same-architecture QEMU TCG and flags `tcg` in status output. Cross-architecture guests (`vm_arch` different from host) also run under TCG; for `amd64` guests on `arm64` hosts, Barn pins TCG to a single translation thread to preserve x86 memory ordering.
+When guest and host architectures match, Barn uses hardware virtualization (Apple HVF on macOS, KVM on Linux) with one built-in exception: the stock Rocky Linux 8 `arm64` kernel uses a 64 KiB page size that Apple HVF does not support, so Barn automatically runs `el8` on Apple Silicon under same-architecture QEMU TCG and flags `tcg` in status output. Cross-architecture guests (after resolving `vm_arch` and any command override) also run under TCG; for `amd64` guests on `arm64` hosts, Barn pins TCG to a single translation thread to preserve x86 memory ordering.
+
+The ARM64 TCG runtime on `main` uses `cortex-a72` to avoid firmware hangs with the `max` CPU model in some QEMU/AAVMF combinations. ARM64 guests on Linux x86-64 have passed an actual Barn boot and SSH check. Barn's catalog and runtime currently accept only `amd64` and `arm64`; other architectures offered by a distribution or QEMU still require Barn integration before use with `barn up`.
 
 `el7` is supported only on native `linux/amd64`. On Linux hosts, `barn setup` installs the native QEMU package set; before booting a foreign `vm_arch` with `up` or `recreate`, install the target architecture's `qemu-system-*` emulator and UEFI firmware (`barn plan` can resolve catalog images without them, though `local-*` imports still require `qemu-img`).
 
@@ -179,7 +181,7 @@ Import rules:
 - `image import` accepts relative paths, `~/`, and symlinks to regular files, and still requires `qemu-img`. Local images and catalog artifacts with declared sizes no longer have an 8 GiB ceiling. Reads are bounded by the actual or declared size; downloads stop on overflow. Legacy downloads without a declared artifact size retain an 8 GiB bound. Optional `--sha256` still verifies an expected digest.
 - `image import` copies and validates the `qcow2` container as-is without modifying guest credentials, installing `cloud-init`, or booting the image.
 - Source filenames may contain spaces or Unicode and need no particular extension; Barn validates the qcow2 contents. New imports use `local/<sha256>.qcow2`, so different images can share a source filename and identical bytes reuse a cache entry. Existing aliases keep their original cache paths when reimported. The former 256-alias ceiling is removed; updates exceeding the 1 MiB registry metadata limit fail before changing existing aliases.
-- Named imports (`--name local-<alias>`) must include `--boot bios|uefi` and `--source-user <user>`, and are recorded for the host's native architecture (to distribute foreign-architecture images, use a static repository). Aliases are immutable once registered and can be referenced in `barn.yml` via `vm_image: local-mybase`. Unnamed imports simply pre-populate the cache.
+- Named imports (`--name local-<alias>`) require `--boot bios|uefi` and `--source-user <user>` and default to the host architecture. On `main`, `--arch/-A` can record an explicit `amd64` or `arm64` architecture, including aliases. The qcow2 metadata cannot identify the guest CPU, and import does not convert architectures. Match inventory `vm_arch` or the lifecycle command's `-A` when using the image. Aliases are immutable and can be referenced via `vm_image: local-mybase`; unnamed imports only pre-populate the cache and cannot accept `-A`.
 
 ## Pruning
 

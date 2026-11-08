@@ -63,7 +63,7 @@ barn mac doctor
 
 - 设置 `BARN_CODESIGN_IDENTITY` 以使用 Developer ID 证书为 `Barn.app` 签名。
 - 设置 `BARN_NOTARY_PROFILE` 与 `BARN_MAC_REQUIRE_NOTARIZATION=1`，使构建流水线自动校验签名、提交 Apple 公证、装订票据（staple）并验证 Gatekeeper 状态。
-- `make mac-build` 为原生组件签名；Go CLI/helper 的签名与公证请使用 [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-release.md) 中的正式发布流程。该流程先签名 helper，将最终 SHA-256 嵌入 CLI，再签名 CLI 并将配套产物一起提交公证。详见[发布工程](../../about/engineering/)。
+- 设置 `BARN_CODESIGN_IDENTITY` 后，`make mac-build` 也会先签名 Go helper，将最终 SHA-256 嵌入 CLI，再签名 CLI。[Mac 发布手册](../../about/mac-release/)进一步说明 CLI/helper/App 联合公证及导出载荷的发行验证。
 
 ## 运行贡献者检查
 

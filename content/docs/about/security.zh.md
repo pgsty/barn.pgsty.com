@@ -39,6 +39,8 @@ Barn 针对三类 SSH 连接路径采用不同的主机密钥校验策略：
 
 每台 macOS 虚拟机拥有独立的 Ed25519 SSH 密钥对与随机生成的桌面管理员密码（保存在虚拟机目录内权限为 `0600` 的 `password` 文件中，可通过 `barn mac password` 查看）。首次初始化完成后，Linux 与 macOS 客机均强制使用 SSH 公钥认证，关闭 SSH 密码认证与 root 远程登录，并为管理账号配置免密 `sudo`。提交 Issue 或分享配置时，请先剔除日志和状态文件中的私钥与密码。
 
+首次连接 Mac 客机时，信任依据来自 runner 独占的私有网络，以及 SSH 连接前后的 runner 身份核验，随后将观察到的主机密钥固定到实例 UUID。GUI 密码与 SSH 私钥采用相同的文件权限边界；私钥已经授予客机 sudo 权限，单独将密码存入 Keychain 只会增加签名身份和锁定状态故障，无法进一步保护客机权限。详见[原生 Mac 生命周期](/zh/blog/design/native-mac-lifecycle/#credentials)。
+
 ## 共享文件与测试磁盘
 
 - **宿主目录共享**：可写共享（Linux `vm_shares` 中设 `readonly: false` 或 `barn mac --share` 使用 `:rw`）允许客机进程直接修改所挂载的宿主目录，且客机写入的内容在删除虚拟机后依然保留。请仅共享专门的工作目录；若客机无需写入宿主文件，请优先使用只读共享。
@@ -56,7 +58,9 @@ Barn 将软件分发与镜像校验划分为四个彼此独立的信任机制：
 | 镜像产物校验 | 在启用镜像前逐一核对 `.qcow2` 文件的字节大小、SHA-256 摘要、虚拟磁盘容量与独立 `qcow2` 结构安全性 |
 {.wide .expand}
 
-发布资产均从对应标签的源码构建：配齐 Mac 签名密钥时由标签工作流构建，否则走文档中的本地发布流程。发布提交必须先通过源码 CI，两条路径都在软件包、归档、SBOM 与校验和全部验证通过后才创建 GitHub Release 草稿。
+发布资产均从对应标签的源码构建：配齐 Mac 签名密钥时由标签工作流构建，否则走文档中的本地发布流程。发布提交必须先通过源码 CI；两条路径都要求软件包、归档、SBOM 与校验和验证通过后才能创建 GitHub Release 草稿，本地发布步骤见 [Mac 发布手册](../mac-release/)。
+
+`1.0.0` 的 `release.json` 用 `signed:false, attested:false` 描述通用发行元数据的范围：Git tag、通用校验和及发布元数据没有独立密码学签名或 attestation。目录的 Minisign 校验与 Apple Silicon 代码签名/公证仍分别适用于上表中的对象，[最终验收记录](../history/#release-1-0-0)逐项验证了这些机制。
 
 两个官方镜像仓库（`https://repo.pigsty.io/barn` 与 `https://repo.pigsty.cc/barn`）无论通过默认配置还是 `--repo` 显式选中，均强制要求有效的 minisign 目录签名。通过 `--repo` 或 `BARN_REPO` 显式指定的自定义 HTTPS 仓库或本地目录仓库可以使用未签名目录，请仅添加你信任的镜像源（详见[镜像参考](../../reference/images/)）。
 

@@ -40,7 +40,20 @@ all:
 
 After changing `vm_image` or `vm_version`, preview the change with `barn plan`. Existing nodes keep their current root disk until you run `barn recreate <node>`; updating the catalog with `barn update` only affects newly created or recreated nodes.
 
-`barn image list` displays all architectures, while `info` and `pull` default to the host architecture unless you pass `--arch amd64` or `--arch arm64`:
+### Temporary overrides and architecture {#architecture}
+
+The expanded `-I/-A` options below are unreleased changes on `main`; users of 1.0.0 should check each command's `--help` first.
+
+Guests default to the host architecture unless explicitly overridden by `vm_arch` or `--arch/-A`. Precedence is `-A` → `vm_arch` → host architecture. `-A native` overrides a fixed inventory architecture and follows the host again. `amd64` accepts `x86_64` and `x64` aliases; `arm64` accepts `aarch64` and `a64`.
+
+```bash
+barn plan -I u24 -A amd64
+barn up -I u24 -A amd64
+```
+
+`-I u24` replaces selected nodes' `vm_image` and `vm_version` without changing the architecture. These overrides leave the inventory intact. To keep them, set `vm_image` and `all.vars.vm_arch`, removing superseded `vm_version`, or generate a new inventory with `barn init -I u24 -A amd64`. Existing nodes still require `recreate` to change image or architecture; architecture changes must include all existing nodes. See the [configuration reference](../../reference/configuration/#image-and-architecture).
+
+`barn image list` displays all architectures. Standalone `info` and `pull` default to the host architecture without reading inventory `vm_arch`; use `--arch/-A` to override it (legacy `-a` also works). A missing architecture variant is an error, not a reason to select another architecture. Barn currently accepts only `amd64` and `arm64` guests:
 
 - **`el7`** is supported only on native `linux/amd64` hosts.
 - **`el8` on `arm64`** automatically runs under QEMU TCG software emulation on Apple Silicon because the stock RHEL/Rocky 8 `arm64` kernel requires a 64 KiB page granule that macOS HVF does not support. See [Runtime rules](../troubleshooting/#native-acceleration-or-compatibility-runtime-is-unavailable) for foreign-architecture emulator requirements.
@@ -126,7 +139,7 @@ Pass `--repo /srv/barn` (or `export BARN_REPO=/srv/barn`) to `plan`, `up`, and `
 
 ## Import a local image and prune the cache
 
-To use a single custom `qcow2` image on your host's native architecture without creating a repository, import it into Barn's local cache with a `local-` alias:
+To use a single custom `qcow2` image without creating a repository, import it into Barn's local cache with a `local-` alias. The recorded architecture defaults to the host:
 
 ```bash
 barn image import --name local-mybase --boot uefi \
@@ -134,6 +147,8 @@ barn image import --name local-mybase --boot uefi \
 ```
 
 `--name` (must start with `local-`), `--boot` (`uefi` or `bios`), and `--source-user` are required together when registering an alias; omitting them caches the verified `qcow2` bytes by content digest without creating an alias. The image must already include cloud-init support for Barn's first-boot provisioning. Named `local-*` aliases are immutable—register a new `local-*` name whenever you rebuild the image, and reference it in `barn.yml` with `vm_image: local-mybase`.
+
+On `main`, named imports accept `-A`, for example `barn image import /path/to/arm64.qcow2 --name local-arm64 --boot uefi --source-user ubuntu -A arm64`. This records your declaration; it does not convert the image or detect its guest CPU. Set inventory `vm_arch` or the lifecycle command's `-A` to match when using it. `-A` requires `--name` on import.
 
 To reclaim disk space from unreferenced images and interrupted download staging files:
 

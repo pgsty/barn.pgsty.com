@@ -63,7 +63,7 @@ When signing environment variables are unset, `make mac-build` applies an **ad-h
 
 - Set `BARN_CODESIGN_IDENTITY` to sign `Barn.app` with a Developer ID certificate.
 - Set `BARN_NOTARY_PROFILE` and `BARN_MAC_REQUIRE_NOTARIZATION=1` to submit `Barn.app` for Apple notarization, staple the ticket, and verify Gatekeeper acceptance.
-- `make mac-build` signs the native components; the Go CLI/helper need the formal release process in [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-release.md). That process signs the helper first, embeds its final SHA-256 in the CLI, signs the CLI, and submits the matched payload for notarization. See [Release Engineering](../../about/engineering/).
+- With `BARN_CODESIGN_IDENTITY` set, `make mac-build` also signs the Go helper before embedding its final SHA-256 in the CLI, then signs the CLI. The [Mac release handbook](../../about/mac-release/) adds joint notarization of the CLI/helper/app and verification of the exported release payload.
 
 ## Run contributor checks
 

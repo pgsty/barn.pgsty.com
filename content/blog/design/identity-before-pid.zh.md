@@ -7,10 +7,10 @@ weight: 40
 categories: [设计]
 tags: [QMP, 恢复, 安全]
 icon: fa-solid fa-fingerprint
-lastmod: 2026-10-26
+lastmod: 2026-11-08
 ---
 
-本文阐述 Barn `0.9.3` 的 Linux 运行时进程身份与崩溃恢复机制（[Mac 虚拟机](/zh/docs/start/macos/)使用槽位锁与 runner 协议 `2` 独立管理）。
+本文阐述 Barn `0.9.3` 的 Linux 运行时进程身份与崩溃恢复机制。[原生 Mac 生命周期](/zh/blog/design/native-mac-lifecycle/)独立使用逐实例操作锁与 runner 协议 `2`。
 
 `pidfile` 只能记录写入瞬间的进程号（PID）。几分钟甚至几天之后——尤其在经历过进程崩溃或宿主重启后——单凭这一个整数，既无法确认原先的 QEMU 进程是否还活着，也无法排除操作系统内核已经把同一个 PID 分配给了另一个毫不相干的进程，更无法证明它归属哪一个虚拟机节点。
 

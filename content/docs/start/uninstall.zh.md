@@ -14,7 +14,7 @@ Barn 分别独立管理 Linux 实验环境与 macOS 虚拟机。**`barn purge` �
 | 停止运行中的虚拟机并保留磁盘 | `barn stop`；Mac 虚拟机使用 `barn mac stop --all` |
 | 删除单个 Linux 节点 | `barn destroy <node>` |
 | 删除 Linux 实验环境，保留持久数据盘 | `barn destroy` |
-| 删除 Linux 实验环境、持久数据盘与密钥 | `barn purge`（终端中需输入 `purge` 确认） |
+| 删除 Linux 实验环境、持久数据盘与密钥 | `barn purge`（`main` 默认直接删除，`--ask` 开启确认） |
 | 删除指定的 Mac 虚拟机 | `barn mac destroy <name...>`（需输入确认词） |
 
 执行删除前，请先通过 `barn status`（Linux 节点）和 `barn mac ls`（Mac 虚拟机）核对名称，并将需要保留的文件备份到宿主。
@@ -29,7 +29,7 @@ Barn 分别独立管理 Linux 实验环境与 macOS 虚拟机。**`barn purge` �
    barn purge
    ```
 
-   在终端中，`purge` 会列出清理范围并要求输入 `purge`；传入 `--yes` 可跳过询问。如果还创建过 macOS 虚拟机，先查看列表再按名称逐一销毁：
+   `main` 默认立即删除；如需先查看虚拟机列表与清理范围，改用 `barn purge --ask`，输入 `y`/`yes` 确认或 `n`/`no` 取消，不接受 `--yes`、`-y` 或 `--force`。这项改动尚未发布，1.0.0 在终端中仍要求输入 `purge`（`--yes` 可跳过）。如果还创建过 macOS 虚拟机，先查看列表再按名称逐一销毁：
 
    ```bash
    barn mac ls

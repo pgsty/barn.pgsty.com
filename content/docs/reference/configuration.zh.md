@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-本参考说明 Barn 1.0.0。请通过 `barn version` 核对当前构建。
+本参考跟随 Barn `main`。下文的命令行镜像与架构覆盖属于 1.0.0 之后尚未发布的改动；请通过 `barn version` 和命令的 `--help` 核对当前构建。
 
 ## 发现顺序
 
@@ -68,7 +68,7 @@ Barn 只读取节点 IPv4 键、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq
 | `vm_skip` | `false` | 跳过该物理机或外部主机，不为它创建虚拟机 |
 | `vm_image` | `u24` | 镜像系列、`:channel` 通道引用或 `image@version` 版本选择器 |
 | `vm_version` | 未设置 | 匹配该数值前缀的最新版本，例如 `9` 或 `9.7` |
-| `vm_arch` | `native` | 部署级客机架构：`native`、`amd64` 或 `arm64` |
+| `vm_arch` | `native` | 部署级客机架构，默认跟随宿主；可显式指定 `amd64` 或 `arm64` |
 | `vm_cpu` | `2` | vCPU 核数（`1`–`256`） |
 | `vm_mem` | `4096` | 内存容量：裸整数按 MiB 计，也支持 `8GiB` 等带单位字符串（最低 `512MiB`） |
 | `vm_disk` | `64` | 根盘容量：裸整数按 GiB 计，也支持 `64GiB` 等带单位字符串 |
@@ -92,7 +92,32 @@ vm_version: "9.8"
 
 若镜像目录中存在完全一致的版本号，Barn 优先精确匹配；否则按点号分段匹配版本前缀，并按整数大小选择匹配的最高版本（`9.8` 匹配最新的 `9.8.*` 构建，`9` 匹配最新的 `9.x` 版本，且 `9.10` 排在 `9.9` 之后）。`vm_version` 不能与已包含 `:channel` 或 `@version` 的 `vm_image` 同时使用。
 
-`vm_arch` 是整套部署共用的全局属性，请在 `all.vars` 中统一定义。修改 `vm_arch` 需要重建整套部署。Linux 宿主的 `barn setup` 默认只安装本机架构的 QEMU；如需运行跨架构客机，需提前安装对应的 `qemu-system-*` 与 UEFI 固件。
+## 镜像与架构覆盖 {#image-and-architecture}
+
+默认客机架构与宿主一致：Apple Silicon 使用 `arm64`，Intel/AMD 宿主使用 `amd64`。只有清单或命令行显式指定其他架构时才切换。优先级为 **`--arch/-A` → 清单 `vm_arch` → `native`（宿主架构）**；`-A native` 可以覆盖清单中的固定架构，恢复跟随宿主。
+
+| 架构值 | 别名 | 含义 |
+|---|---|---|
+| `native` | — | 跟随当前宿主架构，也是未设置时的默认值 |
+| `amd64` | `x86_64`、`x64` | 固定使用 x86-64 客机 |
+| `arm64` | `aarch64`、`a64` | 固定使用 ARM64 客机 |
+
+`vm_arch` 是整套部署共用的属性，请在 `all.vars` 中统一定义。每个托管节点必须解析为同一架构，不能用节点变量或节点选择器混合架构。
+
+`--image/-I` 覆盖所选节点的 `vm_image` 与 `vm_version`，不改变架构。镜像目录必须提供目标架构的变体，否则报错；Barn 不会因为镜像缺少该变体而切换架构。
+
+```bash
+barn plan -I u24                 # 使用 Ubuntu 24.04，架构仍遵循清单或宿主默认值
+barn up -I u24 -A amd64          # 本次使用 amd64 Ubuntu 24.04
+barn plan -A native              # 覆盖清单架构，按宿主架构预览
+barn init full -I u24 -A arm64   # 将镜像与架构写入新清单
+```
+
+`up`、`plan`、`reload`、`recreate`、`resize` 和 `validate` 的覆盖只对本次期望配置生效，不改写清单。要长期保留选择，请设置 `all.vars.vm_arch`、相应节点或组的 `vm_image`，并移除被替代的 `vm_version`；`init` 与生成模板的 `setup` 会直接写入这些选择。`setup` 的 `-I/-A` 不能用于已有清单。
+
+没有清单文件时，生命周期命令沿用已保存的部署规格，再应用显式覆盖。`start` 和 `restart` 始终使用已应用状态。已有 VM 的架构不会因省略 `-A` 或修改清单而自动改变：`up` 会报告漂移，实际切换架构需要选择全部已有节点执行 `recreate`。`resize` 虽接受覆盖用于核对期望配置，仍只允许修改 CPU 与内存。
+
+客机与宿主架构不同时使用 QEMU TCG。Linux 宿主的 `barn setup` 默认只安装本机架构的 QEMU；运行跨架构客机前，需安装对应的 `qemu-system-*` 与 UEFI 固件。加速方式与镜像例外见[运行时策略](../images/#运行时策略)。
 
 ## 数据盘 {#数据盘}
 

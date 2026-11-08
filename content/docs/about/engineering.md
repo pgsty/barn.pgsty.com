@@ -56,6 +56,8 @@ make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 
 ## Edit the documentation
 
+Maintain new design decisions and research conclusions in this site's `content/blog/design/`, with their date, implementation status, source evidence, and acceptance conditions. The [design notes](/blog/design/) collect these records. Keep task guides and reference contracts in `content/docs/`; the source repository retains its existing engineering and historical records.
+
 Every documentation page is maintained as an English/Chinese pair (`page.md` and `page.zh.md`). Keep commands, defaults, anchors, tables, and warnings in 1:1 parity across both languages, lead with the user's task, and keep Linux lab and `barn mac` workflows clearly separated.
 
 Validate the website repository with:
@@ -66,13 +68,13 @@ make check
 
 `make check` verifies the Go module graph, builds the site with Hugo Extended against the pinned OINK `v1.5.1` module (clearing any local theme replacements and disabling Go workspaces), and runs `bin/check_internal_links.py public` to verify all internal links, anchors, and assets. When testing against a local sibling OINK checkout, use `make check-local` or `make build-local`. Check CLI examples against `barn <command> --help` and test inventory examples with `barn validate` and `barn plan` using a temporary `BARN_HOME`.
 
-## Release outputs and gates
+## Release outputs and gates {#release-outputs-and-gates}
 
 Stable versions from `1.0.0` on are published as the latest GitHub release; versions below `1.0.0` and versions with a prerelease suffix are GitHub pre-releases and need an explicit `BARN_VERSION` in the installer. Each release ships `darwin`/`linux` `.tar.gz` archives (containing `bin/barn`, `bin/barn-hosts-helper`, and `licenses/`), Linux `.deb` and `.rpm` packages (installing `/usr/bin/barn` and `/opt/barn/libexec/barn-hosts-helper`), `checksums.txt`, `release.json`, and SPDX SBOMs.
 
 Since **0.9.2**, the Darwin arm64 archive also contains `bin/Barn.app`. Its CLI, helper, and app use Developer ID signatures and Apple notarization. Homebrew installs the app under `libexec`; ordinary installation needs no Go or Xcode.
 
-The automatic release workflow requires all six Apple signing/notarization secrets and a successful native build. With none configured, it skips automatic release creation and maintainers can use the documented local signed-release process; partial configuration fails. See [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-release.md).
+The automatic release workflow requires all six Apple signing/notarization secrets and a successful native build. With none configured, it skips automatic release creation; partial configuration fails. The [Mac release handbook](../mac-release/) covers the local signed-release process, payload identity, CI secrets, and installation acceptance.
 
 Before publishing a release:
 

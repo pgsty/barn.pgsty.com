@@ -14,6 +14,6 @@ cascade:
   toc_taxonomies: false
 ---
 
-These five essays explain the architectural trade-offs behind Barn's Linux lab workflow—from the single-deployment state model under `~/.barn` and Pigsty/Ansible inventory compatibility to in-place guest convergence, image catalog verification, and host networking on macOS and Linux.
+These essays explain Barn's state model, guest convergence, image trust, host networking, [CLI contracts](cli-contracts/), and [native Mac lifecycle](native-mac-lifecycle/). Design proposals also examine the Pigsty/Vagrant development loop, Windows hosting, and future guest architectures; each proposal states its implementation and validation status.
 
-For the native macOS Virtualization.framework subsystem (`barn mac`) introduced in Barn `0.7.0`, see [Native macOS VMs](/docs/start/macos/), the [`barn mac` Reference](/docs/reference/mac/), and [Design](/docs/about/design/).
+The native macOS Virtualization.framework subsystem (`barn mac`) was introduced in Barn `0.9.0`; its signed app has shipped in Apple Silicon archives since `0.9.2`. See [Native macOS VMs](/docs/start/macos/), the [`barn mac` Reference](/docs/reference/mac/), and the [Mac release handbook](/docs/about/mac-release/).

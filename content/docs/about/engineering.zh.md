@@ -56,6 +56,8 @@ make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 
 ## 编写与校验文档
 
+新的设计决策与研究结论统一维护在本站 `content/blog/design/`，注明日期、实现状态、来源依据和验收条件，入口为[设计文章](/zh/blog/design/)。任务指南和参考契约放在 `content/docs/`；源码仓库保留既有工程说明与历史记录。
+
 文档站点的每篇文档均由英文 `page.md` 与中文 `page.zh.md` 成对组成。修改时请保持中英文的命令、默认值、标题锚点、表格与注意事项严格对齐，先说明用户要完成的任务，再展开实现细节，并将 Linux 实验环境与 `barn mac` 工作流区分清楚。
 
 在网站仓库根目录运行：
@@ -66,13 +68,13 @@ make check
 
 `make check` 会校验 Go 模块、在清除本地主题替换并关闭 Go workspace 的纯净环境下使用 Hugo Extended 与锁定的 OINK `v1.5.1` 构建全站，随后调用 `bin/check_internal_links.py public` 检查全部内部链接、标题锚点与静态资源。需要联调本地相邻的 OINK 主题工作区时，请使用 `make check-local` 或 `make build-local`。文中的命令行示例请对照 `barn <command> --help` 核验，YAML 清单示例请使用临时 `BARN_HOME` 跑通 `barn validate` 与 `barn plan`。
 
-## 发布产物与门禁
+## 发布产物与门禁 {#release-outputs-and-gates}
 
 自 `1.0.0` 起的稳定版作为 GitHub 最新正式版（latest）发布；低于 `1.0.0` 或带预发布后缀的版本标记为 pre-release（预发布版），使用安装脚本时需显式指定 `BARN_VERSION`。每次发布包含 `darwin`/`linux` `.tar.gz` 归档（含 `bin/barn`、`bin/barn-hosts-helper` 与 `licenses/`）、Linux `.deb` 与 `.rpm` 软件包（安装至 `/usr/bin/barn` 与 `/opt/barn/libexec/barn-hosts-helper`）、`checksums.txt`、`release.json` 及 SPDX 物料清单。
 
 从 **0.9.2** 开始，Darwin arm64 归档还包含 `bin/Barn.app`，CLI、helper 与 App 均经过 Developer ID 签名与 Apple 公证。Homebrew 将 App 安装在 `libexec` 下，普通安装无需 Go 或 Xcode。
 
-自动发布工作流要求配齐全部 6 项 Apple 签名/公证密钥，并成功构建原生组件。6 项均未配置时跳过自动创建发布，可改用文档中的本地签名发布流程；仅配置部分时直接报错。详见 [`docs/mac-release.md`](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-release.md)。
+自动发布工作流要求配齐全部 6 项 Apple 签名/公证密钥，并成功构建原生组件。6 项均未配置时跳过自动创建发布；仅配置部分时直接报错。[Mac 发布手册](../mac-release/)说明本地签名发布流程、载荷身份、CI 密钥与安装验收。
 
 正式发布版本的验收步骤：
 

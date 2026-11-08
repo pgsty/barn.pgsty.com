@@ -7,10 +7,10 @@ weight: 30
 categories: [设计]
 tags: [生命周期, 配置差异, 安全]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-11-06
+lastmod: 2026-11-08
 ---
 
-本文阐述 Barn `0.9.3` 的 Linux 虚拟机收敛模型（[Mac 虚拟机](/zh/docs/start/macos/)独立管理）。
+本文阐述 Barn `0.9.3` 的 Linux 虚拟机收敛模型，并补充下文 `1.0.0` 的恢复规则（[Mac 虚拟机](/zh/docs/start/macos/)独立管理）。
 
 > [!NOTE]
 > **2026-10-30 更新**：Barn 0.9.3 源码中的 `plan`、`up`、`reload` 与 `recreate` 按显式节点选择应用变更，保留未选中节点的已应用定义。下文的全清单漂移规则仍适用于未指定节点的操作，详见[分批应用节点变更](/zh/docs/start/operations/#selected-nodes)。
@@ -76,6 +76,20 @@ lastmod: 2026-11-06
 - 普通 `barn destroy` 与 `barn recreate` 默认保留 `persistent: true` 的持久数据盘。
 - 整套部署执行 `barn destroy --delete-persistent` 会一并删除受管的持久盘；执行 `barn purge`（或 `barn destroy --purge`）则会一次性删除所有磁盘、密钥与部署状态。
 - 在 `barn up` 客机恢复期间，Barn 只会格式化没有任何签名的数据盘，并且仅在检查工具报告可识别的损坏时重置 ext4 或 XFS 文件系统；遇到分区表、不支持的文件系统特性或未知的检查失败时，数据保持原样并报告警告（详见[数据盘配置](/zh/docs/reference/configuration/#数据盘)）。
+
+## 1.0 恢复规则：区分角色变更与漂移 {#control-role-recovery}
+
+删除控制节点后，由剩余定义中的第一个节点接任。`SpecHash` 表示当前已应用定义，`GuestSpecHash` 表示客机已有的就绪标记；控制角色变更时，两者可能不同，而 VM 身份与磁盘仍然有效。
+
+在标记任何节点删除之前，Barn 必须先完成接任节点已提交的 prepare 日志，再原子发布部署状态，作为角色变更的提交记录，随后更新接任节点的定义哈希。两次写入之间若发生中断，恢复逻辑在部署锁内只接受能够由 `Control` 翻转精确解释的哈希差异，其他漂移仍然拒绝；它不会创建缺失状态、更换 VM UUID 或修改磁盘/进程身份。详见 [1.0 加固记录](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md)与[控制角色恢复测试](https://github.com/pgsty/barn/blob/v1.0.0/internal/private/control_test.go)。
+
+更新清单中的控制角色后，再运行 `barn up` 安装控制节点 SSH 访问。通用的在线角色迁移还需要定义旧凭据撤销、离线重试与部分失败语义；随意放宽哈希检查会掩盖尚未完成的客机收敛。
+
+## 1.0 恢复规则：先证明损坏 {#disk-recovery-evidence}
+
+文件系统检查器的退出码不能单独授权格式化：ext4 的 `4`/`12` 与 XFS 的 `1` 必须伴随已识别的损坏诊断。不支持的特性、权限、I/O 或内存失败、分区表以及未知诊断都会保留磁盘并报告客机警告。`persistent` 控制 destroy/recreate 时的磁盘保留，识别出损坏后仍适用文档中的重置策略。
+
+[数据盘恢复测试](https://github.com/pgsty/barn/blob/v1.0.0/internal/cloudinit/disk_recovery_test.go)使用哨兵检查 `mkfs` 是否实际执行，物理宿主验收则比较磁盘内容，同时验证破坏性副作用与警告文本。带日期的覆盖范围见[验证历史](/zh/docs/about/history/#release-1-0-candidates)。
 
 ## 无连带影响的增量收敛
 

@@ -49,6 +49,8 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 
 `ssh` 会将 `--` 后的参数用空格拼接成命令行交给客机 shell；`exec` 则将程序名和各个参数分别传入，完整保留空格、引号及后续空字符串参数。需要管道、重定向、变量展开或串行执行多条命令时，请显式使用 `sh -c '...'`。`--json`、`-v`、`--help` 等 Barn 参数必须放在 `--` 前，其后的所有参数（包括第二个 `--`）都归属客机命令。
 
+为保持兼容，`exec` 也接受单个命令字符串作为 shell 简写。新脚本请分开传入参数或显式使用 `sh -c`，明确是否需要 shell 解释。
+
 ```bash
 barn mac ssh dev
 barn mac ssh dev -- 'sw_vers; id'

@@ -47,6 +47,8 @@ Before `--`, pass Barn flags and at most one existing VM name (omitting the name
 
 `ssh` joins arguments after `--` into a command string for the guest shell, whereas `exec` passes the program and arguments separately (preserving spaces, quotes, and subsequent empty arguments). Use `sh -c '...'` for pipelines, redirection, or compound commands. Put Barn flags (`--json`, `-v`, `--help`) before `--`; everything after `--` belongs to the guest command.
 
+For compatibility, `exec` also accepts a single command string as shell shorthand. In new scripts, pass separate arguments or use an explicit `sh -c` so the intended shell interpretation is clear.
+
 ```bash
 barn mac ssh dev
 barn mac ssh dev -- 'sw_vers; id'

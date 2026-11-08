@@ -6,7 +6,39 @@ icon: fa-solid fa-clock-rotate-left
 ---
 
 > [!NOTE]
-> 本页归档了 0.9.0 发布前的验证基线（2026-09-29，文档提交 `4c03fc9`）以及早期版本（`0.1.0` 至 `0.8.0`）的实机测试与镜像校验记录。当前宿主支持范围与最新版本说明请查阅[平台与限制](../status/)与 [Barn 1.0.0 发布说明](/zh/blog/release/1.0.0/)。
+> 本页汇集截至 `1.0.0` 的源码、打包、VM 与公开安装验证记录，每条保留原有日期、测试版本和范围。当前宿主支持与版本行为请查阅[平台与限制](../status/)及[发布说明](/zh/blog/release/)。
+
+## Barn 1.0.0 最终验收 — 2026-11-05 {#release-1-0-0}
+
+[最终验收记录](https://github.com/pgsty/barn/blob/86e1a658edef87e70fabc2ff163c6923cd6c008f/docs/release-1.0-acceptance.md)将下载制品与公开安装检查绑定到以下发布身份：
+
+| 项目 | 记录的身份 |
+|---|---|
+| 标签与提交 | `v1.0.0` → `69ef7f1d6ffc7c6fbffffe178b2fa48e799dc02d` |
+| 构建时间 | `2026-11-04T17:54:45Z`；`SOURCE_DATE_EPOCH=1793814885` |
+| GitHub Release | ID `434268111`；于 `2026-11-04T23:18:10Z` 发布为 stable/latest |
+| 签名目录 | Revision `2026110502`；SHA-256 `d41e46d20bc57cb1b071e3919a27a8f7f703df2addca879970a528e7ab004065` |
+{.wide}
+
+- **源码与下载制品**：最终提交通过[源码/Mac CI](https://github.com/pgsty/barn/actions/runs/41881906207)与[打包 CI](https://github.com/pgsty/barn/actions/runs/41881906313)。自动签名密钥未配置，本轮使用本地 Developer ID 签名流程。20 个上传附件全部重新下载，大小与 SHA-256 和原始制品一致；19 项校验和，以及归档/软件包、CLI/helper 配对、架构、权限、SBOM 与身份核验全部通过。
+- **镜像实际字节**：两个官方目录验签通过，与内置字节一致；从每个源流式下载全部 17 个 stable 制品，共 34 次大小和摘要检查通过。全新 `BARN_HOME` 的 `barn update` 成功激活目录。
+- **Mac 下载件验收**：CLI/helper/App 的 Developer ID、公证、staple 与 Gatekeeper 检查通过，安装后及移动到 Homebrew 布局后再次验证通过。隔离安装器完成 `0.9.3 → 1.0.0` 升级，保留旧版本及已有 VM 的身份、SSH 密钥和数据哨兵；新 VM 通过 SSH、写入、stop/start、身份/数据保持及销毁检查。
+- **Linux 实机**：下载的 `linux/amd64` 程序在全新状态目录中创建两台 Debian 13 客机，固定 IP、账号、XFS 数据盘、stop/start/restart、参数边界与远端退出码 `17` 均通过。清单缺节点时重建在停机前拒绝；删除控制节点后接任成功；destroy 后重新 up 更换机器身份并保留持久盘哨兵。
+- **公开渠道**：正式发布后，默认安装器与显式 `BARN_VERSION=1.0.0` 均完成公开安装。真实 Homebrew 从 `0.9.2 → 1.0.0` 升级，通过 `brew test`、在线 audit 与 Tap 测试。[Tap 更新](https://github.com/pgsty/homebrew-infra/commit/8910347)和[站点更新](https://github.com/pgsty/barn.pgsty.com/commit/34befa8)完成发布，公开双语发布页及安装页通过检查。
+
+物理宿主运行覆盖为 `darwin/arm64` 与 `linux/amd64`，`darwin/amd64` 与 `linux/arm64` 完成交叉构建及制品检查。前一轮候选的 GUI、剪贴板与故障注入实验保留下方原有身份。
+
+### 加固与候选演练 — 2026-11-04–05 {#release-1-0-candidates}
+
+`377061c` 的[加固检查点](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md)通过源码检查及不含 Mac 原生载荷的 `0.9.4-next` 打包快照。随后真机测试从 `0.9.4-next` 开始，修复后完成定向复测，再构建签名公证的 `1.0.0-rc.1`，使用目录 `2026102802`。[候选记录](https://github.com/pgsty/barn/blob/86e1a658edef87e70fabc2ff163c6923cd6c008f/docs/release-1.0-acceptance.md)覆盖数据盘保留、取消 sudo 后锁释放、共享 networkd 卸载、Mac 15 阶段生命周期、GUI/剪贴板与中断 recreate 恢复。最终发行包随后改用目录 `2026110502` 和上方正式身份。
+
+记录同时保留失败与成功重跑：短时 SSH 探测需要有界重试，资源不足的构建和共享模块缓存故障需要修正环境，一处验收断言错误地要求成功空输出必须含有 `stdout` 字段。`dm-error` 实验在整盘保护分支就被拒绝，尚未进入文件系统检查器。这些观察明确了实际执行过的产品路径，以及属于测试脚本或环境的失败。
+
+## Barn 0.9.1 本地候选验收 — 2026-10-22 {#release-0-9-1}
+
+[0.9.1 记录](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-0.9.1.md)包含通过的 `make check`、原生组件测试、四平台打包与 ad-hoc 原生载荷。CLI 候选为 `0.9.1-dev.1`，完整快照为 `0.9.1-next`；通过本地下载夹具，从真实 `0.9.0` 归档完成隔离升级，验证重复安装、旧版本保留、helper 配对与 App 发现。Homebrew 检查覆盖 `bin`/`libexec` 布局，原生测试和 `mac doctor` 没有启动 VM。公开 `0.9.1` 制品只有 CLI/helper 归档与 Linux 软件包，不含 `Barn.app`；原记录后半的公开发布清单描述后续流程，不能当作已完成的运行证据。
+
+## 0.9.0 发布前检查点 — 2026-09-29 {#pre-0-9-0}
 
 在 2026-09-29 检查点时，Barn `0.9.0` 是完成项目更名后的首个候选发布版本。现行安装方式请参见[快速上手](../../start/installation/)。
 
@@ -26,6 +58,8 @@ icon: fa-solid fa-clock-rotate-left
 
 2026-09-29 完成更名后，本地 CLI 与 `barn-hosts-helper` 单元测试、原生 Bridge/镜像/退出提示/菜单测试、runner 编译、ad-hoc 签名校验与 `probe` 探测全部通过，与同日早些时候完成的 16 阶段 Mac 真机生命周期验收相衔接。
 
+[更名记录](https://github.com/pgsty/barn/blob/v1.0.0/docs/rename-barn-0.9.0.md)明确将更名后构建的证据限定为上述检查，没有重跑 VM 生命周期。2026-10-03 的归档更正保留原有日期、版本、提交与测试范围，没有把更早的 VM 实验归到更名后构建。
+
 ## 0.9.0 发布前待收口项
 
 在 2026-09-29 检查点，正式公开 `0.9.0` 前剩余的门禁项包括：
@@ -34,6 +68,11 @@ icon: fa-solid fa-clock-rotate-left
 - 新名称下的全新宿主环境准备、Linux/macOS 虚拟机生命周期与卸载清理复核。
 - macOS 原生组件的 Developer ID 签名、公证与发布。
 - GitHub 仓库、Homebrew Tap、两地 `/barn` 官方镜像源与 `barn.pgsty.com` 公开可用性核验。
+
+## 早期 Mac 实现记录 {#early-mac-records}
+
+- **2026-09-26–27**：[初期实现日志](https://github.com/pgsty/barn/blob/v1.0.0/docs/history/mac-implementation-20260928.md)记录完整 IPSW 下载与 CLI 恢复安装、基础镜像不变性、双客机生命周期及安装器拒绝篡改包。最终 12 阶段流程耗时 `140.305 秒`，起点是已经初始化的客机，使用退役的固定槽位/共享网络实现及 ad-hoc 开发签名。
+- **2026-09-28**：[复杂度复核](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-complexity-review.md)在简化实现时保留身份、锁与恢复保护，并验证就绪检查不重写 SSH 材料。首轮关机超时与客机高负载同时出现，随后完整重跑通过，没有强制断电或调整超时；记录将高负载保留为观察，没有将其认定为根因。
 
 ## Barn Mac 实机记录：2026-09-29
 
@@ -48,6 +87,8 @@ icon: fa-solid fa-clock-rotate-left
 - 原生应用包的 Developer ID 签名、Apple 公证与公开发布。
 - 通过 CLI 从零下载 IPSW 并准备基础镜像（无基础镜像时首次 `barn mac up` 或 `barn mac image update`）。
 - 桌面窗口菜单中的 **Restart…** 与 **Shut Down…** 动作、更多 Apple Silicon 机型以及物理宿主重启验证。
+
+同一份[具名机器记录](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-implementation-log.md)还包含稍后的 `07ebfd4` 候选重跑：首轮五秒 SSH 探测失败、后续观察恢复应答后，全部 16 阶段在 `298.9 秒`内通过。两次都复用了已有 `26A428` 基底，该检查点未覆盖从零下载与恢复安装。
 
 ## 更名前的 Linux 验证概览 {#summary}
 

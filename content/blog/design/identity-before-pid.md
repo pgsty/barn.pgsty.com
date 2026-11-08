@@ -7,10 +7,10 @@ weight: 40
 categories: [Design]
 tags: [QMP, Recovery, Safety]
 icon: fa-solid fa-fingerprint
-lastmod: 2026-10-26
+lastmod: 2026-11-08
 ---
 
-This essay explains Linux runtime process identity and crash recovery in Barn `0.9.3` ([macOS guests](/docs/start/macos/) use per-slot locks and runner protocol `2`).
+This essay explains Linux runtime process identity and crash recovery in Barn `0.9.3`. The separate [native Mac lifecycle](/blog/design/native-mac-lifecycle/) uses per-machine operation locks and runner protocol `2`.
 
 A `pidfile` records a process ID at the moment it was written. Minutes or days later—especially after a crash or host reboot—that integer alone cannot tell you whether the original QEMU process is still running, whether the OS kernel recycled the PID for an unrelated user process, or which VM node that process belongs to.
 

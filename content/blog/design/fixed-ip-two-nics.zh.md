@@ -7,7 +7,7 @@ weight: 20
 categories: [设计]
 tags: [网络, QEMU, Pigsty]
 icon: fa-solid fa-network-wired
-lastmod: 2026-10-26
+lastmod: 2026-11-08
 ---
 
 本文阐述 Barn `0.9.3` 的 Linux 实验环境网络设计（[Mac 虚拟机](/zh/docs/start/macos/)使用每台虚拟机独立的 `vmnet` NAT 子网）。
@@ -68,7 +68,11 @@ Barn 通过确定性的 MAC 地址在客机内绑定两张虚拟网卡，而不�
 6. **就绪后提交事务** — 所有接口与连通性检查全部通过后，才将宿主网络标记为已完成安装。
 {.steps}
 
-Barn 绝不会强行接管宿主上已占用相同 `.1/24` 的外部接口，也不会覆盖被手工改动过的受管文件；当仍有节点处于运行状态时，`network uninstall` 会拒绝卸载网络，并在卸载时严格按记录还原到安装前的状态。
+Barn 绝不会强行接管宿主上已占用相同 `.1/24` 的外部接口，也不会覆盖被手工改动过的受管文件；当仍有节点处于运行状态时，`network uninstall` 会拒绝卸载网络。
+
+### 1.0 更新：重新核对共享服务归属 {#shared-networkd}
+
+安装前快照不是宿主全局服务的永久所有权凭证。`1.0.0` 卸载时同时核对当前链路与文件：即使 `.network` 文件已删除，运行中的链路仍可能依赖 networkd。存在其他非 loopback 链路或无法确认 Barn 独占时，卸载只删除 Barn 资源，保留全局单元状态；计划通过 `preserve_networkd` 标明，执行报告在 `checks.networkd` 中解释原因。管理员核对其他链路后，可再调整保留的单元状态。详见[加固记录](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md)。
 
 ## 务实的工程取舍
 
