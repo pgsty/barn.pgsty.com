@@ -7,7 +7,7 @@ weight: 60
 categories: [设计]
 tags: [镜像, 供应链, 发布]
 icon: fa-solid fa-shield-halved
-lastmod: 2026-11-08
+lastmod: 2026-11-09
 ---
 
 镜像核查回答的问题比镜像发布更窄：它可以找到上游更新文件，但 Barn 只有在制品、运行时配置和启动路径都通过验证后，才能把文件加入签名目录。[镜像参考](/zh/docs/reference/images/)说明用户可见的目录契约；本文记录如何让目录更新可复现。
@@ -36,7 +36,7 @@ Barn 版本中的后缀不一定是操作系统点版本。Debian、Ubuntu、Roc
 
 ## 识别配方与目录的漂移 {#recipe-drift}
 
-2026-11-08 核对时，[`official-v1.json`](https://github.com/pgsty/barn/blob/v1.0.0/packaging/image-pipeline/official-v1.json) 的 Debian 12 目标仍选择 `20260923.2610.1`，而[内置目录 revision `2026110502`](https://github.com/pgsty/barn/blob/v1.0.0/internal/image/default-catalog.json) 已选择 `20261026.2643.1`。其来源构建为 `20261026-2643`，末尾 `.1` 属于 Barn 归一化修订。这是可以复核的本地元数据漂移案例，也说明重建已发布镜像前必须检查源配方。
+2026-11-08 核对时，[`official-v1.json`](https://github.com/pgsty/barn/blob/v1.1.0/packaging/image-pipeline/official-v1.json) 的 Debian 12 目标仍选择 `20260923.2610.1`，而[内置目录 revision `2026110502`](https://github.com/pgsty/barn/blob/v1.1.0/internal/image/default-catalog.json) 已选择 `20261026.2643.1`。其来源构建为 `20261026-2643`，末尾 `.1` 属于 Barn 归一化修订。这是可以复核的本地元数据漂移案例，也说明重建已发布镜像前必须检查源配方。
 
 上游输入摘要与归一化产物摘要要分别保留。客机定制会改变磁盘字节，目录必须对最终制品计算摘要。现有目录 provenance 已记录独立重建时归一化标记一致、制品字节却不同，因此没有承诺字节级可复现。配方可复现与输出逐字节一致是两项不同属性。
 

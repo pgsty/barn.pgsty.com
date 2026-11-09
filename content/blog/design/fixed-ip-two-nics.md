@@ -7,10 +7,10 @@ weight: 20
 categories: [Design]
 tags: [Networking, QEMU, Pigsty]
 icon: fa-solid fa-network-wired
-lastmod: 2026-11-08
+lastmod: 2026-11-09
 ---
 
-This essay explains the Linux lab network architecture in Barn `0.9.3` ([macOS guests](/docs/start/macos/) use independent per-VM `vmnet` NAT subnets).
+This essay explains the Linux lab network architecture in Barn `1.1.0` ([macOS guests](/docs/start/macos/) use independent per-VM `vmnet` NAT subnets).
 
 A Pigsty inventory identifies every database node by a stable IPv4 address: PostgreSQL streaming replication, Patroni/etcd consensus, HAProxy backends, keepalived VIPs, Prometheus targets, and Ansible playbooks all expect `10.10.10.11` to name the same host across boots. Forwarding a loopback port on the host can expose SSH or port `5432` to your laptop, but peer VMs cannot form a cluster over host loopback forwards.
 
@@ -70,9 +70,9 @@ Because a host bridge or `socket_vmnet` service persists across CLI runs and req
 
 Barn never hijacks an existing non-Barn interface that happens to use `.1/24`, never overwrites modified files outside its recorded digest, and refuses `network uninstall` while lab VMs are running.
 
-### 1.0 update: recheck shared service ownership {#shared-networkd}
+### Recheck shared service ownership {#shared-networkd}
 
-The installation snapshot is not permanent authority over a host-wide service. In `1.0.0`, uninstall checks current links as well as files: a running link may still depend on networkd after its `.network` file has been removed. When other non-loopback links exist or exclusive Barn use cannot be established, uninstall removes Barn-owned resources while preserving the global unit state. The plan exposes `preserve_networkd`; the applied report explains it in `checks.networkd`. An administrator can later change the retained unit state after checking the other links. See the [hardening record](/docs/about/history/#release-1-0-candidates).
+The installation snapshot is not permanent authority over a host-wide service. Uninstall checks current links as well as files: a running link may still depend on `systemd-networkd` after its `.network` file has been removed. When other non-loopback links exist or exclusive Barn use cannot be established, uninstall removes Barn-owned resources while preserving the global unit state. The plan exposes `preserve_networkd`; the applied report explains it in `checks.networkd`. An administrator can later change the retained unit state after checking the other links. See the [hardening record](/docs/about/history/#release-1-0-candidates).
 
 ## Why this split works {#why-this-split-works}
 

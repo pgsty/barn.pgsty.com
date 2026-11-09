@@ -7,10 +7,10 @@ weight: 50
 categories: [设计]
 tags: [镜像, 供应链, 镜像目录]
 icon: fa-solid fa-box-archive
-lastmod: 2026-10-26
+lastmod: 2026-11-09
 ---
 
-本文阐述 Barn `0.9.3` 的 Linux 静态镜像仓库契约（[Mac 虚拟机](/zh/docs/start/macos/)的 `.ipsw` 恢复镜像与 APFS 基础镜像由 `barn mac` 独立管理）。
+本文阐述 Barn `1.1.0` 的 Linux 静态镜像仓库契约（[Mac 虚拟机](/zh/docs/start/macos/)的 `.ipsw` 恢复镜像与 APFS 基础镜像由 `barn mac` 独立管理）。
 
 一个静态虚拟机镜像仓库包含两类截然不同的元数据：一类是维护者的 **策略意图**（哪个版本对应 `:stable`、哪些旧版本标为 `deprecated`、每个发行版系列支持哪些短别名），另一类是镜像文件的 **物理事实**（精确字节数、SHA-256 摘要、`qcow2` 虚拟容量）。如果把这两类信息混在同一份手写 JSON 文件里，不仅手动复制哈希和字节数极易出错，审查 PR 时还会让关键的通道变更淹没在大段哈希差异之中。
 
@@ -98,4 +98,4 @@ Barn 的三类分发对象使用各自独立的信任机制：
 2. **原生 macOS `Barn.app` 应用包**：使用 Apple Developer ID 代码签名与公证流程（本地源码构建默认使用 ad-hoc 签名）。
 3. **Linux 镜像目录**：通过离线保存的 Ed25519 Minisign 密钥（`catalog.json.minisig`）进行独立认证。
 
-在 Barn `0.9.3` 中，默认镜像源为 `https://repo.pigsty.io/barn`，`--mirror` 切换为中国官方源 `https://repo.pigsty.cc/barn`，`--repo` 则用于指定自定义仓库。两个官方镜像源在下载 `.qcow2` 文件时支持自动互备回退，并始终对照同一份目录校验文件大小与 SHA-256；而刷新镜像目录（`barn update`）以及使用自定义 `--repo` 仓库时，则严格只访问所选定的唯一来源。
+在 Barn `1.1.0` 中，默认镜像源为 `https://repo.pigsty.io/barn`，`--mirror` 切换为中国官方源 `https://repo.pigsty.cc/barn`，`--repo` 则用于指定自定义仓库。两个官方镜像源在下载 `.qcow2` 文件时支持自动互备回退，并始终对照同一份目录校验文件大小与 SHA-256；而刷新镜像目录（`barn update`）以及使用自定义 `--repo` 仓库时，则严格只访问所选定的唯一来源。

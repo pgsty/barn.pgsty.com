@@ -7,13 +7,10 @@ weight: 10
 categories: [设计]
 tags: [架构, 主机清单, 状态]
 icon: fa-solid fa-layer-group
-lastmod: 2026-10-30
+lastmod: 2026-11-09
 ---
 
-本文阐述 Barn `0.9.3` 的 Linux 实验环境部署模型（[Mac 虚拟机](/zh/docs/start/macos/)作为独立的具名虚拟机管理）。
-
-> [!NOTE]
-> **2026-10-30 更新**：Barn 0.9.3 构建支持相对或符号链接形式的 `BARN_HOME`，并允许 `vm_skip: true` 外部主机使用主机名或 IPv6 清单键。跨目录操作同一部署时请使用绝对 `BARN_HOME`，详见 [Barn 0.9.3 变更](/zh/docs/about/0.9.3-changes/)。
+本文阐述 Barn `1.1.0` 的 Linux 实验环境部署模型（[Mac 虚拟机](/zh/docs/start/macos/)作为独立的具名虚拟机管理）。
 
 Barn 的早期原型曾将每个工作目录视为一个独立“项目”：用隐藏目录标记项目身份，用全局注册表记录项目路径，再用宿主级租约表协调私有网段冲突。这套机制虽然能管理多组互不相关的虚拟机，但与 Barn 的核心场景格格不入——在本地拉起一套具有固定 IP 的 Pigsty 数据库实验集群。
 
@@ -32,7 +29,7 @@ Barn 的早期原型曾将每个工作目录视为一个独立“项目”：用
 
 ## 一份主机清单就够了 {#one-inventory-is-enough}
 
-Pigsty 清单（`barn.yml` 或 `pigsty.yml`）直接作为 Barn 的期望状态配置。Barn 只读取主机 IPv4 键、少数 Pigsty 身份字段（`nodename`、`admin_ip`、`pg_cluster`、`pg_seq`、`node_admin_username`、`node_admin_uid`）以及文档定义的 `vm_*` 命名空间。
+Pigsty 清单（`barn.yml` 或 `pigsty.yml`）直接作为 Barn 的期望状态配置。Barn 只读取主机 IPv4 键（`vm_skip: true` 外部主机可使用主机名或 IPv6 键）、少数 Pigsty 身份字段（`nodename`、`admin_ip`、`pg_cluster`、`pg_seq`、`node_admin_username`、`node_admin_uid`）以及文档定义的 `vm_*` 命名空间。
 
 Barn 对自己消费的 `vm_*` 字段执行严格校验，对上层 Pigsty 专属变量（如 `pg_role`、`pg_version`、`repo_*`、`node_packages`）则原样透传、不作解释。这一边界兼顾了安全性与灵活性：把 `vm_mem` 拼错会在 `barn validate` 时立即报错，而在同一份 YAML 中调整 PostgreSQL 参数则完全不会触发虚拟机配置漂移。
 
@@ -40,7 +37,7 @@ Barn 对自己消费的 `vm_*` 字段执行严格校验，对上层 Pigsty 专�
 
 ## 按用户隔离的单一状态根 {#one-owner-scoped-state-root}
 
-所有已应用的部署状态统一存放在 `BARN_HOME`（默认 `~/.barn`）中。工作目录里不写任何隐藏标记，也不维护按路径索引的注册表。只读取已应用状态的命令（如 `barn status`、`barn ssh`、`barn stop`、`barn start`、`barn destroy`）在任意目录下执行效果完全一致；需要读取期望配置的命令（如 `barn validate`、`barn plan`、`barn up`、`barn reload`、`barn recreate`）则通过 `-f` 或当前目录自动发现清单。
+所有已应用的部署状态统一存放在 `BARN_HOME`（默认 `~/.barn`，支持相对路径与符号链接目录；跨目录操作同一部署时请使用绝对 `BARN_HOME`）中。工作目录里不写任何隐藏标记，也不维护按路径索引的注册表。只读取已应用状态的命令（如 `barn status`、`barn ssh`、`barn stop`、`barn start`、`barn destroy`）在任意目录下执行效果完全一致；需要读取期望配置的命令（如 `barn validate`、`barn plan`、`barn up`、`barn reload`、`barn resize`、`barn recreate`）则通过 `-f` 或当前目录自动发现清单。
 
 由于 `BARN_HOME` 归属当前 Unix 登录用户，单部署模型天然按系统用户隔离，带来了一系列直观的工程收益：
 

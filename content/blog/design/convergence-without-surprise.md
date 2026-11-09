@@ -7,15 +7,10 @@ weight: 30
 categories: [Design]
 tags: [Lifecycle, Drift, Safety]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-11-08
+lastmod: 2026-11-09
 ---
 
-This essay explains the Linux VM convergence model in Barn `0.9.3`, with the `1.0.0` recovery rules below ([macOS guests](/docs/start/macos/) are managed independently).
-
-> [!NOTE]
-> **2026-10-30 update:** The Barn 0.9.3 changes scope `plan`, `up`, `reload`, and `recreate` to explicit node selections and retain unselected peers' applied definitions. The whole-inventory drift rules described below still apply when no nodes are selected. See [selected-node operations](/docs/start/operations/#selected-nodes).
->
-> **2026-11-04 update:** Barn 1.0.0 also stops whole-deployment `recreate` from destroying by omission: an inventory that no longer lists an existing node is refused before any VM stops (`conflict`, reason `nodes_removed`, exit 4), where 0.9.3 destroyed the omitted node. Data disks are reset only when they carry no signature or hold an ext4/XFS filesystem with recognized corruption; other failures keep the data and report a warning. See the [1.0.0 release notes](/blog/release/1.0.0/).
+This essay explains the Linux VM convergence model in Barn `1.1.0` ([macOS guests](/docs/start/macos/) are managed independently).
 
 A declarative tool compares live state against a configuration file—but in daily development, that file might be temporarily edited for debugging, checked out on another git branch, or missing a YAML group after a merge. If a local VM manager treats an omitted YAML block as permission to destroy a virtual machine, a single typo can wipe out a database node.
 
@@ -51,7 +46,7 @@ Adding a second node leaves the first node's hash untouched, and editing upper-l
 | Envelope drift | Deployment subnet, login user, `vm_arch`, or runtime policy changed | Whole-deployment `barn recreate` |
 {.wide .expand}
 
-`barn plan` is completely read-only and prints the exact command needed to resolve any `resize`, `recreate`, or `missing` drift.
+`barn plan` is completely read-only and prints the exact command needed to resolve any `resize`, `recreate`, or `missing` drift. When you pass explicit node selectors to `plan`, `up`, `reload`, or `recreate`, Barn scopes the operation to those nodes and retains unselected peers' applied definitions (see [selected-node operations](/docs/start/operations/#selected-nodes)).
 
 ## Why `barn up` stops on node drift {#why-barn-up-stops-on-node-drift}
 
@@ -69,7 +64,7 @@ A node can vanish from `barn.yml` for plenty of routine reasons that do not mean
 - A branch switch or merge conflict dropped a host stanza.
 - You ran a command from a directory with a different `barn.yml`.
 
-When committed state contains a node that is absent from the desired inventory, `barn up` halts and names the missing node so you can either restore it to `barn.yml` or run `barn destroy <node>` explicitly.
+When committed state contains a node that is absent from the desired inventory, `barn up` and whole-deployment `barn recreate` halt before stopping any VM (`conflict`, reason `nodes_removed`, exit 4) and name the missing node so you can either restore it to `barn.yml` or run `barn destroy <node>` explicitly.
 
 When you do destroy or recreate nodes, data-disk lifetimes follow clear boundaries:
 
@@ -77,19 +72,19 @@ When you do destroy or recreate nodes, data-disk lifetimes follow clear boundari
 - Whole-deployment `barn destroy --delete-persistent` removes persistent data disks as well, and `barn purge` (or `barn destroy --purge`) removes all disks, SSH keys, and deployment state in one step.
 - During `barn up` recovery, Barn formats a data disk that carries no signature and resets an ext4 or XFS filesystem only when the checker reports recognized corruption; a partition table, unsupported features, or an unknown checker failure keeps the data and reports a warning (see [Data Disks](/docs/reference/configuration/#data-disks)).
 
-## 1.0 recovery: distinguish role changes from drift {#control-role-recovery}
+## Distinguish role changes from drift {#control-role-recovery}
 
 Deleting the control node elects the first remaining node. `SpecHash` describes its current applied definition; `GuestSpecHash` describes the guest's existing readiness marker. A control-role change can therefore make these hashes differ while the VM identity and disks remain valid.
 
-Before marking any node for deletion, Barn must finish the successor's committed prepare journal. It then atomically publishes the deployment as the role-change commit record and updates the successor's definition hash. If interrupted between those writes, recovery under the deployment lock accepts only a hash difference exactly explained by flipping `Control`; unrelated drift still fails. It does not create missing state, rotate the VM UUID, or change disk/process identity. See the [1.0 hardening record](/docs/about/history/#release-1-0-candidates) and [control recovery tests](https://github.com/pgsty/barn/blob/v1.0.0/internal/private/control_test.go).
+Before marking any node for deletion, Barn must finish the successor's committed prepare journal. It then atomically publishes the deployment as the role-change commit record and updates the successor's definition hash. If interrupted between those writes, recovery under the deployment lock accepts only a hash difference exactly explained by flipping `Control`; unrelated drift still fails. It does not create missing state, rotate the VM UUID, or change disk/process identity. See the [hardening record](/docs/about/history/#release-1-0-candidates) and [control recovery tests](https://github.com/pgsty/barn/blob/v1.1.0/internal/private/control_test.go).
 
 Update the inventory's control role before the next `barn up` installs control SSH access. General live role migration would also need old-credential revocation, offline retries, and partial-failure semantics; accepting arbitrary hash changes would conceal that unfinished convergence.
 
-## 1.0 recovery: require evidence of corruption {#disk-recovery-evidence}
+## Require evidence of corruption {#disk-recovery-evidence}
 
 Filesystem-checker exit codes alone cannot authorize formatting. ext4 codes `4`/`12` and XFS code `1` must accompany recognized corruption diagnostics. Unsupported features, permissions, I/O or memory failures, partition tables, and unknown diagnostics preserve the disk and produce a guest warning. `persistent` controls disk retention during destroy/recreate; it does not exempt recognized corruption from the documented reset policy.
 
-The [disk recovery tests](https://github.com/pgsty/barn/blob/v1.0.0/internal/cloudinit/disk_recovery_test.go) check whether `mkfs` actually ran using a sentinel, while physical-host acceptance compares disk contents. This tests the destructive effect as well as the warning text; the dated coverage is in [validation history](/docs/about/history/#release-1-0-candidates).
+The [disk recovery tests](https://github.com/pgsty/barn/blob/v1.1.0/internal/cloudinit/disk_recovery_test.go) check whether `mkfs` actually ran using a sentinel, while physical-host acceptance compares disk contents. This tests the destructive effect as well as the warning text; the dated coverage is in [validation history](/docs/about/history/#release-1-0-candidates).
 
 ## Incremental convergence without collateral damage {#incremental-convergence-without-collateral-damage}
 

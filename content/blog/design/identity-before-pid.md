@@ -7,10 +7,10 @@ weight: 40
 categories: [Design]
 tags: [QMP, Recovery, Safety]
 icon: fa-solid fa-fingerprint
-lastmod: 2026-11-08
+lastmod: 2026-11-09
 ---
 
-This essay explains Linux runtime process identity and crash recovery in Barn `0.9.3`. The separate [native Mac lifecycle](/blog/design/native-mac-lifecycle/) uses per-machine operation locks and runner protocol `2`.
+This essay explains Linux runtime process identity and crash recovery in Barn `1.1.0`. The separate [native Mac lifecycle](/blog/design/native-mac-lifecycle/) uses per-machine operation locks and runner protocol `2`.
 
 A `pidfile` records a process ID at the moment it was written. Minutes or days later—especially after a crash or host reboot—that integer alone cannot tell you whether the original QEMU process is still running, whether the OS kernel recycled the PID for an unrelated user process, or which VM node that process belongs to.
 
@@ -70,6 +70,6 @@ Ordinary `barn destroy` applies the same discipline: it verifies path containmen
 
 ## Atomic state updates {#atomic-state-updates}
 
-Every state update writes to a sibling temporary file in the same directory, calls `fsync`, performs an atomic `rename`, and `fsync`s the parent directory while holding the deployment and node locks. After any crash, on-disk state reflects either the prior committed state or the new committed state, with the prepare journal covering the bounded window in between.
+Every state update writes to a sibling temporary file in the same directory, calls `fsync`, performs an atomic `rename`, and `fsync`s the parent directory while holding the deployment and node locks. After any crash, on-disk state reflects either the prior committed state or the new committed state, with the prepare journal covering the bounded window in between. Likewise, before an online `barn resize` hot-plugs CPU or memory over QMP, Barn persists `resize_incomplete: true` in the node's state record and clears it only after the QMP mutation and final state write succeed, so `barn status` (`stage: "resize"`, `reason: "resize_incomplete"`) and subsequent `up`, `start`, or `resize` runs detect and recover an interrupted resize cleanly.
 
 Read next: [`repo.yaml` Is Intent; `catalog.json` Is Evidence](/blog/design/repo-yaml-catalog-json/).

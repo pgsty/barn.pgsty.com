@@ -7,15 +7,10 @@ weight: 30
 categories: [设计]
 tags: [生命周期, 配置差异, 安全]
 icon: fa-solid fa-arrows-rotate
-lastmod: 2026-11-08
+lastmod: 2026-11-09
 ---
 
-本文阐述 Barn `0.9.3` 的 Linux 虚拟机收敛模型，并补充下文 `1.0.0` 的恢复规则（[Mac 虚拟机](/zh/docs/start/macos/)独立管理）。
-
-> [!NOTE]
-> **2026-10-30 更新**：Barn 0.9.3 源码中的 `plan`、`up`、`reload` 与 `recreate` 按显式节点选择应用变更，保留未选中节点的已应用定义。下文的全清单漂移规则仍适用于未指定节点的操作，详见[分批应用节点变更](/zh/docs/start/operations/#selected-nodes)。
->
-> **2026-11-04 更新**：Barn 1.0.0 让整套部署 `recreate` 同样不会因节点缺席而删除节点：清单缺少已有节点时，会在停止任何虚拟机前拒绝执行（`conflict`，reason `nodes_removed`，退出码 4），而 0.9.3 会删除被省略的节点。数据盘只在没有任何签名，或 ext4/XFS 文件系统被识别出损坏时才会重置；其他失败会保留数据并给出警告。详见 [1.0.0 发布说明](/zh/blog/release/1.0.0/)。
+本文阐述 Barn `1.1.0` 的 Linux 虚拟机收敛模型（[Mac 虚拟机](/zh/docs/start/macos/)独立管理）。
 
 声明式工具通过对比实际状态与配置文件来驱动变更——但在日常开发中，配置文件可能为了调试被临时删减、切换到另一个 Git 分支，或在解决合并冲突时漏掉某个 YAML 主机组。如果本地虚拟机管理工具把“配置中少写了某个节点”直接当成“允许销毁该虚拟机”，一次普通的编辑失误就可能把正在测试的数据库节点连根抹掉。
 
@@ -51,7 +46,7 @@ lastmod: 2026-11-08
 | 部署级信封漂移 | 子网、登录用户名、`vm_arch` 或全局运行时策略改变 | 整套部署执行 `barn recreate` |
 {.wide .expand}
 
-`barn plan` 完全只读，并在文本模式下直接给出解决 `resize`、`recreate` 或 `missing` 漂移所需的具体命令。
+`barn plan` 完全只读，并在文本模式下直接给出解决 `resize`、`recreate` 或 `missing` 漂移所需的具体命令。向 `plan`、`up`、`reload` 或 `recreate` 显式传入节点选择器时，Barn 仅对该范围评估并应用变更，保留未选中节点的已应用定义（详见[分批应用节点变更](/zh/docs/start/operations/#selected-nodes)）。
 
 ## 为什么 `barn up` 遇到配置漂移会主动停下 {#why-barn-up-stops-on-node-drift}
 
@@ -69,7 +64,7 @@ lastmod: 2026-11-08
 - 切换分支或解决合并冲突时漏掉了一段 YAML；
 - 在另一个放有不同 `barn.yml` 的目录下执行了命令。
 
-只要已应用状态中还记录着某个在当前清单中缺席的节点，`barn up` 就会立即停下并指出该节点名称，由你决定是把配置补回 `barn.yml`，还是显式运行 `barn destroy <node>` 将其销毁。
+只要已应用状态中还记录着某个在当前清单中缺席的节点，`barn up` 与整套部署 `barn recreate` 都会在停止任何虚拟机前立即拒绝执行（`conflict`，reason `nodes_removed`，退出码 4）并指出该节点名称，由你决定是把配置补回 `barn.yml`，还是显式运行 `barn destroy <node>` 将其销毁。
 
 在执行销毁或重建时，数据盘的保留与清理同样遵循明确边界：
 
@@ -77,19 +72,19 @@ lastmod: 2026-11-08
 - 整套部署执行 `barn destroy --delete-persistent` 会一并删除受管的持久盘；执行 `barn purge`（或 `barn destroy --purge`）则会一次性删除所有磁盘、密钥与部署状态。
 - 在 `barn up` 客机恢复期间，Barn 只会格式化没有任何签名的数据盘，并且仅在检查工具报告可识别的损坏时重置 ext4 或 XFS 文件系统；遇到分区表、不支持的文件系统特性或未知的检查失败时，数据保持原样并报告警告（详见[数据盘配置](/zh/docs/reference/configuration/#data-disks)）。
 
-## 1.0 恢复规则：区分角色变更与漂移 {#control-role-recovery}
+## 区分角色变更与漂移 {#control-role-recovery}
 
 删除控制节点后，由剩余定义中的第一个节点接任。`SpecHash` 表示当前已应用定义，`GuestSpecHash` 表示客机已有的就绪标记；控制角色变更时，两者可能不同，而 VM 身份与磁盘仍然有效。
 
-在标记任何节点删除之前，Barn 必须先完成接任节点已提交的 prepare 日志，再原子发布部署状态，作为角色变更的提交记录，随后更新接任节点的定义哈希。两次写入之间若发生中断，恢复逻辑在部署锁内只接受能够由 `Control` 翻转精确解释的哈希差异，其他漂移仍然拒绝；它不会创建缺失状态、更换 VM UUID 或修改磁盘/进程身份。详见 [1.0 加固记录](/zh/docs/about/history/#release-1-0-candidates)与[控制角色恢复测试](https://github.com/pgsty/barn/blob/v1.0.0/internal/private/control_test.go)。
+在标记任何节点删除之前，Barn 必须先完成接任节点已提交的 prepare 日志，再原子发布部署状态，作为角色变更的提交记录，随后更新接任节点的定义哈希。两次写入之间若发生中断，恢复逻辑在部署锁内只接受能够由 `Control` 翻转精确解释的哈希差异，其他漂移仍然拒绝；它不会创建缺失状态、更换 VM UUID 或修改磁盘/进程身份。详见[加固记录](/zh/docs/about/history/#release-1-0-candidates)与[控制角色恢复测试](https://github.com/pgsty/barn/blob/v1.1.0/internal/private/control_test.go)。
 
 更新清单中的控制角色后，再运行 `barn up` 安装控制节点 SSH 访问。通用的在线角色迁移还需要定义旧凭据撤销、离线重试与部分失败语义；随意放宽哈希检查会掩盖尚未完成的客机收敛。
 
-## 1.0 恢复规则：先证明损坏 {#disk-recovery-evidence}
+## 先证明损坏再重置数据盘 {#disk-recovery-evidence}
 
 文件系统检查器的退出码不能单独授权格式化：ext4 的 `4`/`12` 与 XFS 的 `1` 必须伴随已识别的损坏诊断。不支持的特性、权限、I/O 或内存失败、分区表以及未知诊断都会保留磁盘并报告客机警告。`persistent` 控制 destroy/recreate 时的磁盘保留，识别出损坏后仍适用文档中的重置策略。
 
-[数据盘恢复测试](https://github.com/pgsty/barn/blob/v1.0.0/internal/cloudinit/disk_recovery_test.go)使用哨兵检查 `mkfs` 是否实际执行，物理宿主验收则比较磁盘内容，同时验证破坏性副作用与警告文本。带日期的覆盖范围见[验证历史](/zh/docs/about/history/#release-1-0-candidates)。
+[数据盘恢复测试](https://github.com/pgsty/barn/blob/v1.1.0/internal/cloudinit/disk_recovery_test.go)使用哨兵检查 `mkfs` 是否实际执行，物理宿主验收则比较磁盘内容，同时验证破坏性副作用与警告文本。带日期的覆盖范围见[验证历史](/zh/docs/about/history/#release-1-0-candidates)。
 
 ## 无连带影响的增量收敛 {#incremental-convergence-without-collateral-damage}
 

@@ -66,7 +66,7 @@ SSH 与持续跟随的日志需要流式路径，保留空参数、引用边界�
 
 - `1.0.0` 已实现裸命令完整帮助、结构化 `actions[]`、适用销毁命令的确认别名，以及输出环境变量优先级修复。
 - CLI 仍位于 `cmd/barn/`。拟议的 `internal/cli` 提取、`--format`、`image update` 与 `ssh-config show/install/uninstall` 命令树尚未落地。
-- `1.1.0` 已为适用的清单操作加入 `--image/-I` 与 `--arch/-A` 覆盖参数，统一了结果表格与终端实时进度表（在提示或报错前冻结已打印行），将终端输出收口为纯 ASCII 符号与 `[DONE]`/`[FAILED]`/`[CANCELLED]` 状态标签，并将 YAML 解析升级到 `go.yaml.in/yaml/v4`。
+- `1.1.0` 已为适用的清单操作加入 `--image/-I` 与 `--arch/-A` 覆盖参数，统一了结果表格与终端实时进度表（在提示或报错前冻结已打印行），将终端输出收口为纯 ASCII 符号与 `[DONE]`/`[FAILED]`/`[CANCELLED]` 状态标签，将 `barn purge` 设为默认直接执行并提供 `--ask` 确认提示，同时将 YAML 解析升级到 `go.yaml.in/yaml/v4`。
 
 后续行为调整需要独立决策与迁移说明。
 

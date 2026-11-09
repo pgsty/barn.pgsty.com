@@ -7,10 +7,10 @@ weight: 40
 categories: [设计]
 tags: [QMP, 恢复, 安全]
 icon: fa-solid fa-fingerprint
-lastmod: 2026-11-08
+lastmod: 2026-11-09
 ---
 
-本文阐述 Barn `0.9.3` 的 Linux 运行时进程身份与崩溃恢复机制。[原生 Mac 生命周期](/zh/blog/design/native-mac-lifecycle/)独立使用逐实例操作锁与 runner 协议 `2`。
+本文阐述 Barn `1.1.0` 的 Linux 运行时进程身份与崩溃恢复机制。[原生 Mac 生命周期](/zh/blog/design/native-mac-lifecycle/)独立使用逐实例操作锁与 runner 协议 `2`。
 
 `pidfile` 只能记录写入瞬间的进程号（PID）。几分钟甚至几天之后——尤其在经历过进程崩溃或宿主重启后——单凭这一个整数，既无法确认原先的 QEMU 进程是否还活着，也无法排除操作系统内核已经把同一个 PID 分配给了另一个毫不相干的进程，更无法证明它归属哪一个虚拟机节点。
 
@@ -70,6 +70,6 @@ lastmod: 2026-11-08
 
 ## 原子状态落盘 {#atomic-state-updates}
 
-所有状态更新均先写入同目录下的临时文件，依次执行文件 `fsync`、原子 `rename` 与父目录 `fsync`，并由部署锁和节点锁保证串行互斥。无论在任何时刻发生崩溃，磁盘上的正式状态要么是旧记录、要么是新记录，而两者之间的短暂过渡窗口则由预备操作日志完整覆盖。
+所有状态更新均先写入同目录下的临时文件，依次执行文件 `fsync`、原子 `rename` 与父目录 `fsync`，并由部署锁和节点锁保证串行互斥。无论在任何时刻发生崩溃，磁盘上的正式状态要么是旧记录、要么是新记录，而两者之间的短暂过渡窗口则由预备操作日志完整覆盖。同样，在线 `barn resize` 通过 QMP 热插拔 CPU 或内存之前，会先在节点状态中持久化 `resize_incomplete: true`，并在 QMP 变更与新规格状态落盘后清除该标记，使 `barn status`（`stage: "resize"`、`reason: "resize_incomplete"`）及后续 `up`、`start` 或 `resize` 能准确识别并恢复半途中断的在线扩容。
 
 下一篇：[`repo.yaml` 是意图，`catalog.json` 是证据](/zh/blog/design/repo-yaml-catalog-json/)。

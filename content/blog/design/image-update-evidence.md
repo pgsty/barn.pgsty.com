@@ -7,7 +7,7 @@ weight: 60
 categories: [Design]
 tags: [Images, Supply Chain, Releases]
 icon: fa-solid fa-shield-halved
-lastmod: 2026-11-08
+lastmod: 2026-11-09
 ---
 
 An image audit answers a narrower question than an image release. It can find a newer upstream file, but Barn may add that file to its signed catalog only after the artifact, runtime profile, and boot path have all been verified. The [image reference](/docs/reference/images/) describes the user-facing catalog; this essay records the reasoning that keeps catalog updates reproducible.
@@ -36,7 +36,7 @@ The audit should also keep OS metadata, cloud-image metadata, and Barn’s local
 
 ## Detect drift between recipes and the catalog {#recipe-drift}
 
-On 2026-11-08, the Debian 12 targets in [`official-v1.json`](https://github.com/pgsty/barn/blob/v1.0.0/packaging/image-pipeline/official-v1.json) still selected `20260923.2610.1`, while [embedded catalog revision `2026110502`](https://github.com/pgsty/barn/blob/v1.0.0/internal/image/default-catalog.json) selected `20261026.2643.1`. The source build was `20261026-2643`; the final `.1` belonged to Barn's normalized release. This is a reproducible example of local metadata drift, and a reason to check source recipes before rebuilding a published image.
+On 2026-11-08, the Debian 12 targets in [`official-v1.json`](https://github.com/pgsty/barn/blob/v1.1.0/packaging/image-pipeline/official-v1.json) still selected `20260923.2610.1`, while [embedded catalog revision `2026110502`](https://github.com/pgsty/barn/blob/v1.1.0/internal/image/default-catalog.json) selected `20261026.2643.1`. The source build was `20261026-2643`; the final `.1` belonged to Barn's normalized release. This is a reproducible example of local metadata drift, and a reason to check source recipes before rebuilding a published image.
 
 Keep the upstream input digest separate from the normalized artifact digest. Guest customization changes the disk bytes, so the catalog must hash the final artifact. The existing catalog provenance records independent rebuilds with matching normalization markers but different artifact bytes; it makes no byte-for-byte reproducibility claim. A reproducible recipe and a bit-reproducible output are separate properties.
 

@@ -7,13 +7,10 @@ weight: 10
 categories: [Design]
 tags: [Architecture, inventory, State]
 icon: fa-solid fa-layer-group
-lastmod: 2026-10-30
+lastmod: 2026-11-09
 ---
 
-This essay explains the Linux lab deployment model in Barn `0.9.3` ([macOS guests](/docs/start/macos/) are managed as independent named VMs).
-
-> [!NOTE]
-> **2026-10-30 update:** Barn 0.9.3 builds accept relative and symlinked `BARN_HOME` paths and hostname/IPv6 inventory keys on `vm_skip: true` external hosts. Use an absolute `BARN_HOME` when changing directories to keep the same deployment. See [Barn 0.9.3 Changes](/docs/about/0.9.3-changes/).
+This essay explains the Linux lab deployment model in Barn `1.1.0` ([macOS guests](/docs/start/macos/) are managed as independent named VMs).
 
 Early prototypes of Barn treated every working directory as a separate project: a hidden directory marker identified the project, a central registry tracked active project paths, and a host-wide lease table arbitrated private subnet collisions. While that model made sense for a generic multi-project VM runner, it fought against Barn's actual job: running a local Pigsty database lab with fixed IP addresses.
 
@@ -32,7 +29,7 @@ A single local Pigsty lab needs none of that machinery, so we removed the projec
 
 ## One inventory is enough {#one-inventory-is-enough}
 
-A Pigsty inventory (`barn.yml` or `pigsty.yml`) serves directly as Barn's desired-state configuration. Barn reads the host IPv4 keys, a small set of Pigsty identity fields (`nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node_admin_username`, `node_admin_uid`), and the `vm_*` variable namespace.
+A Pigsty inventory (`barn.yml` or `pigsty.yml`) serves directly as Barn's desired-state configuration. Barn reads the host IPv4 keys (plus hostname or IPv6 keys on `vm_skip: true` external hosts), a small set of Pigsty identity fields (`nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node_admin_username`, `node_admin_uid`), and the `vm_*` variable namespace.
 
 Barn validates `vm_*` fields strictly and ignores upper-layer Pigsty variables (`pg_role`, `pg_version`, `repo_*`, `node_packages`, and so on). That boundary gives you the best of both worlds: a typo in `vm_mem` fails immediately during `barn validate`, while PostgreSQL and Ansible tuning parameters evolve freely in the same YAML file without triggering VM drift.
 
@@ -40,7 +37,7 @@ Node naming follows the same principle: Barn uses `nodename` when set, otherwise
 
 ## One owner-scoped state root {#one-owner-scoped-state-root}
 
-All applied deployment state lives in `BARN_HOME` (default `~/.barn`). There are no hidden markers in your working directory and no path-based project registries. Commands that inspect or operate on applied state (`barn status`, `barn ssh`, `barn stop`, `barn start`, `barn destroy`) work identically from any directory; commands that read desired state (`barn validate`, `barn plan`, `barn up`, `barn reload`, `barn recreate`) take `-f` or discover `barn.yml` / `pigsty.yml` in the current directory.
+All applied deployment state lives in `BARN_HOME` (default `~/.barn`; relative and symlinked directory paths are accepted, and an absolute `BARN_HOME` reaches the same deployment across directories). There are no hidden markers in your working directory and no path-based project registries. Commands that inspect or operate on applied state (`barn status`, `barn ssh`, `barn stop`, `barn start`, `barn destroy`) work identically from any directory; commands that read desired state (`barn validate`, `barn plan`, `barn up`, `barn reload`, `barn resize`, `barn recreate`) take `-f` or discover `barn.yml` / `pigsty.yml` in the current directory.
 
 Because `BARN_HOME` belongs to your Unix user account, the single-deployment model is scoped per user on a development workstation:
 

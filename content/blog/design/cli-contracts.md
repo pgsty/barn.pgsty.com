@@ -66,7 +66,7 @@ The original proposal contains both durable contracts and dated product choices.
 
 - `1.0.0` already includes full bare-command help, structured `actions[]`, confirmation aliases on applicable destructive commands, and the output-environment precedence fix.
 - CLI code still lives in `cmd/barn/`. The proposed `internal/cli` extraction, `--format`, `image update`, and `ssh-config show/install/uninstall` command tree have not landed.
-- Current Barn `1.1.0` adds `--image/-I` and `--arch/-A` overrides to applicable inventory operations, unifies result and live-progress tables (freezing in-place TTY redraws before prompts or errors), standardizes plain ASCII terminal output (`->`, `:`, `;`, `[DONE]`/`[FAILED]`/`[CANCELLED]`), and upgrades YAML parsing to `go.yaml.in/yaml/v4`.
+- Current Barn `1.1.0` adds `--image/-I` and `--arch/-A` overrides to applicable inventory operations, unifies result and live-progress tables (freezing in-place TTY redraws before prompts or errors), standardizes plain ASCII terminal output (`->`, `:`, `;`, `[DONE]`/`[FAILED]`/`[CANCELLED]`), makes `barn purge` execute immediately by default with `--ask` for interactive confirmation, and upgrades YAML parsing to `go.yaml.in/yaml/v4`.
 
 Further behavior changes need their own decision and migration notes.
 
