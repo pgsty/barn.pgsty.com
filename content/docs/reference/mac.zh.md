@@ -41,7 +41,7 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 ### SSH 与 exec {#ssh-and-exec}
 
 > [!TIP]
-> 从 **0.9.2** 开始，远端命令前必须使用 `--`，例如 `barn mac exec dev -- sw_vers`。交互式登录 `barn mac ssh dev` 无需分隔符。
+> 远端命令前必须使用 `--`，例如 `barn mac exec dev -- sw_vers`。交互式登录 `barn mac ssh dev` 无需分隔符。
 
 `--` 之前除 Barn 参数外，最多接受一个已存在的虚拟机名（省略名称时自动选择唯一虚拟机或 `mac1`）。`ssh` 不带命令时打开交互式终端；`exec` 必须在 `--` 后提供非空命令。未知的机器名或语法错误会在发起连接前直接返回退出码 `2`（`usage`），并提示运行 `barn mac ls` 查看现有机器。
 
@@ -71,7 +71,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 | `destroy` | `--yes`/`--force` |
 | `password` | `-c`/`--copy` |
 | `ssh-config` | `-i`/`--install`、`--remove` |
-| `logs` | `-n`/`--lines` 正整数（默认 `100`），按请求行数读取，不再按 1 MiB 静默截断 |
+| `logs` | `-n`/`--lines` 正整数（默认 `100`），按请求行数返回日志 |
 | `setup` | `--ipsw`、`--disk`、`-y`/`--yes` |
 | `image update` | `--ipsw`、`-y`/`--yes` |
 | `image prune` | `--installers`、`-y`/`--yes` |

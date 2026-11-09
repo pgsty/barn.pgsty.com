@@ -40,16 +40,11 @@ barn reload -f barn.yml       # validate inventory, stop selected nodes, and run
 
 `barn start` boots stopped VMs, re-verifies running ones, and updates SSH aliases if any automatic loopback port was reassigned. `barn reload` validates the inventory and startup dependencies before stopping selected nodes, then runs `barn up` for that selection.
 
-`reload` is a controlled stop-and-boot cycle. It can add new nodes and start
-stopped nodes, but it refuses existing-node changes to CPU, memory, image,
-disks, shares, addresses, or other VM definition before stopping anything.
+`reload` is a controlled stop-and-boot cycle. It can add new nodes and start stopped nodes, but it refuses existing-node changes to CPU, memory, image, disks, shares, addresses, or other VM definitions before stopping anything.
 
-For CPU or memory changes, edit `vm_cpu` or `vm_mem` and use `barn resize`.
-Supported increases may be hot-plugged; decreases and unsupported backends use
-a stop/start fallback while preserving the VM identity and disks. `resize`
-does not apply image, disk, network, or share changes; use `recreate` for those.
+For CPU or memory changes, edit `vm_cpu` or `vm_mem` and run `barn resize`. When the running QEMU instance has reserved capacity, Barn hot-plugs supported increases; decreases and unsupported backends use an automatic stop/start fallback while preserving the VM identity and disks. `resize` does not apply image, disk, network, or share changes; use `recreate` for those.
 
-If online resize is interrupted after hotplugging, `barn status` reports that live CPU or memory may differ from the applied configuration. Run `barn resize NODE` again, or use `barn restart NODE` to return to the committed resources. Offline resize holds the deployment lock while stopping and updating the node.
+If online resize is interrupted after hotplugging, `barn status` reports that live CPU and memory may differ from the applied configuration (`reason: resize_incomplete`). Run `barn resize NODE` again, or run `barn restart NODE` to return to the committed resources. Offline resize holds the deployment lock while stopping and updating the node.
 
 Passing `--no-wait` to a start command returns as soon as QEMU starts, skipping readiness checks, guest recovery, and `/etc/hosts` or control-node SSH updates until your next `barn up`.
 
@@ -74,21 +69,11 @@ barn recreate node-1            # rebuild a node whose VM specification changed
 
 In JSON output, `start`, `create`, `resize`, `recreate`, and `missing` are node lists. The top-level `action` summarizes the plan as one of `create`, `start`, `converge`, `resize`, `recreate`, `blocked-removal`, `repair`, or `none`; `blocked`, when present, is an explanation string. `whole_deployment: true` marks a deployment-wide recreation; follow the suggested command so that new nodes are included alongside existing ones.
 
-Editing or deleting YAML entries never destroys a VM automatically, and changes to service-level Pigsty variables that Barn does not consume report `action: none`. When a node requires `recreate`, Barn replaces its root overlay and non-persistent data disks while preserving compatible persistent disks. Interactive `recreate` and `destroy` prompt you to type the command name to confirm; pass `--yes` (or `--force`) in non-interactive scripts.
+Editing or deleting YAML entries never destroys a VM automatically, and changes to service-level Pigsty variables that Barn does not consume report `action: none`. Interactive `recreate` and `destroy` prompt you to type the command name to confirm; pass `--yes` (or `--force`) in non-interactive scripts.
 
-`recreate` is the explicit replacement path. Barn validates the new image,
-network, shares, and persistent-disk attachment contract first, then destroys
-the selected VM artifacts and boots a fresh VM from the desired inventory.
-Root and non-persistent data disks are replaced; compatible persistent disks
-remain attached. The replacement gets a new VM identity and refreshes SSH
-host-key state.
+`recreate` is the explicit replacement path. Barn validates the new image, network, shares, and persistent-disk attachment contract first, then destroys the selected VM artifacts and boots a fresh VM from the desired inventory. Root and non-persistent data disks are replaced; compatible persistent disks remain attached. The replacement gets a new VM identity and refreshes SSH host-key state.
 
-Without node names, `recreate` replaces every node in the deployment and lists
-them in the confirmation. It refuses an inventory that no longer lists an
-existing node before any VM stops (exit `4`, `reason: nodes_removed`): remove
-that node explicitly with `barn destroy <node>` or add it back to the
-inventory. Barn checks the scope again under the destruction lock and reports
-`deployment_changed` if the applied state changed during preflight.
+Without node names, `recreate` replaces every node in the deployment and lists them in the confirmation. It refuses an inventory that no longer lists an existing node before any VM stops (exit `4`, `reason: nodes_removed`): remove that node explicitly with `barn destroy <node>` or add it back to the inventory. Barn checks the scope again under the destruction lock and reports `deployment_changed` if the applied state changed during preflight.
 
 ### Apply changes to selected nodes {#selected-nodes}
 

@@ -49,7 +49,7 @@ barn image pull --help
 | `exec` / `logs` | `ex` / `l` | `version` | `ver` |
 {.wide .expand}
 
-`up`、`ssh`、`init`、`start`、`stop`、`restart`、`reload`、`provision`、`hosts`、`purge` 与 `completion` 不设顶层短别名（`rm` 也不是 `purge` 的别名）。在子命令命名空间内，`hosts` 与 `network` 的 `install`/`uninstall` 可简写为 `i`/`u`，`network status` 可简写为 `st`；`image` 下支持 `list=ls`、`info=in`、`pull=p`、`prune=pr`、`sync=sy` 与 `import=i`。
+`up`、`ssh`、`init`、`start`、`stop`、`restart`、`reload`、`resize`、`provision`、`hosts`、`purge`、`update`、`repo`、`mac` 与 `completion` 不设顶层短别名（`rm` 也不是 `purge` 的别名）。在子命令命名空间内，`hosts` 与 `network` 的 `install`/`uninstall` 可简写为 `i`/`u`，`network status` 可简写为 `st`；`image` 下支持 `list=ls`、`info=in`、`pull=p`、`prune=pr`、`sync=sy` 与 `import=i`。
 
 Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../configuration/#discovery)）中管理唯一一套部署，只要 `BARN_HOME` 指向同一位置，操作已应用状态的命令就可在任意工作目录下执行；跨工作目录使用时请设置绝对 `BARN_HOME`。各条命令按如下规则确定期望配置来源（`-f` 是命令级参数而非全局参数）：
 
@@ -76,7 +76,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `-I`、`--image` | 为生成模板选择镜像，或在支持覆盖的命令中替代所选节点的 `vm_image`/`vm_version` |
 | `-A`、`--arch` | 选择客机或镜像架构：`native`、`amd64`（`x86_64`、`x64`）、`arm64`（`aarch64`、`a64`） |
 | `-f`、`--file` | 为读取期望状态的命令指定清单文件 |
-| `-r`、`--repo` | 指定镜像仓库 URL 或本地路径，优先级高于 `--mirror` 与 `BARN_REPO`（`validate` 自 0.9.0 起支持） |
+| `-r`、`--repo` | 指定镜像仓库 URL 或本地路径，优先级高于 `--mirror` 与 `BARN_REPO` |
 | `--mirror` | 为 `setup`、`up`、`reload`、`recreate`、`update` 与 `image pull` 选用中国官方镜像源（`https://repo.pigsty.cc/barn`） |
 | `-m`、`--mode` | 在支持该参数的命令上选择 macOS `host` 或 `shared` 网络模式 |
 | `-d`、`--dry-run` | 仅打印 `setup` 或 `image prune` 的执行计划，不修改系统状态 |
@@ -185,7 +185,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 
 ### 状态 {#status}
 
-`barn status` 默认展示节点名、IP（`ADDRESS`）、状态（`running` 表示 QEMU 进程存活，不主动探测客机 SSH）、精确镜像及 CPU/内存，并在使用 TCG 软件模拟时予以标记（在 Apple Silicon 上若存在 Mac 虚拟机，还会附加 `mac: <名称>; barn mac ls`）。加上 `--verbose` 可进一步查看 SSH 转发端口、架构、加速器与 QEMU PID。若个别节点异常，`status` 仍会展示其余正常节点，在 `failures[]` 中附带节点错误并以 `5` 退出。
+`barn status` 默认展示节点名、IP（`ADDRESS`）、状态（`running` 表示 QEMU 进程存活，不主动探测客机 SSH）、精确镜像及 CPU/内存，并在使用 TCG 软件模拟时予以标记（在 Apple Silicon 上若存在 Mac 虚拟机，还会附加 `mac: <名称>; barn mac ls`）。加上 `--verbose` 可进一步查看 SSH 转发端口、架构、加速器与 QEMU PID。若个别节点异常——包括在线 `resize` 在热插拔后中断（`stage: "resize"`、`reason: "resize_incomplete"`）——`status` 仍会展示其余正常节点，在 `failures[]` 中附带节点错误并以 `5` 退出。
 
 ## 恢复与中断处理 {#recovery-and-interrupted-operations}
 
@@ -193,7 +193,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 - **阶段事件日志**：宿主 `setup` 与紧随其后的生命周期重试共用同一个 `operation_id`。即便首次 `setup` 在创建部署状态前就失败，也可以运行 `barn logs --source events --json` 读取定长轮转的阶段事件日志（日志自动脱敏命令参数与凭据；`setup --dry-run` 不写日志）。
 - **遗留持久盘**：先前移除节点后保留下来的受管持久盘不会阻塞其余节点的销毁；需要连同这些持久盘一并清理时，请执行 `destroy --delete-persistent` 或 `purge`。
 - **macOS 准备顺序**：在 macOS 上安装新网络时，`setup` 会先完成 Homebrew 查找/安装或下载固定版本的 `socket_vmnet` 归档，最后再请求管理员授权，避免安装或下载耗时导致先前的 `sudo` 凭据过期，也不会在下载失败时白白弹出密码框。
-- **PID 与日志对账**：如果记录的 QEMU PID 已被无关进程复用，Barn 会将该节点识别为 `stopped`；若停止操作中断但虚拟机进程仍在运行，Barn 会将其恢复为 `running`。其他中断状态会提示恢复命令（`destroy` 会直接完成中断清理）；首次 `up` 失败后，修改清单再重试时 Barn 会根据事务日志自动回滚未提交的残留产物。
+- **PID 与日志对账**：如果记录的 QEMU PID 已被无关进程复用，Barn 会将该节点识别为 `stopped`；若停止操作中断但虚拟机进程仍在运行，Barn 会将其恢复为 `running`。若在线 `resize` 在修改运行中客机后中断，`status` 会报告 `resize_incomplete`，可重新运行 `barn resize <node>` 或执行 `barn restart <node>`。其他中断状态会提示恢复命令（`destroy` 会直接完成中断清理）；首次 `up` 失败后，修改清单再重试时 Barn 会根据事务日志自动回滚未提交的残留产物。
 - **取消操作**：命令被取消时，Barn 向正在运行的外部程序发送 SIGTERM，`sudo` 会将其转发给特权命令；Barn 最多等待 10 秒，让该进程及其继承的输出管道结束。忽略 SIGTERM 的后代进程仍需外部监管。
 
 ## 日志与环境变量 {#logs-and-environment}
@@ -220,7 +220,7 @@ barn exec [node] -- command...
 ```
 
 > [!TIP]
-> 从 **0.9.2** 开始，远端命令前必须使用 `--`。请将旧脚本中的 `barn exec meta hostname` 改为 `barn exec meta -- hostname`；需要执行 Shell 命令字符串时显式调用 `sh -c`。
+> 远端命令前必须使用 `--`。请写成 `barn exec meta -- hostname` 而非 `barn exec meta hostname`；需要执行 Shell 命令字符串时显式调用 `sh -c`。
 
 - **`barn ssh`**：不带远端命令时打开交互式登录终端；带上 `-- command...` 时，将 `--` 后的参数用空格拼接后交给远端 shell 解释。
 - **`barn exec`**：要求提供 `-- command...`，并将程序名与各个参数分别传递，原样保留参数中的空格、引号、后续空字符串参数以及 shell 元字符。需要使用管道、重定向、变量展开或串行执行多条命令时，请显式调用 `sh -c '...'`。

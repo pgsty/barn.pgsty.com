@@ -35,7 +35,7 @@ barn version
 
 当既没有配置文件也没有已应用部署时，交互式运行 `barn up` 会自动生成初始 `barn.yml`。如需使用现有清单，请在 `barn.yml` / `pigsty.yml` 所在目录运行 `plan`、`up` 或 `validate`，或显式传入 `-f /path/to/file`（也可先运行 `barn init` 生成模板）。
 
-未指定 `-f` 时，`plan`、`up`、`reload` 和 `recreate` 会按 `barn.yml`、`barn.yaml`、`pigsty.yml`、`pigsty.yaml` 的顺序查找当前工作目录，仅在四个文件都不存在时回退到 `BARN_HOME` 中的已应用规格。若匹配到的第一个文件存在语法错误，命令会立即报错退出；当旧的 `barn.yml` 与目标 `pigsty.yml` 同处一个目录时，请显式传入 `-f pigsty.yml`。
+未指定 `-f` 时，`plan`、`up`、`reload`、`resize` 和 `recreate` 会按 `barn.yml`、`barn.yaml`、`pigsty.yml`、`pigsty.yaml` 的顺序查找当前工作目录，仅在四个文件都不存在时回退到 `BARN_HOME` 中的已应用规格。若匹配到的第一个文件存在语法错误，命令会立即报错退出；当旧的 `barn.yml` 与目标 `pigsty.yml` 同处一个目录时，请显式传入 `-f pigsty.yml`。
 
 若 `barn status` 提示 `no deployment state found`，说明当前 `BARN_HOME` 下尚无已应用部署（全新环境或刚执行过 `purge`）。
 
@@ -140,6 +140,7 @@ Barn 二进制内置了 active 与 standby Minisign 公钥，会严格拦截未�
 |---|---|
 | 宿主重启，或原 QEMU PID 被其他无关进程复用 | `barn status` 识别出进程身份不匹配后将节点标记为 `stopped`，随后执行 `barn start` 即可 |
 | `barn stop` 中断，但 QEMU 仍在运行 | `barn status` 将状态恢复为 `running`；仍需关机时再次执行 `barn stop` |
+| 在线 `barn resize` 在修改运行中客机后中断 | `barn status` 报告 `resize_incomplete`；重新运行 `barn resize <node>` 或执行 `barn restart <node>` |
 | 首次 `barn up` 在准备阶段中断 | 修正清单后重新执行 `barn up -f barn.yml`，Barn 会自动回滚事务日志中未完成的产物 |
 | `barn destroy` 执行中途中断 | 按相同的销毁范围重新运行 `barn destroy` 或 `barn purge` 即可完成清理 |
 {.wide .expand}

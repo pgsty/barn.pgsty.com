@@ -77,9 +77,9 @@ Barn reads node IPv4 keys, `nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node
 | `vm_shares` | `[]` | QEMU 9p host-directory shares on Linux and macOS hosts |
 {.wide .expand}
 
-An empty host mapping (`10.10.10.10: {}`) is enough to define a complete VM with default settings. There is no separate 20-node ceiling; managed nodes need distinct usable addresses in the configured `/24`.
+An empty host mapping (`10.10.10.10: {}`) is enough to define a complete VM with default settings. Managed nodes require distinct usable addresses in the configured `/24`.
 
-Bare integers specify MiB for `vm_mem` and GiB for disks. Size strings accept positive integers with case-insensitive units, including `8G`, `512m`, `4gib`, and `64GB`. `K/M/G/T` and `KiB/MiB/GiB/TiB` use binary powers; `KB/MB/GB/TB` retain decimal powers. Fractions such as `1.5GiB` and unitless strings such as `"8192"` remain invalid. `up` still checks that the root disk is at least as large as the base image’s virtual size.
+Bare integers specify MiB for `vm_mem` and GiB for disks. Size strings accept positive integers with case-insensitive units, including `8G`, `512m`, `4gib`, and `64GB`. `K/M/G/T` and `KiB/MiB/GiB/TiB` use binary powers; `KB/MB/GB/TB` use decimal powers. Fractions such as `1.5GiB` and unitless strings such as `"8192"` are invalid. `up` checks that the root disk is at least as large as the base image's virtual size.
 
 When `vm_image` is omitted, Barn defaults to `u24` (Ubuntu 24.04) from the binary's embedded catalog regardless of any default declared in a custom repository. Built-in aliases such as `ubuntu` → `u24` are normalized against the embedded catalog during inventory parsing, so custom repositories should use their canonical family names in `vm_image` rather than reassigning built-in aliases.
 
@@ -149,7 +149,7 @@ vm_shares:
     readonly: true
 ```
 
-`vm_shares` mounts host directories into Linux guests through QEMU Virtio-9p on Linux and macOS hosts, with `readonly: true` by default. Host QEMU and the guest kernel must support 9p. The eight-share ceiling is removed; backend device limits still apply. Native macOS guests use VirtioFS through `barn mac --share`.
+`vm_shares` mounts host directories into Linux guests through QEMU Virtio-9p on Linux and macOS hosts, with `readonly: true` by default. Host QEMU and the guest kernel must support 9p; backend device limits apply. Native macOS guests use VirtioFS through `barn mac --share`.
 
 Shared sources use the invoking user’s actual filesystem permissions:
 

@@ -176,9 +176,9 @@ barn image import --name local-mybase --boot uefi \
 
 Import rules:
 
-- `image import` accepts relative paths, `~/`, and symlinks to regular files, and still requires `qemu-img`. Local images and catalog artifacts with declared sizes no longer have an 8 GiB ceiling. Reads are bounded by the actual or declared size; downloads stop on overflow. Legacy downloads without a declared artifact size retain an 8 GiB bound. Optional `--sha256` still verifies an expected digest.
+- `image import` accepts relative paths, `~/`, and symlinks to regular files, and requires `qemu-img`. Reads are bounded by the actual local file size or declared catalog size; downloads stop on overflow, while legacy downloads without a declared artifact size are bounded at 8 GiB. Optional `--sha256` verifies an expected digest.
 - `image import` copies and validates the `qcow2` container as-is without modifying guest credentials, installing `cloud-init`, or booting the image.
-- Source filenames may contain spaces or Unicode and need no particular extension; Barn validates the qcow2 contents. New imports use `local/<sha256>.qcow2`, so different images can share a source filename and identical bytes reuse a cache entry. Existing aliases keep their original cache paths when reimported. The former 256-alias ceiling is removed; updates exceeding the 1 MiB registry metadata limit fail before changing existing aliases.
+- Source filenames may contain spaces or Unicode and need no particular extension; Barn validates the qcow2 contents. New imports use `local/<sha256>.qcow2`, so different images can share a source filename and identical bytes reuse a cache entry. Existing aliases keep their original cache paths when reimported. Updates that exceed the 1 MiB registry metadata limit fail before changing existing aliases.
 - Named imports (`--name local-<alias>`) require `--boot bios|uefi` and `--source-user <user>` and default to the host architecture. `--arch/-A` can record an explicit `amd64` or `arm64` architecture, including aliases. The qcow2 metadata cannot identify the guest CPU, and import does not convert architectures. Match inventory `vm_arch` or the lifecycle command's `-A` when using the image. Aliases are immutable and can be referenced via `vm_image: local-mybase`; unnamed imports only pre-populate the cache and cannot accept `-A`.
 
 ## Pruning {#pruning}

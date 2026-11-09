@@ -17,7 +17,7 @@ Create an Ubuntu 24.04 VM on your Mac or Linux host, connect over SSH, and scale
 
 The default lab is one Ubuntu node using the host architecture: `arm64` on Apple Silicon, `amd64` on Intel/AMD. No architecture setting is needed for normal use; see [image and architecture settings](../../reference/configuration/#image-and-architecture) for cross-architecture selection and precedence. To keep the defaults, skip to [Start and connect](#start). To choose the topology, subnet, or OS image first, write and edit the inventory before the first `barn up`:
 
-1. Generate a starter `barn.yml` (`dual`, `trio`, or `full` creates 2, 3, or 4 nodes; `-c 10.20.30.0/24` selects a custom subnet, and `--image el9` writes one image for every node):
+1. Generate a starter `barn.yml` (`dual`, `trio`, or `full` creates 2, 3, or 4 nodes; `-c 10.20.30.0/24` selects a custom subnet, `-I el9` writes one image for every node, and `-A amd64` sets `vm_arch`):
 
    ```bash
    mkdir -p ~/barn-lab && cd ~/barn-lab
@@ -145,11 +145,7 @@ barn up
 
 `barn plan` reports `create: node-1, node-2, node-3`, and `barn up` creates them without restarting `meta`.
 
-If you change an existing node's CPU or memory, apply the change with
-`barn resize <node>`; it preserves the VM identity and disks. Image changes
-still use `barn recreate <node>`, which replaces its root disk. Removing a host
-entry from `barn.yml` leaves the VM untouched on disk until you run
-`barn destroy <node>`.
+If you change an existing node's CPU or memory, apply the change with `barn resize <node>`; it preserves the VM identity and disks. Image changes still use `barn recreate <node>`, which replaces its root disk. Removing a host entry from `barn.yml` leaves the VM untouched on disk until you run `barn destroy <node>`.
 
 ## Stop, resume, and clean up {#cleanup}
 

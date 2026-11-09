@@ -35,7 +35,7 @@ Always keep `barn` and its packaged `barn-hosts-helper` from the same release in
 
 When neither an inventory file nor an applied deployment exists, an interactive `barn up` generates a starter `barn.yml`. To use an existing file, run `plan`, `up`, or `validate` in the directory containing `barn.yml` / `pigsty.yml` or pass `-f /path/to/file` (or generate a template first with `barn init`).
 
-Without `-f`, `plan`, `up`, `reload`, and `recreate` check the current directory for `barn.yml`, `barn.yaml`, `pigsty.yml`, and `pigsty.yaml` in that order, falling back to the applied specification in `BARN_HOME` only when none of those files exist. If the first matching file contains syntax errors, Barn fails immediately rather than falling back; pass `-f pigsty.yml` when an older `barn.yml` sits in the same directory.
+Without `-f`, `plan`, `up`, `reload`, `resize`, and `recreate` check the current directory for `barn.yml`, `barn.yaml`, `pigsty.yml`, and `pigsty.yaml` in that order, falling back to the applied specification in `BARN_HOME` only when none of those files exist. If the first matching file contains syntax errors, Barn fails immediately rather than falling back; pass `-f pigsty.yml` when an older `barn.yml` sits in the same directory.
 
 If `barn status` reports `no deployment state found`, the active `BARN_HOME` has no applied deployment (either fresh or previously purged).
 
@@ -140,6 +140,7 @@ When no command holds the lock, `barn status` verifies each recorded QEMU proces
 |---|---|
 | Host rebooted or QEMU PID was recycled by an unrelated process | `barn status` detects the mismatched process identity and marks the VM `stopped`; run `barn start` |
 | `barn stop` was interrupted while QEMU stayed running | `barn status` restores `running` state; re-run `barn stop` if you still want to shut it down |
+| Online `barn resize` was interrupted after changing the live guest | `barn status` reports `resize_incomplete`; re-run `barn resize <node>` or run `barn restart <node>` |
 | Initial `barn up` failed during preparation | Fix the inventory and re-run `barn up -f barn.yml`; Barn rolls back journaled unfinished artifacts |
 | `barn destroy` was interrupted midway | Re-run the same `barn destroy` or `barn purge` command to finish cleanup |
 {.wide .expand}

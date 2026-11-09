@@ -77,9 +77,9 @@ Barn 只读取节点 IPv4 键、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq
 | `vm_shares` | `[]` | QEMU 9p 宿主目录共享（Linux 与 macOS 宿主） |
 {.wide .expand}
 
-空节点条目（如 `10.10.10.10: {}`）即可使用默认参数定义一台完整虚拟机。不再另设 20 节点上限；托管节点须使用同一 `/24` 内互不重复的可用地址。
+空节点条目（如 `10.10.10.10: {}`）即可使用默认参数定义一台完整虚拟机。托管节点须使用同一 `/24` 内互不重复的可用地址。
 
-裸整数在 `vm_mem` 中表示 MiB，在磁盘容量中表示 GiB。显式容量字符串接受正整数和不区分大小写的单位，例如 `8G`、`512m`、`4gib`、`64GB`。`K/M/G/T` 与 `KiB/MiB/GiB/TiB` 使用二进制倍率，`KB/MB/GB/TB` 保留十进制倍率。小数 `1.5GiB` 和无单位字符串 `"8192"` 仍不接受。`up` 仍检查根盘不小于基础镜像虚拟大小。
+裸整数在 `vm_mem` 中表示 MiB，在磁盘容量中表示 GiB。显式容量字符串接受正整数和不区分大小写的单位，例如 `8G`、`512m`、`4gib`、`64GB`。`K/M/G/T` 与 `KiB/MiB/GiB/TiB` 使用二进制倍率，`KB/MB/GB/TB` 使用十进制倍率。小数 `1.5GiB` 和无单位字符串 `"8192"` 无效。`up` 会检查根盘不小于基础镜像虚拟大小。
 
 省略 `vm_image` 时，Barn 始终按二进制内置目录选择 `u24`（Ubuntu 24.04），自定义仓库中的 `defaults.image` 不会改写未设置 `vm_image` 的清单。此外，Barn 在解析清单时会先按内置目录将 `ubuntu` 等内置别名归一化为 `u24`；使用自定义仓库时，请在 `vm_image` 中直接填写规范系列名，不要将内置别名改指其他系列。
 
@@ -149,7 +149,7 @@ vm_shares:
     readonly: true
 ```
 
-`vm_shares` 通过 QEMU Virtio-9p 将 Linux 或 macOS 宿主目录挂载到 Linux 客机，默认 `readonly: true`。宿主 QEMU 与客机内核须支持 9p。不再另设 8 个共享的上限，实际受后端设备能力约束。原生 macOS 客机使用 `barn mac --share` 的 VirtioFS。
+`vm_shares` 通过 QEMU Virtio-9p 将 Linux 或 macOS 宿主目录挂载到 Linux 客机，默认 `readonly: true`。宿主 QEMU 与客机内核须支持 9p，共享数量受后端设备能力约束。原生 macOS 客机使用 `barn mac --share` 的 VirtioFS。
 
 共享源按当前用户的实际文件系统权限访问：
 

@@ -41,7 +41,7 @@ This reference covers the **Barn 1.1.0** command interface and `Barn.app`, the n
 ### SSH and exec {#ssh-and-exec}
 
 > [!TIP]
-> Since **0.9.2**, remote commands require `--`, for example `barn mac exec dev -- sw_vers`. Interactive `barn mac ssh dev` needs no separator.
+> Remote commands require `--`, for example `barn mac exec dev -- sw_vers`. Interactive `barn mac ssh dev` needs no separator.
 
 Before `--`, pass Barn flags and at most one existing VM name (omitting the name selects the sole VM or `mac1`). `ssh` without a command opens an interactive shell; `exec` requires a non-empty command after `--`. Unknown VM names or invalid arguments fail with exit code `2` (`usage`) before attempting a connection and point to `barn mac ls`.
 
@@ -71,7 +71,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 | `destroy` | `--yes`/`--force` |
 | `password` | `-c`/`--copy` |
 | `ssh-config` | `-i`/`--install`, `--remove` |
-| `logs` | `-n`/`--lines` positive integer (default `100`); honors the requested count without the old 1 MiB cutoff |
+| `logs` | `-n`/`--lines` positive integer (default `100`); returns the requested line count |
 | `setup` | `--ipsw`, `--disk`, `-y`/`--yes` |
 | `image update` | `--ipsw`, `-y`/`--yes` |
 | `image prune` | `--installers`, `-y`/`--yes` |

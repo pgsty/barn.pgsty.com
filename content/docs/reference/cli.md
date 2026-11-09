@@ -49,7 +49,7 @@ Frequently used commands define short aliases within their scope:
 | `exec` / `logs` | `ex` / `l` | `version` | `ver` |
 {.wide .expand}
 
-`up`, `ssh`, `init`, `start`, `stop`, `restart`, `reload`, `provision`, `hosts`, `purge`, and `completion` have no top-level shorthand (`rm` is not an alias for `purge`). Inside subcommand groups, `hosts` and `network` map `i`/`u` to `install`/`uninstall`, `network status` accepts `st`, and `image` maps `list=ls`, `info=in`, `pull=p`, `prune=pr`, `sync=sy`, and `import=i`.
+`up`, `ssh`, `init`, `start`, `stop`, `restart`, `reload`, `resize`, `provision`, `hosts`, `purge`, `update`, `repo`, `mac`, and `completion` have no top-level shorthand (`rm` is not an alias for `purge`). Inside subcommand groups, `hosts` and `network` map `i`/`u` to `install`/`uninstall`, `network status` accepts `st`, and `image` maps `list=ls`, `info=in`, `pull=p`, `prune=pr`, `sync=sy`, and `import=i`.
 
 Barn manages a single deployment per `BARN_HOME` (default `~/.barn`; see [Configuration](../configuration/#discovery)), so commands that operate on applied state work from any directory when `BARN_HOME` points to the same location. Use an absolute `BARN_HOME` when changing working directories. Each command resolves its desired-state source independently (`-f` is a per-command flag rather than a global flag):
 
@@ -76,7 +76,7 @@ If the default `10.10.10.0/24` subnet conflicts with an existing host route whil
 | `-I`, `--image` | Choose an image for a generated template or override selected nodes' `vm_image`/`vm_version` on commands listed below |
 | `-A`, `--arch` | Select guest or artifact architecture: `native`, `amd64` (`x86_64`, `x64`), or `arm64` (`aarch64`, `a64`) |
 | `-f`, `--file` | Select an inventory file for commands that read desired state |
-| `-r`, `--repo` | Select an image repository URL or path, overriding `--mirror` and `BARN_REPO` (`validate` supports `--repo` as of 0.9.0) |
+| `-r`, `--repo` | Select an image repository URL or path, overriding `--mirror` and `BARN_REPO` |
 | `--mirror` | Use the China official repository (`https://repo.pigsty.cc/barn`) for `setup`, `up`, `reload`, `recreate`, `update`, and `image pull` |
 | `-m`, `--mode` | Select `host` or `shared` network mode on macOS |
 | `-d`, `--dry-run` | Print the execution plan for `setup` or `image prune` without modifying state |
@@ -185,7 +185,7 @@ When one or more nodes fail during a batch operation, Barn preserves any nodes t
 
 ### Status {#status}
 
-`barn status` reports each node's name, IP (`ADDRESS`), state (`running` means the QEMU process is alive; it does not probe guest SSH), exact image, vCPUs, and memory, flagging TCG emulation when active (and on Apple Silicon when Mac VMs exist, appends `mac: <names>; barn mac ls`). Pass `--verbose` to include forwarded SSH ports, architecture, accelerator, and QEMU PID. If a node is degraded, `status` still lists its healthy peers, populates `failures[]`, and exits `5`.
+`barn status` reports each node's name, IP (`ADDRESS`), state (`running` means the QEMU process is alive; it does not probe guest SSH), exact image, vCPUs, and memory, flagging TCG emulation when active (and on Apple Silicon when Mac VMs exist, appends `mac: <names>; barn mac ls`). Pass `--verbose` to include forwarded SSH ports, architecture, accelerator, and QEMU PID. If a node is degraded—including when an online `resize` was interrupted after hotplugging (`stage: "resize"`, `reason: "resize_incomplete"`)—`status` still lists its healthy peers, populates `failures[]`, and exits `5`.
 
 ## Recovery and interrupted operations {#recovery-and-interrupted-operations}
 
@@ -193,7 +193,7 @@ When one or more nodes fail during a batch operation, Barn preserves any nodes t
 - **Setup event log**: Host `setup` and its follow-up lifecycle run share one `operation_id`. If initial setup fails before a deployment exists, you can still inspect the bounded phase log via `barn logs --source events --json` (which records phase transitions without sensitive arguments or credentials; `setup --dry-run` writes no log).
 - **Retained persistent disks**: Persistent disks left behind by a previously removed node do not block destroying the remaining nodes; use `destroy --delete-persistent` or `purge` to remove them.
 - **macOS setup ordering**: On macOS, `setup` finishes Homebrew discovery/installation or the pinned `socket_vmnet` archive download before prompting for administrator privileges, so downloads neither expire an earlier `sudo` token nor prompt for a password when a download fails.
-- **PID and journal reconciliation**: If a recorded QEMU PID has been reused by an unrelated process, Barn marks the node `stopped`; if a `stop` was interrupted while the VM process remained alive, Barn marks it `running`. Other interrupted transitions print the recovery command (`destroy` resolves interrupted state directly), and a failed initial `up` automatically rolls back uncommitted journal artifacts on the next run.
+- **PID and journal reconciliation**: If a recorded QEMU PID has been reused by an unrelated process, Barn marks the node `stopped`; if a `stop` was interrupted while the VM process remained alive, Barn marks it `running`. If an online `resize` was interrupted after modifying the live guest, `status` reports `resize_incomplete`; retry `barn resize <node>` or run `barn restart <node>`. Other interrupted transitions print the recovery command (`destroy` resolves interrupted state directly), and a failed initial `up` automatically rolls back uncommitted journal artifacts on the next run.
 - **Cancellation**: When a command is cancelled, Barn sends SIGTERM to the external program it is running, which `sudo` forwards to the privileged command, and waits at most 10 seconds for that process and its inherited output pipes. Descendants that ignore SIGTERM need external supervision.
 
 ## Logs and environment {#logs-and-environment}
@@ -220,7 +220,7 @@ barn exec [node] -- command...
 ```
 
 > [!TIP]
-> Since **0.9.2**, remote commands require `--`. Update older scripts such as `barn exec meta hostname` to `barn exec meta -- hostname`; use `sh -c` explicitly for a shell command string.
+> Remote commands require `--`. Pass `barn exec meta -- hostname` rather than `barn exec meta hostname`, and use `sh -c` explicitly for a shell command string.
 
 - **`barn ssh`** without a command opens an interactive login shell; with `-- command...`, it joins the arguments after `--` with spaces and passes them to the guest shell.
 - **`barn exec`** requires `-- command...` and passes the program and each argument separately, preserving spaces, quotes, empty arguments (after the first non-empty command token), and shell metacharacters literally. Wrap pipelines, redirections, variable expansion, or compound commands in `sh -c '...'`.

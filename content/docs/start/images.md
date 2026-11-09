@@ -42,7 +42,7 @@ After changing `vm_image` or `vm_version`, preview the change with `barn plan`. 
 
 ### Temporary overrides and architecture {#architecture}
 
-Barn 1.1.0 supports the following `-I/-A` options.
+Use `-I` (`--image`) and `-A` (`--arch`) to override image and architecture settings for one command invocation.
 
 Guests default to the host architecture unless explicitly overridden by `vm_arch` or `--arch/-A`. Precedence is `-A` → `vm_arch` → host architecture. `-A native` overrides a fixed inventory architecture and follows the host again. `amd64` accepts `x86_64` and `x64` aliases; `arm64` accepts `aarch64` and `a64`.
 
@@ -148,7 +148,7 @@ barn image import --name local-mybase --boot uefi \
 
 `--name` (must start with `local-`), `--boot` (`uefi` or `bios`), and `--source-user` are required together when registering an alias; omitting them caches the verified `qcow2` bytes by content digest without creating an alias. The image must already include cloud-init support for Barn's first-boot provisioning. Named `local-*` aliases are immutable—register a new `local-*` name whenever you rebuild the image, and reference it in `barn.yml` with `vm_image: local-mybase`.
 
-named imports accept `-A`, for example `barn image import /path/to/arm64.qcow2 --name local-arm64 --boot uefi --source-user ubuntu -A arm64`. This records your declaration; it does not convert the image or detect its guest CPU. Set inventory `vm_arch` or the lifecycle command's `-A` to match when using it. `-A` requires `--name` on import.
+Named imports accept `-A`, for example `barn image import /path/to/arm64.qcow2 --name local-arm64 --boot uefi --source-user ubuntu -A arm64`. This records your declaration; it does not convert the image or detect its guest CPU. Set inventory `vm_arch` or the lifecycle command's `-A` to match when using it. `-A` requires `--name` on import.
 
 To reclaim disk space from unreferenced images and interrupted download staging files:
 
