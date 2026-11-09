@@ -8,14 +8,14 @@ cascade:
   type: docs
 ---
 
-Barn 用于在本地创建和管理开发测试虚拟机。本文档适用于首个稳定版 **Barn 1.0.0**，相对 0.9.3 的变化见 [1.0.0 发布说明](../blog/release/1.0.0/)。可从以下入口快速开始：
+Barn 用于在本地创建和管理开发测试虚拟机。本文档适用于首个稳定版 **Barn 1.0.0**，并在未发布行为存在差异处标注 **`main`** 分支说明；相对 0.9.3 的变化见 [1.0.0 发布说明](../blog/release/1.0.0/)。可从以下入口快速开始：
 
 - [安装 Barn 1.0.0](start/installation/) — 在 macOS 或 Linux 上通过 Homebrew、发布安装脚本或原生软件包安装 CLI。
 - [Linux 快速上手](start/tutorial/) — 在 macOS（HVF）或 Linux（KVM）上基于 Ansible YAML 清单启动单节点或多节点固定 IP 实验集群。
 - [原生 macOS 虚拟机](start/macos/) — 在 Apple Silicon 上运行相互隔离的 macOS 27+ 虚拟机，提供原生桌面窗口、SSH、VirtioFS 共享目录与剪贴板同步。
 {.cards}
 
-## 常见任务
+## 常见任务 {#common-tasks}
 
 - [日常操作](start/operations/) — 查看状态、启停节点、通过 `plan` 预览配置变更，以及重建或销毁虚拟机。
 - [存储与服务访问](start/storage/) — 挂载持久化测试数据盘、配置 Virtio-9p 宿主共享目录与访问客机端口。
@@ -25,4 +25,4 @@ Barn 用于在本地创建和管理开发测试虚拟机。本文档适用于首
 - [1.0.0 版本更新](../blog/release/1.0.0/) — 了解 1.x 兼容性范围、更安全的重建与数据盘恢复、新增确认流程与升级步骤。
 {.cards}
 
-## 按栏目浏览
+## 按栏目浏览 {#browse-by-section}

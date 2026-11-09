@@ -5,7 +5,7 @@
 ## 内容归属
 
 - `content/docs/start/` 放任务指南，`content/docs/reference/` 放命令与配置契约，`content/docs/about/` 放项目说明。
-- 新的架构设计、方案取舍和可复用研究结论统一维护在 `content/blog/design/`，注明日期、实现状态、代码/官方来源与验收条件。`content/blog/release/` 维护发布记录；源码仓库保留既有工程说明与历史证据。
+- 新的架构设计、方案取舍、可复用研究结论与验收记录统一维护在本站：设计内容放 `content/blog/design/`，发布记录放 `content/blog/release/`，任务与契约放 `content/docs/`。源码仓库不再维护 `docs/` 目录；涉及代码的文章直接链接源码、测试或发布提交。
 - 每篇英文 `page.md` 与中文 `page.zh.md` 成对维护；路由、日期、权重、显式标题锚点、命令和技术事实对齐。中文段落不在汉字之间硬换行。
 - 按 `../barn` 的当前代码、测试和已发布标签核对行为，明确区分稳定版、未发布的 `main` 与未来提案。临时研究笔记放仓库外，不再建立 `reports/`、`research_notes/` 归档。
 

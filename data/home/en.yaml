@@ -96,7 +96,7 @@ capabilities:
           - { class: k, prefix: '        10.10.10.12: ', text: '{ nodename: node-2 }' }
           - { class: k, prefix: '        10.10.10.13: ', text: '{ nodename: node-3 }' }
           - { class: p, prefix: '$ ', text: 'barn up' }
-          - { class: ok, prefix: '  ✓  ', text: '4 nodes ready' }
+          - { class: ok, prefix: 'up:        ', text: '4 nodes ready' }
           - { class: c, prefix: 'connect:   ', text: 'barn ssh meta' }
     - ref: macOS guests
       title: Native macOS Machines
@@ -113,8 +113,8 @@ capabilities:
         title: barn mac  ·  Apple Virtualization
         lines:
           - { class: p, prefix: '$ ', text: 'barn mac up dev --cpu 8 --memory 16G --share ~/src' }
-          - { class: ok, prefix: '  ✓  ', text: 'dev created and ready · macOS 27.0 (26A428)' }
-          - { class: c, prefix: 'shell:     ', text: 'barn mac ssh dev' }
+          - { class: ok, prefix: 'up:        ', text: 'dev ready · macOS 27.0 (26A428)' }
+          - { class: c, prefix: 'ready:     ', text: 'barn mac ssh dev' }
           - { class: c, prefix: 'desktop:   ', text: 'barn mac open dev' }
           - { class: p, prefix: '$ ', text: 'barn mac ssh dev -- sw_vers -productVersion' }
           - { class: c, prefix: '', text: '27.0' }
@@ -215,7 +215,8 @@ faq:
         Stop any running macOS VMs, then run `brew upgrade pgsty/infra/barn` or
         re-run `install.sh`. VM disks, keys, and state under `~/.barn` stay in
         place. Scripts should expect exit `7` for catalog signature failures and
-        a confirmation prompt from interactive `up` and `purge`. See
+        a confirmation prompt from first-run interactive `up` (and from `purge`
+        in 1.0.0, or `purge --ask` on `main`). See
         [Upgrade Barn](docs/start/installation/#upgrade-barn).
 
 cta:

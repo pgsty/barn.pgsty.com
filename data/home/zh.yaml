@@ -93,7 +93,7 @@ capabilities:
           - { class: k, prefix: '        10.10.10.12: ', text: '{ nodename: node-2 }' }
           - { class: k, prefix: '        10.10.10.13: ', text: '{ nodename: node-3 }' }
           - { class: p, prefix: '$ ', text: 'barn up' }
-          - { class: ok, prefix: '  ✓  ', text: '4 nodes ready' }
+          - { class: ok, prefix: 'up:        ', text: '4 nodes ready' }
           - { class: c, prefix: 'connect:   ', text: 'barn ssh meta' }
     - ref: macOS 客机
       title: 原生 macOS 虚拟机
@@ -110,8 +110,8 @@ capabilities:
         title: barn mac  ·  Apple Virtualization
         lines:
           - { class: p, prefix: '$ ', text: 'barn mac up dev --cpu 8 --memory 16G --share ~/src' }
-          - { class: ok, prefix: '  ✓  ', text: 'dev created and ready · macOS 27.0 (26A428)' }
-          - { class: c, prefix: 'shell:     ', text: 'barn mac ssh dev' }
+          - { class: ok, prefix: 'up:        ', text: 'dev ready · macOS 27.0 (26A428)' }
+          - { class: c, prefix: 'ready:     ', text: 'barn mac ssh dev' }
           - { class: c, prefix: 'desktop:   ', text: 'barn mac open dev' }
           - { class: p, prefix: '$ ', text: 'barn mac ssh dev -- sw_vers -productVersion' }
           - { class: c, prefix: '', text: '27.0' }
@@ -198,8 +198,8 @@ faq:
     - question: 如何从 0.9.3 升级？
       answer: >-
         先停止正在运行的 macOS 虚拟机，再执行 `brew upgrade pgsty/infra/barn`
-        或重新运行 `install.sh`。`~/.barn` 下的虚拟机磁盘、密钥与状态原样保留。脚本需要适应两处变化：镜像目录签名校验失败时退出码为 `7`，交互终端中的
-        `up` 与 `purge` 会先请求确认。详见[升级 Barn](docs/start/installation/#upgrade-barn)。
+        或重新运行 `install.sh`。`~/.barn` 下的虚拟机磁盘、密钥与状态原样保留。脚本需要适应两处变化：镜像目录签名校验失败时退出码为 `7`，交互终端首次运行
+        `up`（以及 1.0.0 中的 `purge` 或 `main` 上的 `purge --ask`）会先请求确认。详见[升级 Barn](docs/start/installation/#upgrade-barn)。
 
 cta:
   title: 准备好搭建本地实验环境了吗？

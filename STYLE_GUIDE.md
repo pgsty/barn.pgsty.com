@@ -53,6 +53,7 @@ Use "Linux lab" / "Linux 实验环境" for the user's environment, and "deployme
 
 ## Use OINK v1.5.1 components purposefully
 
+- Give every heading (`h2`–`h4`) in paired `.md` and `.zh.md` pages the exact same explicit ASCII `{#id}` anchor so OINK `v1.5.1` Duo View (`params.ui.compare: true`) synchronizes headings across languages without warning markers.
 - Use ```` ```filetree ```` fences with `#` comments for directory layouts (`$BARN_HOME/images/`, `$BARN_HOME/mac/`).
 - Add `{title="barn.yml"}` or script filenames to configuration and script code blocks, and use `{tab="..." group="..." value="..."}` on adjacent code fences for multi-platform command comparisons.
 - Add `{.steps}` to sequential ordered lists in tutorials and operational runbooks, and `{.cards}` to navigation link lists on section index pages.
