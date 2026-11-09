@@ -14,7 +14,7 @@ icon: fa-solid fa-vial-circle-check
 
 Piglet `1.0.0-rc.6` was a local development candidate that validated the Quick and four-node `full` profiles on both Tier-1 native hypervisor platforms (`macOS arm64 / HVF` and `Linux amd64 / KVM`) and introduced journaled host-network transactions for crash recovery.
 
-## Frozen build identity
+## Frozen build identity {#frozen-build-identity}
 
 | Field | RC6 value |
 | --- | --- |
@@ -28,7 +28,7 @@ Piglet `1.0.0-rc.6` was a local development candidate that validated the Quick a
 | Exact `full` profile SHA-256 | `912fea61bf1602c2a437570561a6ab4d0a5a8c152695147ad9e96ae831bc9336` |
 {.wide .expand}
 
-## Four native product scenarios
+## Four native product scenarios {#four-native-product-scenarios}
 
 | Host | Scenario | Result | Guest contract |
 | --- | --- | --- | --- |
@@ -40,7 +40,7 @@ Piglet `1.0.0-rc.6` was a local development candidate that validated the Quick a
 
 All eight `full`-profile guests booted Ubuntu 24.04.4, passed contract assertions, and were cleanly destroyed afterward while retaining shared image caches, project markers, and keys.
 
-## Journaled host-network transactions
+## Journaled host-network transactions {#journaled-host-network-transactions}
 
 Network install and uninstall use a root-owned, strict-prefix transaction:
 
@@ -52,13 +52,13 @@ Network install and uninstall use a root-owned, strict-prefix transaction:
 
 macOS completed an interrupted forward-recovery test and converged to a healthy default `host` network. Linux completed install, rollback/retry, four-node operation, uninstall, and host restoration prior to a final patch that tightened socket-state canonicalization, `systemd` unit enablement scope, NetworkManager ordering, and recovery field scoping (verified via source checks and `-race` tests).
 
-## macOS shared mode and subnet conflicts
+## macOS shared mode and subnet conflicts {#macos-shared-mode-and-subnet-conflicts}
 
 The default macOS mode is `socket_vmnet` `host` mode; `shared` mode also passed a two-node test on an alternate free subnet as an explicit opt-in fallback.
 
 During testing, the default subnet encountered `VMNET_SHARING_SERVICE_BUSY (1009)` when an older Piglet-created `bridge100` interface was still present. Preflight checks interface ownership markers rather than adopting an existing interface just because its `.1/24` address matches. When a subnet conflict occurs, operators can either remove the conflicting interface or move the entire lab to a clean RFC 1918 `/24` subnet—the runtime never renumbers individual guests or picks a random subnet on its own.
 
-## Reproducible local archives
+## Reproducible local archives {#reproducible-local-archives}
 
 Two independent local RC6 build trees produced byte-identical archives, checksums, release metadata, and Homebrew formula files:
 
@@ -70,7 +70,7 @@ Two independent local RC6 build trees produced byte-identical archives, checksum
 | Linux `arm64` | `afc9ce1043d377cc3b4ef8bdf77826a8139a8c839685025853e8bee8100c6a2e` |
 {.wide .expand}
 
-## Remaining work before public release
+## Remaining work before public release {#remaining-work-before-public-release}
 
 At the close of RC6, the remaining items before public release were:
 - Physical host-reboot persistence checks on both Tier-1 platforms

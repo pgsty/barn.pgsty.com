@@ -14,7 +14,7 @@ icon: fa-solid fa-vial-circle-check
 
 Piglet `1.0.0-rc.6` 是在两类 Tier 1 原生虚拟化平台（`macOS arm64 / HVF` 与 `Linux amd64 / KVM`）上完成 Quick 及四节点 `full` 场景验收的本地开发候选版，并引入了基于持久化事务日志的特权网络安装与崩溃恢复机制。
 
-## 冻结构建身份
+## 冻结构建身份 {#frozen-build-identity}
 
 | 字段 | RC6 值 |
 | --- | --- |
@@ -28,7 +28,7 @@ Piglet `1.0.0-rc.6` 是在两类 Tier 1 原生虚拟化平台（`macOS arm64 / H
 | 指定 `full` 配置模板 SHA-256 | `912fea61bf1602c2a437570561a6ab4d0a5a8c152695147ad9e96ae831bc9336` |
 {.wide .expand}
 
-## 四个原生产品场景
+## 四个原生产品场景 {#four-native-product-scenarios}
 
 | 宿主 | 场景 | 结果 | 客机约定 |
 | --- | --- | --- | --- |
@@ -40,7 +40,7 @@ Piglet `1.0.0-rc.6` 是在两类 Tier 1 原生虚拟化平台（`macOS arm64 / H
 
 八台 `full` 场景客机全部正常启动 Ubuntu 24.04.4 并通过契约断言；测试结束后通过 CLI 正常销毁项目，并按预期保留了共享镜像缓存、项目标记与密钥。
 
-## 持久化原生网络事务
+## 持久化原生网络事务 {#journaled-host-network-transactions}
 
 宿主网络安装与卸载采用由 `root` 持有、严格限定路径前缀的事务模型：
 
@@ -52,13 +52,13 @@ Piglet `1.0.0-rc.6` 是在两类 Tier 1 原生虚拟化平台（`macOS arm64 / H
 
 macOS 宿主通过了真实中断后的继续恢复验证，最终收敛至受保护的默认 `host` 模式；Linux 宿主完成了真实安装、回滚重试、四节点运行、卸载与宿主还原测试，并在最后合入了收紧套接字状态规范化、`systemd` 单元启用范围、NetworkManager 顺序及恢复字段范围的补丁（通过全量源码检查与 `-race` 竞态测试）。
 
-## macOS Shared Mode 与子网冲突处理
+## macOS Shared Mode 与子网冲突处理 {#macos-shared-mode-and-subnet-conflicts}
 
 macOS 默认支持模式为 `socket_vmnet` `host` 模式；`shared` 模式作为需显式指定的备选模式，也在空闲替代子网上通过了双节点契约验证。
 
 测试期间，当宿主机残留旧版创建的 `bridge100` 接口时，默认子网会触发 `VMNET_SHARING_SERVICE_BUSY (1009)`。网络预检严格凭接口归属标记识别自有网卡，绝不会仅因现有网卡配置了 `.1/24` 地址就直接接管。遇到子网冲突时，操作者可清理占用接口，或将整套实验环境显式迁移至另一个规范的 RFC 1918 `/24` 子网——运行时绝不会单独改动客机 IP 或随机挑选子网。
 
-## 可复现本地归档
+## 可复现本地归档 {#reproducible-local-archives}
 
 两次独立执行的本地 RC6 构建产出了字节完全一致的四平台归档、校验和、发布元数据与 Homebrew 配方：
 
@@ -70,7 +70,7 @@ macOS 默认支持模式为 `socket_vmnet` `host` 模式；`shared` 模式作为
 | Linux `arm64` | `afc9ce1043d377cc3b4ef8bdf77826a8139a8c839685025853e8bee8100c6a2e` |
 {.wide .expand}
 
-## 公开发布前待办项
+## 公开发布前待办项 {#remaining-work-before-public-release}
 
 在 RC6 节点上，距离公开发布尚余以下工作：
 - 两类 Tier 1 宿主的物理重启持久性验证
