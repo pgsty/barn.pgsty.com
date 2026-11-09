@@ -17,6 +17,7 @@ Barn (**Bootstrap And Run Nodes**) is an Apache-2.0 virtual machine manager for 
 - [Contributing](engineering/) — Source layout, local build and test gates, packaging snapshots, and catalog maintenance
 - [Mac Release](mac-release/) — Native payload pairing, Developer ID signing, notarization, and installation acceptance
 - [Barn 1.1.0 Release](/blog/release/1.1.0/) — Image and architecture overrides, live progress, resize recovery, and upgrade steps
+- [1.1.0 Local Acceptance](local-acceptance-1.1.0/) — In-place Apple Silicon upgrade, multi-distro Linux matrix, and native Mac verification
 - [Validation History](history/) — Dated release verification records and native hypervisor test matrices
 {.cards}
 

@@ -14,8 +14,8 @@ Barn 专为 **本地开发与测试** 设计。在搭建实验环境前，可通
 
 - **稳定版渠道**：[Barn 1.1.0](https://github.com/pgsty/barn/releases/tag/v1.1.0) 于 2026-11-09 作为 GitHub 正式版发布，`releases/latest`、不带 `BARN_VERSION` 的下载安装器与 Homebrew 配方都会选择此版本，DEB 与 RPM 软件包从发布页下载；需要固定版本时设置 `BARN_VERSION=1.1.0`。
 - **macOS 原生组件**：Darwin arm64 归档与 Apple Silicon Homebrew 安装均包含经过签名、公证的 `Barn.app` 及配套 CLI/helper，无需安装 Go 或 Xcode，详见 [macOS 客机指南](../../start/macos/#install)。
-- **相对 0.9.3 的变更**：整套部署 `recreate` 遇到清单缺少已有节点时拒绝执行，在终端中 `up` 准备宿主前会询问，数据盘只在识别出损坏时重置，目录签名校验失败退出 7。从 0.9.3 升级无需重建虚拟机；更早的变更记录见 [Barn 0.9.3 变更](../0.9.3-changes/)。
-- **历史验证记录**：早期版本的真机验收与测试记录归档在[验证历史](../history/)中。
+- **1.1.0 变更**：命令行 `--image/-I` 与 `--arch/-A` 可在不改写 `barn.yml` 的情况下指定基础镜像与客机架构，Linux 与 `barn mac` 终端进度统一为实时表格，中断的在线 `resize` 由 `status` 识别并可通过 `up`、`start` 或 `resize` 恢复，`barn purge` 默认直接删除部署并提供 `--ask` 确认提示。从 `1.0.0` 或 `0.9.3` 升级无需重建虚拟机；早期变更记录见 [1.0.0 发布说明](/zh/blog/release/1.0.0/)与 [Barn 0.9.3 变更](../0.9.3-changes/)。
+- **历史验证记录**：历次真机验收与测试记录归档在[验证历史](../history/)与 [Barn 1.1.0 本机完整验收](../local-acceptance-1.1.0/)中。
 
 ## Linux 客机 {#linux-guests}
 

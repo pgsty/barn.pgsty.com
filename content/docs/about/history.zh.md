@@ -23,7 +23,7 @@ icon: fa-solid fa-clock-rotate-left
 - **镜像目录**：两个官方源均通过签名验证、临时数据目录激活及内置字节比对，两个镜像源各自的 17 个 stable 制品均通过 HTTP 可达性与大小检查。最终下载的二进制也在全新的 `BARN_HOME` 中激活了官方目录。
 - **Linux 运行时**：下载的 `linux/amd64` 二进制通过 `-I d13 -A x86_64` 创建 Debian 13 客机，清单文件保持原样。CPU/内存 `2/2 GiB → 3/3 GiB → 2/2 GiB` 调整、停止/启动、远程参数与退出码 `17` 均通过检查；VM UUID、SSH 公钥、machine ID 与持久盘数据哨兵在资源调整和重启后保持不变。随后通过 `-A aarch64` 启动 ARM64 Debian 13 客机，QEMU 使用 TCG 与 `cortex-a72`，SSH 返回 `aarch64`。两台测试客机均在验收后删除。
 - **Mac 运行时**：新建的隔离 macOS 27 客机通过创建、SSH、远程退出码 `17`、停止/启动、身份与数据保留、销毁检查。用户现有 SSH 文件保持不变，原先运行的 Mac 虚拟机继续运行。公开签名安装器在独立目录中的安装与重复安装也通过验证。
-- **公开交付**：全部 20 个公开附件均可匿名下载，字节与已核验 draft 一致。默认安装器与显式 `BARN_VERSION=1.1.0` 均安装了公开版本。[Homebrew 更新](https://github.com/pgsty/homebrew-infra/commit/f36b991)同步了四个平台的归档 URL 与摘要。首页录像来自 Ubuntu 26.04 上的真实公开安装与首次 Linux VM 启动，使用已准备好的宿主网络和全新的测试账号。
+- **公开交付**：全部 20 个公开附件均可匿名下载，字节与已核验 draft 一致。默认安装器与显式 `BARN_VERSION=1.1.0` 均安装了公开版本。[Homebrew 更新](https://github.com/pgsty/homebrew-infra/commit/f36b991)同步了四个平台的归档 URL 与摘要。首轮公开安装录像在 Ubuntu 26.04 上验证了公网安装与首次 Linux VM 启动；当前首页录像展示 Apple Silicon macOS（macOS 27.0.1、QEMU 11.1.3）上的真实 `brew install pgsty/infra/barn`、`./configure -c full`、四节点 `barn up` 与 `barn status` 过程。随后的 Apple Silicon 16 阶段原地升级与多发行版完整验收记录见 [Barn 1.1.0 本机完整验收](../local-acceptance-1.1.0/)。
 
 物理宿主覆盖 `darwin/arm64` 与 `linux/amd64`，另验证了 TCG 下的 `linux/arm64` 客机；`darwin/amd64` 与原生 `linux/arm64` 的证据范围是交叉构建与制品检查。GUI 和剪贴板保留此前记录的验证日期与范围。早期验收脚本重试修正了不存在的超时参数、需要客机 sudo 的测试写入，以及未接受 `thread=multi` 选项的 TCG 断言；失败日志与成功结果一并保留。
 

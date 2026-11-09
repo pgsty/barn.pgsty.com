@@ -14,8 +14,8 @@ This documentation covers **Barn 1.1.0** (see the [Installation Guide](../../sta
 
 - **Stable channel**: [Barn 1.1.0](https://github.com/pgsty/barn/releases/tag/v1.1.0) was published on 2026-11-09 as a regular GitHub release, so `releases/latest`, the download installer without `BARN_VERSION`, and the Homebrew formula select it; DEB and RPM packages are downloaded from the release. Set `BARN_VERSION=1.1.0` to pin it.
 - **Native macOS component**: The Darwin arm64 archive and Apple Silicon Homebrew install include the signed, notarized `Barn.app` alongside the matching CLI and helper. Go and Xcode are not required; see [macOS Guests](../../start/macos/#install).
-- **Changes since 0.9.3**: Whole-deployment `recreate` refuses an inventory that omits an existing node, on a terminal `up` asks before preparing the host, data disks are reset only on recognized corruption, and catalog signature failures exit 7. Upgrading from 0.9.3 keeps existing VMs; earlier changes are recorded in [Barn 0.9.3 Changes](../0.9.3-changes/).
-- **Historical verification**: Dated test records for earlier releases are archived in [Validation History](../history/).
+- **Changes in 1.1.0**: Command-line `--image/-I` and `--arch/-A` overrides select the base image and guest architecture without rewriting `barn.yml`, terminal progress uses one live table for Linux and `barn mac` commands, interrupted online `resize` is detected by `status` and recovered by `up`, `start`, or `resize`, and `barn purge` removes the deployment immediately unless `--ask` is passed. Upgrading from `1.0.0` or `0.9.3` keeps existing VMs; earlier changes are recorded in the [1.0.0 Release Notes](/blog/release/1.0.0/) and [Barn 0.9.3 Changes](../0.9.3-changes/).
+- **Historical verification**: Dated test records are archived in [Validation History](../history/) and [Barn 1.1.0 Local Acceptance](../local-acceptance-1.1.0/).
 
 ## Linux guests {#linux-guests}
 

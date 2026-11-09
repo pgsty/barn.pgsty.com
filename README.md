@@ -21,9 +21,9 @@ This repository contains the bilingual documentation and blog site for Barn, pub
 
 Paper is the default visual preset. Readers can switch between Paper, Slate, Ink, and Terminal independently of light or dark mode from the Appearance menu.
 
-Current guides and command references cover **Barn 1.1.0**, released on 2026-11-09. It adds image and guest-architecture overrides, live progress tables, and resize recovery fixes. Architecture defaults to the host unless the inventory or command line overrides it. The Apple Silicon archive and Homebrew formula include the signed, notarized `Barn.app` alongside the CLI and helper; installation and use require no Go or Xcode. See the [1.1.0 release notes](content/blog/release/1.1.0.md).
+Current guides and command references cover **Barn 1.1.0**, released on 2026-11-09. It adds `--image/-I` and `--arch/-A` overrides, live progress tables, and resize recovery fixes. Architecture defaults to the host unless the inventory or command line overrides it. The Apple Silicon archive and Homebrew formula include the signed, notarized `Barn.app` alongside the CLI and helper; installation and use require no Go or Xcode. See the [1.1.0 release notes](content/blog/release/1.1.0.md) and [1.1.0 local acceptance](content/docs/about/local-acceptance-1.1.0.md).
 
-The path, sharing, node-selection, image, limit, recovery, and resize changes shipped in Barn 0.9.3 are documented in [Barn 0.9.3 Changes](content/docs/about/0.9.3-changes.md). Older release posts and validation records retain their original version numbers and test evidence.
+Earlier release notes and validation records in [content/blog/release/](content/blog/release/) and [content/docs/about/history.md](content/docs/about/history.md) retain their original version numbers and test evidence.
 
 ## Brand assets
 

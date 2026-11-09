@@ -17,6 +17,7 @@ Barn（**Bootstrap And Run Nodes**）是面向本地数据库实验、Linux 开�
 - [参与贡献](engineering/) — 源码目录结构、本地构建与测试门禁、打包快照及镜像目录维护
 - [Mac 发布](mac-release/) — 原生载荷配对、Developer ID 签名、公证与安装验收
 - [Barn 1.1.0 发布](/zh/blog/release/1.1.0/) — 镜像与架构覆盖、实时进度、资源调整恢复与升级步骤
+- [1.1.0 本机验收](local-acceptance-1.1.0/) — Apple Silicon 原地升级、多发行版 Linux 矩阵与原生 Mac 完整验收记录
 - [验证历史](history/) — 历次版本发布、真机虚拟化测试与镜像校验的归档记录
 {.cards}
 
