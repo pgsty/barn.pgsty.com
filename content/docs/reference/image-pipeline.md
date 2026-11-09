@@ -13,7 +13,7 @@ Host requirements:
 - **Out-of-tree storage**: Keep source images, RPM/DEB package caches, and output directories outside the Git working tree (the repository tracks recipes and lockfiles only).
 - **Architecture**: `--arch` records the target metadata architecture; run `offline` customization on a host where `libguestfs` can execute the guest's architecture.
 
-## Modes and profiles
+## Modes and profiles {#modes-and-profiles}
 
 - **`validate`**: Copies and re-hashes the source image, verifies a single-file `qcow2` structure with `qemu-img check`, and writes an evidence bundle without modifying guest files or credentials.
 - **`offline`**: Runs `virt-customize --no-network` and `virt-cat` on the staged copy to normalize guest access: it verifies that UID/GID `88` is free of unrelated accounts, configures the locked `dba`/`admin` identity, disables SSH password and root login, strips SSH host keys, shell history, machine-id, and `cloud-init` caches, restores SELinux labels, and verifies a deterministic guest marker.
@@ -30,7 +30,7 @@ Host requirements:
 
 `validate` mode accepts only `--profile base`. In `offline` mode, `el8`, `d12`, and `d13` require both `--package-lock` and `--package-cache` matching the profile and architecture. For official catalog targets, use `build-official.py` to drive these inputs automatically.
 
-## Official candidate matrix
+## Official candidate matrix {#official-candidate-matrix}
 
 `packaging/image-pipeline/build-official.py` builds the eight offline-normalized official targets—Debian 12/13 (`d12`, `d13`) and Rocky Linux 8/9 (`el8`, `el9`) on `amd64` and `arm64`—using the upstream URLs, package locks, release versions, SHA-256 digests, and `SOURCE_DATE_EPOCH` pinned in `official-v1.json` (the catalog's Ubuntu artifacts come from the same recipe run directly by `pipeline.py`; Ubuntu cloud images already ship `xfsprogs`, so they need no offline package lock).
 
@@ -59,7 +59,7 @@ Once all eight target bundles have been built, assemble them into a candidate st
 
 `--assemble-from` requires exactly one bundle for each of the eight targets and writes to a new `--output` path that does not yet exist, invoking `barn repo build` and `barn repo verify` (using `barn` on `PATH` or `--barn /absolute/path/to/barn`). The assembled repository maps its channels to `candidate` (for example `d13:candidate`) with status `testing` so you can run live VM acceptance checks before promoting images to `stable` and `supported`.
 
-## Validate a single downloaded image
+## Validate a single downloaded image {#validate-a-single-downloaded-image}
 
 ```bash
 SOURCE_DATE_EPOCH=1787486400

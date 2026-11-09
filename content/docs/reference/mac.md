@@ -13,7 +13,7 @@ Running macOS guests requires an Apple Silicon Mac on macOS 27 or later, invoked
 
 This reference covers the **Barn 1.0.0** command interface and `Barn.app`, the native macOS app bundle that runs the VMs (runner protocol `2`). The Apple Silicon release and Homebrew installation include the app; see [macOS Guests](../../start/macos/#install).
 
-## Commands
+## Commands {#commands}
 
 | Command | Purpose |
 |---|---|
@@ -58,7 +58,7 @@ barn mac exec dev -- sh -c 'sw_vers; id'
 barn --json mac exec dev -- sh -c 'echo out; exit 3'
 ```
 
-### Flags by command
+### Flags by command {#flags-by-command}
 
 | Command | Flags |
 |---|---|
@@ -81,7 +81,7 @@ When a VM name is optional, omitting it selects the only existing VM or `mac1`; 
 
 `--no-wait` returns as soon as the VM process is running; for a newly created VM, run `barn mac up NAME` without `--no-wait` to finish SSH key installation and sudo setup. Ordinary `start` requires a VM that has completed its first boot—if an uninitialized VM is already running, use `barn mac open NAME` to view its first boot, or `barn mac up NAME --open` if it is stopped. Passing `--recovery` boots directly into the macOS Recovery desktop without waiting for normal SSH readiness.
 
-### Flag values
+### Flag values {#flag-values}
 
 | Flag | Value |
 |---|---|
@@ -100,7 +100,7 @@ If you run `up` on an existing VM with creation flags that differ from its recor
 - The guest administrator account (`--user`) and disk capacity (`--disk`) are fixed for the lifetime of a VM and preserved across `recreate`. Create a new VM if you need a different account or disk size.
 - To upgrade a VM to a newer macOS build, run `barn mac image update` followed by `barn mac recreate NAME --update`. Because `recreate --update` preserves the VM's disk capacity, if the new macOS build does not yet have a base image at a custom disk size (for example, `200G`), prepare it first with `barn mac setup --disk 200G`.
 
-## Machines
+## Machines {#machines}
 
 - **Names**: 1–32 characters starting with a lowercase letter and containing lowercase letters, digits, or internal hyphens (for example `mac1`, `dev`, `build-2`).
 - **Two-VM host limit**: Apple's Virtualization framework allows at most two macOS VMs to run simultaneously on a single Mac across all apps (including an active `.ipsw` base-image installation). Barn never stops a running VM to make room for another. `ls.running` counts VMs in the current `BARN_HOME`, while Apple's framework enforces the host-wide limit.
@@ -110,7 +110,7 @@ If you run `up` on an existing VM with creation flags that differ from its recor
 - **Clipboard sync**: Syncs plain text up to 1 MiB over the VM's SSH connection whenever the desktop window gains or loses focus, skipping pasteboard items marked concealed.
 - **Shutdown**: `barn mac stop` requests a clean guest shutdown and waits up to two minutes before powering the VM off (`"forced": true`); `--force` powers off immediately.
 
-## Networks
+## Networks {#networks}
 
 Each VM's runner process creates an isolated user-space network at startup and tears it down on exit—without root privileges or a background daemon—using Apple's [shared-mode `vmnet` API](https://developer.apple.com/documentation/vmnet/vmnet_network_configuration_create(_:_:)):
 
@@ -130,7 +130,7 @@ If macOS Local Network privacy blocks a third-party terminal or IDE from reachin
 
 All `barn mac` commands except interactive `ssh` support `--json` and `--yaml` on stdout while writing progress to stderr.
 
-### `ls`
+### `ls` {#ls}
 
 ```json
 {
@@ -177,7 +177,7 @@ All `barn mac` commands except interactive `ssh` support `--json` and `--yaml` o
 | `error`, `warnings` | Last recorded failure on the slot and any SSH issues detected during this check |
 {.wide .expand}
 
-### Lifecycle results
+### Lifecycle results {#lifecycle-results}
 
 Single-machine operations (`up`, `restart`, `open`, `recreate`, `configure`) return a single machine result object, while batch operations (`start`, `stop`, `destroy`) return `{"machines": [...]}` even when called with one name. If a multi-VM batch partially fails, the response includes both the succeeded entries and the failures and exits `5`.
 
@@ -202,7 +202,7 @@ Other structured responses:
 - **`logs --json`**: Returns `name` and `logs`.
 - **`doctor --json`**: Returns `ok` and `checks[]` (`name`, `ok`, `detail`, and optional `next`), exiting `3` if any check fails.
 
-## Failures
+## Failures {#failures}
 
 Exit codes follow the [Barn CLI exit code table](../cli/#exit-codes), and `ssh`/`exec` pass through the remote command's exit status. Structured error objects include stable `reason` codes and a `next` recovery command:
 
@@ -226,7 +226,7 @@ Exit codes follow the [Barn CLI exit code table](../cli/#exit-codes), and `ssh`/
 | `mac_readiness_interrupted` | `130` | `barn mac stop` interrupted a first-boot SSH readiness wait |
 {.wide .expand}
 
-## Files
+## Files {#files}
 
 ```filetree {title="$BARN_HOME/mac"}
 config.json # Installation identity, default base image, and ssh_config_off flag

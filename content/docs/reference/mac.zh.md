@@ -13,7 +13,7 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 
 本参考说明 **Barn 1.0.0** 的命令接口与 `Barn.app`（macOS 宿主上运行虚拟机的原生应用包，runner 协议版本 `2`）。Apple Silicon 发行包与 Homebrew 安装已包含 App，安装步骤见 [macOS 客机指南](../../start/macos/#install)。
 
-## 命令
+## 命令 {#commands}
 
 | 命令 | 用途 |
 |---|---|
@@ -38,9 +38,7 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 | `doctor` | 检查宿主环境、`Barn.app` 组件、基础镜像与每台虚拟机槽位 |
 {.wide .expand}
 
-<span id="ssh-and-exec"></span>
-
-### SSH 与 exec {#ssh-与-exec}
+### SSH 与 exec {#ssh-and-exec}
 
 > [!TIP]
 > 从 **0.9.2** 开始，远端命令前必须使用 `--`，例如 `barn mac exec dev -- sw_vers`。交互式登录 `barn mac ssh dev` 无需分隔符。
@@ -60,7 +58,7 @@ barn mac exec dev -- sh -c 'sw_vers; id'
 barn --json mac exec dev -- sh -c 'echo out; exit 3'
 ```
 
-### 各命令的参数
+### 各命令的参数 {#flags-by-command}
 
 | 命令 | 参数 |
 |---|---|
@@ -83,7 +81,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 
 `--no-wait` 会在虚拟机进程启动后立即返回；对于新建虚拟机，后续仍需运行一次不带 `--no-wait` 的 `barn mac up NAME` 以完成 SSH 密钥写入与 sudo 配置。普通 `start` 要求虚拟机已完成首次启动——若未完成首次启动的虚拟机已在运行，可执行 `barn mac open NAME` 查看首次启动画面；若已停止，则执行 `barn mac up NAME --open`。传入 `--recovery` 会跳过常规就绪等待，直接启动进入 macOS 恢复模式桌面。
 
-### 参数取值
+### 参数取值 {#flag-values}
 
 | 参数 | 取值 |
 |---|---|
@@ -102,7 +100,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 - 管理员账号（`--user`）与磁盘容量（`--disk`）在虚拟机整个生命周期内固定不变，`recreate` 也会保留它们；如需更改账号或磁盘大小，请创建一台新虚拟机。
 - 升级虚拟机的 macOS 版本时，先运行 `barn mac image update`，再执行 `barn mac recreate NAME --update`。由于 `recreate --update` 会保留原虚拟机的磁盘容量，若新 macOS 版本下还没有对应自定义容量（如 `200G`）的基础镜像，请先执行 `barn mac setup --disk 200G` 准备好该容量的基础镜像。
 
-## 机器规则
+## 机器规则 {#machines}
 
 - **名称**：1–32 个字符，以小写字母开头，仅含小写字母、数字与中间连字符（例如 `mac1`、`dev`、`build-2`）。
 - **单机两台并发上限**：受 Apple Virtualization 框架限制，每台 Mac 最多同时运行两台 macOS 虚拟机（跨所有虚拟化应用以及正在执行的 `.ipsw` 基础镜像安装任务统一计数）。Barn 绝不会为了腾出名额而停止已有虚拟机。`ls.running` 统计当前 `BARN_HOME` 内的活跃虚拟机数，宿主全局上限则由 Apple 运行时强制执行。
@@ -112,7 +110,7 @@ barn --json mac exec dev -- sh -c 'echo out; exit 3'
 - **剪贴板同步**：每当虚拟机桌面窗口获得或失去焦点时，Barn 通过该虚拟机的 SSH 连接双向同步不超过 1 MiB 的纯文本，并自动跳过标记为敏感（concealed）的剪贴板条目。
 - **关机行为**：`barn mac stop` 会向客机发送正常关机请求，等待满两分钟仍未退出则强制断电（返回 `"forced": true`）；传入 `--force` 则立即断电。
 
-## 网络
+## 网络 {#networks}
 
 每台虚拟机的 runner 进程在启动时通过 Apple 的[共享模式 `vmnet` API](https://developer.apple.com/documentation/vmnet/vmnet_network_configuration_create(_:_:)) 创建独立的用户态网络，并在退出时自动销毁，全程无需守护进程或 root 权限：
 
@@ -132,7 +130,7 @@ macOS 的“本地网络”隐私权限有时会拦截第三方终端或 IDE 访
 
 除交互式 `ssh` 外，所有 `barn mac` 命令均支持通过 `--json` 与 `--yaml` 在 stdout 输出结构化结果，同时将进度信息写往 stderr。
 
-### `ls`
+### `ls` {#ls}
 
 ```json
 {
@@ -179,7 +177,7 @@ macOS 的“本地网络”隐私权限有时会拦截第三方终端或 IDE 访
 | `error`、`warnings` | 最近一次记录的槽位错误，以及本次检查发现的 SSH 告警 |
 {.wide .expand}
 
-### 生命周期结果
+### 生命周期结果 {#lifecycle-results}
 
 单机操作（`up`、`restart`、`open`、`recreate`、`configure`）返回单个结果对象；批量操作（`start`、`stop`、`destroy`）即使只指定一台虚拟机也始终返回 `{"machines": [...]}`。多台虚拟机操作部分成功时，结果中会同时保留成功项与失败详情，并以退出码 `5` 返回。
 
@@ -204,9 +202,9 @@ macOS 的“本地网络”隐私权限有时会拦截第三方终端或 IDE 访
 - **`logs --json`**：返回 `name` 与 `logs`。
 - **`doctor --json`**：返回 `ok` 与 `checks[]`（每项含 `name`、`ok`、`detail` 及可选的 `next`），任一检查未通过时退出码为 `3`。
 
-## 失败原因
+## 失败原因 {#failures}
 
-退出码遵循 [Barn 命令行退出码表](../cli/#退出码)，`ssh` 与 `exec` 原样透传远端命令退出码。结构化错误对象包含稳定的 `reason` 标识与 `next` 修复建议：
+退出码遵循 [Barn 命令行退出码表](../cli/#exit-codes)，`ssh` 与 `exec` 原样透传远端命令退出码。结构化错误对象包含稳定的 `reason` 标识与 `next` 修复建议：
 
 | 原因标识 | 退出码 | 含义与下一步 |
 |---|---:|---|
@@ -228,7 +226,7 @@ macOS 的“本地网络”隐私权限有时会拦截第三方终端或 IDE 访
 | `mac_readiness_interrupted` | `130` | `barn mac stop` 中断了首次启动期间的 SSH 就绪等待 |
 {.wide .expand}
 
-## 文件
+## 文件 {#files}
 
 ```filetree {title="$BARN_HOME/mac"}
 config.json # 安装身份标识、默认基础镜像与 ssh_config_off 标记

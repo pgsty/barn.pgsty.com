@@ -10,7 +10,7 @@ Barn 通过静态镜像目录与不可变 `qcow2` 产物解析 Linux 客机镜�
 > [!WARNING]
 > `el7`（CentOS Linux 7.9）属于 `deprecated`（已弃用）兼容镜像；内置目录中的其余版本均为 `supported`。
 
-## 别名与拉取顺序
+## 别名与拉取顺序 {#aliases-and-pull-order}
 
 Barn 1.0.0 内置镜像目录 `2026110502`，包含 Debian 13 镜像 `20261103.2651.1`。目录涵盖 9 个发行版系列，每个系列一个 `stable` 版本，共 17 个镜像产物：`el7` 仅提供 `amd64`，其余系列均同时提供 `amd64` 与 `arm64`。缺省请求为宿主原生架构的 `u24:stable`（Ubuntu 24.04 LTS）。
 
@@ -74,7 +74,7 @@ barn update
 
 Barn 会自动将通过校验的缓存镜像恢复为只读权限（`0444`）。如果未被虚拟机引用的缓存文件校验失败，Barn 会先将其重命名为 `.corrupt-<timestamp>` 留存，再重新下载；若该基础镜像仍被现有虚拟机引用，则保持原文件不动并直接报错。
 
-## 运行时策略
+## 运行时策略 {#runtime-policy}
 
 当客机架构与宿主架构一致时，Barn 默认启用硬件加速虚拟化（macOS 使用 Apple HVF，Linux 使用 KVM），仅有一项内置例外：Rocky Linux 8（`el8`）的 `arm64` 原生内核使用 64 KiB 内存页，而 Apple HVF 不支持 64 KiB 页大小，因此 Apple Silicon 宿主运行 `el8` 时会自动切换为同架构 QEMU TCG 并在状态输出中标注 `tcg`。跨架构客机（`vm_arch` 或命令行覆盖后的架构与宿主不同）同样使用 TCG；在 `arm64` 宿主上模拟 `amd64` 客机时，Barn 会将 TCG 固定为单翻译线程以保证 x86 内存序正确。
 
@@ -88,9 +88,9 @@ barn image pull d13 --repo https://mirror.example/barn
 BARN_REPO=/absolute/local/repository barn up
 ```
 
-## 信任与校验
+## 信任与校验 {#trust-and-verification}
 
-正式发布构建内置了两把生产环境 Ed25519 校验公钥（签名私钥保存在源码仓库之外）。激活镜像目录时，Barn 会拒绝未知签名密钥、格式错误的 JSON、同一修订号下字节不同的内容，以及低于该仓库历史最高已接受修订号的目录（除非在 `barn image sync` 时显式传入 `--allow-downgrade`）。缺少签名、签名校验失败或 revision 字节冲突时退出 `7`（`integrity`，见[退出码](../cli/#退出码)）。对相同目录字节的新可信签名会被接受，这也可以修复已损坏的缓存签名。
+正式发布构建内置了两把生产环境 Ed25519 校验公钥（签名私钥保存在源码仓库之外）。激活镜像目录时，Barn 会拒绝未知签名密钥、格式错误的 JSON、同一修订号下字节不同的内容，以及低于该仓库历史最高已接受修订号的目录（除非在 `barn image sync` 时显式传入 `--allow-downgrade`）。缺少签名、签名校验失败或 revision 字节冲突时退出 `7`（`integrity`，见[退出码](../cli/#exit-codes)）。对相同目录字节的新可信签名会被接受，这也可以修复已损坏的缓存签名。
 
 所有缓存或导入的镜像都必须是文件大小与 SHA-256 严格匹配的独立 `qcow2` 文件，不得包含后端依赖链（backing file）、外部数据文件、加密或未知的不兼容特性位。通过校验后，Barn 将基础镜像设为只读，并为每个虚拟机节点创建独立的写时复制（CoW）overlay 根盘。
 
@@ -106,7 +106,7 @@ barn image reset --repo /srv/barn
 - **`barn image sync`**：从显式指定的 URL 或本地文件路径恢复镜像目录（对于未签名的自定义仓库，源路径必须指向该仓库根目录下的 `catalog.json`），支持 `--allow-downgrade` 显式降级。
 - **`barn image reset`**：将 `--repo`（或默认仓库）的活动目录重置回二进制内置版本，同时保留防回滚所需的历史最高修订号水位线。
 
-## 静态仓库格式
+## 静态仓库格式 {#static-repository-format}
 
 静态 Barn 镜像仓库的目录结构如下：
 
@@ -141,7 +141,7 @@ images:
 静态仓库构建与校验规则（`barn repo scan|build|verify /absolute/repo`）：
 
 - 仓库根目录接受相对路径、`~/` 与目录符号链接，根目录和 `images/` 可以共享可写。`repo.yaml` 可为指向不超过 4 MiB 非空普通文件的符号链接。镜像条目仍须为普通文件，输出 `catalog.json` 的符号链接不会被覆盖。
-- 引导方式按 `variant` → `family` → `defaults.boot` 继承；状态按 `variant` → `version` → `unknown` 继承。每个系列都必须定义指向已有精确版本的默认通道；系列名与别名全局唯一且不能以 `local-` 开头。由于[清单别名归一化](../configuration/#vm-变量)会先查二进制内置目录，请勿将 `ubuntu`、`debian`、`rocky` 等内置别名改指其他系列。
+- 引导方式按 `variant` → `family` → `defaults.boot` 继承；状态按 `variant` → `version` → `unknown` 继承。每个系列都必须定义指向已有精确版本的默认通道；系列名与别名全局唯一且不能以 `local-` 开头。由于[清单别名归一化](../configuration/#vm-variables)会先查二进制内置目录，请勿将 `ubuntu`、`debian`、`rocky` 等内置别名改指其他系列。
 - 通道与按点号分段的数值前缀（如 `el9@9.8`、`el9@9`）会解析为精确版本或匹配的最高版本，最终落定为不可变的三元组标识 `(image, exact version, arch)`：
   ```text
   d13:stable + native
@@ -151,9 +151,7 @@ images:
 - **`barn repo scan`** 为只读检查，不依赖 `qemu-img`；即使存在 `missing`（缺失）或 `unsafe`（命名/类型不安全）的文件也会返回退出码 `0`，自动化脚本需检查输出中的 `missing` 与 `unsafe` 数组是否为空。
 - **`barn repo build`** 与 **`barn repo verify`** 依赖本机 `qemu-img`。`build` 校验 `repo.yaml` 并完整检查每个 `qcow2` 文件后原子替换 `catalog.json`（存在 `missing` 或 `unsafe` 文件时拒绝构建，`untracked` 未声明文件则仅报告而不写入目录）；`verify` 要求现有 `catalog.json` 与重新生成的结果逐字节一致。每次修改目录内容都必须递增 `revision`，发布时先上传不可变的 `.qcow2` 文件，最后同步更新 `catalog.json` 与 `catalog.json.minisig`。
 
-<span id="local-image-import"></span>
-
-## 本地布局与导入
+## 本地布局与导入 {#local-image-import}
 
 Barn 将目录记录、下载缓存与本地导入文件统一存放在 `$BARN_HOME/images`（默认 `~/.barn/images`）：
 
@@ -183,7 +181,7 @@ barn image import --name local-mybase --boot uefi \
 - 源文件名可包含空格或 Unicode，无需特定扩展名；Barn 校验实际 qcow2 内容。新导入使用 `local/<sha256>.qcow2`，同名不同内容可并存，相同内容复用缓存。重新导入已有别名时保留其原有缓存路径。原有的 256 个别名上限已移除；注册表元数据若超过 1 MiB，会在写入前报错并保留已有别名。
 - 命名导入（`--name local-<alias>`）必须同时指定 `--boot bios|uefi` 与 `--source-user <user>`，默认记录宿主架构。`main` 新增 `--arch/-A`，可显式记录 `amd64` 或 `arm64` 及其别名；qcow2 元数据不能识别客机 CPU，导入也不会转换架构。使用该镜像时，清单的 `vm_arch` 或生命周期命令的 `-A` 须与之匹配。别名一旦注册不可更改，可通过 `vm_image: local-mybase` 引用；不带 `--name` 的导入仅预填充缓存，不能传 `-A`。
 
-## 清理
+## 清理 {#pruning}
 
 ```bash
 barn image prune --dry-run

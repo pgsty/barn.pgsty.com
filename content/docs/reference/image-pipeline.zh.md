@@ -13,7 +13,7 @@ icon: fa-solid fa-diagram-project
 - **工作树外存储**：请将源镜像、RPM/DEB 软件包缓存和输出目录放在 Git 工作树之外（源码仓库只跟踪构建配方与锁定清单）。
 - **架构匹配**：`--arch` 用于记录候选镜像的目标架构元数据；执行 `offline` 定制时，构建宿主上的 `libguestfs` 必须能够运行目标客机架构。
 
-## 模式与处理方案
+## 模式与处理方案 {#modes-and-profiles}
 
 - **`validate`（校验模式）**：复制源镜像并重算哈希，调用 `qemu-img check` 强制检查单文件 `qcow2` 结构，不修改客机文件与凭据，直接生成证据产物包。
 - **`offline`（离线归一化模式）**：在暂存副本上运行 `virt-customize --no-network` 与 `virt-cat`：确认 UID/GID `88` 未被其他账号占用后，配置固定的 `dba`/`admin` 管理身份，禁用 SSH 密码登录与 root 登录，清理残留密钥、命令历史、机器标识与 `cloud-init` 缓存，恢复 SELinux 标签，并读回客机内的确定性标记以验证定制结果。
@@ -30,7 +30,7 @@ icon: fa-solid fa-diagram-project
 
 `validate` 模式仅支持 `--profile base`。在 `offline` 模式下使用 `el8`、`d12` 或 `d13` 时，必须同时传入与方案及架构匹配的 `--package-lock` 和 `--package-cache`。构建官方镜像时，直接使用下方的 `build-official.py` 封装脚本即可自动传入锁定的软件包集合。
 
-## 官方候选镜像矩阵
+## 官方候选镜像矩阵 {#official-candidate-matrix}
 
 `packaging/image-pipeline/build-official.py` 封装了八个官方离线归一化目标——Debian 12/13（`d12`、`d13`）与 Rocky Linux 8/9（`el8`、`el9`）各自的 `amd64` 与 `arm64` 变体，所有上游 `qcow2` URL、RPM/DEB 依赖包、发布版本号、SHA-256 摘要与 `SOURCE_DATE_EPOCH` 均锁定在 `official-v1.json` 中（目录中的 Ubuntu 制品由 `pipeline.py` 直接按同一配方构建；Ubuntu 云镜像自带 `xfsprogs`，无需离线依赖包锁定）。
 
@@ -49,7 +49,7 @@ icon: fa-solid fa-diagram-project
 - 运行前请预先创建好 `--source-cache`、`--package-cache` 与 `--output` 目录，并传入规范化的绝对路径。加上 `--fetch` 时，脚本会从锁定的 HTTPS URL 下载缺失输入并在调用 `virt-customize --no-network` 前校验 SHA-256；不加 `--fetch` 时，所有锁定输入必须已存在于两个缓存目录中。
 - 省略 `--target` 会构建全部八个目标，重复指定 `--target` 可构建指定子集。`--list` 会列出当前源码锁定的精确版本。
 
-八个目标全部构建完成后，将**包含各产物包目录的父目录**传给 `--assemble-from`（若分散在多个父目录可重复传入 `--assemble-from`），即可组装出静态候选仓库：
+八个目标全部构建完成后，将 **包含各产物包目录的父目录** 传给 `--assemble-from`（若分散在多个父目录可重复传入 `--assemble-from`），即可组装出静态候选仓库：
 
 ```bash
 ./packaging/image-pipeline/build-official.py \
@@ -59,7 +59,7 @@ icon: fa-solid fa-diagram-project
 
 组装操作要求八个目标各有且仅有一个产物包，输出目标路径 `--output` 必须尚不存在，并会调用 `PATH` 中的 `barn`（或 `--barn /absolute/path/to/barn`）执行 `barn repo build` 与 `barn repo verify`。生成的候选仓库默认使用 `candidate` 通道（例如 `d13:candidate`）和 `testing` 状态，便于在提升为 `stable` / `supported` 之前执行真机冒烟测试。
 
-## 校验单个已下载镜像
+## 校验单个已下载镜像 {#validate-a-single-downloaded-image}
 
 ```bash
 SOURCE_DATE_EPOCH=1787486400

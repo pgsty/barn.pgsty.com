@@ -8,7 +8,7 @@ aliases: [/docs/concepts/project-model/]
 
 本参考跟随 Barn `main`。下文的命令行镜像与架构覆盖属于 1.0.0 之后尚未发布的改动；请通过 `barn version` 和命令的 `--help` 核对当前构建。
 
-## 发现顺序
+## 发现顺序 {#discovery}
 
 Barn 先检查命令行显式传入的 `-f` 路径；未指定 `-f` 时，依次在当前工作目录查找 `barn.yml`、`barn.yaml`、`pigsty.yml` 与 `pigsty.yaml`。四种文件名均使用同一种兼容 Pigsty 的 YAML 主机清单格式。
 
@@ -16,7 +16,7 @@ Barn 先检查命令行显式传入的 `-f` 路径；未指定 `-f` 时，依次
 
 已应用的部署状态统一保存在 `BARN_HOME` 中，重命名清单文件不会改变部署；跨工作目录操作同一套部署时，请将 `BARN_HOME` 设为绝对路径。
 
-## 完整配置示例
+## 完整配置示例 {#a-complete-inventory}
 
 `barn init [meta|dual|trio|full]` 分别生成 1、2、3、4 节点的拓扑模板。`meta` 使用 `.10`，更大的模板依次增加 `.11`（`node-1`）、`.12`（`node-2`）与 `.13`（`node-3`）；这些模板只定义虚拟机拓扑，上层 Pigsty 服务角色由你的 Ansible 剧本决定。使用 `--cidr` 可在保留末位主机号的前提下更换 `/24` 网段；运行 `barn init full -o -` 可将模板直接打印到标准输出而不落盘。
 
@@ -49,7 +49,7 @@ barn plan -f barn.yml
 
 `validate` 只检查 YAML 语法、字段规则与镜像目录引用（传入 `--repo` 可改用其他仓库的目录校验），不会启动虚拟机或下载镜像。JSON 输出包含 `valid`、`source`、`spec_hash` 与 `resolved`；若本地镜像目录无法读取，结果会附带警告并跳过镜像选择器校验。真正执行 `up` 时，Barn 会进一步校验 `local-*` 导入镜像的缓存字节、宿主资源、共享目录、网络与客机 SSH 就绪状态。
 
-## Barn 读取什么
+## Barn 读取什么 {#what-barn-reads}
 
 清单必须包含顶层 `all:` 分组，Barn 会遍历其中的 `hosts` 与嵌套 `children` 映射。Barn 直接解析静态 YAML，不执行 Ansible 动态清单插件或 Jinja 表达式，也不加载外部 `group_vars` 或 `host_vars` 文件。同一个 IPv4 地址出现在多个分组中时，Barn 会合并各组继承的变量，将其视为同一个节点。
 
@@ -61,7 +61,7 @@ Barn 只读取节点 IPv4 键、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq
 - **继承与严格校验**：变量按 `all.vars` → 嵌套 `children.<group>.vars` → 节点变量的顺序覆盖。节点上声明的 `vm_disks` 等列表会整体替换组级列表，不会追加合并。同级分组对同一节点给出不同值时，必须在节点层级显式覆盖以消除冲突。未知的 `vm_*` 字段、错误类型、Jinja 表达式、重复 YAML 键以及多文档 YAML 流都会直接报错；报错时会指出违反的规则、问题值与行号，并提示拼写相近的 `vm_*` 字段名。支持 YAML 锚点与 `<<` 合并键（显式键优先，合并序列中排在前面的映射次之）。
 - **跳过节点**：`vm_skip: true` 的外部主机可使用主机名或 IPv6 键，不参与推导托管 `/24`；清单仍须保留一个托管节点。已部署节点被跳过时，`plan` 会标记为 `missing`，不会自动销毁。
 
-## VM 变量 {#vm-变量}
+## VM 变量 {#vm-variables}
 
 | 变量 | 默认值 | 含义 |
 |---|---|---|
@@ -101,6 +101,7 @@ vm_version: "9.8"
 | `native` | — | 跟随当前宿主架构，也是未设置时的默认值 |
 | `amd64` | `x86_64`、`x64` | 固定使用 x86-64 客机 |
 | `arm64` | `aarch64`、`a64` | 固定使用 ARM64 客机 |
+{.wide .expand}
 
 `vm_arch` 是整套部署共用的属性，请在 `all.vars` 中统一定义。每个托管节点必须解析为同一架构，不能用节点变量或节点选择器混合架构。
 
@@ -117,9 +118,9 @@ barn init full -I u24 -A arm64   # 将镜像与架构写入新清单
 
 没有清单文件时，生命周期命令沿用已保存的部署规格，再应用显式覆盖。`start` 和 `restart` 始终使用已应用状态。已有 VM 的架构不会因省略 `-A` 或修改清单而自动改变：`up` 会报告漂移，实际切换架构需要选择全部已有节点执行 `recreate`。`resize` 虽接受覆盖用于核对期望配置，仍只允许修改 CPU 与内存。
 
-客机与宿主架构不同时使用 QEMU TCG。Linux 宿主的 `barn setup` 默认只安装本机架构的 QEMU；运行跨架构客机前，需安装对应的 `qemu-system-*` 与 UEFI 固件。加速方式与镜像例外见[运行时策略](../images/#运行时策略)。
+客机与宿主架构不同时使用 QEMU TCG。Linux 宿主的 `barn setup` 默认只安装本机架构的 QEMU；运行跨架构客机前，需安装对应的 `qemu-system-*` 与 UEFI 固件。加速方式与镜像例外见[运行时策略](../images/#runtime-policy)。
 
-## 数据盘 {#数据盘}
+## 数据盘 {#data-disks}
 
 ```yaml {title="barn.yml"}
 vm_disks:
@@ -139,7 +140,7 @@ vm_disks:
 > [!IMPORTANT]
 > **数据盘定位于可丢弃的测试存储。** 执行 `up` 时，Barn 会按配置的 `fs` 格式化空白数据盘。对于已有的 ext4 或 XFS 文件系统（包括 `persistent: true` 的持久盘），只有客机内的只读检查（`e2fsck -fn` 或 `xfs_repair -n`）报告可识别的损坏时才会重置，并在 `nodes[].repairs` 中记录。带分区表、签名缺少文件系统 UUID、其他文件系统类型、客机工具不支持的文件系统特性或检查工具未知失败的磁盘会保留数据，并在 `nodes[].warnings` 中给出警告；设备暂缺、探测命令报错、挂载忙碌或宿主 I/O 故障同样只报告警告。根盘与宿主共享目录绝不会被格式化。
 
-## 目录共享
+## 目录共享 {#shares}
 
 ```yaml {title="barn.yml"}
 vm_shares:
@@ -159,13 +160,13 @@ vm_shares:
 - 若请求了可写共享（`readonly: false`）但客机用户无权写入，Barn 会自动降级为只读挂载并报告警告，而不会递归修改宿主文件属主；调整宿主目录权限后重新执行 `barn up` 即可恢复可写挂载。
 - 修改已有节点的 `vm_shares` 需要执行 `barn recreate`。`up` 或 `start` 期间若某个节点的共享源目录缺失，只会使该节点失败，其余节点照常启动；`restart`、`reload` 与 `recreate` 则会在停止现有虚拟机前预先校验所有共享源目录。
 
-## 名称与地址
+## 名称与地址 {#names-and-addresses}
 
 Barn 依次按显式 `nodename`、`<pg_cluster>-<pg_seq>`、`node-<IP末段>` 确定节点名称。节点名称在部署内必须唯一，长度为 1–63 个字符，只能包含小写字母、数字与连字符，且不能以 `-` 开头或结尾。`vm_alias` 接受额外的小写 DNS 名称（允许包含点号），且不能与任何节点名或其他别名重复。
 
 同一套部署中的所有托管节点必须位于同一个 RFC1918 `/24` 私有网段内：`.1` 固定为宿主网关，`.2`–`.8` 保留，节点使用 `.9`–`.254`。客机内部由固定 IP 网卡承载清单地址（可通过 `ip -br addr` 查看）。
 
-## 漂移
+## 漂移 {#drift}
 
 显式节点选择只应用所选节点的改动：`plan node-1`、`up node-1`、`reload node-1`、`recreate node-1` 和 `resize node-1` 保留其他节点的已应用配置，即使清单中已修改或省略它们。整份清单仍须通过语法解析，未创建且未选中的节点不要求解析镜像。与已应用节点冲突的地址、别名、控制节点角色或部署公共设置仍会报错。
 

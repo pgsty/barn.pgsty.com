@@ -8,7 +8,7 @@ aliases: [/docs/concepts/project-model/]
 
 This reference follows Barn `main`. The image and architecture command overrides below are unreleased changes after 1.0.0; check your build with `barn version` and each command's `--help`.
 
-## Discovery
+## Discovery {#discovery}
 
 Barn resolves the inventory path by checking an explicit `-f` argument first, then searching the current working directory for `barn.yml`, `barn.yaml`, `pigsty.yml`, and `pigsty.yaml` in that order. All four filenames use the same Pigsty-compatible YAML inventory format.
 
@@ -16,7 +16,7 @@ When no inventory file is present in the current directory, `plan`, `up`, `reloa
 
 Barn stores applied deployment state in `BARN_HOME`. Renaming the inventory does not change the deployment; use an absolute `BARN_HOME` to address the same deployment across working directories.
 
-## A complete inventory
+## A complete inventory {#a-complete-inventory}
 
 `barn init [meta|dual|trio|full]` generates a 1-, 2-, 3-, or 4-node topology template. `meta` uses `.10`, and larger templates add `node-1` at `.11`, `node-2` at `.12`, and `node-3` at `.13` (defining VM topology while leaving Pigsty service roles to your upper-layer playbook). Pass `--cidr` to change the `/24` prefix while keeping the host octets, or run `barn init full -o -` to print a template to stdout without writing a file.
 
@@ -49,7 +49,7 @@ barn plan -f barn.yml
 
 `validate` checks YAML syntax, field rules, and image catalog references (pass `--repo` to check against another repository's catalog) without starting VMs or downloading images. Its JSON output includes `valid`, `source`, `spec_hash`, and `resolved`; if the local image catalog cannot be read, it emits a warning and leaves image selectors unresolved. During `up`, Barn verifies `local-*` imported image bytes, host capabilities, shared directories, networking, and guest SSH readiness.
 
-## What Barn reads
+## What Barn reads {#what-barn-reads}
 
 An inventory must contain a top-level `all:` group, from which Barn traverses `hosts` and nested `children` mappings. Barn parses static YAML directly—without evaluating Ansible inventory plugins, Jinja expressions, `group_vars`, or `host_vars`. If the same IPv4 address appears in multiple groups, Barn merges its inherited variables into a single node definition.
 
@@ -101,6 +101,7 @@ Guests default to the host architecture: `arm64` on Apple Silicon and `amd64` on
 | `native` | — | Follow the current host; also the default when unset |
 | `amd64` | `x86_64`, `x64` | Select an x86-64 guest |
 | `arm64` | `aarch64`, `a64` | Select an ARM64 guest |
+{.wide .expand}
 
 `vm_arch` applies to the entire deployment; define it once under `all.vars`. Every managed node must resolve to the same architecture. Node variables and selectors cannot create a deployment with mixed architectures.
 
@@ -139,7 +140,7 @@ Each entry in `vm_disks` configures an additional virtual block device:
 > [!IMPORTANT]
 > **Data disks are disposable test storage.** During `up`, Barn formats a blank data disk with the configured `fs`. It resets an existing ext4 or XFS filesystem, `persistent: true` disks included, only when the guest's read-only check (`e2fsck -fn` or `xfs_repair -n`) reports recognized corruption, and records the reset in `nodes[].repairs`. A disk with a partition table, a signature without a filesystem UUID, another filesystem type, features the guest tools do not support, or an unrecognized checker failure keeps its data and gets a warning in `nodes[].warnings`; so do transient probe errors, missing block devices, busy mounts, and host I/O errors. Root disks and host shares are never formatted.
 
-## Shares
+## Shares {#shares}
 
 ```yaml {title="barn.yml"}
 vm_shares:
@@ -159,13 +160,13 @@ Shared sources use the invoking user’s actual filesystem permissions:
 - If a writable share (`readonly: false`) cannot be written by the guest user, Barn mounts it read-only, reports a warning, and leaves host file ownership untouched; fix host permissions and re-run `barn up` to upgrade the mount.
 - Changing `vm_shares` on an existing node requires `barn recreate`. Missing host directories during `up` or `start` fail only the affected node, while `restart`, `reload`, and `recreate` verify share paths before stopping running VMs.
 
-## Names and addresses
+## Names and addresses {#names-and-addresses}
 
 Barn resolves each node's name from the first available source: explicit `nodename`, `<pg_cluster>-<pg_seq>`, or `node-<last-octet>`. Node names must be unique across the deployment, be 1–63 characters long, contain only lowercase letters, digits, and hyphens, and neither start nor end with `-`. `vm_alias` accepts additional lowercase DNS names (dots allowed) that must be distinct from all node names and other aliases.
 
 All managed nodes in a deployment must belong to a single RFC1918 `/24` subnet: `.1` is the host gateway, `.2`–`.8` are reserved, and `.9`–`.254` are available for nodes. Inside the guest, the fixed-IP NIC carries the configured inventory address (inspectable via `ip -br addr`).
 
-## Drift
+## Drift {#drift}
 
 Explicit node selectors apply only selected changes: `plan node-1`, `up node-1`, `reload node-1`, `recreate node-1`, and `resize node-1` retain the applied definitions of unselected peers, even when edited or omitted in the inventory. The entire inventory must still parse correctly. Images for uncreated, unselected nodes are not resolved. Conflicts with applied addresses, aliases, control-node roles, or deployment-wide settings are still rejected.
 

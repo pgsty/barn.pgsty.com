@@ -29,7 +29,7 @@ Running `barn` with no arguments prints the same complete help as `barn --help` 
 
 From 1.0.0, an incompatible change to any of the following requires a new major version: command names, aliases, flags, and argument grammar (including `--` before a remote command); exit codes and the structured `error` and `reason` values; existing `--json` and `--yaml` fields (new fields may be added); the inventory format and the meaning of existing `vm_*` keys; `BARN_*` environment variables; and the deployment and Mac state under `BARN_HOME`, which a 1.x release reads from earlier 1.x releases and from 0.9.3 without recreating VMs. Human-readable text, help wording, progress lines, and log contents can change in any release, so scripts should rely on structured output and exit codes. The [1.0.0 release notes](../../../blog/release/1.0.0/#compatibility) record this scope.
 
-## Commands
+## Commands {#commands}
 
 | Area | Commands |
 |---|---|
@@ -73,7 +73,7 @@ When a host dependency or the Barn network is missing, `up`, `start`, `restart`,
 
 If the default `10.10.10.0/24` subnet conflicts with an existing host route while preparing a fresh, unedited default template, `setup` selects another free RFC1918 `/24` and backs up the prior template as `barn.yml.before-network-change`. Explicit `-f` inventories, edited files, and existing deployments always keep their configured subnet.
 
-## Important flags
+## Important flags {#important-flags}
 
 | Flag | Meaning |
 |---|---|
@@ -136,11 +136,11 @@ Notes on flag behavior:
 - Safety and repository flags (`--ask`, `--mirror`, `--force`, `--rollback`, `--remove`, `--allow-downgrade`, `--sudo`, `--delete-persistent`, `--purge`) are long-form only. On Linux commands, `-f` selects `--file` (except `barn logs -f`, where `-f` means `--follow`), `-n` means `--no-wait` (whereas `barn mac logs -n` sets the line count), and `-d` means `--dry-run`.
 - `barn purge` deletes immediately by default: all nodes, persistent disks, SSH keys, deployment state, and the default SSH config fragment are removed; cached images and the host network remain. Only `--ask` displays the node list and deletion scope before prompting: `y`/`yes` confirms; `n`/`no`, an empty line, or EOF cancels with exit `130`. It no longer asks for the word `purge` or accepts `--yes`, `-y`, or `--force`. With no deployment, default `barn purge` and whole-deployment `barn destroy` succeed cleanly; purge also removes retained persistent disks with intact Barn ownership metadata. Unverifiable retained directories still prevent deletion. If deployment state is missing, `destroy --force --delete-persistent` and `destroy --force --purge` direct you to `barn purge`.
 
-## Structured failures
+## Structured failures {#structured-failures}
 
 Always check the process exit code first, then parse the command's output.
 
-In human-readable text mode, ordinary failures print `error: <message>` on stderr, followed by the last stderr lines of any failed external program and an actionable `next:` command when available. SSH child exit failures pass the remote process output through directly without adding a wrapper error line.
+In human-readable text mode, operations lasting one second or longer on a terminal redraw a single live table (`NAME ADDRESS STATE MESSAGE`, `ITEM STATE MESSAGE`, or `IMAGE STATE MESSAGE`) on stderr above a completion line ending with `[DONE]`, `[FAILED]`, or `[CANCELLED]`. When both stdout and stderr are a terminal without `--verbose`, the completed table freezes in place so stdout prints only follow-up hints (`connect:`, `retry:`, `next:`). Ordinary failures print `error: <message>` on stderr, followed by the last stderr lines of any failed external program and an actionable `next:` command when available. SSH child exit failures pass the remote process output through directly without adding a wrapper error line.
 
 In `--json` or `--yaml` mode, commands that define their own report schema (`doctor`, `network`, `provision`, lifecycle commands, and `ssh`/`exec`) return that report schema directly on stdout—for example, `exec` returns `success`, `exit_code`, `stdout`, and `stderr`. When a command fails before producing a command-specific report, Barn writes a single generic failure object to stdout:
 
@@ -150,7 +150,7 @@ In `--json` or `--yaml` mode, commands that define their own report schema (`doc
 
 Single-result commands emit one JSON or YAML document. `logs --follow` uses NDJSON or a YAML document stream; structured interactive SSH sends session output to stderr and its final report to stdout. The design rationale is in [CLI contracts](/blog/design/cli-contracts/).
 
-## Lifecycle results
+## Lifecycle results {#lifecycle-results}
 
 When invoked without node arguments, lifecycle commands target all managed nodes in the deployment, whereas `ssh`, `exec`, and per-node `logs` default to the prepared control node (or the first prepared node if the control node is not yet prepared). Node selectors must be resolved node names such as `meta`—IP addresses, group names, and `vm_alias` entries are not valid command-line selectors.
 
@@ -164,13 +164,13 @@ A whole-deployment `recreate` refuses an inventory that omits an existing node b
 
 Destroying the control node makes the first remaining node the control node. Update the inventory's control role (`admin_ip`) to that node, then run `barn up` to install its control SSH access; `--no-wait` defers that step. Until you do, an inventory that still names the deleted node as control is role drift and `up` refuses it; to bring the old node back, add it as a regular node. Barn refuses to destroy the control node, before deleting anything, when the successor has an unfinished prepare record that cannot be completed, and the error names the successor.
 
-### Planning
+### Planning {#planning}
 
 `barn plan` is read-only and exits `0` even when its recommended `action` is `resize`, `recreate`, or `blocked-removal`; automation scripts should inspect `action`, the `create`, `resize`, `recreate`, `start`, and `missing` arrays, and the optional `blocked` explanation string.
 
 For catalog images, `plan` resolves configuration and catalog metadata locally without requiring QEMU or host networking; for `local-*` imported images, it also verifies the cached image via `qemu-img`. Plans never download images and display exact image versions, total CPU/memory/disk resources, drift reasons, and per-disk actions (including the default 128 GiB `/data` disk).
 
-### Starting and SSH configuration
+### Starting and SSH configuration {#starting-and-ssh-configuration}
 
 `barn up` verifies host capabilities and IP availability, creates new nodes, starts stopped nodes, verifies SSH readiness on running nodes, and refreshes Barn's host SSH client fragment (`~/.ssh/barn_config`) and guest `/etc/hosts` + control-node SSH entries. `recreate` performs the same full refresh; `start` and `restart` also refresh SSH aliases; per-node `destroy` removes the destroyed node's SSH entry; and whole-deployment `destroy` removes the fragment.
 
@@ -178,7 +178,7 @@ If a VM lifecycle action succeeds but updating `~/.ssh/config` fails (or if `~/.
 
 On the control node, Barn-managed SSH entries accept replacement host keys without writing to `known_hosts`, keeping recreated lab nodes reachable while preserving any custom SSH entries you added yourself.
 
-### Readiness
+### Readiness {#readiness}
 
 A Linux guest is considered ready once management SSH succeeds. Non-fatal post-boot issues are reported in `nodes[].warnings`, and completed recovery actions (such as formatting a damaged data disk) are recorded in `nodes[].repairs`; the command still exits `0`. Re-running `barn up` retries any unfinished guest setup steps on running VMs without restarting them.
 
@@ -186,15 +186,15 @@ Passing `--no-wait` returns as soon as the QEMU process is running, deferring SS
 
 [Data disks](../configuration/#data-disks) describes which disk problems Barn repairs (reported in `repairs`) and which it only reports (in `warnings`). Existing guests receive the current recovery helper on their next `barn up` readiness check.
 
-### Node failures
+### Node failures {#node-failures}
 
 When one or more nodes fail during a batch operation, Barn preserves any nodes that succeeded, exits `5`, and summarizes each failure as `N of M node(s) failed: <node> (<stage>: <error>); ...` across stages such as `prepare`, `start`, `readiness`, `bootstrap`, `guest-setup`, `stop`, and `status`. Structured output populates `failures[]` with `node`, `stage`, `error`, and optional `reason` (plus `rolled_back` when `--rollback` cleaned up uncommitted node preparation files). For `readiness` or `bootstrap` failures, check `barn logs <node>` and see [A node did not become ready](../../start/troubleshooting/#a-node-did-not-become-ready).
 
-### Status
+### Status {#status}
 
-`barn status` reports each node's name, state (`running` means the QEMU process is alive; it does not probe guest SSH), IP, exact image, vCPUs, and memory, flagging TCG emulation when active. Pass `--verbose` to include forwarded SSH ports, architecture, accelerator, and QEMU PID. If a node is degraded, `status` still lists its healthy peers, populates `failures[]`, and exits `5`.
+`barn status` reports each node's name, IP (`ADDRESS`), state (`running` means the QEMU process is alive; it does not probe guest SSH), exact image, vCPUs, and memory, flagging TCG emulation when active (and on Apple Silicon when Mac VMs exist, appends `mac: <names>; barn mac ls`). Pass `--verbose` to include forwarded SSH ports, architecture, accelerator, and QEMU PID. If a node is degraded, `status` still lists its healthy peers, populates `failures[]`, and exits `5`.
 
-## Recovery and interrupted operations
+## Recovery and interrupted operations {#recovery-and-interrupted-operations}
 
 - **Fault isolation**: During `up` or `start`, a missing host share or failed new-node preparation affects only that node; independent stopped nodes still start, and the command exits `5` with a retry command that preserves your `-f`, `--repo`, and flag arguments.
 - **Setup event log**: Host `setup` and its follow-up lifecycle run share one `operation_id`. If initial setup fails before a deployment exists, you can still inspect the bounded phase log via `barn logs --source events --json` (which records phase transitions without sensitive arguments or credentials; `setup --dry-run` writes no log).
@@ -203,7 +203,7 @@ When one or more nodes fail during a batch operation, Barn preserves any nodes t
 - **PID and journal reconciliation**: If a recorded QEMU PID has been reused by an unrelated process, Barn marks the node `stopped`; if a `stop` was interrupted while the VM process remained alive, Barn marks it `running`. Other interrupted transitions print the recovery command (`destroy` resolves interrupted state directly), and a failed initial `up` automatically rolls back uncommitted journal artifacts on the next run.
 - **Cancellation**: When a command is cancelled, Barn sends SIGTERM to the external program it is running, which `sudo` forwards to the privileged command, and waits at most 10 seconds for that process and its inherited output pipes. Descendants that ignore SIGTERM need external supervision.
 
-## Logs and environment
+## Logs and environment {#logs-and-environment}
 
 `barn logs` reads the guest serial console (`--source serial`) by default. Pass `--source qemu` for QEMU stderr diagnostics or `--source events` for the deployment-wide bounded event log. Adding `--follow` (`-f`) streams raw bytes in text mode, NDJSON lines in `--json` mode, or YAML documents in `--yaml` mode. QEMU argv is omitted from normal log output unless `--verbose` is set.
 
