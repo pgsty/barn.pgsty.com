@@ -7,7 +7,7 @@ icon: fa-solid fa-trash-can
 
 Barn 分别独立管理 Linux 实验环境与 macOS 虚拟机。**`barn purge` 仅删除 Linux 部署，不会删除任何 Mac 虚拟机。** 在完成虚拟机、宿主集成、镜像缓存和宿主网络的清理前，请先保留 `barn` 命令行程序。
 
-## 选择清理范围
+## 选择清理范围 {#choose-what-to-remove}
 
 | 目标 | 命令 |
 |---|---|
@@ -16,10 +16,11 @@ Barn 分别独立管理 Linux 实验环境与 macOS 虚拟机。**`barn purge` �
 | 删除 Linux 实验环境，保留持久数据盘 | `barn destroy` |
 | 删除 Linux 实验环境、持久数据盘与密钥 | `barn purge`（`main` 默认直接删除，`--ask` 开启确认） |
 | 删除指定的 Mac 虚拟机 | `barn mac destroy <name...>`（需输入确认词） |
+{.wide .expand}
 
 执行删除前，请先通过 `barn status`（Linux 节点）和 `barn mac ls`（Mac 虚拟机）核对名称，并将需要保留的文件备份到宿主。
 
-## 完整清理步骤
+## 完整清理步骤 {#full-teardown-steps}
 
 1. **销毁 Linux 与 Mac 虚拟机**
 

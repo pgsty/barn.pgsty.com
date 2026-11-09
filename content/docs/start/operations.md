@@ -8,7 +8,7 @@ aliases: [/docs/start/lifecycle/, /docs/start/provisioning/]
 
 This guide covers day-to-day Linux lab management. For macOS guests, see the [macOS VM guide](../macos/#everyday-lifecycle).
 
-## Inspect and access
+## Inspect and access {#inspect-and-access}
 
 ```bash
 barn status
@@ -29,7 +29,7 @@ Commands that reconcile configuration—`plan`, `up`, `reload`, `resize`, and `r
 
 Re-running `barn up` retries any unfinished guest setup stages and updates guest helper scripts in place without restarting healthy VMs. Any remaining guest limitations or automatic test-disk repairs are surfaced in the terminal summary and under `nodes[].warnings` / `nodes[].repairs` in JSON/YAML output (see [Data disks](../../reference/configuration/#data-disks)).
 
-## Stop and start
+## Stop and start {#stop-and-start}
 
 ```bash
 barn stop
@@ -51,7 +51,7 @@ does not apply image, disk, network, or share changes; use `recreate` for those.
 
 Passing `--no-wait` to a start command returns as soon as QEMU starts, skipping readiness checks, guest recovery, and `/etc/hosts` or control-node SSH updates until your next `barn up`.
 
-## Change the deployment
+## Change the deployment {#change-the-deployment}
 
 ```bash
 barn plan
@@ -102,13 +102,13 @@ barn plan node-2 -f barn.yml
 
 Without selectors, Barn evaluates the whole inventory: CPU and memory changes use `resize`, other changed existing VMs require `recreate`, and missing VMs require restoring their definitions or explicitly destroying them.
 
-## Concurrent commands
+## Concurrent commands {#concurrent-commands}
 
 Mutating commands (`up`, `start`, `stop`, `restart`, `reload`, `resize`, `recreate`, `destroy`, `purge`, and `provision`) acquire the deployment lock in `BARN_HOME`, waiting up to 10 minutes (or the command's `--timeout`) if another operation is in flight. While waiting, Barn prints the lock holder's command, PID, and start time; if the wait times out, it exits with code `4` (`error: conflict`, `reason: deployment_busy`). The lock releases automatically when the holding process exits—never delete lock files manually.
 
 Read-only and access commands (`status`, `ssh`, `exec`, `ssh-config`, and the state read in `hosts`) read the last published state without waiting on the lock. If a mutating command is currently running, `barn status` includes a `note` indicating the active operation. See [Troubleshooting](../troubleshooting/#a-command-was-killed) for interrupted runs.
 
-## Destroy
+## Destroy {#destroy}
 
 Pick the teardown command that matches the scope you want to remove:
 

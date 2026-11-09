@@ -7,7 +7,7 @@ icon: fa-solid fa-trash-can
 
 Barn manages Linux labs and macOS VMs independently. **`barn purge` removes only the Linux deployment—it does not delete Mac VMs.** Keep the `barn` CLI installed until you have finished removing VMs, integrations, cached images, and host networking.
 
-## Choose what to remove
+## Choose what to remove {#choose-what-to-remove}
 
 | Goal | Command |
 |---|---|
@@ -16,10 +16,11 @@ Barn manages Linux labs and macOS VMs independently. **`barn purge` removes only
 | Delete the Linux lab, keeping persistent disks | `barn destroy` |
 | Delete the Linux lab, persistent disks, and keys | `barn purge` (`main` deletes immediately; `--ask` enables confirmation) |
 | Delete named Mac VMs | `barn mac destroy <name...>` (prompts for confirmation) |
+{.wide .expand}
 
 Check `barn status` (for Linux nodes) and `barn mac ls` (for Mac VMs), and copy any files you want to keep onto the host before destroying machines.
 
-## Full teardown steps
+## Full teardown steps {#full-teardown-steps}
 
 1. **Destroy Linux and Mac virtual machines**
 

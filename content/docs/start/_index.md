@@ -9,16 +9,16 @@ cascade:
   type: docs
 ---
 
-These guides cover **Barn 1.0.0**, the first stable release. The [Barn 1.0.0 release notes](/blog/release/1.0.0/) summarize its changes and the upgrade from 0.9.3. You can run both Linux labs and isolated macOS VMs on the same Apple Silicon Mac—each workflow manages its own VMs under `~/.barn`.
+These guides cover **Barn 1.0.0**, the first stable release, and note **`main`** changes where unreleased behavior differs. The [Barn 1.0.0 release notes](/blog/release/1.0.0/) summarize its changes and the upgrade from 0.9.3. You can run both Linux labs and isolated macOS VMs on the same Apple Silicon Mac—each workflow manages its own VMs under `~/.barn`.
 
-## Get started
+## Get started {#get-started}
 
 - [Install Barn](installation/) — Install the stable CLI on macOS or Linux, check host requirements, and upgrade existing installations.
 - [Linux Quick Start](tutorial/) — Bring up an Ubuntu 24.04 VM, connect over SSH, and scale to a multi-node fixed-IP lab from one `barn.yml`.
 - [macOS Virtual Machines](macos/) — Create and manage macOS 27 guests on Apple Silicon with a native desktop, SSH, shared folders, and clipboard sync.
 {.cards}
 
-## Day-to-day Linux operations
+## Day-to-day Linux operations {#day-to-day-linux-operations}
 
 - [Daily Operations](operations/) — Inspect status, stop and start nodes, preview inventory changes with `plan`, and `recreate` or `destroy` machines.
 - [Storage and Access](storage/) — Configure persistent test data disks, transfer files over SSH, forward ports, and mount Virtio-9p host shares.
@@ -26,7 +26,7 @@ These guides cover **Barn 1.0.0**, the first stable release. The [Barn 1.0.0 rel
 - [Automation](automation/) — Run unattended host setup, validate `--json` output with `jq`, execute scripts via `barn provision`, and pair with Pigsty.
 {.cards}
 
-## Diagnostics, source builds, and cleanup
+## Diagnostics, source builds, and cleanup {#diagnostics-source-builds-and-cleanup}
 
 - [Troubleshooting](troubleshooting/) — Runbooks for host readiness, network repairs, guest stage warnings, SSH keys, and interrupted commands.
 - [Build from Source](source-build/) — Compile the `v1.0.0` CLI, `barn-hosts-helper`, and native `Barn.app` bundle, and run contributor test gates.

@@ -8,7 +8,7 @@ icon: fa-solid fa-hard-drive
 
 This guide covers disk configuration, file transfer, and service access for Linux labs. It builds on the [Linux Quick Start](../tutorial/) using node `meta` at `10.10.10.10`.
 
-## Configure disks before creating the VM
+## Configure disks before creating the VM {#configure-disks-before-creating-the-vm}
 
 By default, every Linux node gets a 64 GiB root overlay disk and one 128 GiB non-persistent data disk mounted at `/data`. `vm_disk` sets the root disk capacity in GiB (as an integer like `64` or with a unit like `64GiB`), while `vm_disks` replaces the default data-disk list (`vm_disks: []` disables extra data disks).
 
@@ -47,7 +47,7 @@ barn exec meta -- df -h / /data /scratch
 
 Disk sizes (`size: 64` or `size: 64GiB`) are thin-provisioned virtual capacities that consume host space as data is written. With `fs: auto`, Barn formats new disks as XFS when `mkfs.xfs` is available in the guest and falls back to `ext4` otherwise. Check `barn up` warnings and `findmnt` to confirm that every data disk mounted cleanly.
 
-## What survives each operation
+## What survives each operation {#what-survives-each-operation}
 
 | Operation | Root and non-persistent disks | Persistent disks (`persistent: true`) |
 |---|---|---|
@@ -75,7 +75,7 @@ barn exec meta -- cat /data/barn-retention.txt
 
 For macOS guest folder sharing, see the [macOS VM guide](../macos/#shared-folders).
 
-## Copy files over managed SSH
+## Copy files over managed SSH {#copy-files-over-managed-ssh}
 
 Export a standalone OpenSSH configuration from the running deployment to use `ssh`, `scp`, or `rsync` directly:
 
@@ -88,7 +88,7 @@ scp -F ./barn-ssh.conf meta:/data/barn-retention.txt ./barn-retention.txt
 
 The exported fragment points to the current loopback SSH port, deployment key path, and instance-scoped `known_hosts` file without embedding private key material. Regenerate `barn-ssh.conf` if you recreate a node or its loopback port changes, or run `barn ssh-config --install` so `ssh meta` and `scp` work without `-F`.
 
-## Reach services inside the guest
+## Reach services inside the guest {#reach-services-inside-the-guest}
 
 When a service inside the guest listens on the node's fixed private IP (for example, PostgreSQL on `10.10.10.10:5432`) and the guest firewall permits it, your host and peer nodes can connect to that IP directly.
 
@@ -112,7 +112,7 @@ barn hosts install --yes
 
 Barn inventories do not use `vm_ports` or `vm_forwards`—connect via the fixed-IP network or OpenSSH port forwarding. Because management SSH runs over an independent loopback port, `barn ssh` and `-L` tunnels remain usable even if the fixed-IP bridge reports a limitation.
 
-## Host directory sharing
+## Host directory sharing {#host-directory-sharing}
 
 Linux and macOS hosts can share directories with Linux guests through QEMU Virtio-9p. Set `vm_shares` under `all.vars` or a host entry before the first `barn up`:
 

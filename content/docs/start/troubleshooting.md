@@ -31,7 +31,7 @@ barn version
 
 Always keep `barn` and its packaged `barn-hosts-helper` from the same release in their relative directory layout.
 
-## No inventory found
+## No inventory found {#no-inventory-found}
 
 When neither an inventory file nor an applied deployment exists, an interactive `barn up` generates a starter `barn.yml`. To use an existing file, run `plan`, `up`, or `validate` in the directory containing `barn.yml` / `pigsty.yml` or pass `-f /path/to/file` (or generate a template first with `barn init`).
 
@@ -47,7 +47,7 @@ If `barn status` reports `no deployment state found`, the active `BARN_HOME` has
 barn init -o "$(readlink -f barn.yml)" --force
 ```
 
-## Setup needs sudo
+## Setup needs sudo {#setup-needs-sudo}
 
 Before prompting for a password, `barn setup` prints the exact host mutation it is about to perform and hands the interactive terminal directly to `sudo`. Passing `--yes` auto-confirms Barn's plan prompt, while `sudo` authentication itself still requires an interactive terminal, cached credentials, or a `NOPASSWD` sudoers rule. Run `barn setup --dry-run` to preview the host plan without executing it.
 
@@ -59,7 +59,7 @@ Barn requires HVF on macOS or KVM on Linux for native hardware acceleration, and
 
 Homebrew's `qemu` formula includes both `arm64` and `amd64` system emulators, whereas Linux `barn setup` installs only the host-native emulator—install the matching `qemu-system-*` binary and UEFI firmware manually before running foreign-architecture guests on Linux.
 
-## Network is partial or invalid
+## Network is partial or invalid {#network-is-partial-or-invalid}
 
 When the Barn host network is intact but stopped, an interactive `barn up` includes the restart in its host-preparation plan and asks once before applying it; without a terminal, run `barn setup --yes`. If `barn network status` reports a `partial` or `invalid` state, inspect and apply Barn's managed cleanup plan instead of deleting system network files by hand:
 
@@ -73,7 +73,7 @@ If the Linux bridge smoke test fails during `setup`, Barn rolls back the network
 
 On macOS, `barn setup` automatically repairs a missing or overly restrictive `/var/log/barn-vmnet` directory (`root:wheel 0755`), while refusing to touch a symlink, foreign owner, or group/world-writable directory—follow the exact remediation command printed by `barn network status`.
 
-## Linux bridge helper fails
+## Linux bridge helper fails {#linux-bridge-helper-fails}
 
 On Debian and Ubuntu hosts, check the ownership and setuid mode on `/usr/lib/qemu/qemu-bridge-helper` (expected `root:<caller-accessible-group> 4750`):
 
@@ -83,7 +83,7 @@ stat -c '%U:%G %a %n' /usr/lib/qemu/qemu-bridge-helper
 dpkg-statoverride --list /usr/lib/qemu/qemu-bridge-helper
 ```
 
-## Plan reports recreate or missing
+## Plan reports recreate or missing {#plan-reports-recreate-or-missing}
 
 - **`recreate`**: The node's inventory specification changed. Inspect `barn plan` and back up any data on the root or non-persistent disks before running `barn recreate <node>` (pass `--yes` in non-interactive scripts).
 - **`missing`**: A provisioned node was removed from the YAML inventory. Either restore its YAML entry or run `barn destroy <node>` to delete the VM. While a node is missing, `barn recreate` without node names refuses to run before any VM stops (exit `4`, `reason: nodes_removed`).
@@ -109,12 +109,13 @@ Secondary guest stages—data disks, Virtio-9p shares, hostname, `/etc/hosts`, c
 | Shared directory is read-only | Check host and guest write permissions, then re-run `barn up` |
 | Guest hosts or control-node SSH incomplete | Re-run `barn up` to refresh the managed files inside the guest |
 | Private interface unavailable | Check `barn network status`, repair the host bridge/vmnet, and re-run `barn up` |
+{.wide .expand}
 
 Re-running `barn up` retries only the unfinished stages without restarting healthy VMs. It initializes blank data disks and resets an ext4 or XFS data filesystem only when the filesystem checker reports recognized corruption (see [Data disks](../../reference/configuration/#data-disks)). Pass `--rollback` to `barn up` if you want failed initial preparation artifacts removed in the same run.
 
 For Linux shared folders, both QEMU and the guest kernel need 9p support. A valid host path cannot make an unsupported guest kernel mount 9p; use SSH/SCP/rsync or a kernel with 9p support. This applies on macOS hosts as well as Linux hosts; native macOS guests use VirtioFS separately.
 
-## SSH fails
+## SSH fails {#ssh-fails}
 
 Check `barn status`, `barn ssh-config`, and `barn logs <node>`.
 
@@ -123,7 +124,7 @@ Check `barn status`, `barn ssh-config`, and `barn logs <node>`.
 - **Dotfile-managed `~/.ssh/config`**: If `~/.ssh/config` is a symlink or hard link, Barn writes `~/.ssh/barn_config` and prints the `Include` line for you to add. If `barn ssh meta` works but `ssh meta` fails, verify that `Include` line.
 - **Remote command syntax**: Place `--` between the node name and remote command (`barn exec meta -- hostname`); see [SSH passthrough and completion](../../reference/cli/#ssh-passthrough-and-completion).
 
-## Catalog or image verification fails
+## Catalog or image verification fails {#catalog-or-image-verification-fails}
 
 Barn embeds active and standby Minisign public keys and rejects unknown signers, catalog revision rollbacks, file size or SHA-256 mismatches, and malformed `qcow2` files. A catalog signature or signed revision that does not verify exits `7` (`error: integrity`, `reason: catalog_signature` or `catalog_equivocation`); a permission or I/O error while reading a cached signature remains a runtime failure (exit `1`). Always pull from a validly signed repository or register local images through `barn image import --sha256 ...` rather than copying files directly into `~/.barn/images`.
 
@@ -141,6 +142,7 @@ When no command holds the lock, `barn status` verifies each recorded QEMU proces
 | `barn stop` was interrupted while QEMU stayed running | `barn status` restores `running` state; re-run `barn stop` if you still want to shut it down |
 | Initial `barn up` failed during preparation | Fix the inventory and re-run `barn up -f barn.yml`; Barn rolls back journaled unfinished artifacts |
 | `barn destroy` was interrupted midway | Re-run the same `barn destroy` or `barn purge` command to finish cleanup |
+{.wide .expand}
 
 If Barn cannot confirm whether a recorded process belongs to the node (or if a QEMU process is alive but its QMP socket is missing), it blocks further mutations so it never kills an unrelated process. Preserve the state directory and logs (`barn logs <node> --source qemu --verbose`) rather than deleting PID or lock files by hand.
 

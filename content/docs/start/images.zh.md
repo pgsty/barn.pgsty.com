@@ -9,7 +9,7 @@ icon: fa-solid fa-boxes-stacked
 
 使用默认配置时，`barn up` 会自动按宿主架构解析 `u24:stable` 并按需下载经过校验的不可变 `qcow2` 镜像，无需提前手动拉取。Barn 初始使用二进制内置的签名镜像目录（revision `2026110502`，覆盖 9 个发行版家族的 17 个镜像产物）；执行 `barn update` 可从远端仓库获取、校验并激活最新镜像目录（或用 `barn image sync` 从指定 URL 或本地文件加载目录）。
 
-## 选择镜像
+## 选择镜像 {#choose-an-image}
 
 查看当前镜像目录中的发行版家族与版本详情：
 
@@ -56,12 +56,12 @@ barn up -I u24 -A amd64
 `barn image list` 会列出所有架构；独立的 `info` 和 `pull` 默认按宿主架构查询，不读取清单的 `vm_arch`，可用 `--arch/-A` 指定（旧 `-a` 仍兼容）。镜像缺少目标架构变体时会报错，不会改选其他架构。当前 Barn 接受的客机架构只有 `amd64` 与 `arm64`：
 
 - **`el7`** 仅支持在原生 `linux/amd64` 宿主上运行。
-- **Apple Silicon 上的 `el8`（`arm64`）** 会自动启用 QEMU TCG 软件模拟，因为上游 RHEL/Rocky 8 `arm64` 内核要求 64 KiB 页粒度，而 macOS HVF 硬件加速不支持该页大小。跨架构模拟器与固件要求见[运行时排查](../troubleshooting/#原生加速或兼容运行时不可用)。
+- **Apple Silicon 上的 `el8`（`arm64`）** 会自动启用 QEMU TCG 软件模拟，因为上游 RHEL/Rocky 8 `arm64` 内核要求 64 KiB 页粒度，而 macOS HVF 硬件加速不支持该页大小。跨架构模拟器与固件要求见[运行时排查](../troubleshooting/#native-acceleration-or-compatibility-runtime-is-unavailable)。
 
 > [!NOTE]
 > 内置镜像目录中，除仅供兼容旧环境使用的 EOL `el7` 标记为 `deprecated` 外，其余全部版本均为 `supported`。
 
-## 使用镜像站
+## 使用镜像站 {#use-a-mirror}
 
 发行版默认使用全球镜像源 `https://repo.pigsty.io/barn`。单次命令可通过 `--mirror` 切换至中国官方镜像站（`https://repo.pigsty.cc/barn`），或通过 `--repo` 指定自定义仓库 URL 或本地目录路径：
 
@@ -87,7 +87,7 @@ barn up
 
 每个仓库根路径在 `BARN_HOME` 下各自维护独立的活动镜像目录状态。首次将 `--repo` 指向包含自定义镜像的仓库时，请先执行 `barn update --repo <root>` 激活其镜像目录，再运行 `plan` 或 `up`。
 
-## 构建静态仓库
+## 构建静态仓库 {#build-a-static-repository}
 
 Barn 镜像仓库是一个普通的静态目录，可直接通过本地路径读取、用 `rsync` 同步或由任意静态 HTTP/HTTPS 服务托管：
 
@@ -137,7 +137,7 @@ barn image pull d13 --arch arm64 --repo /srv/barn
 
 后续运行 `plan`、`up` 和 `recreate` 时传入 `--repo /srv/barn`（或设置 `export BARN_REPO=/srv/barn`），并在清单中配置 `vm_image: d13@1`。如需将该仓库恢复为二进制内置目录（同时保留防回滚版本号记录），可执行 `barn image reset --repo /srv/barn`。
 
-## 导入本地镜像与清理缓存
+## 导入本地镜像与清理缓存 {#import-a-local-image-and-prune-the-cache}
 
 如果只需使用单个自定义 `qcow2` 镜像，无需搭建静态仓库，可直接将其作为 `local-*` 别名导入本地缓存，默认记录宿主架构：
 

@@ -8,7 +8,7 @@ icon: fa-solid fa-hard-drive
 
 本指南介绍 Linux 实验环境的数据盘配置、文件传输与服务访问，示例沿用 [Linux 快速上手](../tutorial/)中的 `meta` 节点（`10.10.10.10`）。
 
-## 创建虚拟机前配置磁盘
+## 创建虚拟机前配置磁盘 {#configure-disks-before-creating-the-vm}
 
 默认情况下，每个 Linux 节点配有一块 64 GiB 根盘写时复制层，以及一块挂载在 `/data` 的 128 GiB 非持久数据盘。`vm_disk` 用于以 GiB 为单位设置根盘大小（可填整数 `64` 或带单位的 `64GiB`）；`vm_disks` 则会替换整个数据盘列表（设为 `vm_disks: []` 即不挂载额外数据盘）。
 
@@ -47,7 +47,7 @@ barn exec meta -- df -h / /data /scratch
 
 磁盘容量（`size: 64` 或 `size: 64GiB`）均为按需分配的稀疏虚拟容量，随实际写入增长。当 `fs: auto` 时，若客机安装了 `mkfs.xfs` 则优先格式化为 XFS，否则使用 `ext4`。启动后请结合 `barn up` 输出警告与 `findmnt` 确认数据盘已正常挂载。
 
-## 各类操作的磁盘保留规则
+## 各类操作的磁盘保留规则 {#what-survives-each-operation}
 
 | 操作 | 根盘与非持久数据盘 | 持久数据盘（`persistent: true`） |
 |---|---|---|
@@ -56,6 +56,7 @@ barn exec meta -- df -h / /data /scratch
 | 规格兼容的 `recreate` | 替换 | 保留并重新挂载 |
 | 普通 `destroy` | 删除 | 保留 |
 | 整套部署 `destroy --delete-persistent` 或 `purge` | 删除 | 删除（含已保留的持久盘） |
+{.wide .expand}
 
 Barn 依据磁盘身份与规格参数复用持久数据盘：在 `recreate` 或 `destroy` 后重新挂载保留盘时，节点名称、挂载路径 `path`、容量 `size` 和文件系统 `fs` 必须保持一致。规格不匹配时 Barn 会拒绝挂载，而不会自动执行扩容、改名或文件系统转换。
 
@@ -72,9 +73,9 @@ barn start meta
 barn exec meta -- cat /data/barn-retention.txt
 ```
 
-macOS 客机的目录共享用法请参阅 [macOS 虚拟机教程](../macos/#共享目录)。
+macOS 客机的目录共享用法请参阅 [macOS 虚拟机教程](../macos/#shared-folders)。
 
-## 通过管理 SSH 传输文件
+## 通过管理 SSH 传输文件 {#copy-files-over-managed-ssh}
 
 从运行中的部署导出独立的 OpenSSH 配置文件，即可直接使用 `ssh`、`scp` 或 `rsync`：
 
@@ -87,7 +88,7 @@ scp -F ./barn-ssh.conf meta:/data/barn-retention.txt ./barn-retention.txt
 
 生成的配置片段引用当前回环 SSH 端口、部署密钥路径以及按实例隔离的 `known_hosts` 文件，不会内嵌私钥原文。重建节点或管理端口变动后请重新导出，或执行 `barn ssh-config --install` 将别名写入 `~/.ssh/config`，从而免去 `-F` 参数。
 
-## 访问客机内的服务
+## 访问客机内的服务 {#reach-services-inside-the-guest}
 
 只要客机内的服务监听在节点的固定私网 IP 上（例如监听在 `10.10.10.10:5432` 的 PostgreSQL）且客机防火墙放行，宿主与其他节点即可直接通过该 IP 访问。
 
@@ -111,7 +112,7 @@ barn hosts install --yes
 
 Barn 清单不提供 `vm_ports` 或 `vm_forwards` 字段，请直接使用固定私网 IP 或 OpenSSH 端口转发。由于管理 SSH 走独立的宿主回环端口，即便固定 IP 私网受限，`barn ssh` 与 `-L` 隧道依然可用。
 
-## 宿主目录共享
+## 宿主目录共享 {#host-directory-sharing}
 
 Linux 与 macOS 宿主均可通过 QEMU Virtio-9p 向 Linux 客机共享目录。首次 `barn up` 前在 `all.vars` 或节点变量下设置：
 
@@ -126,4 +127,4 @@ vm_shares:
 
 宿主 QEMU 与客机内核须支持 9p。可写共享还受客机用户权限约束；无法写入时会降级只读并报告警告，不会修改宿主属主。修改已有节点共享后执行 `barn recreate <node>`。原生 macOS 客机通过 `barn mac up --share` 或 `barn mac configure --share` 使用 VirtioFS。
 
-完整的磁盘与共享字段约束请参阅[配置参考](../../reference/configuration/#数据盘)。
+完整的磁盘与共享字段约束请参阅[配置参考](../../reference/configuration/#data-disks)。

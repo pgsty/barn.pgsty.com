@@ -10,9 +10,9 @@ icon: fa-brands fa-apple
 
 Mac 虚拟机与 Linux 实验环境完全独立：它不读取 `barn.yml`，所有数据保存在 `$BARN_HOME/mac`（默认 `~/.barn/mac`）下，执行 Linux 的 `barn destroy` 或 `barn purge` 不会影响任何 Mac 虚拟机。
 
-## 前提条件
+## 前提条件 {#requirements}
 
-- 一台运行 **macOS 27 或更高版本**的 Apple Silicon Mac，且当前用户已登录图形桌面会话（客机同样运行 macOS 27）。
+- 一台运行 **macOS 27 或更高版本** 的 Apple Silicon Mac，且当前用户已登录图形桌面会话（客机同样运行 macOS 27）。
 - 首次创建约需 **65 GiB** 可用磁盘空间，用于存放从 Apple 下载的恢复镜像（`.ipsw`，约 25 GiB）、安装后的基础镜像（约 27 GiB）以及启动写入空间。后续每台虚拟机通过 APFS 写时复制克隆基础镜像，按实际改动增长（默认容量上限为 100 GiB）。
 - 与同一版本 CLI 配套的原生应用包 **`Barn.app`**，Apple Silicon 发行包与 Homebrew 安装均已包含。
 - 无需 `sudo` 权限。
@@ -33,7 +33,7 @@ Homebrew 会一并安装经过签名、公证的 `Barn.app` 及配套 CLI/helper
 
 如需开发 Barn 本身，请参阅[构建 Mac 原生组件](../source-build/#mac-component)。
 
-## 创建第一台机器
+## 创建第一台机器 {#create-your-first-machine}
 
 ```bash
 barn mac up
@@ -42,7 +42,7 @@ barn mac up
 如果本机尚未准备 macOS 基础镜像，`barn mac up` 会先列出下载体积与磁盘空间并请求确认：
 
 ```text
-→ macOS 27.0 (26A428) is not prepared on this Mac yet.
+info: macOS 27.0 (26A428) is not prepared on this Mac yet.
 download:  24.8 GiB from Apple (updates.cdn-apple.com)
 then:      install macOS once into a reusable base (about 20 minutes)
 free:      551.2 GiB
@@ -57,10 +57,13 @@ Download macOS from Apple now? [Y/n]
 {.steps}
 
 ```text
-  ✓  mac1 created and ready · macOS 27.0 (26A428) · alice@10.10.20.10
-shell:     barn mac ssh mac1
-desktop:   barn mac open mac1
+NAME  ADDRESS      STATE    MESSAGE
+mac1  10.10.20.10  running  created and ready; macOS 27.0 (26A428), user alice
+ready: barn mac ssh mac1
+desktop: barn mac open mac1
 ```
+
+（在 1.0.0 中，完成行输出 `✓  mac1 created and ready · macOS 27.0 (26A428) · alice@10.10.20.10`、`shell:     barn mac ssh mac1` 与 `desktop:   barn mac open mac1`。）
 
 后续新建虚拟机都会直接克隆这份基础镜像，几秒内即可完成创建，无需重复执行漫长的系统恢复安装。Barn 首次下载默认固定为 **macOS 27.0 (26A428)**；如需跟进更新的 macOS 27 版本，可显式运行 `barn mac image update`。
 
@@ -72,9 +75,9 @@ barn mac up --ipsw ~/Downloads/UniversalMac_27.0_26A428_Restore.ipsw
 
 在无终端脚本中，需传入 `--yes` 才会自动下载 25 GiB 镜像；也可使用 `barn mac setup` 提前准备基础镜像而不创建虚拟机。如果创建新虚拟机时传入了 `--no-wait`（虚拟机进程启动即返回），在使用 `ssh` 或 `exec` 前请再执行一次不带 `--no-wait` 的 `barn mac up NAME` 以完成密钥与 `sudo` 初始化。
 
-## 使用机器
+## 使用机器 {#work-in-the-machine}
 
-### 终端与命令
+### 终端与命令 {#shell-and-commands}
 
 ```bash
 barn mac ssh                                  # 进入交互式终端
@@ -88,7 +91,7 @@ ProductVersion:		27.0
 BuildVersion:		26A428
 ```
 
-客机管理员账号默认与宿主 macOS 用户名一致（创建时可通过 `--user` 自定义），并具备免密 `sudo`。请在远端命令前加上 `--`：`ssh` 会将命令行交给客机 Shell 执行，`exec` 则直接按参数列表调用目标程序（需要管道或重定向时请显式调用 `sh -c`，详见 [SSH/exec 契约](../../reference/mac/#ssh-与-exec)）。两者都会透传客机命令的退出码，配合 `--json` 可结构化捕获 `stdout`、`stderr` 与 `exit_code`：
+客机管理员账号默认与宿主 macOS 用户名一致（创建时可通过 `--user` 自定义），并具备免密 `sudo`。请在远端命令前加上 `--`：`ssh` 会将命令行交给客机 Shell 执行，`exec` 则直接按参数列表调用目标程序（需要管道或重定向时请显式调用 `sh -c`，详见 [SSH/exec 契约](../../reference/mac/#ssh-and-exec)）。两者都会透传客机命令的退出码，配合 `--json` 可结构化捕获 `stdout`、`stderr` 与 `exit_code`：
 
 ```bash
 barn --json mac exec -- sh -c 'echo out; exit 3'
@@ -108,7 +111,7 @@ barn --json mac exec -- sh -c 'echo out; exit 3'
 
 完整 JSON 字段说明见 [Mac 命令参考](../../reference/mac/#json-output)。
 
-### 桌面
+### 桌面 {#desktop}
 
 ```bash
 barn mac open
@@ -134,13 +137,13 @@ barn mac open
 barn mac password --copy
 ```
 
-### 剪贴板
+### 剪贴板 {#clipboard}
 
 剪贴板共享会在窗口焦点切换时通过虚拟机自身的 SSH 通道自动同步纯文本，无需在客机内安装额外代理：点击进入客机窗口时可使用在宿主 Mac 上复制的文本，切回宿主应用时则会同步客机内复制的文本。密码管理器标记为敏感的条目、图片和文件不会跨机同步。
 
 如需为某台虚拟机长期关闭剪贴板同步，可执行 `barn mac configure mac1 --clipboard off`（下次启动时生效）。
 
-### 共享目录 {#共享目录}
+### 共享目录 {#shared-folders}
 
 创建虚拟机时可通过 `--share` 将宿主目录共享给客机，客机会将其自动挂载到 `/Volumes/My Shared Files/<名称>`：
 
@@ -159,7 +162,7 @@ barn mac start dev
 
 由于 macOS 客机的 VirtioFS 在宿主修改文件后可能短暂缓存旧内容，若构建任务需要立即读取最新字节，建议使用 `scp` 或 `rsync` 将文件同步到客机本地磁盘。
 
-### 在其他工具中使用 SSH
+### 在其他工具中使用 SSH {#ssh-from-other-tools}
 
 当第一台 Mac 虚拟机就绪时，Barn 会在 `~/.ssh/config` 中添加一行带标记的 `Include`，使 `ssh mac1`、`scp`、`rsync` 以及支持 Remote-SSH 的编辑器能够直接按名称连接每台虚拟机，并自动使用该虚拟机的专属密钥与固定主机密钥：
 
@@ -172,7 +175,7 @@ barn mac ssh-config --remove     # 移除 Barn 添加的 Include 并关闭自动
 
 如果 `~/.ssh/config` 是由 dotfile 工具管理的符号链接，Barn 不会直接修改它，而是打印出需要手动添加的 `Include` 行。执行 `--remove` 后如需恢复自动集成，可运行 `barn mac ssh-config --install`。若你的个人 SSH 配置已占用某个虚拟机同名别名，Barn 会保留你的原有别名，仅按 IP 地址发布该虚拟机的配置。
 
-## 多台机器
+## 多台机器 {#multiple-machines}
 
 每台虚拟机使用以字母开头的小写字母、数字或内部连字符命名。创建参数（`--cpu`、`--memory`、`--disk`、`--user`、`--share`）仅在首次创建该虚拟机时生效：
 
@@ -182,10 +185,10 @@ barn mac ls
 ```
 
 ```text
-NAME  STATE    ADDRESS      SSH    USER   OS          CPU  MEMORY  DISK                 SHARED
-dev   running  10.10.21.10  ready  alice  macOS 27.0    8  16 GiB  504.0 MiB / 100 GiB    src,data
-mac1  running  10.10.20.10  ready  alice  macOS 27.0    4   8 GiB  4.7 GiB / 100 GiB
-limit:     2 of 2 macOS VMs are running; stop one before starting another
+NAME  ADDRESS      STATE    SSH    USER   OS          CPU  MEMORY  DISK                 SHARED
+dev   10.10.21.10  running  ready  alice  macOS 27.0  8    16 GiB  504.0 MiB / 100 GiB  src,data
+mac1  10.10.20.10  running  ready  alice  macOS 27.0  4    8 GiB   4.7 GiB / 100 GiB
+limit: 2 of 2 macOS VMs are running; stop one before starting another
 ```
 
 省略机器名称时，命令默认作用于当前唯一存在的虚拟机或 `mac1`（存在多台机器且目标不唯一时会提示显式指定名称）。如果 `--disk` 指定的容量与现有基础镜像不同，Barn 会先用恢复镜像安装一份对应容量的基础镜像。
@@ -201,7 +204,7 @@ error: dev and mac1 are running; macOS allows 2 macOS virtual machines at a time
 next: barn mac stop mac1
 ```
 
-## 日常管理 {#日常管理}
+## 日常管理 {#everyday-lifecycle}
 
 ```bash
 barn mac stop dev               # 请求客机正常关机（超时 2 分钟后断电）
@@ -240,8 +243,9 @@ barn mac destroy dev
 | `configure` | 保留 | 按指定参数更新 |
 | `recreate` | 替换为全新的 macOS 克隆盘 | 保留（重新生成登录密码与 SSH 密钥） |
 | `destroy` | 删除 | 删除（共享基础镜像仍会保留） |
+{.wide .expand}
 
-## macOS 版本与磁盘空间
+## macOS 版本与磁盘空间 {#macos-versions-and-disk-space}
 
 ```bash
 barn mac image ls
@@ -263,7 +267,7 @@ barn mac image prune --installers --yes   # 确认删除
 
 由于 APFS 克隆与基础镜像共享底层物理数据块，`ON DISK` 与各虚拟机的磁盘占用统计存在重叠，请勿直接相加计算总占用。
 
-## 故障排查 {#故障排查}
+## 故障排查 {#troubleshooting}
 
 遇到问题时先运行 `barn mac doctor`，它会依次检查宿主环境、`Barn.app` 原生组件、基础镜像和每台虚拟机的状态并给出修复命令；`barn mac logs [名称]` 则用于查看启动、网络、关机及 Apple Virtualization 运行时日志。
 
@@ -274,10 +278,11 @@ barn mac image prune --installers --yes   # 确认删除
 | 第三方客户端执行 `ssh mac1` 报 `No route to host` | 在 **系统设置 → 隐私与安全性 → 本地网络** 中为该终端或 IDE 开启本地网络权限，或改用系统自带的 `/usr/bin/ssh`（`barn mac ssh` 与 `exec` 默认调用系统自带客户端）。 |
 | `mac_runner_missing` 或 `mac_runner_protocol` | 确保 `barn`、`barn-hosts-helper`、`barn-mac-runner` 与 `Barn.app` 来自同一次 `make mac-build` 输出目录且保持相对路径不变。 |
 | 通过远端 SSH 登录宿主 Mac 后启动失败 | 请在 Mac 本机已登录图形桌面会话的终端中运行 `barn mac`，并确保登录钥匙串处于解锁状态。 |
+{.wide .expand}
 
 Apple Virtualization 框架尚不支持在虚拟机中稳定登录 Apple 账户，也不支持 USB 设备直通、快照与挂起恢复。
 
-## 清理
+## 清理 {#clean-up}
 
 ```bash
 barn mac ls                                 # 查看现有 Mac 虚拟机名称

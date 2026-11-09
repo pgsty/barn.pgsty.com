@@ -7,7 +7,7 @@ icon: fa-solid fa-hammer
 
 Build Barn from source when developing a change or auditing a release tag. For prebuilt CLI binaries and the native `Barn.app` included in the Apple Silicon release, see [Install Barn](../installation/).
 
-## Check out the source
+## Check out the source {#check-out-the-source}
 
 Clone tag **v1.0.0** to reproduce the documented release (or omit `--branch v1.0.0` to work on `main`), and record `git log -1 --oneline` and `git status --short` alongside any build report:
 
@@ -18,7 +18,7 @@ cd barn
 
 Tag `v1.0.0` reproduces the published release described in the [Barn 1.0.0 release notes](/blog/release/1.0.0/). Leave `BARN_VERSION` unset for a development build.
 
-## Build the CLI
+## Build the CLI {#build-the-cli}
 
 Barn `1.0.0` pins **Go 1.27.3** in `go.mod` and `packaging/toolchain.env`, and requires Git, Make, Bash, and standard C/POSIX build tools (compiling the CLI does not require QEMU or host-network setup):
 
@@ -57,7 +57,7 @@ barn mac doctor
 
 The current CLI discovers both `Barn.app` and legacy `Barn Mac.app` bundles, whereas the `0.9.0` CLI only looks for `Barn Mac.app`—always use the `barn` CLI and native app built together in `bin/mac`.
 
-### Code signing and notarization
+### Code signing and notarization {#code-signing-and-notarization}
 
 When signing environment variables are unset, `make mac-build` applies an **ad-hoc signature** for local development. For signed or notarized builds:
 
@@ -65,7 +65,7 @@ When signing environment variables are unset, `make mac-build` applies an **ad-h
 - Set `BARN_NOTARY_PROFILE` and `BARN_MAC_REQUIRE_NOTARIZATION=1` to submit `Barn.app` for Apple notarization, staple the ticket, and verify Gatekeeper acceptance.
 - With `BARN_CODESIGN_IDENTITY` set, `make mac-build` also signs the Go helper before embedding its final SHA-256 in the CLI, then signs the CLI. The [Mac release handbook](../../about/mac-release/) adds joint notarization of the CLI/helper/app and verification of the exported release payload.
 
-## Run contributor checks
+## Run contributor checks {#run-contributor-checks}
 
 Running the full `make check` suite requires Python 3, `jq`, a C compiler (for `-race`), and the linter/scanner versions pinned in `packaging/toolchain.env`:
 

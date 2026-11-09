@@ -6,9 +6,9 @@ icon: fa-solid fa-sliders
 aliases: [/docs/start/lifecycle/, /docs/start/provisioning/]
 ---
 
-本页介绍 Linux 实验环境的日常运维操作。macOS 虚拟机请参阅 [macOS 日常管理](../macos/#日常管理)。
+本页介绍 Linux 实验环境的日常运维操作。macOS 虚拟机请参阅 [macOS 日常管理](../macos/#everyday-lifecycle)。
 
-## 检查与访问
+## 检查与访问 {#inspect-and-access}
 
 ```bash
 barn status
@@ -27,9 +27,9 @@ barn logs meta --source serial
 2. 当前工作目录下按顺序匹配到的第一个文件：`barn.yml`、`barn.yaml`、`pigsty.yml`、`pigsty.yaml`（不会向上搜索父目录）。
 3. `BARN_HOME` 中记录的已应用规格（`barn validate` 除外，它始终要求提供配置文件）。
 
-重复运行 `barn up` 会自动重试未完成的客机初始化阶段并原位更新旧版客机辅助脚本，已健康的虚拟机无需重启。任何可选功能限制或自动执行的测试盘修复都会显示在终端摘要及 JSON/YAML 的 `nodes[].warnings` 与 `nodes[].repairs` 字段中（详见[数据盘说明](../../reference/configuration/#数据盘)）。
+重复运行 `barn up` 会自动重试未完成的客机初始化阶段并原位更新旧版客机辅助脚本，已健康的虚拟机无需重启。任何可选功能限制或自动执行的测试盘修复都会显示在终端摘要及 JSON/YAML 的 `nodes[].warnings` 与 `nodes[].repairs` 字段中（详见[数据盘说明](../../reference/configuration/#data-disks)）。
 
-## 停止与启动
+## 停止与启动 {#stop-and-start}
 
 ```bash
 barn stop
@@ -45,7 +45,7 @@ barn reload -f barn.yml       # 校验清单、停止目标节点并重新收敛
 
 启动命令传入 `--no-wait` 时会在 QEMU 进程拉起后立即返回，跳过就绪检查、客机恢复以及客机 `/etc/hosts` 和控制节点 SSH 刷新；后续运行一次 `barn up` 即可补齐这些步骤。
 
-## 变更部署
+## 变更部署 {#change-the-deployment}
 
 ```bash
 barn plan
@@ -62,6 +62,7 @@ barn recreate node-1            # 重建规格发生变更的节点
 | `resize` | 节点 CPU 或内存发生变化 | `barn resize <node>` |
 | `recreate` | 节点镜像、磁盘、共享目录或其他虚拟机规格发生变化 | `barn recreate <node>` |
 | `missing` | 已创建的节点从 YAML 清单中被移除 | 恢复 YAML 条目，或执行 `barn destroy <node>` |
+{.wide .expand}
 
 JSON 输出中的 `start`、`create`、`resize`、`recreate` 与 `missing` 是节点列表，顶层 `action` 概括整次计划，取值为 `create`、`start`、`converge`、`resize`、`recreate`、`blocked-removal`、`repair` 或 `none`；可选字段 `blocked` 是说明原因的字符串。
 
@@ -86,13 +87,13 @@ barn plan node-2 -f barn.yml
 
 不传节点名时，Barn 会检查整份清单：CPU 与内存变更使用 `resize`，其他已有节点规格变更需要 `recreate`，清单中缺失的节点需要恢复定义或显式销毁。
 
-## 并发命令
+## 并发命令 {#concurrent-commands}
 
 修改部署状态的命令（`up`、`start`、`stop`、`restart`、`reload`、`resize`、`recreate`、`destroy`、`purge` 和 `provision`）会获取 `BARN_HOME` 下的部署锁。若其他操作正在运行，命令最长等待 10 分钟（或受自身的 `--timeout` 限制），并打印持锁命令、PID 与启动时间；等待超时将返回退出码 `4`（`error: conflict`、`reason: deployment_busy`）。持锁进程退出后锁会自动释放，切勿手动删除锁文件。
 
-只读与连接类命令（`status`、`ssh`、`exec`、`ssh-config` 以及 `hosts` 的状态读取）无需等待锁，直接读取最新已发布的状态。若后台正有变更命令持锁运行，`barn status` 会附带一条 `note` 说明当前正在执行的操作。异常中断后的恢复步骤见[故障排查](../troubleshooting/#命令被中断)。
+只读与连接类命令（`status`、`ssh`、`exec`、`ssh-config` 以及 `hosts` 的状态读取）无需等待锁，直接读取最新已发布的状态。若后台正有变更命令持锁运行，`barn status` 会附带一条 `note` 说明当前正在执行的操作。异常中断后的恢复步骤见[故障排查](../troubleshooting/#a-command-was-killed)。
 
-## 销毁
+## 销毁 {#destroy}
 
 请根据需要清理的范围选择对应的销毁命令：
 

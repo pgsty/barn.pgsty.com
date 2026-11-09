@@ -8,7 +8,7 @@ icon: fa-solid fa-gears
 
 This guide shows how to drive Barn from unattended scripts and CI pipelines. Run all commands as the Unix user who owns the deployment, and pass the same `-f <inventory>` and `BARN_HOME` across invocations.
 
-## Prepare a predictable lab
+## Prepare a predictable lab {#prepare-a-predictable-lab}
 
 Keep your inventory file in version control and pin `vm_image` to an exact version (such as `vm_image: u24@20261017.0.1`) so catalog updates never alter your base image mid-pipeline. Passing `-f` explicitly also prevents first-run setup from relocating an unedited default template to a different subnet. If you use a custom image repository, activate its catalog first with `barn update --repo URL` and pass the same `--repo` to `setup` and `up`.
 
@@ -40,7 +40,7 @@ Without an architecture flag, Barn uses inventory `vm_arch`, falling back to the
 
 `barn setup --yes` accepts the host-preparation plan without asking. On a terminal, `up`, `start`, `restart`, and `reload` show the same plan and ask once before installing packages or the Barn network; without a terminal they only report what is missing, so run `barn setup --yes` before them.
 
-## Validate JSON output alongside the exit code
+## Validate JSON output alongside the exit code {#validate-json-output-alongside-the-exit-code}
 
 Barn writes structured JSON/YAML payloads to `stdout` and human diagnostics to `stderr`. Because `barn up` returns **exit code `0`** when management SSH is ready—even if an optional stage such as a secondary data disk, Virtio-9p share, or peer SSH config reported a limitation (`nodes[].warnings`) or reformatted a damaged test disk (`nodes[].repairs`)—automation scripts should inspect the JSON payload alongside the exit code:
 
@@ -67,7 +67,7 @@ fi
 
 When a subsequent pipeline step requires ready guests, omit `--no-wait` on `barn up` (`barn status --json` reads cached state without re-probing guest SSH).
 
-### Exit codes and command-specific payloads
+### Exit codes and command-specific payloads {#exit-codes-and-command-specific-payloads}
 
 Pair [CLI exit codes](../../reference/cli/#exit-codes) with each command's JSON schema:
 
@@ -80,7 +80,7 @@ Pair [CLI exit codes](../../reference/cli/#exit-codes) with each command's JSON 
   - `barn ssh` and `barn exec` return the remote command's exit status (or `255` on OpenSSH transport failure) and record `success`, `exit_code`, `stdout`, and `stderr` in `--json` mode.
   - `network` and `hosts` `install`/`uninstall` without `--yes` only print the plan and exit `0` when stdin is not a terminal or the output is `--json`/`--yaml`; check `applied` in the result, or pass `--yes`.
 
-## Run single commands or batch scripts
+## Run single commands or batch scripts {#run-single-commands-or-batch-scripts}
 
 Always place `--` between the node selector and the remote command, and put Barn flags (`--json`, `--verbose`) before `--`:
 
@@ -116,7 +116,7 @@ Omitting node selectors runs the script on every node in the deployment (all tar
 - **Output capture and idempotency**: Each node captures up to 1 MiB of `stdout` and 1 MiB of `stderr` (setting `stdout_truncated` / `stderr_truncated` when exceeded). Because partial runs leave completed guest changes in place, write idempotent scripts that are safe to re-run.
 - **Exit codes**: `provision` exits `5` when some nodes succeed and others fail, passes through a single target's positive non-`255` exit code on failure, and exits `1` otherwise.
 
-## Pair the lab with Pigsty
+## Pair the lab with Pigsty {#pair-the-lab-with-pigsty}
 
 Barn and [Pigsty](https://pigsty.io/docs/) share the same Ansible YAML format. While `barn init` generates VM hardware topology, Pigsty provides complete service inventories (`pigsty.yml`) for PostgreSQL, Redis, and monitoring stacks. Provision the VMs with Barn first:
 

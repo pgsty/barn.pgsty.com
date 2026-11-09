@@ -7,7 +7,7 @@ icon: fa-solid fa-hammer
 
 开发新功能或审阅发行版本时，可从源码构建 Barn。预编译 CLI 与 Apple Silicon 发行包内的原生应用包 `Barn.app` 均可直接安装，详见[安装指南](../installation/)。
 
-## 检出源码
+## 检出源码 {#check-out-the-source}
 
 克隆 **v1.0.0** 标签以复现本文档对应的发行版（开发主分支时可省略 `--branch v1.0.0`），并在提交构建记录时附上 `git log -1 --oneline` 与 `git status --short`：
 
@@ -18,7 +18,7 @@ cd barn
 
 `v1.0.0` 标签用于复现 [Barn 1.0.0 发布说明](/zh/blog/release/1.0.0/)所描述的已发布版本。开发构建不要设置 `BARN_VERSION`，避免将开发构建标记为正式的 `1.0.0`。
 
-## 构建 CLI
+## 构建 CLI {#build-the-cli}
 
 Barn `1.0.0` 在 `go.mod` 与 `packaging/toolchain.env` 中固定使用 **Go 1.27.3**，并依赖 Git、Make、Bash 与标准编译工具（仅编译 CLI 无需安装 QEMU 或配置宿主网络）：
 
@@ -57,7 +57,7 @@ barn mac doctor
 
 当前 CLI 同时兼容 `Barn.app` 与旧版 `Barn Mac.app`，而 `0.9.0` CLI 仅查找 `Barn Mac.app`——请始终使用 `bin/mac` 下同批构建出的 CLI 与应用包。
 
-### 代码签名与公证
+### 代码签名与公证 {#code-signing-and-notarization}
 
 未设置签名环境变量时，`make mac-build` 默认使用供本机开发测试的 **ad-hoc 签名**。如需进行证书签名或公证分发：
 
@@ -65,7 +65,7 @@ barn mac doctor
 - 设置 `BARN_NOTARY_PROFILE` 与 `BARN_MAC_REQUIRE_NOTARIZATION=1`，使构建流水线自动校验签名、提交 Apple 公证、装订票据（staple）并验证 Gatekeeper 状态。
 - 设置 `BARN_CODESIGN_IDENTITY` 后，`make mac-build` 也会先签名 Go helper，将最终 SHA-256 嵌入 CLI，再签名 CLI。[Mac 发布手册](../../about/mac-release/)进一步说明 CLI/helper/App 联合公证及导出载荷的发行验证。
 
-## 运行贡献者检查
+## 运行贡献者检查 {#run-contributor-checks}
 
 执行完整的 `make check` 还需要 Python 3、`jq`、支持竞态检测（`-race`）的 C 编译器，以及 `packaging/toolchain.env` 中固定版本的静态检查工具：
 

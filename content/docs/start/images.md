@@ -9,7 +9,7 @@ This guide covers Linux guest image selection, mirrors, static repositories, and
 
 With the default inventory, `barn up` automatically resolves `u24:stable` for your host architecture and downloads the matching verified `qcow2` image on demand. Barn starts with the signed image catalog embedded in the binary (revision `2026110502`, 17 artifacts across 9 distribution families); run `barn update` whenever you want to fetch, verify, and activate the latest catalog from the repository (or `barn image sync` to load an exact catalog URL or local file).
 
-## Choose an image
+## Choose an image {#choose-an-image}
 
 Inspect the available distribution families and channels:
 
@@ -61,7 +61,7 @@ barn up -I u24 -A amd64
 > [!NOTE]
 > All image versions in the embedded catalog carry `supported` status except the EOL `el7` compatibility build, which is marked `deprecated`.
 
-## Use a mirror
+## Use a mirror {#use-a-mirror}
 
 Release builds default to `https://repo.pigsty.io/barn`. Pass `--mirror` to use the China mirror (`https://repo.pigsty.cc/barn`), or `--repo` to point at a custom repository URL or local directory:
 
@@ -87,7 +87,7 @@ When downloading from either official repository, Barn automatically retries tra
 
 Each repository root maintains its own active catalog state under `BARN_HOME`. When you point `--repo` at a custom repository that defines new image entries, run `barn update --repo <root>` first to activate its catalog before running `plan` or `up`.
 
-## Build a static repository
+## Build a static repository {#build-a-static-repository}
 
 A Barn image repository is a plain directory that you can serve over static HTTP/HTTPS, copy with `rsync`, or read directly from a local path:
 
@@ -137,7 +137,7 @@ barn image pull d13 --arch arm64 --repo /srv/barn
 
 Pass `--repo /srv/barn` (or `export BARN_REPO=/srv/barn`) to `plan`, `up`, and `recreate`, and set `vm_image: d13@1` in your inventory. To revert `/srv/barn` back to the binary's embedded catalog while keeping its anti-rollback high-water mark, run `barn image reset --repo /srv/barn`.
 
-## Import a local image and prune the cache
+## Import a local image and prune the cache {#import-a-local-image-and-prune-the-cache}
 
 To use a single custom `qcow2` image without creating a repository, import it into Barn's local cache with a `local-` alias. The recorded architecture defaults to the host:
 

@@ -19,9 +19,9 @@ Barn 1.0.0 提供 macOS 与 Linux 的 **arm64 和 amd64** 归档包，以及 Lin
 | `Barn.app` | 基于 `Virtualization.framework` 的原生运行器与 macOS 客机桌面 | Darwin arm64 归档与 Apple Silicon Homebrew 安装包含；仅 macOS 客机需要 |
 {.wide .expand}
 
-## 安装发行版本
+## 安装发行版本 {#install-the-release}
 
-运行 Barn 的电脑称为**宿主**。请按宿主操作系统选择安装方式：macOS 推荐使用 Homebrew，Linux 推荐使用安装脚本。
+运行 Barn 的电脑称为 **宿主**。请按宿主操作系统选择安装方式：macOS 推荐使用 Homebrew，Linux 推荐使用安装脚本。
 
 {{< tabs group="barn-install" default="macos" label="宿主操作系统" >}}
 {{< tab label="macOS" value="macos" >}}
@@ -54,7 +54,7 @@ barn version
 
 首次交互式执行 `barn up` 时，Barn 会检查 Linux 客机所需的宿主依赖与私有网络，展示宿主准备计划，并在安装任何内容前询问一次；只有具体步骤需要时才请求管理员权限（`sudo`）。没有终端时，`barn up` 只报告缺少的条件，无人值守准备请执行 `barn setup --yes`。你也可以先运行 `barn setup --dry-run` 预览宿主准备计划。
 
-## 系统要求
+## 系统要求 {#system-requirements}
 
 | 客机 | 宿主 | 运行时依赖 |
 |---|---|---|
@@ -67,9 +67,9 @@ barn version
 
 首次创建 macOS 虚拟机约需 **65 GiB 可用磁盘空间**，用于存放 Apple 恢复镜像（约 25 GiB）、已安装的基础镜像（约 27 GiB）以及初始写入数据。Mac 虚拟机默认分配 4 vCPU、8 GiB 内存和 100 GiB APFS 克隆磁盘；后续新建虚拟机除非通过 `--disk` 另行指定，否则默认沿用已有基础镜像的磁盘容量。各客机的具体约束见[平台与限制](../../about/status/)。
 
-## 其他安装方式
+## 其他安装方式 {#other-installation-methods}
 
-### Linux 软件包
+### Linux 软件包 {#linux-packages}
 
 DEB 与 RPM 软件包已声明 QEMU、UEFI 固件和 OpenSSH 依赖。ARM64 宿主请将文件名中的 `amd64` 替换为 `arm64`：
 
@@ -87,7 +87,7 @@ sudo dnf install ./barn_1.0.0_linux_amd64.rpm
 barn version
 ```
 
-### 手动安装归档
+### 手动安装归档 {#manual-archives}
 
 从 [GitHub Barn 1.0.0 发布页](https://github.com/pgsty/barn/releases/tag/v1.0.0)下载对应宿主系统的 `barn_1.0.0_<os>_<arch>.tar.gz`（`darwin` 或 `linux`，`arm64` 或 `amd64`）与 `checksums.txt`，解压前先校验 SHA-256：
 
@@ -100,13 +100,13 @@ shasum -a 256 -c checksums.txt --ignore-missing
 
 校验通过后解压归档，将其中的 `bin/` 目录加入 `PATH`。请保持发行包目录结构完整：`barn` 与 `barn-hosts-helper` 必须配套，Darwin arm64 归档还包含 `bin/Barn.app`。CLI 调用 helper 前会核对其内嵌的 SHA-256 摘要，并自动发现旁边的 App。
 
-### 从源码构建
+### 从源码构建 {#build-from-source}
 
 如需参与开发或自行编译 macOS 原生应用包 `Barn.app`，请参阅[从源码构建](../source-build/)。
 
 ## 升级 Barn {#upgrade-barn}
 
-从 0.9.3 升级至 **1.0.0** 无需重建虚拟机：虚拟机磁盘、SSH 密钥、状态与配置仍保存在 `~/.barn`。请先停止正在运行的 Mac 虚拟机，再通过原安装渠道同步替换 CLI、`barn-hosts-helper` 与 `Barn.app`。已有客机会在下一次 `barn up` 时获得更新后的数据盘脚本。请检查脚本是否受以下四项行为变化影响：目录签名校验失败时退出码由 `1` 变为 `7`；清单缺少已有节点时，整套部署 `recreate` 退出 `4`；交互式 `up` 准备宿主前会询问；在终端中执行 `purge` 会要求确认。为 0.9.2 之前版本编写的脚本还需在 SSH/exec 远端命令前加入 `--`，例如 `barn exec meta -- hostname`。详情见 [1.0.0 发布说明](/zh/blog/release/1.0.0/)。
+从 0.9.3 升级至 **1.0.0** 无需重建虚拟机：虚拟机磁盘、SSH 密钥、状态与配置仍保存在 `~/.barn`。请先停止正在运行的 Mac 虚拟机，再通过原安装渠道同步替换 CLI、`barn-hosts-helper` 与 `Barn.app`。已有客机会在下一次 `barn up` 时获得更新后的数据盘脚本。请检查脚本是否受以下四项行为变化影响：目录签名校验失败时退出码由 `1` 变为 `7`；清单缺少已有节点时，整套部署 `recreate` 退出 `4`；交互式 `up` 准备宿主前会询问；1.0.0 在终端中执行 `purge` 会要求确认（`main` 上的 `barn purge` 默认立即执行，传 `--ask` 才会询问）。为 0.9.2 之前版本编写的脚本还需在 SSH/exec 远端命令前加入 `--`，例如 `barn exec meta -- hostname`。详情见 [1.0.0 发布说明](/zh/blog/release/1.0.0/)。
 
 请沿用最初的安装方式执行升级。macOS Homebrew 用户可直接运行：
 
@@ -127,4 +127,4 @@ Barn 将程序升级与客机镜像更新解耦，避免升级工具时意外改
 | macOS 基础镜像 | `barn mac image update` | 准备新基础镜像；已有虚拟机需执行 `barn mac recreate NAME --update` 才会切换 |
 {.wide .expand}
 
-如遇下载代理或 `PATH` 问题，请参阅[故障排查](../troubleshooting/#下载与-path-问题)；如需移除程序与宿主状态，请参阅[卸载与清理](../uninstall/)。
+如遇下载代理或 `PATH` 问题，请参阅[故障排查](../troubleshooting/#download-and-path-problems)；如需移除程序与宿主状态，请参阅[卸载与清理](../uninstall/)。

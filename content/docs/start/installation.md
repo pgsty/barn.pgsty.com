@@ -19,7 +19,7 @@ Barn 1.0.0 ships archives for macOS and Linux on **arm64 and amd64**, along with
 | `Barn.app` | Native `Virtualization.framework` runner and macOS guest desktop | Included in the Darwin arm64 archive and Apple Silicon Homebrew install; macOS guests only |
 {.wide .expand}
 
-## Install the release
+## Install the release {#install-the-release}
 
 Choose the operating system of your **host** machine. Use Homebrew on macOS or the release installer script on Linux.
 
@@ -54,7 +54,7 @@ Add `export PATH="$HOME/.local/bin:$PATH"` to your shell startup file (such as `
 
 When you run `barn up` interactively for the first time, Barn checks for missing Linux-guest dependencies and host networking, shows the host-preparation plan, and asks once before installing anything; it requests administrator access (`sudo`) only when a step needs it. Without a terminal, `barn up` only reports what is missing, so run `barn setup --yes` for unattended preparation. To preview the host changes without applying them, run `barn setup --dry-run`.
 
-## System requirements
+## System requirements {#system-requirements}
 
 | Guest | Host | Runtime |
 |---|---|---|
@@ -67,9 +67,9 @@ A default Linux VM uses **2 vCPUs and 4 GiB of memory**, backed by thin-provisio
 
 The first macOS VM requires roughly **65 GiB of free disk space** to hold Apple's ~25 GiB restore image, the ~27 GiB installed base image, and initial guest writes. By default, a Mac VM uses 4 vCPUs, 8 GiB of memory, and a 100 GiB APFS clone disk. Later Mac VMs inherit the prepared base image's capacity unless you pass `--disk`. See [Platforms and limits](../../about/status/) for guest-specific constraints.
 
-## Other installation methods
+## Other installation methods {#other-installation-methods}
 
-### Linux packages
+### Linux packages {#linux-packages}
 
 The DEB and RPM packages declare their QEMU, UEFI firmware, and OpenSSH dependencies automatically. On ARM64 hosts, replace `amd64` with `arm64`:
 
@@ -87,7 +87,7 @@ sudo dnf install ./barn_1.0.0_linux_amd64.rpm
 barn version
 ```
 
-### Manual archives
+### Manual archives {#manual-archives}
 
 Download `barn_1.0.0_<os>_<arch>.tar.gz` (`darwin` or `linux`, `arm64` or `amd64`) and `checksums.txt` from [Barn 1.0.0 on GitHub](https://github.com/pgsty/barn/releases/tag/v1.0.0), then verify the SHA-256 digest before extracting:
 
@@ -100,13 +100,13 @@ shasum -a 256 -c checksums.txt --ignore-missing
 
 Extract the archive and add its `bin/` directory to `PATH`. Keep the packaged layout intact: `barn` and `barn-hosts-helper` must stay paired, and the Darwin arm64 archive also contains `bin/Barn.app`. The CLI verifies the helper's embedded SHA-256 before invoking it and discovers the app beside the binary.
 
-### Build from source
+### Build from source {#build-from-source}
 
 To work on Barn or compile the native `Barn.app` bundle for macOS guests, see [Build from Source](../source-build/).
 
 ## Upgrade Barn {#upgrade-barn}
 
-Upgrading from 0.9.3 to **1.0.0** requires no recreation: VM disks, SSH keys, state, and configuration stay under `~/.barn`. Stop running Mac VMs first, then replace the CLI, `barn-hosts-helper`, and `Barn.app` together through your installation channel. Existing guests receive the updated data-disk helper on their next `barn up`. Check scripts for four behavior changes: catalog signature failures exit `7` instead of `1`, a whole-deployment `recreate` exits `4` when the inventory omits an existing node, interactive `up` asks before preparing the host, and `purge` asks for confirmation on a terminal. Scripts written for releases before 0.9.2 also need `--` before SSH/exec remote commands, for example `barn exec meta -- hostname`. See the [1.0.0 release notes](/blog/release/1.0.0/).
+Upgrading from 0.9.3 to **1.0.0** requires no recreation: VM disks, SSH keys, state, and configuration stay under `~/.barn`. Stop running Mac VMs first, then replace the CLI, `barn-hosts-helper`, and `Barn.app` together through your installation channel. Existing guests receive the updated data-disk helper on their next `barn up`. Check scripts for four behavior changes: catalog signature failures exit `7` instead of `1`, a whole-deployment `recreate` exits `4` when the inventory omits an existing node, interactive `up` asks before preparing the host, and `purge` asks for confirmation on a terminal in 1.0.0 (on `main`, `barn purge` deletes immediately unless `--ask` is passed). Scripts written for releases before 0.9.2 also need `--` before SSH/exec remote commands, for example `barn exec meta -- hostname`. See the [1.0.0 release notes](/blog/release/1.0.0/).
 
 Upgrade using the same channel you used to install Barn. On macOS with Homebrew:
 
