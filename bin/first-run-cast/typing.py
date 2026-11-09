@@ -10,15 +10,11 @@ import json
 import sys
 
 TYPED = [
-    "curl -fLO https://github.com/pgsty/barn/releases/latest/download/install.sh",
-    "bash install.sh",
-    'export PATH="$HOME/.local/bin:$PATH"',
-    "barn version",
+    "brew install pgsty/infra/barn",
+    "cd pigsty",
+    "./configure -c full",
     "barn up",
-    "barn ssh",
-    "df -h /data",
     "barn status",
-    "exit",
     "y",
 ]
 PROMPTS = ("$ ", "[Y/n] ")

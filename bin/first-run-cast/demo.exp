@@ -1,11 +1,28 @@
 #!/usr/bin/expect -f
-# Drive a real Barn first run on a dedicated test host for the home-page recording.
+# Drive a real macOS Homebrew/Pigsty session for the home-page recording.
 # Typing is simulated; every command and its output are real.
 set timeout 60
-set send_human {.05 .09 1 .03 .22}
+set send_human {.04 .07 1 .02 .16}
 log_user 1
-set host_prompt {barn-lab\x1b\[0m\$ $}
-set guest_prompt {\$ $}
+set host_prompt {\x1b\[0m \$ $}
+
+if {![info exists env(BARN_CAST_ROOT)]} {
+  puts stderr "BARN_CAST_ROOT must name the prepared recording directory"
+  exit 2
+}
+set rc [file join [file dirname [file normalize [info script]]] demo.rc]
+set env(BASH_SILENCE_DEPRECATION_WARNING) 1
+
+proc check_status {text} {
+  global env
+  set handle [open [file join $env(BARN_CAST_ROOT) command-status] r]
+  set status [string trim [read $handle]]
+  close $handle
+  if {$status ne "0"} {
+    puts stderr "\n!! command failed ($status): $text"
+    exit 3
+  }
+}
 
 proc type_line {text} {
   send -h -- $text
@@ -19,21 +36,20 @@ proc run {text wait} {
   set timeout $wait
   expect {
     -re $host_prompt {}
+    eof { puts stderr "\n!! shell exited after: $text"; exit 3 }
     timeout { send_user "\n!! timeout after: $text\n"; exit 3 }
   }
+  check_status $text
   sleep 1.3
 }
 
-set host [expr {[info exists env(BARN_CAST_HOST)] ? $env(BARN_CAST_HOST) : "m3"}]
-set remote_command [expr {[info exists env(BARN_CAST_REMOTE_COMMAND)] ? $env(BARN_CAST_REMOTE_COMMAND) : "bash --rcfile /tmp/barn-demo.rc -i"}]
-spawn -noecho ssh -q -tt -o BatchMode=yes $host $remote_command
+spawn -noecho /bin/bash --noprofile --rcfile $rc -i
 expect -re $host_prompt
 sleep 1.5
 
-run {curl -fLO https://github.com/pgsty/barn/releases/latest/download/install.sh} 120
-run {bash install.sh} 300
-run {export PATH="$HOME/.local/bin:$PATH"} 20
-run {barn version} 30
+run {brew install pgsty/infra/barn} 600
+run {cd pigsty} 20
+run {./configure -c full} 60
 
 type_line {barn up}
 set timeout 1500
@@ -47,25 +63,14 @@ expect {
   }
   -ex {Password:} { send_user "\n!! unexpected sudo prompt\n"; exit 3 }
   -re $host_prompt {}
+  eof { puts stderr "\n!! shell exited during barn up"; exit 3 }
   timeout { send_user "\n!! barn up timeout\n"; exit 3 }
 }
-sleep 1.6
-
-type_line {barn ssh}
-set timeout 120
-expect {
-  -re {meta.*\$ $} {}
-  timeout { send_user "\n!! no guest prompt\n"; exit 3 }
-}
-sleep 1.2
-type_line {df -h /data}
-expect -re {meta.*\$ $}
-sleep 1.4
-type_line {exit}
-expect -re $host_prompt
-sleep 1.2
+check_status {barn up}
+sleep 2
 
 run {barn status} 60
-sleep 2.5
-send -- "exit\r"
+sleep 4
+# End on the ready table, with no extra exit command in the demo.
+send -- "\004"
 expect eof

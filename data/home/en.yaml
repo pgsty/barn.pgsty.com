@@ -34,31 +34,31 @@ hero:
 
 quickstart:
   eyebrow: Quick start
-  title: Your first Linux VM
+  title: Four Linux VMs, one command
   desc: >-
-    On a fresh host, `barn up` writes a one-node `barn.yml` and asks once
-    before it changes the host.
+    Install Barn on your Mac, select Pigsty’s `full` template, and run `barn up`.
+    The same `pigsty.yml` defines all four VMs.
   facts:
-    - { label: Node, value: '`meta` at `10.10.10.10`' }
+    - { label: Nodes, value: '4 VMs · `10.10.10.10–13`' }
     - { label: Image, value: 'Ubuntu 24.04 · `u24:stable`' }
-    - { label: Size, value: 2 vCPUs · 4 GiB memory }
+    - { label: Per node, value: 2 vCPUs · 4 GiB memory }
     - { label: Disks, value: '64 GiB root · 128 GiB `/data`' }
   links:
     - { label: Installation options, url: docs/start/installation/ }
-    - { label: Linux quick start, url: docs/start/tutorial/ }
+    - { label: Use with Pigsty, url: 'docs/start/automation/#pair-the-lab-with-pigsty' }
   demo: |-
-    {{< asciinema file="images/barn-first-run.cast" title="Barn 1.1.0 first run · Ubuntu 26.04" poster="npt:0:23.64" >}}
-
-    A real first run on an Ubuntu 26.04 host; the image download and boot wait play faster than real time.
+    {{< asciinema file="images/barn-first-run.cast" title="macOS · Homebrew → Pigsty full" rows="18" fit="both" speed="1.25" idleTimeLimit="0.7" poster="npt:0:23.63" preload="true" >}}
   body: |-
     ```bash {title="macOS · Homebrew"}
     # Installs the CLI, Barn.app, and QEMU
     brew install pgsty/infra/barn
+    cd pigsty  # Your Pigsty checkout
+    ./configure -c full
     barn up
-    barn ssh
+    barn status
     ```
 
-    ```bash {title="Linux · install.sh"}
+    ```bash {title="Linux · single-node quick start"}
     # Installs into ~/.local/bin without sudo
     curl -fLO https://github.com/pgsty/barn/releases/latest/download/install.sh
     bash install.sh && export PATH="$HOME/.local/bin:$PATH"

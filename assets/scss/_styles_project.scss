@@ -162,7 +162,7 @@
   }
 }
 
-// Quick start: what the first `barn up` creates, beside the commands to run.
+// Quick start: the Pigsty full lab beside its macOS recording.
 .barn-quickstart {
   &__grid {
     display: grid;
@@ -252,8 +252,8 @@
     }
   }
 
-  // The recording uses the theme's asciinema player; drop the window lights
-  // as the home codeplates do, and keep its caption quiet.
+  // A compact terminal fits the same height as the copy on desktop.
+  // The player's fit="both" scales its contents without clipping the frame.
   &__demo {
     width: 100%;
     max-width: 760px;
@@ -264,19 +264,44 @@
       margin: 0;
     }
 
-    .td-asciinema__lights {
+    .td-asciinema__lights,
+    .td-asciinema__chrome::after {
       display: none;
     }
 
-    p {
-      margin: 0.55rem 0 0;
-      color: var(--td-soft);
-      font-size: 0.82rem;
-      text-wrap: balance;
+    [data-td-asciinema-player] {
+      aspect-ratio: 16 / 9;
+      min-width: 0;
+    }
+
+    .ap-wrapper {
+      align-items: center;
+    }
+
+    @media (min-width: 1100px) {
+      position: relative;
+      align-self: stretch;
+
+      .td-asciinema {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .td-asciinema__chrome {
+        flex: none;
+      }
+
+      [data-td-asciinema-player] {
+        flex: 1;
+        min-height: 0;
+        aspect-ratio: auto;
+      }
     }
   }
 
-  // macOS commands sit under the facts and Linux commands under the Linux
+  // macOS commands sit under the facts and Linux commands under the macOS
   // recording, on the same column ratio. Side by side only from 1320px,
   // where the 75-column installer line fits without scrolling.
   &__code {

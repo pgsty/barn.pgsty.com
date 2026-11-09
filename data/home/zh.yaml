@@ -32,30 +32,31 @@ hero:
 
 quickstart:
   eyebrow: 快速上手
-  title: 第一台 Linux 虚拟机
+  title: 一条命令，四台虚拟机
   desc: >-
-    在全新宿主上，`barn up` 会写出单节点 `barn.yml`，改动宿主前先确认一次。
+    在 Mac 上装好 Barn，选择 Pigsty 的 `full` 模板，再运行 `barn up`。
+    同一份 `pigsty.yml` 就能拉起四节点 Linux 实验环境。
   facts:
-    - { label: 节点, value: '`meta`，地址 `10.10.10.10`' }
+    - { label: 节点, value: '4 台虚拟机 · `10.10.10.10–13`' }
     - { label: 镜像, value: 'Ubuntu 24.04 · `u24:stable`' }
-    - { label: 规格, value: 2 个 vCPU · 4 GiB 内存 }
+    - { label: 单机, value: 2 个 vCPU · 4 GiB 内存 }
     - { label: 磁盘, value: '64 GiB 根盘 · 128 GiB `/data`' }
   links:
     - { label: 安装选项, url: docs/start/installation/ }
-    - { label: Linux 快速上手, url: docs/start/tutorial/ }
+    - { label: 与 Pigsty 配合使用, url: 'docs/start/automation/#pair-the-lab-with-pigsty' }
   demo: |-
-    {{< asciinema file="images/barn-first-run.cast" title="Barn 1.1.0 首次运行 · Ubuntu 26.04" poster="npt:0:23.64" >}}
-
-    在一台 Ubuntu 26.04 宿主上真实录制的首次运行，镜像下载与启动等待部分已加速播放。
+    {{< asciinema file="images/barn-first-run.cast" title="macOS · Homebrew → Pigsty full" rows="18" fit="both" speed="1.25" idleTimeLimit="0.7" poster="npt:0:23.63" preload="true" >}}
   body: |-
     ```bash {title="macOS · Homebrew"}
     # 安装 CLI、Barn.app 与 QEMU
     brew install pgsty/infra/barn
+    cd pigsty  # 已有的 Pigsty 源码目录
+    ./configure -c full
     barn up
-    barn ssh
+    barn status
     ```
 
-    ```bash {title="Linux · install.sh"}
+    ```bash {title="Linux · 单节点快速上手"}
     # 安装到 ~/.local/bin，无需 sudo
     curl -fLO https://github.com/pgsty/barn/releases/latest/download/install.sh
     bash install.sh && export PATH="$HOME/.local/bin:$PATH"

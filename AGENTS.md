@@ -18,8 +18,8 @@
 
 ## 本站扩展
 
-- `layouts/_partials/landing/barn-quickstart.html` 渲染首页快速上手，数据来自 `data/home/<lang>.yaml`；默认节点说明与录像并排，下方显示 macOS/Linux 命令。
-- `static/images/barn-first-run.cast` 是真实首跑录像；重录方法在 `bin/first-run-cast/`。首跑输出变化后重新录制，输入命令与首页 Linux 命令一致。
+- `layouts/_partials/landing/barn-quickstart.html` 渲染首页快速上手，数据来自 `data/home/<lang>.yaml`；Pigsty full 四节点说明与录像并排，下方显示 macOS/Linux 命令。
+- `static/images/barn-first-run.cast` 是 macOS 上 Homebrew 安装与 Pigsty full 启动的真实录像；重录方法在 `bin/first-run-cast/`。输出变化后重新录制，输入命令与首页 macOS 命令一致。
 - 首页终端示例必须匹配对应 Barn 版本的真实输出；样式在 `assets/scss/_styles_project.scss`，作用域限定为 `.td-home` 或 `.barn-quickstart`。这些都是本站代码。
 
 ## Git 与制品
