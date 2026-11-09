@@ -10,13 +10,13 @@ tags: [macOS, Recovery, Architecture]
 icon: fa-brands fa-apple
 ---
 
-`barn mac` manages named macOS VMs through Apple's `Virtualization.framework`, independently of the Linux inventory. Introduced in `0.9.0`, it uses the native host app `Barn.app`, included in Apple Silicon release archives since `0.9.2`. This essay distills the [named-machine implementation record](https://github.com/pgsty/barn/blob/main/docs/mac-implementation-log.md) and earlier Mac reviews, with the current implementation checked on 2026-11-08. Commands and defaults are in the [Mac reference](/docs/reference/mac/).
+`barn mac` manages named macOS VMs through Apple's `Virtualization.framework`, independently of the Linux inventory. Introduced in `0.9.0`, it uses the native host app `Barn.app`, included in Apple Silicon release archives since `0.9.2`. This essay distills the named-machine implementation record and earlier Mac reviews, with the current implementation checked on 2026-11-08. Dated evidence is summarized in the [validation history](/docs/about/history/#mac-native-record); commands and defaults are in the [Mac reference](/docs/reference/mac/).
 
 ## A machine owns its network {#network-ownership}
 
 The early design had two fixed slots and a privileged network helper. The 2026-09-29 redesign replaced that model with named machines and a private `/24` NAT network created inside each runner process. The guest receives `.10` on its own subnet. Two is the simultaneous-running limit, shared with other macOS virtualization tools and restore installation; stored machines are not restricted to two fixed names.
 
-Network ownership now follows VM lifetime. Starting the runner creates the network, and stopping it releases the network. There is no separate root network daemon to install or reconcile for `barn mac`. The retired helper protocol remains in the [historical network document](https://github.com/pgsty/barn/blob/main/docs/history/mac-network-20260928.md).
+Network ownership now follows VM lifetime. Starting the runner creates the network, and stopping it releases the network. There is no separate root network daemon to install or reconcile for `barn mac`; the earlier helper protocol is historical context only.
 
 This topology also supports first-contact SSH trust. On an uninitialized VM, Barn checks the runner's identity before and after connecting to the reserved address, authenticates the guest, and pins its host key under the instance UUID. The guest is the only peer besides the trusted host on that runner's private network. Later connections require the pinned key; changing the subnet keeps the instance identity, while recreation creates a new one. See [`readySSH`](https://github.com/pgsty/barn/blob/main/internal/macvm/ssh.go).
 
@@ -29,7 +29,7 @@ The acquisition order is machine operation → shared state → native runner:
 | Machine operation | Serializes lifecycle changes to one named VM |
 | Shared state | Coordinates image and machine records used across operations |
 | Runner lifetime | Establishes whether the native process still owns the VM |
-{.wide}
+{.wide .expand}
 
 Runtime-only changes can use the machine lock, so preparing an image does not prevent an unrelated VM from shutting down. A stop request can interrupt that machine's SSH-readiness wait through an operation nonce, then take the operation lock; cancellation does not grant two commands simultaneous write access. The rules live in [`operations.go`](https://github.com/pgsty/barn/blob/main/internal/macvm/operations.go) and [`readiness_interrupt.go`](https://github.com/pgsty/barn/blob/main/internal/macvm/readiness_interrupt.go).
 
@@ -41,7 +41,7 @@ Apple's installer completion callback can arrive while the restore VM is still r
 
 New machines clone that base and receive their own identities and credentials. Cache reuse also checks compatibility: Apple's online metadata may select a different hardware model for the same build, so Barn validates the saved model's hash and current host support before reusing an existing ready base. A matching build label alone is insufficient.
 
-Recreation adds another reference lifetime. An unfinished recreate journal may still need the old machine's base even after the replacement is ready. Image pruning includes those journal references and refuses ambiguous records. A diagnostic list can report a bad record and continue; pruning needs a complete reference set before deleting anything. The [1.0 hardening review](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md) records this recovery decision.
+Recreation adds another reference lifetime. An unfinished recreate journal may still need the old machine's base even after the replacement is ready. Image pruning includes those journal references and refuses ambiguous records. A diagnostic list can report a bad record and continue; pruning needs a complete reference set before deleting anything. The [1.0 hardening record](/docs/about/history/#release-1-0-candidates) records this recovery decision.
 
 ## Keep guest credentials within one boundary {#credentials}
 

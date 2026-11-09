@@ -25,7 +25,7 @@ Barn enforces a strict asymmetry between creation and destruction:
 
 Root overlays, data disks, SSH host identities, and local databases hold state that takes time to rebuild. When a change requires replacing or deleting a node, the operator must invoke that action explicitly.
 
-## From Pigsty inventory to per-node spec hash
+## From Pigsty inventory to per-node spec hash {#from-pigsty-inventory-to-per-node-spec-hash}
 
 When reading `barn.yml`, Barn extracts the fields in its contract, fills defaults, and normalizes image selectors and architecture into a resolved specification. Exact catalog image digests are resolved separately so that running `barn update` does not silently invalidate every node's specification hash. Each node's hash combines two inputs:
 
@@ -37,7 +37,7 @@ Adding a second node leaves the first node's hash untouched, and editing upper-l
 > [!NOTE]
 > `barn up` converges additions and stopped nodes automatically. CPU and memory changes use `barn resize`; other specification changes and node removals use explicit `barn recreate` and `barn destroy` commands. See [Daily Operations](/docs/start/operations/) for the command workflow.
 
-## Six explicit `barn plan` outcomes
+## Six explicit `barn plan` outcomes {#six-explicit-barn-plan-outcomes}
 
 `barn plan` compares the desired inventory against committed deployment and node state and classifies every node into one of six outcomes:
 
@@ -53,14 +53,14 @@ Adding a second node leaves the first node's hash untouched, and editing upper-l
 
 `barn plan` is completely read-only and prints the exact command needed to resolve any `resize`, `recreate`, or `missing` drift.
 
-## Why `barn up` stops on node drift
+## Why `barn up` stops on node drift {#why-barn-up-stops-on-node-drift}
 
 Rather than resizing a running VM or silently rebuilding a root disk when `vm_image` changes, `barn up` stops with a `conflict` error whenever an existing node's specification has drifted. CPU and memory changes go through `barn resize <node>`, which keeps the VM identity and disks. Every other change requires an explicit `barn recreate <node>`, which gives you two guarantees:
 
 1. Every change that replaces a guest's root filesystem goes through one visible, confirmed command.
 2. Barn validates all prerequisites—target QEMU emulator, accelerator policy, UEFI firmware, cached or downloadable image bytes, network backend, shared directory paths, and persistent-disk compatibility—**before** stopping or deleting the existing VM. If a foreign-architecture emulator is missing or a share path is invalid, the running VM stays untouched.
 
-## Why missing nodes block `barn up`
+## Why missing nodes block `barn up` {#why-missing-nodes-block-barn-up}
 
 A node can vanish from `barn.yml` for plenty of routine reasons that do not mean "delete this database server":
 
@@ -81,7 +81,7 @@ When you do destroy or recreate nodes, data-disk lifetimes follow clear boundari
 
 Deleting the control node elects the first remaining node. `SpecHash` describes its current applied definition; `GuestSpecHash` describes the guest's existing readiness marker. A control-role change can therefore make these hashes differ while the VM identity and disks remain valid.
 
-Before marking any node for deletion, Barn must finish the successor's committed prepare journal. It then atomically publishes the deployment as the role-change commit record and updates the successor's definition hash. If interrupted between those writes, recovery under the deployment lock accepts only a hash difference exactly explained by flipping `Control`; unrelated drift still fails. It does not create missing state, rotate the VM UUID, or change disk/process identity. See the [1.0 hardening record](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md) and [control recovery tests](https://github.com/pgsty/barn/blob/v1.0.0/internal/private/control_test.go).
+Before marking any node for deletion, Barn must finish the successor's committed prepare journal. It then atomically publishes the deployment as the role-change commit record and updates the successor's definition hash. If interrupted between those writes, recovery under the deployment lock accepts only a hash difference exactly explained by flipping `Control`; unrelated drift still fails. It does not create missing state, rotate the VM UUID, or change disk/process identity. See the [1.0 hardening record](/docs/about/history/#release-1-0-candidates) and [control recovery tests](https://github.com/pgsty/barn/blob/v1.0.0/internal/private/control_test.go).
 
 Update the inventory's control role before the next `barn up` installs control SSH access. General live role migration would also need old-credential revocation, offline retries, and partial-failure semantics; accepting arbitrary hash changes would conceal that unfinished convergence.
 
@@ -91,7 +91,7 @@ Filesystem-checker exit codes alone cannot authorize formatting. ext4 codes `4`/
 
 The [disk recovery tests](https://github.com/pgsty/barn/blob/v1.0.0/internal/cloudinit/disk_recovery_test.go) check whether `mkfs` actually ran using a sentinel, while physical-host acceptance compares disk contents. This tests the destructive effect as well as the warning text; the dated coverage is in [validation history](/docs/about/history/#release-1-0-candidates).
 
-## Incremental convergence without collateral damage
+## Incremental convergence without collateral damage {#incremental-convergence-without-collateral-damage}
 
 Because convergence is evaluated per node, `barn up` scales a 1-node lab out to 4 nodes without restarting the running control node, and `barn recreate node-2` replaces `node-2` while leaving `meta` and `node-1` online and reattaching `node-2`'s compatible persistent data disks.
 

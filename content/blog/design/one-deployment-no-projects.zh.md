@@ -13,7 +13,7 @@ lastmod: 2026-10-30
 本文阐述 Barn `0.9.3` 的 Linux 实验环境部署模型（[Mac 虚拟机](/zh/docs/start/macos/)作为独立的具名虚拟机管理）。
 
 > [!NOTE]
-> **2026-10-30 更新**：Barn 0.9.3 构建支持相对或符号链接形式的 `BARN_HOME`，并允许 `vm_skip: true` 外部主机使用主机名或 IPv6 清单键。跨目录操作同一部署时请使用绝对 `BARN_HOME`，详见[Barn 0.9.3 变更](/zh/docs/about/0.9.3-changes/)。
+> **2026-10-30 更新**：Barn 0.9.3 构建支持相对或符号链接形式的 `BARN_HOME`，并允许 `vm_skip: true` 外部主机使用主机名或 IPv6 清单键。跨目录操作同一部署时请使用绝对 `BARN_HOME`，详见 [Barn 0.9.3 变更](/zh/docs/about/0.9.3-changes/)。
 
 Barn 的早期原型曾将每个工作目录视为一个独立“项目”：用隐藏目录标记项目身份，用全局注册表记录项目路径，再用宿主级租约表协调私有网段冲突。这套机制虽然能管理多组互不相关的虚拟机，但与 Barn 的核心场景格格不入——在本地拉起一套具有固定 IP 的 Pigsty 数据库实验集群。
 
@@ -30,7 +30,7 @@ Barn 的早期原型曾将每个工作目录视为一个独立“项目”：用
 > [!NOTE]
 > 当前清单文件的发现顺序、字段规则与默认值详见[配置参考](/zh/docs/reference/configuration/)。
 
-## 一份主机清单就够了
+## 一份主机清单就够了 {#one-inventory-is-enough}
 
 Pigsty 清单（`barn.yml` 或 `pigsty.yml`）直接作为 Barn 的期望状态配置。Barn 只读取主机 IPv4 键、少数 Pigsty 身份字段（`nodename`、`admin_ip`、`pg_cluster`、`pg_seq`、`node_admin_username`、`node_admin_uid`）以及文档定义的 `vm_*` 命名空间。
 
@@ -38,7 +38,7 @@ Barn 对自己消费的 `vm_*` 字段执行严格校验，对上层 Pigsty 专�
 
 节点命名同样遵循单一来源原则：优先采用显式的 `nodename`，其次由 `<pg_cluster>-<pg_seq>` 稳定派生，最后回退到 `node-<IP末段>`，绝不额外引入一个可能与 Pigsty 主机名打架的 `vm_name` 字段。
 
-## 按用户隔离的单一状态根
+## 按用户隔离的单一状态根 {#one-owner-scoped-state-root}
 
 所有已应用的部署状态统一存放在 `BARN_HOME`（默认 `~/.barn`）中。工作目录里不写任何隐藏标记，也不维护按路径索引的注册表。只读取已应用状态的命令（如 `barn status`、`barn ssh`、`barn stop`、`barn start`、`barn destroy`）在任意目录下执行效果完全一致；需要读取期望配置的命令（如 `barn validate`、`barn plan`、`barn up`、`barn reload`、`barn recreate`）则通过 `-f` 或当前目录自动发现清单。
 
@@ -48,11 +48,11 @@ Barn 对自己消费的 `vm_*` 字段执行严格校验，对上层 Pigsty 专�
 - 误删工作目录里的 `barn.yml` 不会抹掉 `~/.barn` 中的已应用状态（`plan` 与 `up` 仍可回退读取已提交的部署规格）。
 - 镜像缓存、SSH 密钥、节点磁盘、锁文件与部署状态集中在同一个清晰的目录树下（Unix 短路径套接字、`~/.ssh/barn_config` 与宿主全局网络则保存在各自的标准位置，完整清理方式见[卸载指南](/zh/docs/start/uninstall/)）。
 
-## 配置文件缺席不代表允许删除
+## 配置文件缺席不代表允许删除 {#missing-configuration-never-implies-deletion}
 
 Barn 严格区分期望配置与已提交状态。变更拓扑需要读取清单文件，但清单文件缺失或某个 YAML 分组被省略，绝不会成为自动删除已有虚拟机的依据。[变更规划与破坏性操作始终保持显式](/zh/blog/design/convergence-without-surprise/)，遇到任何归属存疑的资源，恢复流程都会优先保留现场而非猜测用户意图。
 
-## 刻意保持精简的取舍
+## 刻意保持精简的取舍 {#a-deliberate-trade-off}
 
 Barn 刻意将每个 `BARN_HOME` 限制为管理一套 Linux 实验环境，拒绝引入多项目并发、路径注册表与网段租约。对于本地数据库与基础架构开发而言，“一份清单驱动一套部署”让地址规划、属主核验、漂移检测、崩溃恢复与卸载清理都保持了最高的可预期性。
 

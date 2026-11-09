@@ -22,7 +22,7 @@ Image work becomes error-prone when four independent version values are treated 
 | Cloud build | A dated upstream disk build, with a `YYYYMMDD` identifier | The dated directory, file name, and checksum record | No; it is a candidate source |
 | Barn release | Barn’s normalized version and revision suffix | The image recipe and catalog mapping | No; normalization must be reproducible |
 | Runtime support | Whether Barn can boot and operate that artifact | QEMU profile, firmware, network, cloud-init, and SSH evidence | Required |
-{.wide}
+{.wide .expand}
 
 The suffix in a Barn version is not automatically an OS point version. Debian, Ubuntu, Rocky, and CentOS use different build identifiers, and Barn may add its own normalized revision. Keep those namespaces separate in release notes, source recipes, and catalog entries.
 
@@ -54,7 +54,7 @@ For Barn, an image entry is valid only when these pieces agree:
 | Firmware | The image has a validated boot path; UEFI uses matching code and a per-VM variable store, while BIOS images use the BIOS path |
 | Guest seed | Cloud-init or the image initialization path creates the expected user, keys, hostname, and network |
 | Runtime test | A clean temporary `BARN_HOME` reaches the expected guest architecture and SSH state |
-{.wide}
+{.wide .expand}
 
 This is why image availability and Barn support are separate statements. The [repository contract](/blog/design/repo-yaml-catalog-json/) keeps human policy in `repo.yaml` and generated file facts in `catalog.json`; the runtime still needs a target emulator and a cold-boot check. A catalog entry that has a good checksum but cannot reach SSH is not a usable Barn image.
 
@@ -66,6 +66,7 @@ Before a formal Barn release:
 2. Compare its revision, default image, and every stable artifact’s path, architecture, digest, and size with the embedded catalog. Update the embedded manifest version and date, and update `repo.yaml` when the repository source changes.
 3. Run `make catalog-check` to verify both official mirrors, require exact agreement with the embedded bytes, and check every stable artifact’s availability and size. Run the image catalog tests and execute `barn update` with a fresh temporary `BARN_HOME`. Use `go run ./tools/catalogcheck -verify-bytes` when all stable artifacts also need to be streamed and hashed.
 4. Build and publish only after the catalog gate passes. A release must not carry an artifact that the official repository has removed.
+{.steps}
 
 The [catalog checker](https://github.com/pgsty/barn/tree/main/tools/catalogcheck) enforces repository agreement. New or rebuilt images also need startup and SSH acceptance for each changed architecture before promotion; see the [image pipeline](/docs/reference/image-pipeline/). Never reuse a published catalog revision for different bytes.
 

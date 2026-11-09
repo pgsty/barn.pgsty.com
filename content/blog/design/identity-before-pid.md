@@ -16,7 +16,7 @@ A `pidfile` records a process ID at the moment it was written. Minutes or days l
 
 Trusting a bare `pidfile` is how naive process managers end up sending `SIGKILL` to an unrelated process or deleting a disk that is still attached to a live VM. Barn never authorizes `SIGTERM`, `SIGKILL`, or disk deletion from a PID alone; destructive actions proceed only when independent identity checks agree.
 
-## QMP is the primary runtime identity
+## QMP is the primary runtime identity {#qmp-is-the-primary-runtime-identity}
 
 Every Barn Linux VM is assigned a generated UUID and an expected QEMU instance name (`barn-<node>`). Immediately after spawning QEMU, Barn connects to the node's QEMU Machine Protocol (QMP) Unix socket and queries both values. A node launch succeeds only after QMP responds with the exact expected name and UUID.
 
@@ -29,7 +29,7 @@ Barn repeats that QMP handshake before every shutdown or status transition:
 > [!NOTE]
 > When a command reports an interrupted transition or identity mismatch, start with [Troubleshooting](/docs/start/troubleshooting/) rather than deleting files in `~/.barn` by hand.
 
-## Process four-tuples close the fallback gap
+## Process four-tuples close the fallback gap {#process-four-tuples-close-the-fallback-gap}
 
 If QEMU crashes, the runtime socket directory is cleared, or a shutdown is interrupted mid-flight, the QMP socket may no longer respond. To handle signal fallback safely without QMP, Barn records a four-element process identity tuple alongside the full typed QEMU invocation when the VM starts:
 
@@ -42,7 +42,7 @@ Before sending `SIGTERM`, Barn inspects the live OS process table and requires a
 
 If QMP is unreachable and the OS process table shows that the recorded PID now belongs to an unrelated process (or no longer exists), Barn marks the VM `stopped` without signaling that PID. Conversely, if QMP is still responsive or if the live process tuple cannot be read unambiguously, Barn refuses to send blind signals and stops with a diagnostic error.
 
-## Prepare journals track work before state is committed
+## Prepare journals track work before state is committed {#prepare-journals-track-work-before-state-is-committed}
 
 Creating a VM requires preparing disk overlays and `cloud-init` seed media on disk before the QEMU process even starts. If the CLI is killed (`SIGINT`/`SIGKILL`) or crashes mid-preparation, those files exist on disk before a committed node state record is written.
 
@@ -56,7 +56,7 @@ To recover cleanly without guessing from directory listings, Barn writes a `0600
 
 During recovery, Barn validates the journal schema, UUIDs, file modes, symlink absence, and directory containment, then rolls back only the exact uncommitted files recorded in the journal.
 
-## Narrow rollback and fail-closed teardown
+## Narrow rollback and fail-closed teardown {#narrow-rollback-and-fail-closed-teardown}
 
 Offline rollback of an uncommitted node runs only when three preconditions hold simultaneously:
 
@@ -68,7 +68,7 @@ When all three hold, Barn removes the uncommitted artifacts in reverse creation 
 
 Ordinary `barn destroy` applies the same discipline: it verifies path containment, file ownership, process termination, and the exact known artifact list before unlinking files, and removes the node directory only when it is empty (any unexpected file halts directory removal with an error).
 
-## Atomic state updates
+## Atomic state updates {#atomic-state-updates}
 
 Every state update writes to a sibling temporary file in the same directory, calls `fsync`, performs an atomic `rename`, and `fsync`s the parent directory while holding the deployment and node locks. After any crash, on-disk state reflects either the prior committed state or the new committed state, with the prepare journal covering the bounded window in between.
 

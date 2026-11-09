@@ -16,7 +16,7 @@ A Pigsty inventory identifies every database node by a stable IPv4 address: Post
 
 At the same time, freshly booted cloud images need effortless outbound internet access to download packages without requiring you to maintain custom host NAT/MASQUERADE firewall rules. Barn solves both problems cleanly by giving every Linux node two virtual network interfaces (NICs).
 
-## Two interfaces, two distinct jobs
+## Two interfaces, two distinct jobs {#two-interfaces-two-distinct-jobs}
 
 | Interface | Addressing | Responsibility |
 |---|---|---|
@@ -32,7 +32,7 @@ Barn binds each interface inside the guest by its deterministic MAC address rath
 > [!NOTE]
 > Dual-NIC networking is built into every Barn Linux VM. See [Design](/docs/about/design/) for an overview of the Linux and macOS runtime architectures.
 
-## The inventory owns the `/24` address plan
+## The inventory owns the `/24` address plan {#the-inventory-owns-the-24-address-plan}
 
 All managed nodes in a deployment share one canonical RFC1918 `/24` subnet:
 
@@ -47,7 +47,7 @@ Because `cloud-init` writes the static inventory address directly from `barn.yml
 
 When generating a fresh default template on a host where `10.10.10.0/24` is already in use, `barn setup` can automatically pick another free RFC1918 `/24`; explicit `-f` inventories and edited configurations always keep their declared subnet.
 
-## Platform-native backends, identical guest topology
+## Platform-native backends, identical guest topology {#platform-native-backends-identical-guest-topology}
 
 Inside the guest, every distribution sees the exact same two-NIC layout. On the host, Barn integrates with the platform's native network manager so QEMU always runs as an unprivileged user process:
 
@@ -56,7 +56,7 @@ Inside the guest, every distribution sees the exact same two-NIC layout. On the 
 - **Linux with `systemd-networkd`**: Installs dedicated `barn0` networkd units and uses the distribution's `qemu-bridge-helper` for unprivileged tap attachment.
 - **Linux with inactive `systemd-networkd`**: Before starting an inactive `systemd-networkd` service, Barn scans existing `.network` units on the host and proceeds only if none of them could claim a physical host interface—preventing a lab setup from disrupting workstation or server networking.
 
-## Host networking as a reversible transaction
+## Host networking as a reversible transaction {#host-networking-as-a-reversible-transaction}
 
 Because a host bridge or `socket_vmnet` service persists across CLI runs and requires `sudo` to install, Barn executes host network setup as a six-step reversible transaction:
 
@@ -72,9 +72,9 @@ Barn never hijacks an existing non-Barn interface that happens to use `.1/24`, n
 
 ### 1.0 update: recheck shared service ownership {#shared-networkd}
 
-The installation snapshot is not permanent authority over a host-wide service. In `1.0.0`, uninstall checks current links as well as files: a running link may still depend on networkd after its `.network` file has been removed. When other non-loopback links exist or exclusive Barn use cannot be established, uninstall removes Barn-owned resources while preserving the global unit state. The plan exposes `preserve_networkd`; the applied report explains it in `checks.networkd`. An administrator can later change the retained unit state after checking the other links. See the [hardening record](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md).
+The installation snapshot is not permanent authority over a host-wide service. In `1.0.0`, uninstall checks current links as well as files: a running link may still depend on networkd after its `.network` file has been removed. When other non-loopback links exist or exclusive Barn use cannot be established, uninstall removes Barn-owned resources while preserving the global unit state. The plan exposes `preserve_networkd`; the applied report explains it in `checks.networkd`. An administrator can later change the retained unit state after checking the other links. See the [hardening record](/docs/about/history/#release-1-0-candidates).
 
-## Why this split works
+## Why this split works {#why-this-split-works}
 
 Routing outbound internet traffic through QEMU's user-mode stack trades raw WAN throughput for zero-configuration portability, while keeping all latency-sensitive traffic—host-to-guest psql/SSH, PostgreSQL replication, etcd heartbeats, and local package mirror pulls from the `meta` node—on the fast, fixed-IP virtual bridge.
 

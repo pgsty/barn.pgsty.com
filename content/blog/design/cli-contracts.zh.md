@@ -3,14 +3,14 @@ title: "保留契约，演进 CLI"
 linkTitle: "CLI 契约"
 description: "拆分 Barn 命令树、应用编排与输出处理时，哪些行为必须保留。"
 date: 2026-11-04T10:00:00+08:00
-lastmod: 2026-11-08
+lastmod: 2026-11-09
 weight: 100
 categories: [Design]
 tags: [CLI, Compatibility, Architecture]
 icon: fa-solid fa-terminal
 ---
 
-Barn 已经使用 Cobra。[2026-11-04 CLI 提案](https://github.com/pgsty/barn/blob/main/docs/cobra-cli-design.md)最值得保留的部分，是对命令语法、应用编排与外部行为的拆分。本文结合 `v1.0.0` 和 2026-11-08 开发源码整理这些设计；包结构拆分与较大范围的命令重组仍是提案，当前用法见 [CLI 参考](/zh/docs/reference/cli/)。
+Barn 已经使用 Cobra。2026-11-04 CLI 提案最值得保留的部分，是对命令语法、应用编排与外部行为的拆分。本文结合 `v1.0.0` 和 2026-11-09 开发源码整理这些设计；包结构拆分与较大范围的命令重组仍是提案，当前用法见 [CLI 参考](/zh/docs/reference/cli/)。
 
 ## 保留已有边界 {#existing-boundaries}
 
@@ -25,7 +25,7 @@ Barn 已经使用 Cobra。[2026-11-04 CLI 提案](https://github.com/pgsty/barn/
 | 机器可读输出 | 既有字段和类型、JSON/YAML 一致性，以及失败时有用的部分结果 |
 | 交互访问 | 真实终端文件描述符、子进程信号与远端退出码 |
 | 帮助与补全 | 既有别名、局部参数、平台范围与离线补全 |
-{.wide}
+{.wide .expand}
 
 搬迁命令不能让无效清单悄悄回退到旧状态，不能把 `init -o FILE` 改作输出格式，也不能将 `up`、`restart`、`reload`、`recreate` 合并成一个动作。这些差异决定了命令读取哪份配置、可以修改哪些资源。
 
@@ -52,7 +52,7 @@ SSH 与持续跟随的日志需要流式路径，保留空参数、引用边界�
 | `cmd/barn` | 进程入口、信号与退出状态 |
 | 拟新增的 `internal/cli` | Cobra 树、参数验证、展示与输入输出流连接 |
 | 应用编排与既有领域包 | 类型化请求和结果、生命周期、宿主网络、镜像与 Mac VM |
-{.wide}
+{.wide .expand}
 
 按操作实际需要注入输入输出流、环境读取、确认器与运行器。领域服务保持独立于 Cobra，避免用通用分发器抹掉请求类型。确认与 SSH 必须全程使用注入的输入流；只设置 Cobra 输入流、其他位置仍读取全局 `os.Stdin`，会让测试与嵌入调用出现分歧。
 
@@ -62,11 +62,11 @@ SSH 与持续跟随的日志需要流式路径，保留空参数、引用边界�
 
 ## 按实际进展修订提案 {#implementation-status}
 
-原提案既包含长期契约，也包含有日期边界的产品选择。截至 2026-11-08：
+原提案既包含长期契约，也包含有日期边界的产品选择。截至 2026-11-09：
 
 - `1.0.0` 已实现裸命令完整帮助、结构化 `actions[]`、适用销毁命令的确认别名，以及输出环境变量优先级修复。
 - CLI 仍位于 `cmd/barn/`。拟议的 `internal/cli` 提取、`--format`、`image update` 与 `ssh-config show/install/uninstall` 命令树尚未落地。
-- 尚未发布的 `main` 已为适用的清单操作加入 `--image/-I` 与 `--arch/-A` 覆盖参数；`purge` 保持默认立即执行，通过 `--ask` 选择确认。原提案要求 purge 必须确认的设计已被这项选择取代。
+- 尚未发布的 `main` 已为适用的清单操作加入 `--image/-I` 与 `--arch/-A` 覆盖参数，统一了结果表格与终端实时进度表（在提示或报错前冻结已打印行），将终端输出收口为纯 ASCII 符号与 `[DONE]`/`[FAILED]`/`[CANCELLED]` 状态标签，并将 YAML 解析升级到 `go.yaml.in/yaml/v4`；`purge` 保持默认立即执行，通过 `--ask` 选择确认。原提案要求 purge 必须确认的设计已被这项选择取代。
 
 后续行为调整需要独立决策与迁移说明，接受提案时还须遵守 [1.0.0 发布说明](/zh/blog/release/1.0.0/)中的 1.x 兼容性边界。
 

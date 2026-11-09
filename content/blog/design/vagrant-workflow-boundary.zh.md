@@ -25,7 +25,7 @@ Barn 已经能从兼容 Pigsty 的主机清单创建多节点 Linux 实验环境
 | 恢复实验 | 持久数据盘在普通销毁/重建时保留 | 覆盖相关状态的具名冷快照 |
 | 复现镜像 | 签名目录、完整版本选择、导入、缓存和静态仓库工具 | 可携带的环境记录，以及已配置 VM 的导出 |
 | 访问服务 | 固定私网地址与 loopback 管理 SSH | 用户声明服务端口及显式绑定地址 |
-{.wide}
+{.wide .expand}
 
 `barn provision` 已能按需重跑脚本；摘要记录执行内容，不会让脚本自动幂等，也不会跳过相同脚本。清单分组已经支持变量继承，操作选择器则按节点选择。持久盘能跨生命周期操作保留数据，但不能恢复到某个时间点。
 
@@ -51,7 +51,7 @@ Vagrant box 名称也需要显式映射到 Barn 镜像引用，两种格式携�
 | P1：冷快照 | 从已停机的 Linux VM 开始，一并定义根盘/数据盘、backing 链、NVRAM、规格与身份 | 文件、挂载和客机身份回到保存状态，不影响未选节点 |
 | P1：服务端口 | 显式绑定地址、宿主/客机端口、冲突处理与结构化结果 | 重启后服务仍可达；向局域网开放需要显式地址 |
 | P1：VM 导出 | 停机、展开 backing 依赖、清理机器/SSH 凭据，输出 qcow2 与元数据 | 导入全新实验环境后以新身份达到 SSH 就绪 |
-{.wide}
+{.wide .expand}
 
 Vagrant 的[具名配置与运行策略](https://developer.hashicorp.com/vagrant/docs/provisioning/basic_usage)、内置[上传](https://developer.hashicorp.com/vagrant/docs/cli/upload)与[单向 rsync](https://developer.hashicorp.com/vagrant/docs/synced-folders/rsync)提供了可参考的行为。它的[快照](https://developer.hashicorp.com/vagrant/docs/cli/snapshot)依赖 provider 支持，[`package`](https://developer.hashicorp.com/vagrant/docs/cli/package)则列明了 VirtualBox 与 Hyper-V 支持。Barn 应为自己的后端定义具体保证。
 

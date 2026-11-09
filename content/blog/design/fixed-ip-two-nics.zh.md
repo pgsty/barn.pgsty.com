@@ -16,7 +16,7 @@ Pigsty 主机清单依靠固定 IPv4 地址标识每个数据库节点：Postgre
 
 与此同时，刚启动的云镜像又需要顺畅访问外网软件源，且不应要求用户在宿主上手工维护复杂的 NAT/MASQUERADE 防火墙规则。为此，Barn 为每个 Linux 节点配备了两张职责分明的虚拟网卡（NIC）。
 
-## 两张网卡，各司其职
+## 两张网卡，各司其职 {#two-interfaces-two-distinct-jobs}
 
 | 网卡 | 地址分配 | 核心职责 |
 |---|---|---|
@@ -26,13 +26,13 @@ Pigsty 主机清单依靠固定 IPv4 地址标识每个数据库节点：Postgre
 
 Barn 通过确定性的 MAC 地址在客机内绑定两张虚拟网卡，而不依赖因发行版而异的内核网卡名（如 `eth0` 或 `enp0s4`）：
 
-- **管理网卡**让新创建的虚拟机开箱即具备外网访问、DNS 解析与宿主回环 SSH 转发（`127.0.0.1:<端口>`），宿主无需配置任何额外 NAT 规则或 DHCP 服务。
-- **固定 IP 实验网卡**直接配置 `barn.yml` 中的静态地址，不设默认网关与 DNS。`barn up` 在客机初始化阶段会校验该网卡；若管理 SSH 已就绪但私网连通性检查未通过，Barn 仍会将客机标记为可访问，并在 `nodes[].warnings` 中记录 `private-network` 告警，方便你登录排查宿主网桥或路由冲突后再次执行 `barn up` 收敛。
+- **管理网卡**：让新创建的虚拟机开箱即具备外网访问、DNS 解析与宿主回环 SSH 转发（`127.0.0.1:<端口>`），宿主无需配置任何额外 NAT 规则或 DHCP 服务。
+- **固定 IP 实验网卡**：直接配置 `barn.yml` 中的静态地址，不设默认网关与 DNS。`barn up` 在客机初始化阶段会校验该网卡；若管理 SSH 已就绪但私网连通性检查未通过，Barn 仍会将客机标记为可访问，并在 `nodes[].warnings` 中记录 `private-network` 告警，方便你登录排查宿主网桥或路由冲突后再次执行 `barn up` 收敛。
 
 > [!NOTE]
 > 双网卡拓扑是所有 Barn Linux 节点的标准配置。Linux 与 macOS 两套运行时架构的整体对比见[设计说明](/zh/docs/about/design/)。
 
-## `/24` 地址规划完全由清单决定
+## `/24` 地址规划完全由清单决定 {#the-inventory-owns-the-24-address-plan}
 
 同一套部署中的所有托管节点共享同一个规范的 RFC1918 `/24` 子网：
 
@@ -47,7 +47,7 @@ Barn 通过确定性的 MAC 地址在客机内绑定两张虚拟网卡，而不�
 
 在生成全新的默认模板时，若默认 `10.10.10.0/24` 已被宿主其他路由占用，`barn setup` 会自动从候选私有网段中改选空闲的 `/24`；对于用户显式传入的 `-f` 清单或已编辑过的配置文件，Barn 绝不会擅自改写网段。
 
-## 遵循各平台原生网络管理，统一客机视图
+## 遵循各平台原生网络管理，统一客机视图 {#platform-native-backends-identical-guest-topology}
 
 在客机内部，所有 Linux 发行版看到的双网卡拓扑完全一致；在宿主侧，Barn 则顺应宿主当前活跃的网络管理服务，确保 QEMU 始终以非特权普通用户身份运行：
 
@@ -56,7 +56,7 @@ Barn 通过确定性的 MAC 地址在客机内绑定两张虚拟网卡，而不�
 - **使用 `systemd-networkd` 的 Linux**：安装专属的 `barn0` networkd 单元，并配合发行版自带的 `qemu-bridge-helper` 实现普通用户 QEMU 挂接网桥。
 - **`systemd-networkd` 未启动的 Linux**：在桌面或 RHEL 系宿主上贸然启动未激活的 `systemd-networkd` 可能会抢占物理网卡导致断网；因此 Barn 会在变更前扫描宿主现有的 `.network` 单元，只有确认它们不会匹配任何真实宿主网卡时才启用 `systemd-networkd`。
 
-## 将宿主网络配置设计为可逆事务
+## 将宿主网络配置设计为可逆事务 {#host-networking-as-a-reversible-transaction}
 
 由于网桥或 `socket_vmnet` 服务在 CLI 退出后仍常驻系统且安装过程需要 `sudo` 权限，Barn 将宿主网络安装设计为六步可逆事务：
 
@@ -72,9 +72,9 @@ Barn 绝不会强行接管宿主上已占用相同 `.1/24` 的外部接口，也
 
 ### 1.0 更新：重新核对共享服务归属 {#shared-networkd}
 
-安装前快照不是宿主全局服务的永久所有权凭证。`1.0.0` 卸载时同时核对当前链路与文件：即使 `.network` 文件已删除，运行中的链路仍可能依赖 networkd。存在其他非 loopback 链路或无法确认 Barn 独占时，卸载只删除 Barn 资源，保留全局单元状态；计划通过 `preserve_networkd` 标明，执行报告在 `checks.networkd` 中解释原因。管理员核对其他链路后，可再调整保留的单元状态。详见[加固记录](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md)。
+安装前快照不是宿主全局服务的永久所有权凭证。`1.0.0` 卸载时同时核对当前链路与文件：即使 `.network` 文件已删除，运行中的链路仍可能依赖 networkd。存在其他非 loopback 链路或无法确认 Barn 独占时，卸载只删除 Barn 资源，保留全局单元状态；计划通过 `preserve_networkd` 标明，执行报告在 `checks.networkd` 中解释原因。管理员核对其他链路后，可再调整保留的单元状态。详见[加固记录](/zh/docs/about/history/#release-1-0-candidates)。
 
-## 务实的工程取舍
+## 务实的工程取舍 {#why-this-split-works}
 
 让客机公网流量走 QEMU 用户态网络，是用少许外网吞吐换取“零防火墙改动、跨平台免特权运行”的极简体验；而宿主与节点互访、数据库流复制、etcd 心跳以及从 `meta` 控制节点分发软件包等所有对延迟和吞吐敏感的流量，则全部跑在固定 IP 的高速私网链路上。
 

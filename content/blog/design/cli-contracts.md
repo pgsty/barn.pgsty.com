@@ -3,14 +3,14 @@ title: "Evolving the CLI Without Breaking Its Contracts"
 linkTitle: "CLI contracts"
 description: "What to preserve when separating Barn's command tree, application orchestration, and output handling."
 date: 2026-11-04T10:00:00+08:00
-lastmod: 2026-11-08
+lastmod: 2026-11-09
 weight: 100
 categories: [Design]
 tags: [CLI, Compatibility, Architecture]
 icon: fa-solid fa-terminal
 ---
 
-Barn already uses Cobra. The useful part of the [2026-11-04 CLI proposal](https://github.com/pgsty/barn/blob/main/docs/cobra-cli-design.md) is its separation of command syntax, application orchestration, and observable behavior. This essay retains that design, checked against `v1.0.0` and the 2026-11-08 development tree. The package split and broader command reorganization remain proposals; current usage belongs in the [CLI reference](/docs/reference/cli/).
+Barn already uses Cobra. The useful part of the 2026-11-04 CLI proposal is its separation of command syntax, application orchestration, and observable behavior. This essay retains that design, checked against `v1.0.0` and the 2026-11-09 development tree. The package split and broader command reorganization remain proposals; current usage belongs in the [CLI reference](/docs/reference/cli/).
 
 ## Keep the existing boundaries {#existing-boundaries}
 
@@ -25,7 +25,7 @@ These boundaries already protect several contracts:
 | Machine-readable output | Existing payload fields and types, JSON/YAML parity, and useful partial results on failure |
 | Interactive access | Real terminal descriptors, child-process signals, and remote exit status |
 | Help and completion | Existing aliases, local flags, platform scope, and offline completion |
-{.wide}
+{.wide .expand}
 
 Moving a command must not turn an invalid inventory into a fallback to old state, reinterpret `init -o FILE` as an output format, or collapse `up`, `restart`, `reload`, and `recreate` into one operation. Their differences describe which configuration is read and which resources may change.
 
@@ -52,7 +52,7 @@ The proposed structure has three layers:
 | `cmd/barn` | Process entry, signals, and exit status |
 | Proposed `internal/cli` | Cobra tree, argument validation, presentation, and stream wiring |
 | Application orchestration and existing domain packages | Typed requests and reports, lifecycle work, network setup, images, and Mac VMs |
-{.wide}
+{.wide .expand}
 
 Inject the streams, environment reader, prompter, and runners actually needed by each operation. Keep domain services independent of Cobra and avoid a generic dispatcher that erases request types. Confirmation and SSH must use the injected input stream throughout; setting a Cobra input stream while reading global `os.Stdin` elsewhere leaves tests and embedded calls inconsistent.
 
@@ -62,11 +62,11 @@ Confirmation, permission, and execution are separate facts. Existing `network` a
 
 ## Reconcile the proposal with shipped behavior {#implementation-status}
 
-The original proposal contains both durable contracts and dated product choices. At the 2026-11-08 review:
+The original proposal contains both durable contracts and dated product choices. At the 2026-11-09 review:
 
 - `1.0.0` already includes full bare-command help, structured `actions[]`, confirmation aliases on applicable destructive commands, and the output-environment precedence fix.
 - CLI code still lives in `cmd/barn/`. The proposed `internal/cli` extraction, `--format`, `image update`, and `ssh-config show/install/uninstall` command tree have not landed.
-- Current unreleased `main` adds `--image/-I` and `--arch/-A` overrides to applicable inventory operations. It also keeps `purge` immediate by default and offers `--ask` for confirmation. The proposal's mandatory-confirmation purge design is superseded by that choice.
+- Current unreleased `main` adds `--image/-I` and `--arch/-A` overrides to applicable inventory operations, unifies result and live-progress tables (freezing in-place TTY redraws before prompts or errors), standardizes plain ASCII terminal output (`->`, `:`, `;`, `[DONE]`/`[FAILED]`/`[CANCELLED]`), and upgrades YAML parsing to `go.yaml.in/yaml/v4`. It also keeps `purge` immediate by default and offers `--ask` for confirmation; the proposal's mandatory-confirmation purge design is superseded by that choice.
 
 Further behavior changes need their own decision and migration notes. The 1.x compatibility boundary in the [1.0.0 release notes](/blog/release/1.0.0/) applies to any accepted proposal.
 

@@ -25,7 +25,7 @@ This is a design proposal based on the Barn source reviewed on **2026-11-08**. T
 | Restore an experiment | Persistent disks survive ordinary destroy/recreate | Named cold snapshots covering all participating state |
 | Reproduce images | Signed catalogs, exact releases, import, cache, and static repository tools | A portable environment record and capture of a configured VM |
 | Reach services | Fixed private addresses and loopback management SSH | User-declared service forwards with explicit bind addresses |
-{.wide}
+{.wide .expand}
 
 `barn provision` already reruns a script on demand. Its digest records what ran; it does not make the script idempotent or skip an identical script. Inventory groups already supply variable inheritance, while operation selectors identify nodes. Persistent disks retain data across lifecycle operations but do not provide a point-in-time restore.
 
@@ -51,7 +51,7 @@ This keeps the [fixed-IP network](/blog/design/fixed-ip-two-nics/) and [single d
 | P1: cold snapshots | Start with a stopped Linux VM; define root/data disks, backing chains, NVRAM, specification, and identity together | Restore files, mounts, and guest identity to the saved state without changing unselected nodes |
 | P1: service forwards | Explicit bind address and host/guest ports, conflict handling, structured reporting | Services remain reachable after restart; LAN exposure requires an explicit address |
 | P1: VM capture | Stop, flatten backing dependencies, remove machine/SSH credentials, and emit qcow2 plus metadata | Import into a fresh lab and reach SSH with a new identity |
-{.wide}
+{.wide .expand}
 
 Vagrant's [named provisioning and run policies](https://developer.hashicorp.com/vagrant/docs/provisioning/basic_usage), built-in [upload](https://developer.hashicorp.com/vagrant/docs/cli/upload), and [one-way rsync](https://developer.hashicorp.com/vagrant/docs/synced-folders/rsync) provide useful reference behavior. Its [snapshots](https://developer.hashicorp.com/vagrant/docs/cli/snapshot) depend on provider support, and [`package`](https://developer.hashicorp.com/vagrant/docs/cli/package) documents VirtualBox and Hyper-V support. Barn needs explicit guarantees for its own backends.
 

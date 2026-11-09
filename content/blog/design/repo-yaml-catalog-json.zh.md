@@ -12,11 +12,11 @@ lastmod: 2026-10-26
 
 本文阐述 Barn `0.9.3` 的 Linux 静态镜像仓库契约（[Mac 虚拟机](/zh/docs/start/macos/)的 `.ipsw` 恢复镜像与 APFS 基础镜像由 `barn mac` 独立管理）。
 
-一个静态虚拟机镜像仓库包含两类截然不同的元数据：一类是维护者的**策略意图**（哪个版本对应 `:stable`、哪些旧版本标为 `deprecated`、每个发行版系列支持哪些短别名），另一类是镜像文件的**物理事实**（精确字节数、SHA-256 摘要、`qcow2` 虚拟容量）。如果把这两类信息混在同一份手写 JSON 文件里，不仅手动复制哈希和字节数极易出错，审查 PR 时还会让关键的通道变更淹没在大段哈希差异之中。
+一个静态虚拟机镜像仓库包含两类截然不同的元数据：一类是维护者的 **策略意图**（哪个版本对应 `:stable`、哪些旧版本标为 `deprecated`、每个发行版系列支持哪些短别名），另一类是镜像文件的 **物理事实**（精确字节数、SHA-256 摘要、`qcow2` 虚拟容量）。如果把这两类信息混在同一份手写 JSON 文件里，不仅手动复制哈希和字节数极易出错，审查 PR 时还会让关键的通道变更淹没在大段哈希差异之中。
 
 因此，Barn 将维护者编写的策略与工具从真实镜像提取的证据拆分为两个文件：`repo.yaml` 表达意图，`catalog.json` 记录证据。
 
-## `repo.yaml`：由维护者编写的策略意图
+## `repo.yaml`：由维护者编写的策略意图 {#repo-yaml-human-authored-policy}
 
 纳入版本控制的 `repo.yaml`（`schema: 1`）由维护者直接编辑，仅声明策略信息：
 
@@ -26,7 +26,7 @@ lastmod: 2026-10-26
 - 精确版本号与支持的架构（`amd64`、`arm64`）
 - 引导方式（`uefi` 或 `bios`）、支持状态（`status`）、源镜像默认账号（`source_user`）及上游溯源 URL
 
-`repo.yaml` 中**不包含**任何手写的镜像文件大小、SHA-256 或虚拟磁盘容量：
+`repo.yaml` 中 **不包含** 任何手写的镜像文件大小、SHA-256 或虚拟磁盘容量：
 
 ```yaml {title="repo.yaml"}
 defaults: { image: d13, channel: stable, arch: native, boot: uefi }
@@ -47,7 +47,7 @@ images:
 > [!NOTE]
 > 仓库格式与客户端验签规则详见[镜像参考](/zh/docs/reference/images/)；候选镜像的离线定制流程详见[镜像流水线](/zh/docs/reference/image-pipeline/)。
 
-## `catalog.json`：由工具生成的物理证据
+## `catalog.json`：由工具生成的物理证据 {#catalog-json-machine-verified-artifact-evidence}
 
 `catalog.json`（`schema: 3`）由 `barn repo build` 根据 `repo.yaml` 和磁盘上的真实 `.qcow2` 文件自动生成。针对每个 `(image, version, arch)` 变体，`barn repo build` 会依次执行三步：
 
@@ -64,7 +64,7 @@ images/d13-20260810.2566.0-arm64.qcow2
 
 规范可读的文件名方便管理员使用标准文件系统工具或 `rsync` 检查、镜像与恢复仓库，而文件的完整性则由 `catalog.json` 及其 minisign 签名严格保障。
 
-## 三条仓库命令，三项独立职责
+## 三条仓库命令，三项独立职责 {#three-repository-commands-three-distinct-roles}
 
 | 命令 | 职责 |
 |---|---|
@@ -75,13 +75,13 @@ images/d13-20260810.2566.0-arm64.qcow2
 
 `barn repo build` 绝不修改 `repo.yaml` 或 `.qcow2` 文件本身；而 `barn repo verify` 则能捕捉到策略文件、镜像文件与 `catalog.json` 之间的任何不一致。发布仓库更新时，请务必先上传不可变的 `.qcow2` 镜像文件，最后同步更新 `catalog.json` 与 `catalog.json.minisig`，避免客户端读到新目录时镜像文件尚未上传完毕。
 
-## 选择器可以演进，已解析身份不可变
+## 选择器可以演进，已解析身份不可变 {#movable-selectors-immutable-resolved-identities}
 
 在编写 `barn.yml` 或执行命令行操作时，`d13:stable`、`el9@9`、`el9@9.8` 等选择器提供了便利的版本匹配（数值前缀按点号分段的整数比较，因此 `9.10` 排在 `9.9` 之后）。
 
 一旦 `barn plan` 或 `barn up` 完成节点解析，客户端就会将精确版本号、架构、文件大小与 SHA-256 摘要固化到节点状态中。后续镜像目录中的通道指向新版本时，绝不会在后台静默替换已创建的节点。
 
-## 传输安全与目录签名各司其职
+## 传输安全与目录签名各司其职 {#transport-security-and-catalog-signatures}
 
 Barn 将传输协议与目录信任分开处理：
 
@@ -90,7 +90,7 @@ Barn 将传输协议与目录信任分开处理：
 - **按仓库隔离的防回滚水位线**：Barn 为每个仓库根路径独立记录历史最高已接受修订号（`revision`），自动拒绝低于该修订号的旧目录（除非在 `barn image sync` 时显式传入 `--allow-downgrade`），并拒绝同一修订号下字节不同的篡改目录。
 - **拉取时的纵深校验**：即便镜像目录本身已通过验签，每次拉取或复用本地镜像时，Barn 仍会再次核对字节数、SHA-256 与 `qcow2` 结构，通过后将其设为只读（`0444`），供各节点的写时复制根盘安全挂载。
 
-## 发行包、原生应用与镜像目录的信任域分离
+## 发行包、原生应用与镜像目录的信任域分离 {#independent-trust-domains}
 
 Barn 的三类分发对象使用各自独立的信任机制：
 

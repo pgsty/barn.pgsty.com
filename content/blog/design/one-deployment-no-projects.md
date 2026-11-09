@@ -30,7 +30,7 @@ A single local Pigsty lab needs none of that machinery, so we removed the projec
 > [!NOTE]
 > For current inventory discovery order, field rules, and defaults, see the [Configuration Reference](/docs/reference/configuration/).
 
-## One inventory is enough
+## One inventory is enough {#one-inventory-is-enough}
 
 A Pigsty inventory (`barn.yml` or `pigsty.yml`) serves directly as Barn's desired-state configuration. Barn reads the host IPv4 keys, a small set of Pigsty identity fields (`nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node_admin_username`, `node_admin_uid`), and the `vm_*` variable namespace.
 
@@ -38,7 +38,7 @@ Barn validates `vm_*` fields strictly and ignores upper-layer Pigsty variables (
 
 Node naming follows the same principle: Barn uses `nodename` when set, otherwise derives `<pg_cluster>-<pg_seq>`, and falls back to `node-<last-octet>`. There is no separate `vm_name` field that could drift out of sync with Pigsty's hostname.
 
-## One owner-scoped state root
+## One owner-scoped state root {#one-owner-scoped-state-root}
 
 All applied deployment state lives in `BARN_HOME` (default `~/.barn`). There are no hidden markers in your working directory and no path-based project registries. Commands that inspect or operate on applied state (`barn status`, `barn ssh`, `barn stop`, `barn start`, `barn destroy`) work identically from any directory; commands that read desired state (`barn validate`, `barn plan`, `barn up`, `barn reload`, `barn recreate`) take `-f` or discover `barn.yml` / `pigsty.yml` in the current directory.
 
@@ -48,11 +48,11 @@ Because `BARN_HOME` belongs to your Unix user account, the single-deployment mod
 - Accidentally deleting `barn.yml` leaves the applied state in `~/.barn` intact (`barn plan` and `barn up` can still fall back to the committed specification).
 - Image caches, SSH keys, node disks, locks, and state files live under one predictable root (while short Unix socket paths, `~/.ssh/barn_config`, and host network configurations remain in their standard locations; see [Uninstall](/docs/start/uninstall/)).
 
-## Missing configuration never implies deletion
+## Missing configuration never implies deletion {#missing-configuration-never-implies-deletion}
 
 Barn separates desired configuration from committed state. While modifying a lab's topology requires an inventory file, a missing file or an omitted YAML group never authorizes Barn to delete existing VMs. [Planning and destructive actions are always explicit](/blog/design/convergence-without-surprise/), and recovery preserves any resource whose identity cannot be verified unambiguously.
 
-## A deliberate trade-off
+## A deliberate trade-off {#a-deliberate-trade-off}
 
 Barn intentionally manages one Linux lab per `BARN_HOME` rather than multiplexing concurrent projects, registries, and subnet leases. For local database and infrastructure development, one inventory driving one deployment keeps IP addressing, ownership verification, drift detection, crash recovery, and teardown straightforward.
 

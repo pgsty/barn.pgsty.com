@@ -22,7 +22,7 @@ For Barn's current 64-bit guest targets, native virtualization uses the host's i
 | macOS amd64 | HVF | TCG | Tier2 |
 | Linux amd64 | KVM | TCG | Tier1 |
 | Linux arm64 | TCG | KVM | Tier2 |
-{.wide}
+{.wide .expand}
 
 Barn's tiers describe release evidence. Native Darwin arm64 and Linux amd64 have the primary live acceptance coverage; Darwin amd64 and Linux arm64 remain Tier2 until equivalent physical-host evidence is recorded. All TCG profiles are Tier2. A binary that cross-compiles is not sufficient evidence to promote a runtime tier.
 
@@ -48,7 +48,7 @@ The following are QEMU integration candidates, not supported Barn values:
 | `s390x` | `qemu-system-s390x`, `s390-ccw-virtio` | CCW/virtio devices and explicit `bootindex`; replace PC-style boot assumptions |
 | `riscv64` | `qemu-system-riscv64`, `virt` | OpenSBI/U-Boot or a validated EFI path; device tree, CPU extensions, and serial console |
 | `loongarch64` | `qemu-system-loongarch64`, `virt` | A validated CPU model such as `la464`, matching EDK2 firmware, and compatible guest image |
-{.wide}
+{.wide .expand}
 
 The machine and boot differences are documented by QEMU for [pSeries](https://www.qemu.org/docs/master/system/ppc/pseries.html), [s390x boot devices](https://www.qemu.org/docs/master/system/s390x/bootdevices.html), [RISC-V virt](https://www.qemu.org/docs/master/system/riscv/virt.html), and [LoongArch virt](https://www.qemu.org/docs/master/system/loongarch/virt.html). All four candidates would use TCG on Barn's current amd64/arm64 hosts. Native Linux hosts for those instruction sets would be a separate host-support project.
 

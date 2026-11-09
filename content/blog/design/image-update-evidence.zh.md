@@ -22,7 +22,7 @@ lastmod: 2026-11-08
 | 云镜像构建号 | 某次带日期的上游磁盘构建，例如 `YYYYMMDD` 格式的标识 | 带日期的目录、文件名与校验记录 | 不能；它只是来源候选 |
 | Barn 版本 | Barn 归一化后的版本和修订后缀 | 镜像配方与目录映射 | 不能；必须能复现归一化过程 |
 | 运行时支持 | Barn 是否能启动并使用该制品 | QEMU 配置、固件、网络、cloud-init 与 SSH 证据 | 必须满足 |
-{.wide}
+{.wide .expand}
 
 Barn 版本中的后缀不一定是操作系统点版本。Debian、Ubuntu、Rocky 与 CentOS 使用不同的构建标识，Barn 还可能增加自己的归一化修订号；发布说明、源配方和目录条目必须保留这些命名空间的区别。
 
@@ -54,7 +54,7 @@ Barn 版本中的后缀不一定是操作系统点版本。Debian、Ubuntu、Roc
 | 固件 | 制品具备已验证的引导路径；UEFI 使用匹配的代码与每台 VM 独立的变量存储，BIOS 镜像走 BIOS 路径 |
 | 客机初始化 | cloud-init 或镜像初始化路径创建预期的用户、密钥、主机名和网络 |
 | 运行时测试 | 全新的临时 `BARN_HOME` 能启动到预期架构并达到 SSH 就绪状态 |
-{.wide}
+{.wide .expand}
 
 因此，“上游有镜像”和“Barn 支持该镜像”是两句话。[镜像仓库契约](/zh/blog/design/repo-yaml-catalog-json/)把人工策略放在 `repo.yaml`，把生成的文件事实放在 `catalog.json`；运行时仍需要目标模拟器和冷启动检查。摘要正确但无法完成 SSH 的目录条目，不能算作可用的 Barn 镜像。
 
@@ -66,6 +66,7 @@ Barn 版本中的后缀不一定是操作系统点版本。Debian、Ubuntu、Roc
 2. 将 revision、默认镜像以及每个 stable artifact 的路径、架构、摘要和大小与内置目录逐项比较；同步更新内置目录版本与日期，仓库源文件变化时更新 `repo.yaml`。
 3. 执行 `make catalog-check`，对两个官方源验签、比较内置目录字节，并检查每个 stable 制品的可达性与大小；运行镜像目录测试，并用全新临时 `BARN_HOME` 执行 `barn update`。需要流式读取所有 stable 制品并复算摘要时，使用 `go run ./tools/catalogcheck -verify-bytes`。
 4. 目录门禁通过后再构建和发布。正式版本不能继续携带官方仓库已经下线的 artifact。
+{.steps}
 
 [目录检查器](https://github.com/pgsty/barn/tree/main/tools/catalogcheck)负责核对仓库一致性。新增或重建镜像在提升为正式制品前，还需对每个变化的架构完成启动与 SSH 验收，详见[镜像流水线](/zh/docs/reference/image-pipeline/)。已发布的目录 revision 不得复用于不同字节。
 

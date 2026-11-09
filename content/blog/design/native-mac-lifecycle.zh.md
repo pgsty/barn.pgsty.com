@@ -10,13 +10,13 @@ tags: [macOS, Recovery, Architecture]
 icon: fa-brands fa-apple
 ---
 
-`barn mac` 通过 Apple `Virtualization.framework` 管理具名 macOS 虚拟机，独立于 Linux 主机清单。这项功能从 `0.9.0` 引入，使用 macOS 宿主上的原生应用包 `Barn.app`，从 `0.9.2` 起随 Apple Silicon 发行归档交付。本文提炼[具名机器实现记录](https://github.com/pgsty/barn/blob/main/docs/mac-implementation-log.md)及早期 Mac 复核结论，于 2026-11-08 对照当前实现核验；命令与默认值见 [Mac 参考](/zh/docs/reference/mac/)。
+`barn mac` 通过 Apple `Virtualization.framework` 管理具名 macOS 虚拟机，独立于 Linux 主机清单。这项功能从 `0.9.0` 引入，使用 macOS 宿主上的原生应用包 `Barn.app`，从 `0.9.2` 起随 Apple Silicon 发行归档交付。本文提炼具名机器实现记录及早期 Mac 复核结论，于 2026-11-08 对照当前实现核验；带日期的证据汇总在[验证历史](/zh/docs/about/history/#mac-native-record)，命令与默认值见 [Mac 参考](/zh/docs/reference/mac/)。
 
 ## 网络归机器所有 {#network-ownership}
 
 早期设计使用两个固定槽位与特权网络 helper。2026-09-29 的重构改为具名机器，每个 runner 进程创建自己的 `/24` NAT 网络，客机使用本子网的 `.10` 地址。两台限制针对同时运行的 VM，并与其他 macOS 虚拟化工具和恢复安装共享；已保存的机器并不限于两个固定名字。
 
-网络现在随 VM 生命周期存续：runner 启动时创建，退出时释放。`barn mac` 无需另行安装或协调 root 网络守护进程；退役 helper 的协议保存在[历史网络文档](https://github.com/pgsty/barn/blob/main/docs/history/mac-network-20260928.md)中。
+网络现在随 VM 生命周期存续：runner 启动时创建，退出时释放。`barn mac` 无需另行安装或协调 root 网络守护进程；早期 helper 协议只作为历史背景保留。
 
 这一拓扑也为首次 SSH 连接提供信任依据。VM 尚未初始化时，Barn 在连接预留地址前后检查 runner 身份，认证客机，再按实例 UUID 固定主机密钥。在该 runner 的私有网络中，除受信任宿主外只有这台客机。后续连接必须匹配已固定的密钥；更换子网保留实例身份，重建则生成新身份。实现见 [`readySSH`](https://github.com/pgsty/barn/blob/main/internal/macvm/ssh.go)。
 
@@ -29,7 +29,7 @@ icon: fa-brands fa-apple
 | 实例操作锁 | 串行化同一具名 VM 的生命周期修改 |
 | 共享状态锁 | 协调多个操作共同使用的镜像与机器记录 |
 | runner 生命周期锁 | 确认原生进程是否仍持有 VM |
-{.wide}
+{.wide .expand}
 
 仅修改运行时的操作可以使用实例锁，因此准备镜像不会阻塞另一台 VM 关机。停止请求通过操作 nonce 中断本实例的 SSH 就绪等待，再取得操作锁；取消等待并不会允许两条命令同时写状态。规则见 [`operations.go`](https://github.com/pgsty/barn/blob/main/internal/macvm/operations.go) 与 [`readiness_interrupt.go`](https://github.com/pgsty/barn/blob/main/internal/macvm/readiness_interrupt.go)。
 
@@ -41,7 +41,7 @@ Apple 安装器完成回调到达时，恢复安装 VM 仍可能在运行。Barn
 
 新机器从基底克隆磁盘，并获得独立身份和凭据。缓存复用还要检查兼容性：Apple 的在线元数据可能为同一个 build 选择不同的硬件模型，因此 Barn 在复用 ready 基底前，会核对已保存模型的摘要及当前宿主支持情况，不能只比较 build 标签。
 
-重建又引入了一层引用生命周期。即便新机器已经就绪，尚未完成的 recreate 日志仍可能需要旧机器的基底。镜像清理必须统计这些日志引用，遇到无法确认的记录就中止。诊断列表可以报告坏记录并继续显示其他机器，清理操作则必须先得到完整引用集合。这项恢复取舍记录在 [1.0 加固复核](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md)中。
+重建又引入了一层引用生命周期。即便新机器已经就绪，尚未完成的 recreate 日志仍可能需要旧机器的基底。镜像清理必须统计这些日志引用，遇到无法确认的记录就中止。诊断列表可以报告坏记录并继续显示其他机器，清理操作则必须先得到完整引用集合。这项恢复取舍记录在 [1.0 加固复核](/zh/docs/about/history/#release-1-0-candidates)中。
 
 ## 让客机凭据遵循同一边界 {#credentials}
 

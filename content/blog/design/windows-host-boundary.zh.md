@@ -22,7 +22,7 @@ Barn 当前的宿主配置与发布二进制覆盖 macOS、Linux 上的 `amd64` 
 | WSL2 发行版 | Linux 二进制、QEMU、OpenSSH 与 Linux 文件系统 | 嵌套 KVM、systemd、bridge helper、私网和 Windows 到客机的访问 |
 | Hyper-V 中的完整 Linux VM | 常规 Linux 安装与网络管理器 | 嵌套虚拟化、`/dev/kvm`、两层 VM 的资源和 Windows 访问路径 |
 | 原生 Windows/QEMU | QEMU 的 WHPX 加速器 | 新的 Barn 宿主后端、网络集成、安装器与验收矩阵 |
-{.wide}
+{.wide .expand}
 
 本地实验可以先评估 WSL2，因为它能复用 Linux 实现。嵌套虚拟化不可用或需要可靠性能时，可直接使用远程 Linux/KVM 宿主。Docker Desktop 会在 Barn 所需的宿主功能外再加一层 VM/容器边界，不纳入这条安装方案。
 
@@ -43,6 +43,7 @@ WSL2 或 Hyper-V Linux 候选环境应依次通过以下检查：
 3. 在可丢弃实验环境中启动同架构客机并达到 SSH 就绪，验证出站流量、宿主访问和两台客机在私网中的互通。
 4. 测试 Windows 实际使用的访问路径，将管理端点、所需服务和私网路由分别检查。
 5. 启停客机、重启外层 Linux 环境，验证恢复、持久盘和 Barn 所属网络资源的清理。
+{.steps}
 
 Windows 到 WSL 的 localhost 转发或[镜像网络模式](https://learn.microsoft.com/en-us/windows/wsl/networking)，本身不能证明嵌套客机子网已有可达路由。测试记录应说明选用的路由或隧道及防火墙要求。完整 Hyper-V Linux VM 的[嵌套虚拟化](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/nested-virtualization)同样依赖外层宿主配置。
 
@@ -59,7 +60,7 @@ QEMU 可以通过 [WHPX](https://www.qemu.org/docs/master/system/whpx.html)使�
 | 状态与锁 | Unix 文件系统元数据与 `flock` | 等价的锁、权限和原子状态更新 |
 | QMP 与宿主共享 | Unix socket、继承的目录描述符、Virtio-9p | 可用的传输方式与经过验证的共享语义 |
 | 私网 | `barn0`、bridge helper 与 Linux 网络管理器 | 明确管理特权和防火墙归属的 Windows 后端 |
-{.wide}
+{.wide .expand}
 
 这些实现边界可从 [`internal/process`](https://github.com/pgsty/barn/tree/main/internal/process)、[`internal/lock`](https://github.com/pgsty/barn/tree/main/internal/lock)、[`internal/hostshare`](https://github.com/pgsty/barn/tree/main/internal/hostshare)和 [`internal/network`](https://github.com/pgsty/barn/tree/main/internal/network)核对。为现有二进制包一层调用脚本无法提供这些契约。
 

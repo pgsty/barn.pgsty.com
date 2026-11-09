@@ -22,7 +22,7 @@ This assessment was reviewed on **2026-11-08**. The WSL2 and Hyper-V paths below
 | WSL2 distribution | Linux binary, QEMU, OpenSSH, and Linux filesystem | Nested KVM, systemd, bridge helper, private network, and Windows-to-guest access |
 | Full Linux VM on Hyper-V | A conventional Linux installation and network manager | Nested virtualization, `/dev/kvm`, resources for both VM layers, and access from Windows |
 | Native Windows/QEMU | QEMU's WHPX accelerator | A new Barn host backend, network integration, installer, and acceptance matrix |
-{.wide}
+{.wide .expand}
 
 For a local experiment, WSL2 is the first candidate because it can reuse the Linux implementation. A remote Linux/KVM host remains the direct path when nesting is unavailable or when performance matters. Docker Desktop adds a VM/container boundary around the host functions Barn needs; it is outside this proposed installation path.
 
@@ -43,6 +43,7 @@ A WSL2 or Hyper-V Linux candidate should pass these checks in order:
 3. In a disposable lab, boot a native-architecture guest and reach SSH. Verify outbound traffic, host-to-guest access, and communication between two guests on the private subnet.
 4. Test the actual Windows access path. Check the management endpoint and any required service separately from reachability of the private subnet.
 5. Stop and start the guests, restart the outer Linux environment, and verify recovery, persistent disks, and cleanup of Barn-owned network resources.
+{.steps}
 
 Windows-to-WSL localhost forwarding or [mirrored networking](https://learn.microsoft.com/en-us/windows/wsl/networking) does not establish routing to the nested guest subnet by itself. Record the chosen route or tunnel and its firewall requirements with the test result. For a full Hyper-V Linux VM, [nested virtualization](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/nested-virtualization) also depends on the outer host configuration.
 
@@ -59,7 +60,7 @@ QEMU exposes hardware acceleration through [WHPX](https://www.qemu.org/docs/mast
 | State and locks | Unix filesystem metadata and `flock` | Equivalent locking, permissions, and atomic state handling |
 | QMP and host shares | Unix sockets, inherited directory descriptors, Virtio-9p | Supported transports and validated sharing semantics |
 | Private network | `barn0`, bridge helper, and Linux network manager | A Windows backend with explicit privilege and firewall ownership |
-{.wide}
+{.wide .expand}
 
 The implementation boundaries are visible in [`internal/process`](https://github.com/pgsty/barn/tree/main/internal/process), [`internal/lock`](https://github.com/pgsty/barn/tree/main/internal/lock), [`internal/hostshare`](https://github.com/pgsty/barn/tree/main/internal/hostshare), and [`internal/network`](https://github.com/pgsty/barn/tree/main/internal/network). A wrapper around the existing binary cannot supply those contracts.
 

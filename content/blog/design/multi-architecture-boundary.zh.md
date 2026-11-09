@@ -22,7 +22,7 @@ Barn 当前支持 `amd64` 与 `arm64` Linux 客机。QEMU 可以模拟更多架�
 | macOS amd64 | HVF | TCG | Tier2 |
 | Linux amd64 | KVM | TCG | Tier1 |
 | Linux arm64 | TCG | KVM | Tier2 |
-{.wide}
+{.wide .expand}
 
 Barn 的 tier 表示发布证据等级。原生 Darwin arm64 与 Linux amd64 有主要的真机验收覆盖；Darwin amd64 和 Linux arm64 在补齐同等真机证据前仍为 Tier2。所有 TCG 配置也属于 Tier2。二进制交叉编译成功，不足以提升运行时的证据等级。
 
@@ -48,7 +48,7 @@ QEMU 的 [`virt` 文档](https://www.qemu.org/docs/master/system/arm/virt.html)�
 | `s390x` | `qemu-system-s390x`、`s390-ccw-virtio` | CCW/virtio 设备与显式 `bootindex`，替换 PC 式引导假设 |
 | `riscv64` | `qemu-system-riscv64`、`virt` | OpenSBI/U-Boot 或已验证的 EFI 路径；设备树、CPU 扩展与串口 |
 | `loongarch64` | `qemu-system-loongarch64`、`virt` | 经过验证的 CPU 模型，例如 `la464`，以及匹配的 EDK2 固件和客机镜像 |
-{.wide}
+{.wide .expand}
 
 机器与引导差异见 QEMU 的 [pSeries](https://www.qemu.org/docs/master/system/ppc/pseries.html)、[s390x 引导设备](https://www.qemu.org/docs/master/system/s390x/bootdevices.html)、[RISC-V virt](https://www.qemu.org/docs/master/system/riscv/virt.html)与 [LoongArch virt](https://www.qemu.org/docs/master/system/loongarch/virt.html)文档。这四种候选在 Barn 当前 amd64/arm64 宿主上都需要 TCG；支持对应指令集的原生 Linux 宿主则是另一项工程。
 
