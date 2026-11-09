@@ -7,7 +7,7 @@ icon: fa-solid fa-screwdriver-wrench
 
 Barn 采用 Apache-2.0 开源许可证，欢迎参与命令行工具、macOS 原生组件、文档站点与镜像构建流水线的改进。
 
-## 选择仓库
+## 选择仓库 {#choose-a-repository}
 
 | 修改内容 | 所在仓库 |
 |---|---|
@@ -18,7 +18,7 @@ Barn 采用 Apache-2.0 开源许可证，欢迎参与命令行工具、macOS 原
 
 提交问题报告时，请附上 `barn version` 输出、宿主操作系统与架构、执行的完整命令以及脱敏后的报错信息（移除私钥与密码）。安全漏洞请按[安全政策](https://github.com/pgsty/barn/blob/main/SECURITY.md)私下报告。准备进行较大规模的实现调整前，建议先提交 Issue 对齐方案；代码规范与 PR 要求详见 [`CONTRIBUTING.md`](https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md)。
 
-## 定位源码实现
+## 定位源码实现 {#find-the-implementation}
 
 当前稳定版对应 **`v1.0.0`** 标签，相对 0.9.3 的变更见 [1.0.0 发布说明](/zh/blog/release/1.0.0/)。各子系统的实现位置如下：
 
@@ -29,13 +29,13 @@ Barn 采用 Apache-2.0 开源许可证，欢迎参与命令行工具、macOS 原
 | Linux 节点收敛、事务日志、磁盘管理与 SSH 就绪检查 | `internal/private/`、`internal/vm/`、`internal/cloudinit/`、`internal/state/` |
 | 宿主网络、进程身份核验与特权 `/etc/hosts` 更新 | `internal/network/`、`internal/process/`、`internal/hostconfig/`、`cmd/barn-hosts-helper/` |
 | 镜像目录验签、`qcow2` 结构检查与静态仓库构建工具 | `internal/image/`、`tools/catalogexport/`、`tools/catalogsign/` |
-| 原生 macOS 虚拟机生命周期与桌面应用 | `internal/macvm/`、`native/mac-runner/` |
+| 原生 macOS 虚拟机生命周期与桌面应用 | `internal/macvm/`, `native/mac-runner/` |
 | 打包配置、CI 工作流与集成测试套件 | `packaging/`、`.github/workflows/`、`tests/` |
 {.wide .expand}
 
 阅读实现代码时请同步查看同目录下的单元测试——测试完整界定了哪些故障支持自动恢复、哪些歧义状态必须安全中止。
 
-## 构建与测试
+## 构建与测试 {#build-and-test}
 
 按[从源码构建](../../start/source-build/)安装锁定版本的工具链后，运行完整本地门禁：
 
@@ -54,11 +54,11 @@ make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 
 `SNAPSHOT_DIST` 需指定工作树根目录下尚不存在的新目录；`release-snapshot` 会在本地生成并校验归档包、`.deb`/`.rpm` 软件包、SBOM 与校验和，不会上传任何产物。
 
-## 编写与校验文档
+## 编写与校验文档 {#edit-the-documentation}
 
-新的设计决策与研究结论统一维护在本站 `content/blog/design/`，注明日期、实现状态、来源依据和验收条件，入口为[设计文章](/zh/blog/design/)。任务指南和参考契约放在 `content/docs/`；源码仓库保留既有工程说明与历史记录。
+新的设计决策、研究结论与验收记录统一维护在本站的 `content/blog/design/` 与 `content/blog/release/`，注明日期、实现状态、来源依据和验收条件，入口为[设计文章](/zh/blog/design/)。任务指南和参考契约放在 `content/docs/`；源码仓库不再维护 `docs/` 目录。
 
-文档站点的每篇文档均由英文 `page.md` 与中文 `page.zh.md` 成对组成。修改时请保持中英文的命令、默认值、标题锚点、表格与注意事项严格对齐，先说明用户要完成的任务，再展开实现细节，并将 Linux 实验环境与 `barn mac` 工作流区分清楚。
+文档站点的每篇文档均由英文 `page.md` 与中文 `page.zh.md` 成对组成。修改时请保持中英文的命令、默认值、显式 `{#id}` 标题锚点（供 OINK `v1.5.1` 双语对照模式 `compare: true` 同步章节）、表格与注意事项严格对齐，先说明用户要完成的任务，再展开实现细节，并将 Linux 实验环境与 `barn mac` 工作流区分清楚。
 
 在网站仓库根目录运行：
 
@@ -84,7 +84,7 @@ make check
 4. 公开 GitHub Release 并更新 Homebrew Formula（`pgsty/infra/barn`），最后发布文档站并验证公网安装脚本与包管理安装链路。
 {.steps}
 
-## 维护镜像目录
+## 维护镜像目录 {#maintain-the-image-catalog}
 
 使用[镜像流水线](../../reference/image-pipeline/)工具（`packaging/image-pipeline/build.sh` 与 `build-official.py`）校验并离线归一化候选 `qcow2` 镜像，完成真机启动测试后更新 `repo.yaml` 并签发 `catalog.json`。
 

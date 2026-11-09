@@ -10,7 +10,7 @@ icon: fa-solid fa-clock-rotate-left
 
 ## Barn 1.0.0 最终验收 — 2026-11-05 {#release-1-0-0}
 
-[最终验收记录](https://github.com/pgsty/barn/blob/86e1a658edef87e70fabc2ff163c6923cd6c008f/docs/release-1.0-acceptance.md)将下载制品与公开安装检查绑定到以下发布身份：
+最终验收记录将下载制品与公开安装检查绑定到以下发布身份：
 
 | 项目 | 记录的身份 |
 |---|---|
@@ -18,7 +18,7 @@ icon: fa-solid fa-clock-rotate-left
 | 构建时间 | `2026-11-04T17:54:45Z`；`SOURCE_DATE_EPOCH=1793814885` |
 | GitHub Release | ID `434268111`；于 `2026-11-04T23:18:10Z` 发布为 stable/latest |
 | 签名目录 | Revision `2026110502`；SHA-256 `d41e46d20bc57cb1b071e3919a27a8f7f703df2addca879970a528e7ab004065` |
-{.wide}
+{.wide .expand}
 
 - **源码与下载制品**：最终提交通过[源码/Mac CI](https://github.com/pgsty/barn/actions/runs/41881906207)与[打包 CI](https://github.com/pgsty/barn/actions/runs/41881906313)。自动签名密钥未配置，本轮使用本地 Developer ID 签名流程。20 个上传附件全部重新下载，大小与 SHA-256 和原始制品一致；19 项校验和，以及归档/软件包、CLI/helper 配对、架构、权限、SBOM 与身份核验全部通过。
 - **镜像实际字节**：两个官方目录验签通过，与内置字节一致；从每个源流式下载全部 17 个 stable 制品，共 34 次大小和摘要检查通过。全新 `BARN_HOME` 的 `barn update` 成功激活目录。
@@ -30,13 +30,13 @@ icon: fa-solid fa-clock-rotate-left
 
 ### 加固与候选演练 — 2026-11-04–05 {#release-1-0-candidates}
 
-`377061c` 的[加固检查点](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-1.0-hardening.md)通过源码检查及不含 Mac 原生载荷的 `0.9.4-next` 打包快照。随后真机测试从 `0.9.4-next` 开始，修复后完成定向复测，再构建签名公证的 `1.0.0-rc.1`，使用目录 `2026102802`。[候选记录](https://github.com/pgsty/barn/blob/86e1a658edef87e70fabc2ff163c6923cd6c008f/docs/release-1.0-acceptance.md)覆盖数据盘保留、取消 sudo 后锁释放、共享 networkd 卸载、Mac 15 阶段生命周期、GUI/剪贴板与中断 recreate 恢复。最终发行包随后改用目录 `2026110502` 和上方正式身份。
+`377061c` 的加固检查点通过源码检查及不含 Mac 原生载荷的 `0.9.4-next` 打包快照。随后真机测试从 `0.9.4-next` 开始，修复后完成定向复测，再构建签名公证的 `1.0.0-rc.1`，使用目录 `2026102802`。候选演练覆盖数据盘保留、取消 sudo 后锁释放、共享 networkd 卸载、Mac 15 阶段生命周期、GUI/剪贴板与中断 recreate 恢复。最终发行包随后改用目录 `2026110502` 和上方正式身份。
 
 记录同时保留失败与成功重跑：短时 SSH 探测需要有界重试，资源不足的构建和共享模块缓存故障需要修正环境，一处验收断言错误地要求成功空输出必须含有 `stdout` 字段。`dm-error` 实验在整盘保护分支就被拒绝，尚未进入文件系统检查器。这些观察明确了实际执行过的产品路径，以及属于测试脚本或环境的失败。
 
 ## Barn 0.9.1 本地候选验收 — 2026-10-22 {#release-0-9-1}
 
-[0.9.1 记录](https://github.com/pgsty/barn/blob/v1.0.0/docs/release-0.9.1.md)包含通过的 `make check`、原生组件测试、四平台打包与 ad-hoc 原生载荷。CLI 候选为 `0.9.1-dev.1`，完整快照为 `0.9.1-next`；通过本地下载夹具，从真实 `0.9.0` 归档完成隔离升级，验证重复安装、旧版本保留、helper 配对与 App 发现。Homebrew 检查覆盖 `bin`/`libexec` 布局，原生测试和 `mac doctor` 没有启动 VM。公开 `0.9.1` 制品只有 CLI/helper 归档与 Linux 软件包，不含 `Barn.app`；原记录后半的公开发布清单描述后续流程，不能当作已完成的运行证据。
+0.9.1 记录包含通过的 `make check`、原生组件测试、四平台打包与 ad-hoc 原生载荷。CLI 候选为 `0.9.1-dev.1`，完整快照为 `0.9.1-next`；通过本地下载夹具，从真实 `0.9.0` 归档完成隔离升级，验证重复安装、旧版本保留、helper 配对与 App 发现。Homebrew 检查覆盖 `bin`/`libexec` 布局，原生测试和 `mac doctor` 没有启动 VM。公开 `0.9.1` 制品只有 CLI/helper 归档与 Linux 软件包，不含 `Barn.app`；原记录后半的公开发布清单描述后续流程，不能当作已完成的运行证据。
 
 ## 0.9.0 发布前检查点 — 2026-09-29 {#pre-0-9-0}
 
@@ -58,9 +58,9 @@ icon: fa-solid fa-clock-rotate-left
 
 2026-09-29 完成更名后，本地 CLI 与 `barn-hosts-helper` 单元测试、原生 Bridge/镜像/退出提示/菜单测试、runner 编译、ad-hoc 签名校验与 `probe` 探测全部通过，与同日早些时候完成的 16 阶段 Mac 真机生命周期验收相衔接。
 
-[更名记录](https://github.com/pgsty/barn/blob/v1.0.0/docs/rename-barn-0.9.0.md)明确将更名后构建的证据限定为上述检查，没有重跑 VM 生命周期。2026-10-03 的归档更正保留原有日期、版本、提交与测试范围，没有把更早的 VM 实验归到更名后构建。
+更名记录明确将更名后构建的证据限定为上述检查，没有重跑 VM 生命周期。2026-10-03 的归档更正保留原有日期、版本、提交与测试范围，没有把更早的 VM 实验归到更名后构建。
 
-## 0.9.0 发布前待收口项
+## 0.9.0 发布前待收口项 {#remaining-pre-0-9-0-release-checks}
 
 在 2026-09-29 检查点，正式公开 `0.9.0` 前剩余的门禁项包括：
 
@@ -71,10 +71,10 @@ icon: fa-solid fa-clock-rotate-left
 
 ## 早期 Mac 实现记录 {#early-mac-records}
 
-- **2026-09-26–27**：[初期实现日志](https://github.com/pgsty/barn/blob/v1.0.0/docs/history/mac-implementation-20260928.md)记录完整 IPSW 下载与 CLI 恢复安装、基础镜像不变性、双客机生命周期及安装器拒绝篡改包。最终 12 阶段流程耗时 `140.305 秒`，起点是已经初始化的客机，使用退役的固定槽位/共享网络实现及 ad-hoc 开发签名。
-- **2026-09-28**：[复杂度复核](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-complexity-review.md)在简化实现时保留身份、锁与恢复保护，并验证就绪检查不重写 SSH 材料。首轮关机超时与客机高负载同时出现，随后完整重跑通过，没有强制断电或调整超时；记录将高负载保留为观察，没有将其认定为根因。
+- **2026-09-26–27**：初期实现日志记录完整 IPSW 下载与 CLI 恢复安装、基础镜像不变性、双客机生命周期及安装器拒绝篡改包。最终 12 阶段流程耗时 `140.305 秒`，起点是已经初始化的客机，使用退役的固定槽位/共享网络实现及 ad-hoc 开发签名。
+- **2026-09-28**：复杂度复核在简化实现时保留身份、锁与恢复保护，并验证就绪检查不重写 SSH 材料。首轮关机超时与客机高负载同时出现，随后完整重跑通过，没有强制断电或调整超时；记录将高负载保留为观察，没有将其认定为根因。
 
-## Barn Mac 实机记录：2026-09-29
+## Barn Mac 实机记录：2026-09-29 {#mac-native-record}
 
 2026-09-29，更名前的开发源码在搭载 Apple Silicon、运行 macOS `27.0`（`26A428`）的 Mac 上使用 ad-hoc 签名构建完成全套实机验证；测试复用 2026-09-26 基于 Apple `27.0` 恢复镜像准备好的基础镜像 APFS 克隆：
 
@@ -88,7 +88,7 @@ icon: fa-solid fa-clock-rotate-left
 - 通过 CLI 从零下载 IPSW 并准备基础镜像（无基础镜像时首次 `barn mac up` 或 `barn mac image update`）。
 - 桌面窗口菜单中的 **Restart…** 与 **Shut Down…** 动作、更多 Apple Silicon 机型以及物理宿主重启验证。
 
-同一份[具名机器记录](https://github.com/pgsty/barn/blob/v1.0.0/docs/mac-implementation-log.md)还包含稍后的 `07ebfd4` 候选重跑：首轮五秒 SSH 探测失败、后续观察恢复应答后，全部 16 阶段在 `298.9 秒`内通过。两次都复用了已有 `26A428` 基底，该检查点未覆盖从零下载与恢复安装。
+同一份具名机器记录还包含稍后的 `07ebfd4` 候选重跑：首轮五秒 SSH 探测失败、后续观察恢复应答后，全部 16 阶段在 `298.9 秒`内通过。两次都复用了已有 `26A428` 基底，该检查点未覆盖从零下载与恢复安装。
 
 ## 更名前的 Linux 验证概览 {#summary}
 
@@ -110,7 +110,7 @@ icon: fa-solid fa-clock-rotate-left
 
 在 `0.8.0` 四机验收中，每台宿主均实测了 Rocky Linux 9.8/10.2、Debian 12.15/13.7 与 Ubuntu 22.04.5/24.04.5/26.04.1（共 28 个客机实例全部通过，验收后已清理测试虚拟机）。两个公网端点提供的镜像目录 `2026092001` 摘要均为 `23e8dbf6c19bd192d56c6d71eb30901f17945b3487e427a43abe108463780306`，并通过了隔离客户端 `barn update` 验签以及 10 个新增镜像对象的 HTTP `HEAD` 长度核对。
 
-## 当时待补充的测试覆盖
+## 当时待补充的测试覆盖 {#open-test-items}
 
 - 启用 NetworkManager + `firewalld` 的 EL9 宿主，以及最新 `systemd-networkd` 宿主重放。
 - 物理宿主重启后的部署状态保持。
@@ -119,56 +119,56 @@ icon: fa-solid fa-clock-rotate-left
 - 完整 Pigsty `configure → barn up → install.yml` 部署流程。
 - 通过公网安装脚本、Homebrew Formula 或已发布 DEB/RPM 软件包在全新宿主上从零执行 `setup` 与创建虚拟机。
 
-## Barn 历次版本验证记录
+## Barn 历次版本验证记录 {#verification-history}
 
-### Barn 0.8.0 — 2026-09-21
+### Barn 0.8.0 — 2026-09-21 {#release-0-8-0}
 
 - **发布 CI 与公开制品**：标签 `v0.8.0`（`320a32afa8f6fca02592215aa0d5607ca4e852b2`）通过[源码 CI](https://github.com/pgsty/barn/actions/runs/35568664994)、[打包快照工作流](https://github.com/pgsty/barn/actions/runs/35568664948)与[标签发布工作流](https://github.com/pgsty/barn/actions/runs/35569143101)，产出 20 个发行资产（含 19 项校验和载荷）。全部 20 个公开资产通过匿名下载与 SHA-256 校验，公网安装脚本在 `darwin/arm64` 与 `linux/amd64` 的隔离用户目录中成功安装并验证 `0.8.0`（`320a32a`）。
 - **Homebrew Tap**：提交 [`9c34019`](https://github.com/pgsty/homebrew-infra/commit/9c3401958a435248ebf0e5402e7efff712ee1c4c) 将四平台 Formula 更新至 `0.8.0`，通过本地 `brew fetch`、audit 及 [Tap CI](https://github.com/pgsty/homebrew-infra/actions/runs/35570285428)。
 - **四机七系统真机验收**：在基线提交 `6d7870e26cb2f4082a00c188f746783fc027687e` 上清空四台宿主（两台安装 `.deb` 的 Linux `amd64` 宿主 `m0`/`m3`，两台使用校验归档安装的 macOS `arm64` 宿主 `m1`/`m5`），从局域网镜像源从零拉起七系统 `pro` 清单。随后将包含 Homebrew 认证顺序修复的候选提交 `1c054a027420b5410c6f6feb344e27e001ae1af1` 原位更新到四台宿主，验证幂等 `up`（保持 QEMU 进程、VM UUID 与磁盘 inode 不变）、两轮客机 SSH、`stop`/`start`、`/data` 数据盘读写、Debian locale/XFS、控制节点到各节点 SSH 以及 Ansible 配置读取（两台 Mac 额外跑通 7 节点 `ansible all -m ping`）。详细计时样本见 [0.8.0 发布说明](/zh/blog/release/0.8.0/)。
 
-### Barn 0.7.0 — 2026-09-16
+### Barn 0.7.0 — 2026-09-16 {#release-0-7-0}
 
 - **发布 CI 与公开制品**：提交 `9c6d4896d93733d1cb60a7e5d8591e9a06659c9d`（`v0.7.0`）通过[源码 CI](https://github.com/pgsty/barn/actions/runs/35118137961)、[打包快照工作流](https://github.com/pgsty/barn/actions/runs/35118137990)与[标签发布工作流](https://github.com/pgsty/barn/actions/runs/35119206685)。全部 20 个公开资产通过匿名下载与摘要核验，`darwin/arm64` 与 `linux/amd64` 公网安装脚本验证通过，`pgsty/infra/barn` Formula 通过本地升级与 `brew test`。
 - **Ubuntu `amd64`/KVM 存储与中断恢复矩阵**：实测损坏的 `ext4`/`XFS` 数据盘自动重置（`3.2 秒`恢复并保留运行中 QEMU 进程）、`recreate` 保留持久盘、探测失败与忙碌挂载保护（保留原有数据与磁盘 UUID）、只读 9p 共享降级回退，以及在 `3.3 秒`内接续恢复一台此前因出网探测失败而中断的 `0.6.0` 虚拟机（由于 `0.6.0` 已清理暂存的控制节点私钥，恢复后按预期报告 `control-ssh` 告警，详见 [0.7.0 发布说明](/zh/blog/release/0.7.0/)）。镜像目录保持 `2026090501`。
 
-### Barn 0.6.0 — 2026-09-05
+### Barn 0.6.0 — 2026-09-05 {#release-0-6-0}
 
 - **发布 CI 与公开制品**：完成生命周期、命令交互、发布元数据与 CI 测试夹具审查后，提交 `057774e3a13477782a2ae07bd71127d03c0f1ae7`（`v0.6.0`）通过 Go `1.27.1` [源码 CI](https://github.com/pgsty/barn/actions/runs/33959205857)、[打包检查](https://github.com/pgsty/barn/actions/runs/33958857302)（`13d9d70`）与[标签工作流](https://github.com/pgsty/barn/actions/runs/33959431603)，生成并校验全部 20 个发布资产。在 `darwin/arm64` 隔离目录中验证了从 `0.5.0` 升级至 `0.6.0`、`barn init` 与 Ubuntu 24.04 `barn plan`。
 - **macOS `arm64`/HVF 生命周期验收**：验证首次启动、不重启控制节点的在线扩容、控制节点到同伴节点 SSH、`stop`/`start`、`reload`、局部 `recreate`、缩容、客机 `/etc/hosts` 刷新、无效镜像 `reload` 与冲突局部 `recreate` 的停机前拦截、部分节点异常时的 `status` 展示，以及 SSH 退出码 `255` 原样透传。
 - **镜像目录 `2026090501`**：将默认镜像切换为 `u24:stable`，合并 `2026090302` 的 Debian/Rocky 更新，全部 27 个产物通过字节校验并在两个官方端点完成隔离客户端 `barn update` 验签。
 
-### Barn 0.5.0 — 2026-09-03
+### Barn 0.5.0 — 2026-09-03 {#release-0-5-0}
 
 提交 `fc85b65ff6a24b0933b56ae1179be9ada2ba91b1`（`v0.5.0`）通过 Go `1.27.1` 源码门禁与 GoReleaser 打包检查并发布 20 个预发布资产。`0.5.0` 新增无需确认的整套部署清理命令 `barn purge`，将全球默认镜像源设为 `https://repo.pigsty.io/barn` 并提供 `--mirror` 切换 `https://repo.pigsty.cc/barn`，移除镜像下载时的隐式上游 URL 回退，并新增锁定摘要的八目标 Debian/Rocky 官方候选镜像构建脚本 `build-official.py`。
 
-### Barn 0.4.0 — 2026-09-02
+### Barn 0.4.0 — 2026-09-02 {#release-0-4-0}
 
 通过 `make check` 及发布工作流的归档、DEB/RPM、SBOM、校验和、安装脚本与 Homebrew Formula 门禁。`barn up` 支持在未初始化的交互式终端宿主上自动引导执行 `setup`，`vm_disks[].fs` 默认值改为 `auto`，客机就绪失败报错附带最后一行错误详情，并统一了全命令行的输出样式。
 
-### Barn 0.3.0 — 2026-09-02
+### Barn 0.3.0 — 2026-09-02 {#release-0-3-0}
 
 通过 `make check` 及全部发布打包门禁。将镜像目录刷新改为显式的 `barn update` 与 `barn image sync` 操作，并在客机就绪失败时输出各节点所处阶段与对应的 `barn logs` 排查命令。
 
-### Barn 0.2.0 — 2026-09-01
+### Barn 0.2.0 — 2026-09-01 {#release-0-2-0}
 
 提交 `59d1b62aebb3d044a317e4006cc8a0bf56f4feaf`（`v0.2.0`）通过源码 CI、打包工作流及本地四平台归档、DEB/RPM 与 SPDX 校验。`darwin/arm64` HVF 真机重放验证了选定节点 `u24-1` 的创建/SSH/停启、已缓存 `el9-1` 的增量创建、包含未创建节点的全局 `status`，以及全局 `destroy` 与 SSH 配置片段清理；Ubuntu 26.04 `amd64`/KVM 验证了存量四节点部署的状态审计与控制客机连通。
 
-### Schema-3 镜像目录收口 — 2026-08-29
+### Schema-3 镜像目录收口 — 2026-08-29 {#schema-3-catalog-closure}
 
 镜像目录 `2026082903`（9 个系列、27 个产物，SHA-256 `571b1ff9c7d4d42355df3392ea62a339471c2d01d868669a7625fac8b93f245d`，生产公钥 `4686B39A40F9B562` 签名）通过了内置目录与公网端点逐字节比对、全部 27 个 `qcow2` 文件（共 19 GiB）全量 SHA-256 扫描，以及 `darwin/arm64` 空白客户端拉取 `d13:stable`（`409.3 MiB`）与 `qemu-img` 结构检查。
 
-### 0.1.0 候选验证 — 2026-08-28 与 2026-08-29
+### 0.1.0 候选验证 — 2026-08-28 与 2026-08-29 {#candidates-0-1-0}
 
 在 `0.2.0` 发布前验证了两项关键修复：
 
 - **QMP 套接字局部恢复**：在 `darwin/arm64` 四节点环境中，当其中两台运行中节点的 QMP 套接字被外部删除后，Barn 仅重启受影响的两台节点（`13.7 秒`恢复就绪），其余两台正常节点的 boot ID 保持不变。
 - **无 QEMU 环境下的目录查询**：消除了 `barn image list` 与源码测试在不校验本地 `qcow2` 缓存时对 `qemu-img` 的依赖，使 `make check` 在未安装 QEMU 的纯净机器上即可跑通。
 
-### EL7/EL8 兼容性恢复 — 2026-08-28
+### EL7/EL8 兼容性恢复 — 2026-08-28 {#el7-el8-compatibility}
 
 提交 `7c666c7` 修复了破坏性操作前的运行时预检顺序与签名镜像目录基线迁移逻辑，补充回归测试并恢复了 `el7`/`el8` 支持。镜像目录 `2026082801`（9 个系列、17 个镜像产物及 2 份 `socket_vmnet` 归档）通过全量 SHA-256 与签名校验；`darwin/arm64` 隔离重放通过内置 TCG 兼容规则启动 Rocky Linux 8.10 `arm64`，`stop`/`start` 后在 `44.2 秒`内达到就绪状态，验证了 NetworkManager、固定 IP、`dba` UID/GID `88` 与客机初始化标记。
 
-### 真机重放基线 — 2026-08-27
+### 真机重放基线 — 2026-08-27 {#native-replay-2026-08-27}
 
 在 `darwin/arm64` 与 `linux/amd64`（`mx`）两台宿主上验证了固定 IP、SSH 就绪、默认 CPU/内存/根盘/数据盘、`cloud-init`、`stop`/`start`、跨目录命令执行、扩容期间保持控制节点 boot ID 不变、控制节点到同伴节点 SSH、忽略非 Barn 管理的 Pigsty 字段变更，以及仅在显式 `destroy` 时删除虚拟机。Linux 宿主额外验证了免密 `sudo` 自动化、Debian `qemu-bridge-helper` 用户组授权、普通用户 QEMU 挂桥测试、挂有四个 tap 接口时拒绝卸载网络，以及 `destroy` 后精确还原宿主状态。

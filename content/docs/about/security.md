@@ -7,7 +7,7 @@ icon: fa-solid fa-shield-halved
 
 Barn is designed for trusted local development workstations. All Linux lab nodes share a private subnet, and the control node holds the SSH key needed to administer every peer node in the lab. Barn's ownership and identity checks prevent accidental damage to unrelated host files or processes, rather than isolating mutually untrusted local users.
 
-## Host privileges
+## Host privileges {#host-privileges}
 
 Always run `barn` as your normal desktop or shell user. QEMU processes, `Barn.app` macOS VMs, image downloads, VM disks, and state files all run under and belong to your user account. Administrator (`sudo`) privileges are used only for three explicit host-level tasks:
 
@@ -24,7 +24,7 @@ Keep `barn` and `/opt/barn/libexec/barn-hosts-helper` installed from the same re
 
 By contrast, `barn mac` creates per-VM user-space `vmnet` networks on demand without any root daemon or privileged network setup (see [Design](../design/) and [Uninstall](../../start/uninstall/)).
 
-## Guest access and SSH trust
+## Guest access and SSH trust {#guest-access-and-ssh-trust}
 
 In Linux labs, the default guest account is `dba` with a locked password, passwordless `sudo`, and an Ed25519 deployment SSH keypair generated in `$BARN_HOME`. Barn also installs that private key on the control node so Ansible playbooks and administrative scripts can reach every node in the lab—meaning anyone with shell access to the control node has administrative access to the entire Linux lab.
 
@@ -41,12 +41,12 @@ Each macOS VM generates its own Ed25519 SSH keypair and random local administrat
 
 On first Mac contact, trust comes from the runner-owned private network and runner identity checks before and after the SSH connection; the observed host key is then pinned to the instance UUID. The GUI password shares the SSH key's file-permission boundary: that key already grants guest sudo, so storing only the password in Keychain would add signing and lock-state failures without protecting additional guest authority. See [Native Mac lifecycle](/blog/design/native-mac-lifecycle/#credentials).
 
-## Shared folders and disposable disks
+## Shared folders and disposable disks {#shared-folders-and-disposable-disks}
 
 - **Host directory shares**: Writable shares (`readonly: false` in Linux `vm_shares` or `:rw` in `barn mac --share`) grant guest processes direct write access to the shared host directory, and changes made inside the shared directory persist after the VM is destroyed. Share dedicated project folders and prefer read-only shares whenever guests do not need to modify host files.
 - **Persistent and disposable data disks**: Ordinary Linux `destroy` and `recreate` retain `persistent: true` data disks. During recovery, `up` formats a data disk without any signature and resets an existing ext4 or XFS filesystem, persistent or not, when the checker reports recognized corruption; other probe or checker failures keep the data and report a warning. Keep important data backed up on the host (see [Storage and Access](../../start/storage/)).
 
-## Downloads and image trust
+## Downloads and image trust {#downloads-and-image-trust}
 
 Barn separates trust verification across four independent mechanisms:
 
@@ -64,6 +64,6 @@ In `1.0.0`, `release.json` records `signed:false, attested:false` for the genera
 
 The two official image repositories (`https://repo.pigsty.io/barn` and `https://repo.pigsty.cc/barn`) always require valid minisign catalog signatures, even when passed explicitly via `--repo`. Custom HTTPS or local directory repositories may use unsigned catalogs when explicitly selected with `--repo` or `BARN_REPO` (see [Linux Images](../../reference/images/)).
 
-## Report a vulnerability
+## Report a vulnerability {#report-a-vulnerability}
 
 Report security vulnerabilities privately via [GitHub Security Advisories](https://github.com/pgsty/barn/security/advisories/new) or by emailing [repo@pigsty.cc](mailto:repo@pigsty.cc) with `barn --json version`, your host OS and architecture, and a minimal reproduction with credentials removed. Security fixes land in the latest 1.x patch release; only the latest 1.x release is supported, and 0.x releases receive no further fixes. See [`SECURITY.md`](https://github.com/pgsty/barn/blob/main/SECURITY.md) for the full policy, and use [GitHub Issues](https://github.com/pgsty/barn/issues) for ordinary bug reports.

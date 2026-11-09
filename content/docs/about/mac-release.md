@@ -6,7 +6,7 @@ weight: 35
 icon: fa-brands fa-apple
 ---
 
-Maintainers ship the native macOS component inside the ordinary `barn_VERSION_darwin_arm64.tar.gz` archive. Since `0.9.2`, the standard installer and `pgsty/infra/barn` Homebrew formula install the CLI, its matching hosts helper, and `Barn.app` together. This page consolidates the [source release checklist](https://github.com/pgsty/barn/blob/main/docs/mac-release.md), checked against the release scripts on 2026-11-08. For a development build, use [Build from Source](../../start/source-build/#mac-component).
+Maintainers ship the native macOS component inside the ordinary `barn_VERSION_darwin_arm64.tar.gz` archive. Since `0.9.2`, the standard installer and `pgsty/infra/barn` Homebrew formula install the CLI, its matching hosts helper, and `Barn.app` together. This page is the maintained release handbook, checked against the release scripts on 2026-11-08. For a development build, use [Build from Source](../../start/source-build/#mac-component).
 
 ## Keep one release identity {#release-identity}
 
@@ -63,7 +63,7 @@ The tag workflow uses all six repository secrets below. With none configured, it
 | `MAC_NOTARY_KEY_BASE64` | Base64-encoded App Store Connect API `.p8` key |
 | `MAC_NOTARY_KEY_ID` | API key identifier |
 | `MAC_NOTARY_ISSUER` | API issuer identifier |
-{.wide}
+{.wide .expand}
 
 The [Mac workflow](https://github.com/pgsty/barn/blob/main/.github/workflows/mac.yml) imports signing material into an ephemeral runner keychain and removes it at the end of the job. Pull requests and snapshots use ad-hoc builds. The [release workflow](https://github.com/pgsty/barn/blob/main/.github/workflows/release.yml) creates a draft after verifying the assembled payload.
 

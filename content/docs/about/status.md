@@ -15,16 +15,16 @@ This documentation covers **Barn 1.0.0**, the first stable release (see the [Ins
 - **Stable channel**: [Barn 1.0.0](https://github.com/pgsty/barn/releases/tag/v1.0.0) was published on 2026-11-05 as a regular GitHub release, so `releases/latest`, the download installer without `BARN_VERSION`, and the Homebrew formula select it; DEB and RPM packages are downloaded from the release. Set `BARN_VERSION=1.0.0` to pin it.
 - **Native macOS component**: The Darwin arm64 archive and Apple Silicon Homebrew install include the signed, notarized `Barn.app` alongside the matching CLI and helper. Go and Xcode are not required; see [macOS Guests](../../start/macos/#install).
 - **1.x compatibility**: Command names, flags, exit codes, `error`/`reason` values, existing `--json`/`--yaml` fields, the inventory format, `BARN_*` variables, and `BARN_HOME` state stay compatible across 1.x; human-readable text may change in any release. See the [compatibility scope](/blog/release/1.0.0/#compatibility).
-- **Changes since 0.9.3**: Whole-deployment `recreate` refuses an inventory that omits an existing node, on a terminal `up` asks before preparing the host and `purge` asks you to type `purge`, data disks are reset only on recognized corruption, and catalog signature failures exit 7. Upgrading from 0.9.3 keeps existing VMs; earlier changes are recorded in [Barn 0.9.3 Changes](../0.9.3-changes/).
+- **Changes since 0.9.3**: Whole-deployment `recreate` refuses an inventory that omits an existing node, on a terminal `up` asks before preparing the host and `purge` asks you to type `purge` (on `main`, `purge` deletes immediately by default and `--ask` prompts `[y/N]`), data disks are reset only on recognized corruption, and catalog signature failures exit 7. Upgrading from 0.9.3 keeps existing VMs; earlier changes are recorded in [Barn 0.9.3 Changes](../0.9.3-changes/).
 - **Historical verification**: Dated test records for earlier releases are archived in [Validation History](../history/).
 
-## Linux guests
+## Linux guests {#linux-guests}
 
 | Host | Architecture | Native acceleration | Minimum QEMU |
 |---|---|---|---|
 | macOS | `arm64` (Apple Silicon), `amd64` (Intel) | HVF | `8.2.1` |
 | Linux | `amd64`, `arm64` | KVM | `6.2` |
-{.platform-table}
+{.platform-table .wide .expand}
 
 Barn builds release binaries for all four host targets, with primary live-hypervisor test coverage on `darwin/arm64` and `linux/amd64`. On Linux hosts, Barn requires accessible `/dev/kvm` and either NetworkManager or `systemd-networkd`. Run `barn doctor` to inspect host readiness or `barn setup --dry-run` to preview dependency and network setup.
 
@@ -47,7 +47,7 @@ The catalog embedded in Barn 1.0.0, revision `2026110502`, provides **9 distribu
 
 Use `barn mac doctor` and `barn mac ls` to inspect macOS VMs; top-level `barn status`, `destroy`, and `purge` apply only to the Linux lab.
 
-## Data and lifecycle
+## Data and lifecycle {#data-and-lifecycle}
 
 Keep important work backed up on the host or in version control:
 

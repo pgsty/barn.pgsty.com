@@ -7,7 +7,7 @@ icon: fa-solid fa-screwdriver-wrench
 
 Barn is an Apache-2.0 open-source project. Contributions to the CLI, native macOS component, documentation, and image pipeline are welcome.
 
-## Choose a repository
+## Choose a repository {#choose-a-repository}
 
 | What you want to change | Where to work |
 |---|---|
@@ -18,7 +18,7 @@ Barn is an Apache-2.0 open-source project. Contributions to the CLI, native macO
 
 When filing a bug report, include `barn version`, your host OS and architecture, the exact command you ran, and the error output with private keys and passwords removed. Report security vulnerabilities privately via the [security policy](https://github.com/pgsty/barn/blob/main/SECURITY.md). For major behavioral changes, open an issue first to align on the design, and see [`CONTRIBUTING.md`](https://github.com/pgsty/barn/blob/main/CONTRIBUTING.md) for coding and pull-request conventions.
 
-## Find the implementation
+## Find the implementation {#find-the-implementation}
 
 Tag **`v1.0.0`** is the current stable release; its changes since 0.9.3 are listed in the [1.0.0 release notes](/blog/release/1.0.0/). Find each subsystem here:
 
@@ -35,7 +35,7 @@ Tag **`v1.0.0`** is the current stable release; its changes since 0.9.3 are list
 
 Read each package's tests alongside the implementation—they codify the exact boundary between automatic recovery and fail-closed safety checks.
 
-## Build and test
+## Build and test {#build-and-test}
 
 Install the pinned toolchain listed in [Build from Source](../../start/source-build/) and run the full local gate:
 
@@ -54,11 +54,11 @@ make release-snapshot SNAPSHOT_DIST=.goreleaser-review
 
 `SNAPSHOT_DIST` must be a new directory path inside the repository root; `release-snapshot` builds and verifies archives, `.deb`/`.rpm` packages, SBOMs, and checksums locally without uploading artifacts.
 
-## Edit the documentation
+## Edit the documentation {#edit-the-documentation}
 
-Maintain new design decisions and research conclusions in this site's `content/blog/design/`, with their date, implementation status, source evidence, and acceptance conditions. The [design notes](/blog/design/) collect these records. Keep task guides and reference contracts in `content/docs/`; the source repository retains its existing engineering and historical records.
+Maintain new design decisions, research conclusions, and acceptance records in this site's `content/blog/design/` and `content/blog/release/`, with their date, implementation status, source evidence, and acceptance conditions. The [design notes](/blog/design/) collect the durable explanations; task guides and reference contracts stay in `content/docs/`. The source repository no longer maintains a `docs/` directory.
 
-Every documentation page is maintained as an English/Chinese pair (`page.md` and `page.zh.md`). Keep commands, defaults, anchors, tables, and warnings in 1:1 parity across both languages, lead with the user's task, and keep Linux lab and `barn mac` workflows clearly separated.
+Every documentation page is maintained as an English/Chinese pair (`page.md` and `page.zh.md`). Keep commands, defaults, explicit `{#id}` heading anchors (required by OINK `v1.5.1` Duo View `compare: true`), tables, and warnings in 1:1 parity across both languages, lead with the user's task, and keep Linux lab and `barn mac` workflows clearly separated.
 
 Validate the website repository with:
 
@@ -84,7 +84,7 @@ Before publishing a release:
 4. Publish the GitHub Release and update the Homebrew tap (`pgsty/infra/barn`), then publish the documentation site and verify the public download and package installation paths.
 {.steps}
 
-## Maintain the image catalog
+## Maintain the image catalog {#maintain-the-image-catalog}
 
 Use the [Image Pipeline](../../reference/image-pipeline/) tools (`packaging/image-pipeline/build.sh` and `build-official.py`) to validate and offline-normalize candidate `qcow2` images before running live hypervisor smoke tests, updating `repo.yaml`, and signing `catalog.json`.
 

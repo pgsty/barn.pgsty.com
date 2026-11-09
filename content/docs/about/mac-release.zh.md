@@ -6,7 +6,7 @@ weight: 35
 icon: fa-brands fa-apple
 ---
 
-维护者通过常规的 `barn_VERSION_darwin_arm64.tar.gz` 归档交付 Mac 原生组件。从 `0.9.2` 起，标准安装脚本与 `pgsty/infra/barn` Homebrew Formula 会一并安装 CLI、配套的 hosts helper 与 macOS 宿主上的原生应用包 `Barn.app`。本文整理自[源码发布清单](https://github.com/pgsty/barn/blob/main/docs/mac-release.md)，于 2026-11-08 对照发布脚本核验；开发构建请参阅[从源码构建](../../start/source-build/#mac-component)。
+维护者通过常规的 `barn_VERSION_darwin_arm64.tar.gz` 归档交付 Mac 原生组件。从 `0.9.2` 起，标准安装脚本与 `pgsty/infra/barn` Homebrew Formula 会一并安装 CLI、配套的 hosts helper 与 macOS 宿主上的原生应用包 `Barn.app`。本文是维护中的发布手册，于 2026-11-08 对照发布脚本核验；开发构建请参阅[从源码构建](../../start/source-build/#mac-component)。
 
 ## 统一发布身份 {#release-identity}
 
@@ -63,7 +63,7 @@ BARN_MAC_PAYLOAD="$RELEASE_DIR/native.tar.gz" \
 | `MAC_NOTARY_KEY_BASE64` | App Store Connect API `.p8` 密钥，经 Base64 编码 |
 | `MAC_NOTARY_KEY_ID` | API 密钥标识符 |
 | `MAC_NOTARY_ISSUER` | API 签发者标识符 |
-{.wide}
+{.wide .expand}
 
 [Mac 工作流](https://github.com/pgsty/barn/blob/main/.github/workflows/mac.yml)将签名材料导入临时 runner 钥匙串，并在任务结束时删除。PR 与快照使用 ad-hoc 构建。[发布工作流](https://github.com/pgsty/barn/blob/main/.github/workflows/release.yml)验证完整载荷后创建发布草稿。
 

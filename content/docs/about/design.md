@@ -19,18 +19,18 @@ Barn provides two distinct virtualization workflows through one CLI: multi-node 
 
 The sections below summarize the Linux lab architecture; for the deeper rationale behind each decision, see the [Design Essays](/blog/design/). The [native Mac lifecycle essay](/blog/design/native-mac-lifecycle/) explains network ownership, locks, credentials, and recovery; usage is in [macOS Guests](../../start/macos/) and [Mac Commands](../../reference/mac/).
 
-## One Linux lab per user
+## One Linux lab per user {#one-linux-lab-per-user}
 
 Each Unix user manages one Linux lab deployment stored in `BARN_HOME` (default `~/.barn`) and driven by a single Pigsty-compatible YAML inventory (see [Why Barn Has No Projects](/blog/design/one-deployment-no-projects/)). Because deployment state lives in `BARN_HOME` rather than the working directory, lifecycle and access commands work from any directory.
 
-## Node-level convergence
+## Node-level convergence {#node-level-convergence}
 
 Barn computes a specification hash per node from the documented `vm_*` and Pigsty identity fields and records it alongside the node's committed state and QEMU process identity:
 
 - `barn up` creates newly added nodes, starts stopped nodes, retries unfinished guest setup on running nodes without restarting their QEMU processes, and refreshes managed `/etc/hosts` and SSH entries.
 - Changing an existing node's specification or removing a node from `barn.yml` never destroys a VM behind your back—CPU and memory changes use `barn resize`, other modifications require `barn recreate`, and removals require `barn destroy`. A whole-deployment `recreate` refuses an inventory that omits an existing node (see [Declarative Does Not Mean Destructive](/blog/design/convergence-without-surprise/)).
 
-## Runtime selection
+## Runtime selection {#runtime-selection}
 
 On `main`, `--arch/-A` overrides inventory `vm_arch` for an invocation. With neither set, the guest follows the host; `-A native` overrides the inventory and restores that default. Image flag `-I` does not change architecture, and switching an existing VM requires recreation; see [configuration rules](../../reference/configuration/#image-and-architecture).
 
@@ -38,7 +38,7 @@ On `main`, `--arch/-A` overrides inventory `vm_arch` for an invocation. With nei
 
 Each node's committed state records the effective architecture and accelerator (`barn status` displays both). Before executing a destructive `recreate`, Barn pre-validates the QEMU binary, version, network backend, base image bytes, boot mode, and firmware so a missing dependency never destroys a working VM.
 
-## Two NICs, one fixed subnet
+## Two NICs, one fixed subnet {#two-nics-one-fixed-subnet}
 
 Every Linux VM attaches two virtual NICs (see [Why Every Barn Node Has Two NICs](/blog/design/fixed-ip-two-nics/)):
 
@@ -50,7 +50,7 @@ To provide the fixed-IP subnet without running QEMU as root:
 - **macOS hosts** run a pinned `socket_vmnet` daemon.
 - **Linux hosts** use NetworkManager (`nmcli` managing `barn0`) when active, or `systemd-networkd` with the distribution `qemu-bridge-helper` (verifying beforehand that enabling an inactive `systemd-networkd` will not claim physical host interfaces). On Debian, `setup` grants `qemu-bridge-helper` access to a group containing the caller and smoke-tests an unprivileged QEMU attachment before committing the network transaction.
 
-## Storage and configuration lifetimes
+## Storage and configuration lifetimes {#storage-and-configuration-lifetimes}
 
 Desired configuration (`barn.yml`), applied deployment state (`$BARN_HOME`), and cached base images (`$BARN_HOME/images`) have independent lifecycles:
 
@@ -59,6 +59,6 @@ Desired configuration (`barn.yml`), applied deployment state (`$BARN_HOME`), and
 - Ordinary `destroy` and `recreate` retain `persistent: true` data disks. During guest recovery, `up` formats only a data disk without any signature or an ext4/XFS filesystem whose checker reports recognized corruption; anything it cannot classify keeps its data and reports a warning (see [Data Disks](../../reference/configuration/#data-disks) and [Storage and Access](../../start/storage/)).
 - `barn image prune` protects images referenced by the active catalog, applied nodes, and `local-*` aliases (see [Images](../../reference/images/)).
 
-## Safety boundary
+## Safety boundary {#safety-boundary}
 
 QEMU processes and image downloads run as your normal user account; root privileges are used only during `setup`, `network install/uninstall`, and `hosts install/uninstall`. Before signaling a process or deleting a node file, Barn verifies file ownership, path containment, QMP UUID/name identity, process start-time/cmdline tuples, and the journal allowlist—stopping immediately if any check is ambiguous (see [A PID Is Not a Virtual Machine](/blog/design/identity-before-pid/)).
