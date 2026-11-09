@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-This reference follows Barn `main`. The image and architecture command overrides below are unreleased changes after 1.0.0; check your build with `barn version` and each command's `--help`.
+This reference covers Barn 1.1.0, including image and architecture overrides. Check your installed build with `barn version` and each command's `--help`.
 
 ## Discovery {#discovery}
 

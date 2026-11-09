@@ -6,7 +6,26 @@ icon: fa-solid fa-clock-rotate-left
 ---
 
 > [!NOTE]
-> This page collects dated source, packaging, VM, and public-installation evidence through `1.0.0`. Each entry retains its tested revision and scope. For current host support and release behavior, see [Platforms and Limits](../status/) and the [release notes](/blog/release/).
+> This page collects dated source, packaging, VM, and public-installation evidence through `1.1.0`. Each entry retains its tested revision and scope. For current host support and release behavior, see [Platforms and Limits](../status/) and the [release notes](/blog/release/).
+
+## Barn 1.1.0 final acceptance — 2026-11-09 {#release-1-1-0}
+
+| Item | Recorded identity |
+|---|---|
+| Tag and commit | `v1.1.0` → `b2cc8da8983e710255d504bf26bf5d7b3f182790` |
+| Build time | `2026-11-09T01:28:55Z`; `SOURCE_DATE_EPOCH=1794187735` |
+| GitHub Release | ID `438656123`; published `2026-11-09T01:46:13Z` as stable/latest |
+| Signed catalog | Revision `2026110502`; SHA-256 `d41e46d20bc57cb1b071e3919a27a8f7f703df2addca879970a528e7ab004065` |
+{.wide .expand}
+
+- **Source and packaging:** The release commit passed [source/Mac CI](https://github.com/pgsty/barn/actions/runs/42545792285) and [complete packaging CI](https://github.com/pgsty/barn/actions/runs/42545806168) before tagging. Local `make check`, `make mac-native-test`, and `make release-snapshot` also passed. The [tag workflow](https://github.com/pgsty/barn/actions/runs/42546253184) passed its signing-configuration check; the complete release used the documented local signing path because repository signing secrets were absent.
+- **Downloaded assets:** All 20 draft attachments were downloaded again and matched the local sizes and SHA-256 digests. The 19-entry checksum manifest, archive/package parity, four binary architectures, file permissions, helper pairing, and SPDX documents passed verification. Apple accepted notarization submission `cabe1b9c-fc54-4f07-b8bf-d834f0226013`; the downloaded app passed signature, staple, and Gatekeeper checks. The relocated Homebrew `bin`/`libexec` layout found the matching native component.
+- **Catalog:** Both official catalogs passed signature verification, activation in fresh data roots, and byte comparison against the embedded catalog; all 17 stable artifacts passed HTTP availability and size checks on both mirrors. The final downloaded binary also activated the official catalog in a fresh `BARN_HOME`.
+- **Linux runtime:** The downloaded `linux/amd64` binary created a Debian 13 guest using `-I d13 -A x86_64` without rewriting its inventory. CPU/memory changes `2/2 GiB → 3/3 GiB → 2/2 GiB`, stop/start, remote arguments, and exit `17` passed. VM UUID, SSH public key, machine ID, and the persistent-disk sentinel survived resizing and restart. A second Debian 13 guest booted as `arm64` through `-A aarch64`, using QEMU TCG with `cortex-a72`; SSH reported `aarch64`. Both test guests were removed after verification.
+- **Mac runtime:** A new isolated macOS 27 guest passed creation, SSH, remote exit `17`, stop/start, identity and data retention, and destruction. Existing user SSH files were unchanged and the user's running Mac VM was left in place. The signed public installer and repeated installation also passed in a separate directory.
+- **Public delivery:** Anonymous downloads of all 20 public attachments matched the verified draft. Both the default installer and explicit `BARN_VERSION=1.1.0` installed the published release. The [Homebrew update](https://github.com/pgsty/homebrew-infra/commit/f36b991) sets all four archive URLs and digests. The homepage recording shows an actual public installation and first Linux VM on Ubuntu 26.04 with an already prepared host network and a fresh test account.
+
+Physical hosts covered `darwin/arm64` and `linux/amd64`, with an additional `linux/arm64` guest under TCG. `darwin/amd64` and native `linux/arm64` received cross-build and artifact checks. GUI and clipboard evidence retains its earlier dated scope. Initial harness retries corrected unsupported timeout flags, a test write requiring guest sudo, and a TCG assertion that did not accept the `thread=multi` option; their logs were retained alongside the successful runs.
 
 ## Barn 1.0.0 final acceptance — 2026-11-05 {#release-1-0-0}
 

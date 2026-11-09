@@ -10,7 +10,7 @@ tags: [CLI, Compatibility, Architecture]
 icon: fa-solid fa-terminal
 ---
 
-Barn already uses Cobra. The useful part of the 2026-11-04 CLI proposal is its separation of command syntax, application orchestration, and observable behavior. This essay retains that design, checked against `v1.0.0` and the 2026-11-09 development tree. The package split and broader command reorganization remain proposals; current usage belongs in the [CLI reference](/docs/reference/cli/).
+Barn already uses Cobra. The useful part of the 2026-11-04 CLI proposal is its separation of command syntax, application orchestration, and observable behavior. This essay retains that design, checked against `v1.1.0` on 2026-11-09. The package split and broader command reorganization remain proposals; current usage belongs in the [CLI reference](/docs/reference/cli/).
 
 ## Keep the existing boundaries {#existing-boundaries}
 
@@ -66,9 +66,9 @@ The original proposal contains both durable contracts and dated product choices.
 
 - `1.0.0` already includes full bare-command help, structured `actions[]`, confirmation aliases on applicable destructive commands, and the output-environment precedence fix.
 - CLI code still lives in `cmd/barn/`. The proposed `internal/cli` extraction, `--format`, `image update`, and `ssh-config show/install/uninstall` command tree have not landed.
-- Current unreleased `main` adds `--image/-I` and `--arch/-A` overrides to applicable inventory operations, unifies result and live-progress tables (freezing in-place TTY redraws before prompts or errors), standardizes plain ASCII terminal output (`->`, `:`, `;`, `[DONE]`/`[FAILED]`/`[CANCELLED]`), and upgrades YAML parsing to `go.yaml.in/yaml/v4`. It also keeps `purge` immediate by default and offers `--ask` for confirmation; the proposal's mandatory-confirmation purge design is superseded by that choice.
+- Current Barn `1.1.0` adds `--image/-I` and `--arch/-A` overrides to applicable inventory operations, unifies result and live-progress tables (freezing in-place TTY redraws before prompts or errors), standardizes plain ASCII terminal output (`->`, `:`, `;`, `[DONE]`/`[FAILED]`/`[CANCELLED]`), and upgrades YAML parsing to `go.yaml.in/yaml/v4`.
 
-Further behavior changes need their own decision and migration notes. The 1.x compatibility boundary in the [1.0.0 release notes](/blog/release/1.0.0/) applies to any accepted proposal.
+Further behavior changes need their own decision and migration notes.
 
 ## Validate the contract at each step {#acceptance}
 

@@ -10,7 +10,7 @@ tags: [CLI, Compatibility, Architecture]
 icon: fa-solid fa-terminal
 ---
 
-Barn 已经使用 Cobra。2026-11-04 CLI 提案最值得保留的部分，是对命令语法、应用编排与外部行为的拆分。本文结合 `v1.0.0` 和 2026-11-09 开发源码整理这些设计；包结构拆分与较大范围的命令重组仍是提案，当前用法见 [CLI 参考](/zh/docs/reference/cli/)。
+Barn 已经使用 Cobra。2026-11-04 CLI 提案最值得保留的部分，是对命令语法、应用编排与外部行为的拆分。本文结合 2026-11-09 发布的 `v1.1.0` 源码整理这些设计；包结构拆分与较大范围的命令重组仍是提案，当前用法见 [CLI 参考](/zh/docs/reference/cli/)。
 
 ## 保留已有边界 {#existing-boundaries}
 
@@ -66,9 +66,9 @@ SSH 与持续跟随的日志需要流式路径，保留空参数、引用边界�
 
 - `1.0.0` 已实现裸命令完整帮助、结构化 `actions[]`、适用销毁命令的确认别名，以及输出环境变量优先级修复。
 - CLI 仍位于 `cmd/barn/`。拟议的 `internal/cli` 提取、`--format`、`image update` 与 `ssh-config show/install/uninstall` 命令树尚未落地。
-- 尚未发布的 `main` 已为适用的清单操作加入 `--image/-I` 与 `--arch/-A` 覆盖参数，统一了结果表格与终端实时进度表（在提示或报错前冻结已打印行），将终端输出收口为纯 ASCII 符号与 `[DONE]`/`[FAILED]`/`[CANCELLED]` 状态标签，并将 YAML 解析升级到 `go.yaml.in/yaml/v4`；`purge` 保持默认立即执行，通过 `--ask` 选择确认。原提案要求 purge 必须确认的设计已被这项选择取代。
+- `1.1.0` 已为适用的清单操作加入 `--image/-I` 与 `--arch/-A` 覆盖参数，统一了结果表格与终端实时进度表（在提示或报错前冻结已打印行），将终端输出收口为纯 ASCII 符号与 `[DONE]`/`[FAILED]`/`[CANCELLED]` 状态标签，并将 YAML 解析升级到 `go.yaml.in/yaml/v4`。
 
-后续行为调整需要独立决策与迁移说明，接受提案时还须遵守 [1.0.0 发布说明](/zh/blog/release/1.0.0/)中的 1.x 兼容性边界。
+后续行为调整需要独立决策与迁移说明。
 
 ## 逐步验证契约 {#acceptance}
 

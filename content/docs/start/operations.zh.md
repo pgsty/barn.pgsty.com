@@ -43,6 +43,8 @@ barn reload -f barn.yml       # 校验清单、停止目标节点并重新收敛
 `reload` 是受控的“停止后重新启动”流程，可以新增节点或启动已停止节点；但对于已有节点的 CPU、内存、镜像、磁盘、共享目录、地址等虚拟机规格变更，它会在停止任何节点前拒绝执行。修改 CPU 或内存时，请编辑 `vm_cpu` 或 `vm_mem`
 后执行 `barn resize`。支持的增加操作可以热插拔；减少资源或后端不支持时会自动停机再启动，同时保留虚拟机身份与磁盘。`resize` 不处理镜像、磁盘、网络或共享目录变更，这些变更使用 `recreate`。
 
+在线 resize 在热插拔后中断时，`barn status` 会提示实际 CPU 或内存可能与已应用配置不一致。再次运行 `barn resize NODE` 可继续调整，或执行 `barn restart NODE` 恢复已提交的资源配置。离线 resize 在停止节点和更新状态期间持续持有部署锁。
+
 启动命令传入 `--no-wait` 时会在 QEMU 进程拉起后立即返回，跳过就绪检查、客机恢复以及客机 `/etc/hosts` 和控制节点 SSH 刷新；后续运行一次 `barn up` 即可补齐这些步骤。
 
 ## 变更部署 {#change-the-deployment}
@@ -64,7 +66,7 @@ barn recreate node-1            # 重建规格发生变更的节点
 | `missing` | 已创建的节点从 YAML 清单中被移除 | 恢复 YAML 条目，或执行 `barn destroy <node>` |
 {.wide .expand}
 
-JSON 输出中的 `start`、`create`、`resize`、`recreate` 与 `missing` 是节点列表，顶层 `action` 概括整次计划，取值为 `create`、`start`、`converge`、`resize`、`recreate`、`blocked-removal`、`repair` 或 `none`；可选字段 `blocked` 是说明原因的字符串。
+JSON 输出中的 `start`、`create`、`resize`、`recreate` 与 `missing` 是节点列表，顶层 `action` 概括整次计划，取值为 `create`、`start`、`converge`、`resize`、`recreate`、`blocked-removal`、`repair` 或 `none`；可选字段 `blocked` 是说明原因的字符串。`whole_deployment: true` 表示需要重建整个部署；按提示执行命令，确保新节点也一并纳入。
 
 删改 YAML 条目绝不会自动销毁虚拟机；修改 Barn 不消费的 Pigsty 服务级变量则会显示 `action: none`。当节点需要 `recreate` 时，Barn 会替换其根盘与非持久数据盘，并保留规格兼容的持久数据盘。在交互式终端中执行 `recreate` 和 `destroy` 需输入命令名确认，非交互脚本中则需传入 `--yes`（或 `--force`）。
 
@@ -89,7 +91,7 @@ barn plan node-2 -f barn.yml
 
 ## 并发命令 {#concurrent-commands}
 
-修改部署状态的命令（`up`、`start`、`stop`、`restart`、`reload`、`resize`、`recreate`、`destroy`、`purge` 和 `provision`）会获取 `BARN_HOME` 下的部署锁。若其他操作正在运行，命令最长等待 10 分钟（或受自身的 `--timeout` 限制），并打印持锁命令、PID 与启动时间；等待超时将返回退出码 `4`（`error: conflict`、`reason: deployment_busy`）。持锁进程退出后锁会自动释放，切勿手动删除锁文件。
+修改部署状态的命令（`up`、`start`、`stop`、`restart`、`reload`、`resize`、`recreate`、`destroy`、`purge` 和 `provision`）会获取 `BARN_HOME` 下的部署锁。若其他操作正在运行，命令最长等待 10 分钟（`provision --timeout` 可指定更短的期限），并打印持锁命令、PID 与启动时间；等待超时将返回退出码 `4`（`error: conflict`、`reason: deployment_busy`）。持锁进程退出后锁会自动释放，切勿手动删除锁文件。
 
 只读与连接类命令（`status`、`ssh`、`exec`、`ssh-config` 以及 `hosts` 的状态读取）无需等待锁，直接读取最新已发布的状态。若后台正有变更命令持锁运行，`barn status` 会附带一条 `note` 说明当前正在执行的操作。异常中断后的恢复步骤见[故障排查](../troubleshooting/#a-command-was-killed)。
 
@@ -116,7 +118,7 @@ barn purge
 - `barn destroy <node>` 仅删除指定节点，并为剩余节点刷新 SSH 配置片段。删除控制节点时，剩余的第一个节点接任控制节点，`ssh-config`、`hosts`、`exec` 与 `provision` 可继续使用；请将清单中的 `admin_ip` 改为该节点的地址（除非希望 `up` 重新创建已删除的节点，否则一并删除其条目），再执行 `barn up` 安装其控制 SSH 访问。
 - `barn destroy` 删除整套部署的虚拟机、根盘、非持久数据盘、部署状态以及 Barn 安装的 SSH 别名，同时保留持久数据盘、部署密钥、镜像缓存和宿主网络。之后再次运行 `barn up` 即可根据清单重建实验环境。
 - `barn destroy --delete-persistent` 与 `barn destroy --purge` 仅适用于整套部署（不支持与节点名称同用），其中 `--purge` 会一并删除持久数据盘、密钥和部署状态。
-- `main` 中的 `barn purge` 默认立即清空整套 Linux 实验环境，并删除归属明确的遗留持久盘、密钥与部署状态，保留镜像缓存与宿主网络。需要查看节点列表和清理范围后再确认时，运行 `barn purge --ask`，输入 `y`/`yes` 确认或 `n`/`no` 取消；空行和 EOF 也会取消。它不接受 `--yes`、`-y` 或 `--force`。此改动尚未发布；1.0.0 仍在终端中要求输入 `purge`。
+- `barn purge` 默认立即清空整套 Linux 实验环境，并删除归属明确的遗留持久盘、密钥与部署状态，保留镜像缓存与宿主网络。需要查看节点列表和清理范围后再确认时，运行 `barn purge --ask`，输入 `y`/`yes` 确认或 `n`/`no` 取消；空行和 EOF 也会取消。它不接受 `--yes`、`-y` 或 `--force`。
 
 所有虚拟机移除后，如需卸载多用户共享的 Linux 宿主网络：
 

@@ -6,10 +6,7 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-本页跟随 **Barn `main`** 的全局展示参数与 Linux 实验环境命令。macOS 客机命令请查阅 [Mac 命令](../mac/)。请运行 `barn version` 与命令的 `--help` 核对当前构建。
-
-> [!NOTE]
-> `--image/-I`、`--arch/-A` 的扩展与 `purge --ask` 是 1.0.0 之后尚未发布的改动。1.0.0 的 `purge` 在终端中仍要求输入 `purge`，并支持 `--yes`/`--force`；下文记录 `main` 的新行为，历史行为见 [1.0.0 发布说明](../../../blog/release/1.0.0/)。
+本页跟随 **Barn 1.1.0** 的全局展示参数与 Linux 实验环境命令。macOS 客机命令请查阅 [Mac 命令](../mac/)。请运行 `barn version` 与命令的 `--help` 核对当前构建。
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -24,10 +21,6 @@ barn image pull --help
 ```
 
 不带参数直接运行 `barn` 会打印与 `barn --help` 相同的完整帮助并以退出码 `0` 返回；传入 `--json` 或 `--yaml` 时则返回由建议命令组成的 `actions[]` 数组。只输入命令分组而不带子命令（如 `barn image`）会以退出码 `2` 返回（文本模式输出帮助，JSON/YAML 模式输出结构化 `usage` 错误）。显式传入 `--help` 始终打印人类可读的帮助文本并以 `0` 退出。查看构建版本信息请使用 `barn --version` 或 `barn version`。
-
-## 1.x 兼容性 {#compatibility}
-
-自 1.0.0 起，以下内容的不兼容变更需要提升主版本号：命令名、别名、参数与参数语法（包括远程命令前的 `--`）；退出码以及结构化输出中的 `error`、`reason` 取值；`--json` 与 `--yaml` 输出的已有字段（可以新增字段）；清单格式以及已有 `vm_*` 键的含义；`BARN_*` 环境变量；`BARN_HOME` 下的部署状态与 Mac 状态，1.x 版本能直接读取更早的 1.x 及 0.9.3 写入的状态，无需重建虚拟机。面向人阅读的文本、帮助措辞、进度行与日志内容可能在任何版本中变化，脚本应依赖结构化输出与退出码。完整范围见 [1.0.0 发布说明](../../../blog/release/1.0.0/#compatibility)。
 
 ## 命令 {#commands}
 
@@ -134,7 +127,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 - 独立的 `image info/pull/import` 默认取宿主架构，不读取清单的 `vm_arch`；用 `-A` 显式选择。`image import -A` 必须与 `--name` 同用；qcow2 元数据不能识别客机 CPU，所填架构须与实际镜像一致。
 - `network` 与 `hosts` 的 `install`/`uninstall` 会先展示变更计划并在终端请求确认（安装默认同意，卸载默认拒绝）。未传 `--yes` 时，如果标准输入不是终端或输出为 `--json`/`--yaml`，命令只输出计划并退出 `0`；请检查结构化报告中的 `applied`，或传入 `--yes` 执行计划。macOS 首次配置宿主网络请使用 `barn setup`。有节点运行时 `network uninstall` 会拒绝卸载网络；停止或销毁虚拟机不会卸载宿主网络。在 Linux 上，若宿主还有其他网络链路，或无法确认 networkd 仅供 Barn 使用，`network uninstall` 会保留全局 networkd 单元状态；计划中报告 `preserve_networkd`，执行报告在 `checks.networkd` 中说明原因。
 - 涉及安全确认与仓库选择的开关（`--ask`、`--mirror`、`--force`、`--rollback`、`--remove`、`--allow-downgrade`、`--sudo`、`--delete-persistent`、`--purge`）只提供长参数。在 Linux 命令中，`-f` 表示 `--file`（`barn logs -f` 例外，表示 `--follow`），`-n` 表示 `--no-wait`（而 `barn mac logs -n` 表示日志行数），`-d` 表示 `--dry-run`。
-- `barn purge` 默认立即执行整套清理，删除所有节点、持久盘、密钥、部署状态与默认 SSH 配置片段，保留镜像缓存与宿主网络。只有传入 `--ask` 时才先展示节点列表与清理范围：输入 `y`/`yes` 确认，`n`/`no`、空行或 EOF 取消并返回 `130`；不再要求输入 `purge`，也不接受 `--yes`、`-y` 或 `--force`。当环境中尚无部署时，默认 `barn purge` 与整体 `barn destroy` 均直接返回成功（`purge` 还会清理归属元数据完整的残留持久盘）。无法确认残留目录归属时仍会拒绝删除。若部署状态文件已缺失，执行 `destroy --force --delete-persistent` 或 `destroy --force --purge` 会报错并提示改用 `barn purge`。
+- `barn purge` 默认立即执行整套清理，删除所有节点、持久盘、密钥、部署状态与默认 SSH 配置片段，保留镜像缓存与宿主网络。只有传入 `--ask` 时才先展示节点列表与清理范围：输入 `y`/`yes` 确认，`n`/`no`、空行或 EOF 取消并返回 `130`；不接受 `--yes`、`-y` 或 `--force`。当环境中尚无部署时，默认 `barn purge` 与整体 `barn destroy` 均直接返回成功（`purge` 还会清理归属元数据完整的残留持久盘）。无法确认残留目录归属时仍会拒绝删除。若部署状态文件已缺失，执行 `destroy --force --delete-persistent` 或 `destroy --force --purge` 会报错并提示改用 `barn purge`。
 
 ## 结构化失败 {#structured-failures}
 

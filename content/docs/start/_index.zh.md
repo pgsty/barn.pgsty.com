@@ -9,7 +9,7 @@ cascade:
   type: docs
 ---
 
-本章节指南面向首个稳定版 **Barn 1.0.0**，并在未发布行为存在差异处标注 **`main`** 分支说明；变更内容与从 0.9.3 升级的步骤见 [Barn 1.0.0 发布说明](/zh/blog/release/1.0.0/)。你可以在同一台 Apple Silicon Mac 上同时使用 Linux 实验环境与 macOS 虚拟机，两套流程在 `~/.barn` 下各自独立管理虚拟机。
+本章节指南面向 **Barn 1.1.0**；变更内容与从 1.0.0 升级的步骤见 [Barn 1.1.0 发布说明](/zh/blog/release/1.1.0/)。你可以在同一台 Apple Silicon Mac 上同时使用 Linux 实验环境与 macOS 虚拟机，两套流程在 `~/.barn` 下各自独立管理虚拟机。
 
 ## 快速上手 {#get-started}
 
@@ -29,6 +29,6 @@ cascade:
 ## 故障排查、源码构建与清理 {#diagnostics-source-builds-and-cleanup}
 
 - [故障排查](troubleshooting/) — 针对宿主依赖、私网修复、客机阶段警告、SSH 密钥与中断恢复的排查手册。
-- [从源码构建](source-build/) — 从 `v1.0.0` 标签编译 CLI、`barn-hosts-helper` 与原生应用包 `Barn.app`，并运行贡献者检查。
+- [从源码构建](source-build/) — 从 `v1.1.0` 标签编译 CLI、`barn-hosts-helper` 与原生应用包 `Barn.app`，并运行贡献者检查。
 - [卸载与清理](uninstall/) — 按序销毁 Linux 与 macOS 虚拟机、清理镜像缓存、卸载宿主网络并移除 Barn 程序。
 {.cards}

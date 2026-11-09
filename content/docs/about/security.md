@@ -1,6 +1,6 @@
 ---
 title: Security and Trust
-description: Host privileges, guest credentials, shared folders, and the separate trust boundaries in Barn 1.0.0.
+description: Host privileges, guest credentials, shared folders, and the separate trust boundaries in Barn 1.1.0.
 weight: 25
 icon: fa-solid fa-shield-halved
 ---
@@ -60,7 +60,7 @@ Barn separates trust verification across four independent mechanisms:
 
 Release assets are built from the exact tag, by the tag workflow when its Mac signing secrets are configured and otherwise by the documented local release path. Source CI must pass on the release commit first. Both paths require package, archive, SBOM, and checksum verification before creating a draft GitHub Release; local publication follows the [Mac release handbook](../mac-release/).
 
-In `1.0.0`, `release.json` records `signed:false, attested:false` for the general release envelope. The Git tag and general checksums/release metadata have no separate cryptographic signature or attestation. Catalog Minisign verification and Apple Silicon code signing/notarization retain the distinct scopes listed above; the [final acceptance record](../history/#release-1-0-0) verifies them separately.
+In `1.1.0`, `release.json` records `signed:false, attested:false` for the general release envelope. The Git tag and general checksums/release metadata have no separate cryptographic signature or attestation. Catalog Minisign verification and Apple Silicon code signing/notarization retain the distinct scopes listed above; the [final acceptance record](../history/#release-1-1-0) verifies them separately.
 
 The two official image repositories (`https://repo.pigsty.io/barn` and `https://repo.pigsty.cc/barn`) always require valid minisign catalog signatures, even when passed explicitly via `--repo`. Custom HTTPS or local directory repositories may use unsigned catalogs when explicitly selected with `--repo` or `BARN_REPO` (see [Linux Images](../../reference/images/)).
 

@@ -20,7 +20,7 @@ When filing a bug report, include `barn version`, your host OS and architecture,
 
 ## Find the implementation {#find-the-implementation}
 
-Tag **`v1.0.0`** is the current stable release; its changes since 0.9.3 are listed in the [1.0.0 release notes](/blog/release/1.0.0/). Find each subsystem here:
+Tag **`v1.1.0`** is the current stable release; its changes since 1.0.0 are listed in the [1.1.0 release notes](/blog/release/1.1.0/). Find each subsystem here:
 
 | Subsystem | Source paths |
 |---|---|

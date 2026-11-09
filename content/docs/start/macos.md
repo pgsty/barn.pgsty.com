@@ -63,8 +63,6 @@ ready: barn mac ssh mac1
 desktop: barn mac open mac1
 ```
 
-(In 1.0.0, the summary prints `✓  mac1 created and ready · macOS 27.0 (26A428) · alice@10.10.20.10`, `shell:     barn mac ssh mac1`, and `desktop:   barn mac open mac1`.)
-
 Subsequent VMs clone the prepared base image in seconds without repeating the IPSW restore. Barn pins initial setup to **macOS 27.0 (26A428)**; use `barn mac image update` when you want to adopt a newer macOS 27 build.
 
 If you already have a local copy of Apple's restore image, pass `--ipsw` to skip the download (Barn clones it without copying if it resides on the same APFS volume):

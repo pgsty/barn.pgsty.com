@@ -56,7 +56,7 @@ mkdir -p ~/barn-lab && cd ~/barn-lab
 barn up
 ```
 
-首次运行且既没有配置文件也没有已有部署时，`barn up` 会在改动任何东西之前打印一份简短的准备计划，只列出适用的行：`dependencies`（1.0.0 中显示为 `install`）列出缺少的软件包（QEMU、UEFI 固件、OpenSSH）及所用的包管理器，`network` 给出要准备的固定 IP 网段，`config` 给出将要写入的单节点 `barn.yml`，`sudo` 说明哪些步骤需要 root 权限。在 `main` 分支且已经装有 QEMU 的宿主上，计划如下：
+首次运行且既没有配置文件也没有已有部署时，`barn up` 会在改动任何东西之前打印一份简短的准备计划，只列出适用的行：`dependencies` 列出缺少的软件包（QEMU、UEFI 固件、OpenSSH）及所用的包管理器，`network` 给出要准备的固定 IP 网段，`config` 给出将要写入的单节点 `barn.yml`，`sudo` 说明哪些步骤需要 root 权限。在已经装有 QEMU 的宿主上，计划如下：
 
 ```text
 ITEM     STATE    MESSAGE
@@ -70,12 +70,9 @@ Continue with this setup? [Y/n]
 
 ```text
 NAME  ADDRESS      STATE  MESSAGE
-meta  10.10.10.10  ready  SSH ready
-up 1/1 nodes: 14.2s [DONE]
-connect: barn ssh meta
+meta  10.10.10.10  ready  SSH ready: barn ssh meta
+boot 1/1 nodes: 39s [DONE]
 ```
-
-（在 1.0.0 中，完成行输出 `✓  1 node ready` 与 `connect:   barn ssh meta`；`main` 上的非终端重定向输出则打印 `up: 1 node ready` 与 `connect: barn ssh meta`。）
 
 如果 `barn up` 报错退出，先运行 `barn doctor` 检查宿主，再用 `barn logs meta` 查看客机控制台输出，修复问题后重新运行 `barn up`。常见故障见[故障排查](../troubleshooting/)。
 
@@ -110,7 +107,7 @@ NAME  ADDRESS      STATE    IMAGE             CPU  MEMORY
 meta  10.10.10.10  running  u24@20261017.0.1  2    4.0 GiB
 ```
 
-`barn status` 列出每个节点的固定地址、记录的状态、镜像版本与规格（1.0.0 中 `STATE` 列在 `ADDRESS` 之前）。在宿主上执行客机命令时，用 `--` 隔开远程命令：
+`barn status` 列出每个节点的固定地址、记录的状态、镜像版本与规格。在宿主上执行客机命令时，用 `--` 隔开远程命令：
 
 ```bash
 barn exec meta -- hostname

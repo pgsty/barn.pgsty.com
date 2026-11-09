@@ -11,12 +11,12 @@ cascade:
 
 Barn (**Bootstrap And Run Nodes**) is an Apache-2.0 virtual machine manager for local database labs, Linux development, and macOS testing.
 
-- [Platforms and Limits](status/) — Host requirements, guest compatibility matrix, and storage rules in Barn 1.0.0
+- [Platforms and Limits](status/) — Host requirements, guest compatibility matrix, and storage rules in Barn 1.1.0
 - [Design](design/) — Architecture of the single-inventory Linux lab and independent `barn mac` VMs
 - [Security and Trust](security/) — Host privileges, SSH credentials, shared folders, and image verification boundaries
 - [Contributing](engineering/) — Source layout, local build and test gates, packaging snapshots, and catalog maintenance
 - [Mac Release](mac-release/) — Native payload pairing, Developer ID signing, notarization, and installation acceptance
-- [Barn 1.0.0 Release](/blog/release/1.0.0/) — The first stable release: 1.x compatibility scope, changes since 0.9.3, and upgrade steps
+- [Barn 1.1.0 Release](/blog/release/1.1.0/) — Image and architecture overrides, live progress, resize recovery, and upgrade steps
 - [Validation History](history/) — Dated release verification records and native hypervisor test matrices
 {.cards}
 

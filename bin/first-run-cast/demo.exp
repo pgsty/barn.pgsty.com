@@ -1,5 +1,5 @@
 #!/usr/bin/expect -f
-# Drive a real Barn 1.0 first run on m3 for the home-page recording.
+# Drive a real Barn first run on a dedicated test host for the home-page recording.
 # Typing is simulated; every command and its output are real.
 set timeout 60
 set send_human {.05 .09 1 .03 .22}
@@ -25,7 +25,8 @@ proc run {text wait} {
 }
 
 set host [expr {[info exists env(BARN_CAST_HOST)] ? $env(BARN_CAST_HOST) : "m3"}]
-spawn -noecho ssh -q -tt -o BatchMode=yes $host "bash --rcfile /tmp/barn-demo.rc -i"
+set remote_command [expr {[info exists env(BARN_CAST_REMOTE_COMMAND)] ? $env(BARN_CAST_REMOTE_COMMAND) : "bash --rcfile /tmp/barn-demo.rc -i"}]
+spawn -noecho ssh -q -tt -o BatchMode=yes $host $remote_command
 expect -re $host_prompt
 sleep 1.5
 

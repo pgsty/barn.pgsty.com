@@ -32,7 +32,7 @@ Barn 根据文档规定的 `vm_*` 字段与 Pigsty 身份字段为每个节点�
 
 ## 运行时选择 {#runtime-selection}
 
-`main` 支持用 `--arch/-A` 临时覆盖清单的 `vm_arch`；二者都未指定时跟随宿主，`-A native` 可覆盖清单并恢复跟随宿主。镜像参数 `-I` 不改变架构，已有 VM 切换架构需要重建，详见[配置规则](../../reference/configuration/#image-and-architecture)。
+Barn 1.1.0 支持用 `--arch/-A` 临时覆盖清单的 `vm_arch`；二者都未指定时跟随宿主，`-A native` 可覆盖清单并恢复跟随宿主。镜像参数 `-I` 不改变架构，已有 VM 切换架构需要重建，详见[配置规则](../../reference/configuration/#image-and-architecture)。
 
 `vm_arch` 作用于整套部署（省略或设为 `native` 时取宿主架构；显式指定 `amd64` 或 `arm64` 时选用对应架构镜像）。当客机与宿主架构一致时，Barn 默认使用 HVF/KVM 原生硬件加速；仅在跨架构运行或命中目录声明的内核兼容例外（Apple Silicon 上的 `el8` `arm64`）时才使用 QEMU TCG。若原生加速因其他原因失败，Barn 会直接报错停止，而不会静默退化到软件模拟。
 

@@ -49,7 +49,7 @@ BARN_MAC_PAYLOAD="$RELEASE_DIR/native.tar.gz" \
 
 The formal native build and `release-local` enforce the `make catalog-check` gate before building. Synchronize and test any changed official catalog first, following the [release gates](../engineering/#release-outputs-and-gates). A snapshot or `uncommitted` payload cannot serve as a formal local release. `release-local` verifies archives, packages, SBOMs, checksums, and CLI/helper pairing, and writes the assembled assets to the specified directory.
 
-For packaging development, `BARN_MAC_PAYLOAD=/absolute/native.tar.gz make release-snapshot` exercises native payload composition. Match the payload to the snapshot version selected by `.goreleaser.yaml`—for example, `1.0.1-next` after `v1.0.0`—and use `uncommitted` for a dirty checkout or the full commit for clean source. Snapshots accept ad-hoc signatures; formal release verification requires a notarized Developer ID payload.
+For packaging development, `BARN_MAC_PAYLOAD=/absolute/native.tar.gz make release-snapshot` exercises native payload composition. Match the payload to the snapshot version selected by `.goreleaser.yaml`—for example, `1.1.1-next` after `v1.1.0`—and use `uncommitted` for a dirty checkout or the full commit for clean source. Snapshots accept ad-hoc signatures; formal release verification requires a notarized Developer ID payload.
 
 ## Configure automated signing {#ci-signing}
 

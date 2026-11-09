@@ -32,7 +32,7 @@ Barn computes a specification hash per node from the documented `vm_*` and Pigst
 
 ## Runtime selection {#runtime-selection}
 
-On `main`, `--arch/-A` overrides inventory `vm_arch` for an invocation. With neither set, the guest follows the host; `-A native` overrides the inventory and restores that default. Image flag `-I` does not change architecture, and switching an existing VM requires recreation; see [configuration rules](../../reference/configuration/#image-and-architecture).
+`--arch/-A` overrides inventory `vm_arch` for an invocation. With neither set, the guest follows the host; `-A native` overrides the inventory and restores that default. Image flag `-I` does not change architecture, and switching an existing VM requires recreation; see [configuration rules](../../reference/configuration/#image-and-architecture).
 
 `vm_arch` applies across the entire deployment (`native` uses the host CPU architecture; explicit `amd64` or `arm64` selects that architecture from the catalog). Barn uses hardware acceleration (HVF on macOS, KVM on Linux) whenever guest and host architectures match, switching to QEMU TCG only for foreign architectures or catalog-declared kernel incompatibilities (`el8` `arm64` on Apple Silicon). If native HVF/KVM fails for any other reason, Barn fails closed rather than silently degrading to software emulation.
 

@@ -34,7 +34,7 @@ barn up -f barn.yml --json > up.json
 
 For a generated inventory, `barn init [template] --image <reference>` writes `all.vars.vm_image`, so every node inherits the same image. References can be catalog aliases (`el9`), channels (`u24:stable`), or version selectors (`u24@20261017.0.1`). `barn setup [template] --image <reference>` also selects an image during generation, but rejects this generation flag when using an existing inventory.
 
-On `main`, `--image/-I` and `--arch/-A` share consistent spellings: `barn init full -I u24 -A amd64` saves both choices in a new inventory; the same flags on `validate`, `plan`, `up`, `reload`, `recreate`, and `resize` only override desired state for that invocation. For example, preview `barn plan -f barn.yml -I u24 -A arm64 --json`, then use the same overrides when applying it. Setup's `-I/-A` remain limited to template generation. These extensions are unreleased after 1.0.0; check your binary's `--help`.
+`--image/-I` and `--arch/-A` share consistent spellings: `barn init full -I u24 -A amd64` saves both choices in a new inventory; the same flags on `validate`, `plan`, `up`, `reload`, `recreate`, and `resize` only override desired state for that invocation. For example, preview `barn plan -f barn.yml -I u24 -A arm64 --json`, then use the same overrides when applying it. Setup's `-I/-A` remain limited to template generation.
 
 Without an architecture flag, Barn uses inventory `vm_arch`, falling back to the host when unset; `-A native` overrides the inventory and follows the host. Existing VMs require `recreate` to change image or architecture. For repeatable CI, save `vm_image`, `vm_arch`, and an exact image version; see the [configuration reference](../../reference/configuration/#image-and-architecture).
 

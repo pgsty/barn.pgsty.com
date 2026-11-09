@@ -7,7 +7,7 @@ sections:
   - cta
 
 hero:
-  eyebrow: Barn 1.0.0 · Stable · Apache-2.0
+  eyebrow: Barn 1.1.0 · Stable · Apache-2.0
   title_lines:
     - words:
         - { text: Multi-Node Linux Labs }
@@ -29,8 +29,8 @@ hero:
     - { label: Start a Linux lab, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: Run a macOS VM, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
   detail:
-    label: What's new in 1.0.0
-    url: blog/release/1.0.0/
+    label: What's new in 1.1.0
+    url: blog/release/1.1.0/
 
 quickstart:
   eyebrow: Quick start
@@ -47,7 +47,7 @@ quickstart:
     - { label: Installation options, url: docs/start/installation/ }
     - { label: Linux quick start, url: docs/start/tutorial/ }
   demo: |-
-    {{< asciinema file="images/barn-first-run.cast" title="Barn 1.0.0 first run · Ubuntu 26.04" poster="npt:0:30" >}}
+    {{< asciinema file="images/barn-first-run.cast" title="Barn 1.1.0 first run · Ubuntu 26.04" poster="npt:0:23.64" >}}
 
     A real first run on an Ubuntu 26.04 host; the image download and boot wait play faster than real time.
   body: |-
@@ -96,8 +96,7 @@ capabilities:
           - { class: k, prefix: '        10.10.10.12: ', text: '{ nodename: node-2 }' }
           - { class: k, prefix: '        10.10.10.13: ', text: '{ nodename: node-3 }' }
           - { class: p, prefix: '$ ', text: 'barn up' }
-          - { class: ok, prefix: 'up:        ', text: '4 nodes ready' }
-          - { class: c, prefix: 'connect:   ', text: 'barn ssh meta' }
+          - { class: p, prefix: '$ ', text: 'barn ssh meta' }
     - ref: macOS guests
       title: Native macOS Machines
       url: docs/start/macos/
@@ -113,9 +112,7 @@ capabilities:
         title: barn mac  ·  Apple Virtualization
         lines:
           - { class: p, prefix: '$ ', text: 'barn mac up dev --cpu 8 --memory 16G --share ~/src' }
-          - { class: ok, prefix: 'up:        ', text: 'dev ready · macOS 27.0 (26A428)' }
-          - { class: c, prefix: 'ready:     ', text: 'barn mac ssh dev' }
-          - { class: c, prefix: 'desktop:   ', text: 'barn mac open dev' }
+          - { class: p, prefix: '$ ', text: 'barn mac open dev' }
           - { class: p, prefix: '$ ', text: 'barn mac ssh dev -- sw_vers -productVersion' }
           - { class: c, prefix: '', text: '27.0' }
     - ref: Guest images
@@ -165,10 +162,10 @@ design:
       title: Signed image evidence
       desc: '`repo.yaml` states intent; the signed `catalog.json` proves the bytes.'
       url: blog/design/repo-yaml-catalog-json/
-    - icon: fa-solid fa-code-compare
-      title: A stable 1.x contract
-      desc: Commands, flags, exit codes, and existing `--json` fields stay compatible across 1.x.
-      url: blog/release/1.0.0/#compatibility
+    - icon: fa-solid fa-microchip
+      title: Native or emulated guests
+      desc: Matching guests use HVF or KVM; a foreign architecture runs under QEMU TCG.
+      url: blog/design/multi-architecture-boundary/
 
 faq:
   eyebrow: Before you begin
@@ -202,22 +199,11 @@ faq:
         `$BARN_HOME` (`~/.barn` by default). Changing your working directory
         does not create a separate deployment unless you set a different
         `BARN_HOME`.
-    - question: What does Barn 1.0 keep stable?
-      answer: >-
-        Across 1.x, command names, flags, exit codes, existing `--json` and
-        `--yaml` fields, the inventory format, `BARN_*` variables, and the state
-        under `BARN_HOME` stay compatible. Human-readable text may change, so
-        scripts should read structured output and exit codes. Upgrading from
-        0.9.3 keeps existing VMs; see the
-        [compatibility scope](blog/release/1.0.0/#compatibility).
-    - question: How do I upgrade from 0.9.3?
+    - question: How do I upgrade Barn?
       answer: >-
         Stop any running macOS VMs, then run `brew upgrade pgsty/infra/barn` or
         re-run `install.sh`. VM disks, keys, and state under `~/.barn` stay in
-        place. Scripts should expect exit `7` for catalog signature failures and
-        a confirmation prompt from first-run interactive `up` (and from `purge`
-        in 1.0.0, or `purge --ask` on `main`). See
-        [Upgrade Barn](docs/start/installation/#upgrade-barn).
+        place. See [Upgrade Barn](docs/start/installation/#upgrade-barn).
 
 cta:
   title: Ready to build your local lab?

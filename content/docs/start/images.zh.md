@@ -42,7 +42,7 @@ all:
 
 ### 临时覆盖与架构选择 {#architecture}
 
-以下 `-I/-A` 扩展属于 `main` 中尚未发布的改动，1.0.0 用户请先检查命令的 `--help`。
+Barn 1.1.0 支持以下 `-I/-A` 参数。
 
 默认使用宿主架构；只有显式配置 `vm_arch` 或传入 `--arch/-A` 时才覆盖。优先级为 `-A` → `vm_arch` → 宿主架构；`-A native` 表示忽略清单中的固定架构，恢复跟随宿主。`amd64` 接受 `x86_64`、`x64` 别名，`arm64` 接受 `aarch64`、`a64` 别名。
 
@@ -148,7 +148,7 @@ barn image import --name local-mybase --boot uefi \
 
 注册别名时需同时指定 `--name`（必须以 `local-` 开头）、`--boot`（`uefi` 或 `bios`）和 `--source-user`；省略这组参数则仅校验镜像并按内容摘要缓存。导入的镜像必须已预装并启用 cloud-init。命名别名一旦注册即不可变——重新制作镜像后请注册新的 `local-*` 名称，并在 `barn.yml` 中通过 `vm_image: local-mybase` 引用。
 
-在 `main` 中，命名导入支持 `-A`，例如 `barn image import /path/to/arm64.qcow2 --name local-arm64 --boot uefi --source-user ubuntu -A arm64`。它记录你声明的架构，不会转换镜像或检测客机 CPU；使用该镜像时，也要让清单的 `vm_arch` 或生命周期命令的 `-A` 与之匹配。不带 `--name` 时不能传入 `-A`。
+命名导入支持 `-A`，例如 `barn image import /path/to/arm64.qcow2 --name local-arm64 --boot uefi --source-user ubuntu -A arm64`。它记录你声明的架构，不会转换镜像或检测客机 CPU；使用该镜像时，也要让清单的 `vm_arch` 或生命周期命令的 `-A` 与之匹配。不带 `--name` 时不能传入 `-A`。
 
 清理未被使用的缓存镜像与中断下载暂存文件：
 

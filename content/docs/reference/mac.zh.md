@@ -11,7 +11,7 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 
 运行 macOS 客机需要搭载 Apple 芯片且运行 macOS 27 或更高版本的 Mac，并由当前登录桌面用户直接调用。需要调用原生 runner 的命令会以 `mac_root` 拒绝 `root` 身份，并以 `mac_host_unsupported` 拒绝不满足要求的宿主。在 Linux 与 Intel Mac 上，顶层 `--help` 默认隐藏 `mac` 命令；而 `barn mac image ls` 等只读取本地记录的子命令则无需启动原生 runner。不带子命令直接运行 `barn mac` 等同于 `barn mac ls`。
 
-本参考说明 **Barn 1.0.0** 的命令接口与 `Barn.app`（macOS 宿主上运行虚拟机的原生应用包，runner 协议版本 `2`）。Apple Silicon 发行包与 Homebrew 安装已包含 App，安装步骤见 [macOS 客机指南](../../start/macos/#install)。
+本参考说明 **Barn 1.1.0** 的命令接口与 `Barn.app`（macOS 宿主上运行虚拟机的原生应用包，runner 协议版本 `2`）。Apple Silicon 发行包与 Homebrew 安装已包含 App，安装步骤见 [macOS 客机指南](../../start/macos/#install)。
 
 ## 命令 {#commands}
 

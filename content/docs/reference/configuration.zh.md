@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-本参考跟随 Barn `main`。下文的命令行镜像与架构覆盖属于 1.0.0 之后尚未发布的改动；请通过 `barn version` 和命令的 `--help` 核对当前构建。
+本参考对应 Barn 1.1.0，包含命令行镜像与架构覆盖。请通过 `barn version` 和命令的 `--help` 核对已安装版本。
 
 ## 发现顺序 {#discovery}
 

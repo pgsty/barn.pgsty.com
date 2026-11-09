@@ -63,8 +63,6 @@ ready: barn mac ssh mac1
 desktop: barn mac open mac1
 ```
 
-（在 1.0.0 中，完成行输出 `✓  mac1 created and ready · macOS 27.0 (26A428) · alice@10.10.20.10`、`shell:     barn mac ssh mac1` 与 `desktop:   barn mac open mac1`。）
-
 后续新建虚拟机都会直接克隆这份基础镜像，几秒内即可完成创建，无需重复执行漫长的系统恢复安装。Barn 首次下载默认固定为 **macOS 27.0 (26A428)**；如需跟进更新的 macOS 27 版本，可显式运行 `barn mac image update`。
 
 如果本机已下载好 Apple 恢复镜像，可通过 `--ipsw` 直接传入（位于同一 APFS 卷时将直接克隆数据块而无需复制）：

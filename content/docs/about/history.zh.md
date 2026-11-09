@@ -6,7 +6,26 @@ icon: fa-solid fa-clock-rotate-left
 ---
 
 > [!NOTE]
-> 本页汇集截至 `1.0.0` 的源码、打包、VM 与公开安装验证记录，每条保留原有日期、测试版本和范围。当前宿主支持与版本行为请查阅[平台与限制](../status/)及[发布说明](/zh/blog/release/)。
+> 本页汇集截至 `1.1.0` 的源码、打包、VM 与公开安装验证记录，每条保留原有日期、测试版本和范围。当前宿主支持与版本行为请查阅[平台与限制](../status/)及[发布说明](/zh/blog/release/)。
+
+## Barn 1.1.0 最终验收 — 2026-11-09 {#release-1-1-0}
+
+| 项目 | 记录的身份 |
+|---|---|
+| 标签与提交 | `v1.1.0` → `b2cc8da8983e710255d504bf26bf5d7b3f182790` |
+| 构建时间 | `2026-11-09T01:28:55Z`；`SOURCE_DATE_EPOCH=1794187735` |
+| GitHub Release | ID `438656123`；于 `2026-11-09T01:46:13Z` 作为 stable/latest 发布 |
+| 签名目录 | Revision `2026110502`；SHA-256 `d41e46d20bc57cb1b071e3919a27a8f7f703df2addca879970a528e7ab004065` |
+{.wide .expand}
+
+- **源码与打包**：发布提交在打标签前通过[源码/Mac CI](https://github.com/pgsty/barn/actions/runs/42545792285)与[完整打包 CI](https://github.com/pgsty/barn/actions/runs/42545806168)。本地 `make check`、`make mac-native-test` 和 `make release-snapshot` 也全部通过。[Tag 工作流](https://github.com/pgsty/barn/actions/runs/42546253184)通过签名配置检查；仓库未配置自动签名密钥，因此完整发行包按发布手册在本机签名构建。
+- **回下载制品**：重新下载 draft 的全部 20 个附件，大小与 SHA-256 均与本地原件一致。19 项校验清单、归档/软件包一致性、四平台二进制架构、文件权限、helper 配对与 SPDX 物料清单全部通过检查。Apple 接受公证提交 `cabe1b9c-fc54-4f07-b8bf-d834f0226013`；下载后的 App 通过签名、票据装订与 Gatekeeper 检查。移入 Homebrew 的 `bin`/`libexec` 布局后，CLI 仍能找到匹配的原生组件。
+- **镜像目录**：两个官方源均通过签名验证、临时数据目录激活及内置字节比对，两个镜像源各自的 17 个 stable 制品均通过 HTTP 可达性与大小检查。最终下载的二进制也在全新的 `BARN_HOME` 中激活了官方目录。
+- **Linux 运行时**：下载的 `linux/amd64` 二进制通过 `-I d13 -A x86_64` 创建 Debian 13 客机，清单文件保持原样。CPU/内存 `2/2 GiB → 3/3 GiB → 2/2 GiB` 调整、停止/启动、远程参数与退出码 `17` 均通过检查；VM UUID、SSH 公钥、machine ID 与持久盘数据哨兵在资源调整和重启后保持不变。随后通过 `-A aarch64` 启动 ARM64 Debian 13 客机，QEMU 使用 TCG 与 `cortex-a72`，SSH 返回 `aarch64`。两台测试客机均在验收后删除。
+- **Mac 运行时**：新建的隔离 macOS 27 客机通过创建、SSH、远程退出码 `17`、停止/启动、身份与数据保留、销毁检查。用户现有 SSH 文件保持不变，原先运行的 Mac 虚拟机继续运行。公开签名安装器在独立目录中的安装与重复安装也通过验证。
+- **公开交付**：全部 20 个公开附件均可匿名下载，字节与已核验 draft 一致。默认安装器与显式 `BARN_VERSION=1.1.0` 均安装了公开版本。[Homebrew 更新](https://github.com/pgsty/homebrew-infra/commit/f36b991)同步了四个平台的归档 URL 与摘要。首页录像来自 Ubuntu 26.04 上的真实公开安装与首次 Linux VM 启动，使用已准备好的宿主网络和全新的测试账号。
+
+物理宿主覆盖 `darwin/arm64` 与 `linux/amd64`，另验证了 TCG 下的 `linux/arm64` 客机；`darwin/amd64` 与原生 `linux/arm64` 的证据范围是交叉构建与制品检查。GUI 和剪贴板保留此前记录的验证日期与范围。早期验收脚本重试修正了不存在的超时参数、需要客机 sudo 的测试写入，以及未接受 `thread=multi` 选项的 TCG 断言；失败日志与成功结果一并保留。
 
 ## Barn 1.0.0 最终验收 — 2026-11-05 {#release-1-0-0}
 

@@ -7,7 +7,7 @@ sections:
   - cta
 
 hero:
-  eyebrow: Barn 1.0.0 · 稳定版 · Apache-2.0
+  eyebrow: Barn 1.1.0 · 稳定版 · Apache-2.0
   title_lines:
     - words:
         - { text: 多节点 Linux 实验环境 }
@@ -27,8 +27,8 @@ hero:
     - { label: 启动 Linux 实验环境, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: 运行 macOS 虚拟机, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
   detail:
-    label: 了解 1.0.0 的新变化
-    url: blog/release/1.0.0/
+    label: 了解 1.1.0 的新变化
+    url: blog/release/1.1.0/
 
 quickstart:
   eyebrow: 快速上手
@@ -44,7 +44,7 @@ quickstart:
     - { label: 安装选项, url: docs/start/installation/ }
     - { label: Linux 快速上手, url: docs/start/tutorial/ }
   demo: |-
-    {{< asciinema file="images/barn-first-run.cast" title="Barn 1.0.0 首次运行 · Ubuntu 26.04" poster="npt:0:30" >}}
+    {{< asciinema file="images/barn-first-run.cast" title="Barn 1.1.0 首次运行 · Ubuntu 26.04" poster="npt:0:23.64" >}}
 
     在一台 Ubuntu 26.04 宿主上真实录制的首次运行，镜像下载与启动等待部分已加速播放。
   body: |-
@@ -93,8 +93,7 @@ capabilities:
           - { class: k, prefix: '        10.10.10.12: ', text: '{ nodename: node-2 }' }
           - { class: k, prefix: '        10.10.10.13: ', text: '{ nodename: node-3 }' }
           - { class: p, prefix: '$ ', text: 'barn up' }
-          - { class: ok, prefix: 'up:        ', text: '4 nodes ready' }
-          - { class: c, prefix: 'connect:   ', text: 'barn ssh meta' }
+          - { class: p, prefix: '$ ', text: 'barn ssh meta' }
     - ref: macOS 客机
       title: 原生 macOS 虚拟机
       url: docs/start/macos/
@@ -110,9 +109,7 @@ capabilities:
         title: barn mac  ·  Apple Virtualization
         lines:
           - { class: p, prefix: '$ ', text: 'barn mac up dev --cpu 8 --memory 16G --share ~/src' }
-          - { class: ok, prefix: 'up:        ', text: 'dev ready · macOS 27.0 (26A428)' }
-          - { class: c, prefix: 'ready:     ', text: 'barn mac ssh dev' }
-          - { class: c, prefix: 'desktop:   ', text: 'barn mac open dev' }
+          - { class: p, prefix: '$ ', text: 'barn mac open dev' }
           - { class: p, prefix: '$ ', text: 'barn mac ssh dev -- sw_vers -productVersion' }
           - { class: c, prefix: '', text: '27.0' }
     - ref: 客机镜像
@@ -162,10 +159,10 @@ design:
       title: 镜像以签名为证
       desc: '`repo.yaml` 表达意图，签名的 `catalog.json` 证明镜像字节。'
       url: blog/design/repo-yaml-catalog-json/
-    - icon: fa-solid fa-code-compare
-      title: 稳定的 1.x 契约
-      desc: 命令、参数、退出码与已有的 `--json` 字段在整个 1.x 系列内保持兼容。
-      url: blog/release/1.0.0/#compatibility
+    - icon: fa-solid fa-microchip
+      title: 原生或模拟客机
+      desc: 同架构客机使用 HVF 或 KVM，跨架构客机由 QEMU TCG 运行。
+      url: blog/design/multi-architecture-boundary/
 
 faq:
   eyebrow: 开始之前
@@ -192,14 +189,10 @@ faq:
       answer: >-
         部署状态、SSH 密钥、基础镜像缓存与虚拟机磁盘都保存在 `$BARN_HOME`
         下（默认 `~/.barn`）。除非设置了不同的 `BARN_HOME`，切换工作目录不会新建另一套部署。
-    - question: Barn 1.0 保证哪些内容稳定？
+    - question: 如何升级 Barn？
       answer: >-
-        在 1.x 内，命令名、参数、退出码、`--json` 与 `--yaml` 的已有字段、清单格式、`BARN_*` 环境变量以及 `BARN_HOME` 下的状态保持兼容。面向人阅读的文本可能变化，脚本请读取结构化输出与退出码。从 0.9.3 升级会保留已有虚拟机，详见[兼容性范围](blog/release/1.0.0/#compatibility)。
-    - question: 如何从 0.9.3 升级？
-      answer: >-
-        先停止正在运行的 macOS 虚拟机，再执行 `brew upgrade pgsty/infra/barn`
-        或重新运行 `install.sh`。`~/.barn` 下的虚拟机磁盘、密钥与状态原样保留。脚本需要适应两处变化：镜像目录签名校验失败时退出码为 `7`，交互终端首次运行
-        `up`（以及 1.0.0 中的 `purge` 或 `main` 上的 `purge --ask`）会先请求确认。详见[升级 Barn](docs/start/installation/#upgrade-barn)。
+        先停止正在运行的 macOS 虚拟机，再执行 `brew upgrade pgsty/infra/barn` 或重新运行 `install.sh`。
+        `~/.barn` 下的虚拟机磁盘、密钥和状态都会保留。详见[升级 Barn](docs/start/installation/#upgrade-barn)。
 
 cta:
   title: 准备好搭建本地实验环境了吗？

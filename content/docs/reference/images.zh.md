@@ -12,7 +12,7 @@ Barn 通过静态镜像目录与不可变 `qcow2` 产物解析 Linux 客机镜�
 
 ## 别名与拉取顺序 {#aliases-and-pull-order}
 
-Barn 1.0.0 内置镜像目录 `2026110502`，包含 Debian 13 镜像 `20261103.2651.1`。目录涵盖 9 个发行版系列，每个系列一个 `stable` 版本，共 17 个镜像产物：`el7` 仅提供 `amd64`，其余系列均同时提供 `amd64` 与 `arm64`。缺省请求为宿主原生架构的 `u24:stable`（Ubuntu 24.04 LTS）。
+Barn 1.1.0 内置镜像目录 `2026110502`，包含 Debian 13 镜像 `20261103.2651.1`。目录涵盖 9 个发行版系列，每个系列一个 `stable` 版本，共 17 个镜像产物：`el7` 仅提供 `amd64`，其余系列均同时提供 `amd64` 与 `arm64`。缺省请求为宿主原生架构的 `u24:stable`（Ubuntu 24.04 LTS）。
 
 下表列出内置镜像目录 `2026110502` 中各系列的 `stable` 版本快照。运行 `barn update` 后再执行 `barn image list` 可查看所选仓库当前的实时目录；宿主平台兼容性详见[平台与限制](../../about/status/)。
 
@@ -63,7 +63,7 @@ barn update
 拉取镜像时，Barn 依次执行以下四步：
 
 1. **读取本地活动目录** — 为本次命令加载一次所选仓库的本地活动镜像目录（即二进制内置目录，或最近一次通过 `barn update` / `barn image sync` 为该仓库激活的目录）。
-2. **解析选择器与架构** — 解析 `image[:channel]` 或 `image@version-prefix`（官方目录缺省为 `u24:stable`）及目标架构。独立执行 `image pull` 默认取宿主架构；生命周期命令遵循 `vm_arch`，未设置时也取宿主架构。`main` 的 `--arch/-A` 可覆盖上述选择，优先级见[配置参考](../configuration/#image-and-architecture)。
+2. **解析选择器与架构** — 解析 `image[:channel]` 或 `image@version-prefix`（官方目录缺省为 `u24:stable`）及目标架构。独立执行 `image pull` 默认取宿主架构；生命周期命令遵循 `vm_arch`，未设置时也取宿主架构。Barn 的 `--arch/-A` 可覆盖上述选择，优先级见[配置参考](../configuration/#image-and-architecture)。
 3. **校验本地缓存** — 若本地已存在对应缓存文件，且文件大小、SHA-256 摘要与 `qemu-img` 结构检查全部通过，则直接复用。
 4. **断点续传与落盘校验** — 若未命中缓存，则从所选仓库下载对应产物（支持自动重试与断点续传），待文件大小、SHA-256 与 `qcow2` 格式全部校验通过后移入缓存。两个官方源（`https://repo.pigsty.io/barn` 与 `https://repo.pigsty.cc/barn`）在下载镜像文件时支持自动互备回退，自定义 `--repo` 仓库则严格只从指定源下载；目录中记录的上游 URL 仅用于构建溯源。
 {.steps}
@@ -78,7 +78,7 @@ Barn 会自动将通过校验的缓存镜像恢复为只读权限（`0444`）。
 
 当客机架构与宿主架构一致时，Barn 默认启用硬件加速虚拟化（macOS 使用 Apple HVF，Linux 使用 KVM），仅有一项内置例外：Rocky Linux 8（`el8`）的 `arm64` 原生内核使用 64 KiB 内存页，而 Apple HVF 不支持 64 KiB 页大小，因此 Apple Silicon 宿主运行 `el8` 时会自动切换为同架构 QEMU TCG 并在状态输出中标注 `tcg`。跨架构客机（`vm_arch` 或命令行覆盖后的架构与宿主不同）同样使用 TCG；在 `arm64` 宿主上模拟 `amd64` 客机时，Barn 会将 TCG 固定为单翻译线程以保证 x86 内存序正确。
 
-`main` 的 ARM64 TCG 运行时使用 `cortex-a72` CPU 模型，避免部分 QEMU/AAVMF 组合在 `max` 模型下卡住固件。Linux x86-64 宿主运行 ARM64 客机已通过真实 Barn 启动与 SSH 检查。当前 Barn 的目录和运行时只接受 `amd64`、`arm64`；发行版或 QEMU 提供其他架构，不代表这些架构已可用于 `barn up`。
+Barn 的 ARM64 TCG 运行时使用 `cortex-a72` CPU 模型，避免部分 QEMU/AAVMF 组合在 `max` 模型下卡住固件。Linux x86-64 宿主运行 ARM64 客机已通过真实 Barn 启动与 SSH 检查。当前 Barn 的目录和运行时只接受 `amd64`、`arm64`；发行版或 QEMU 提供其他架构，不代表这些架构已可用于 `barn up`。
 
 `el7` 仅支持在 `linux/amd64` 宿主上原生运行。Linux 宿主的 `barn setup` 默认只安装本机架构的 QEMU；在通过 `up` 或 `recreate` 启动跨架构客机前，请先安装对应架构的 `qemu-system-*` 模拟器与 UEFI 固件（`barn plan` 无需安装这些工具即可解析目录镜像，但解析 `local-*` 导入镜像仍需 `qemu-img`）。
 
@@ -179,7 +179,7 @@ barn image import --name local-mybase --boot uefi \
 - `image import` 接受相对路径、`~/` 和普通文件的符号链接，仍需 `qemu-img`。本地镜像及目录中声明了大小的镜像不再受 8 GiB 文件大小上限约束；读取以实际或声明大小为界，下载超出声明大小时停止。未声明产物大小的旧协议下载仍保留 8 GiB 边界。可选 `--sha256` 继续核对预期摘要。
 - `image import` 仅复制并校验 `qcow2` 文件结构，不会清理凭据、安装 `cloud-init` 或测试启动。
 - 源文件名可包含空格或 Unicode，无需特定扩展名；Barn 校验实际 qcow2 内容。新导入使用 `local/<sha256>.qcow2`，同名不同内容可并存，相同内容复用缓存。重新导入已有别名时保留其原有缓存路径。原有的 256 个别名上限已移除；注册表元数据若超过 1 MiB，会在写入前报错并保留已有别名。
-- 命名导入（`--name local-<alias>`）必须同时指定 `--boot bios|uefi` 与 `--source-user <user>`，默认记录宿主架构。`main` 新增 `--arch/-A`，可显式记录 `amd64` 或 `arm64` 及其别名；qcow2 元数据不能识别客机 CPU，导入也不会转换架构。使用该镜像时，清单的 `vm_arch` 或生命周期命令的 `-A` 须与之匹配。别名一旦注册不可更改，可通过 `vm_image: local-mybase` 引用；不带 `--name` 的导入仅预填充缓存，不能传 `-A`。
+- 命名导入（`--name local-<alias>`）必须同时指定 `--boot bios|uefi` 与 `--source-user <user>`，默认记录宿主架构。Barn 1.1.0 支持 `--arch/-A`，可显式记录 `amd64` 或 `arm64` 及其别名；qcow2 元数据不能识别客机 CPU，导入也不会转换架构。使用该镜像时，清单的 `vm_arch` 或生命周期命令的 `-A` 须与之匹配。别名一旦注册不可更改，可通过 `vm_image: local-mybase` 引用；不带 `--name` 的导入仅预填充缓存，不能传 `-A`。
 
 ## 清理 {#pruning}
 

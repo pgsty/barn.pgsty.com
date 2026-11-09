@@ -1,6 +1,6 @@
 ---
 title: Build from Source
-description: Build Barn 1.0.0 or the development branch, including the native Mac component, and run the contributor checks.
+description: Build Barn 1.1.0 or the development branch, including the native Mac component, and run the contributor checks.
 weight: 80
 icon: fa-solid fa-hammer
 ---
@@ -9,28 +9,28 @@ Build Barn from source when developing a change or auditing a release tag. For p
 
 ## Check out the source {#check-out-the-source}
 
-Clone tag **v1.0.0** to reproduce the documented release (or omit `--branch v1.0.0` to work on `main`), and record `git log -1 --oneline` and `git status --short` alongside any build report:
+Clone tag **v1.1.0** to reproduce the documented release (or omit `--branch v1.1.0` to work on `main`), and record `git log -1 --oneline` and `git status --short` alongside any build report:
 
 ```bash
-git clone --branch v1.0.0 https://github.com/pgsty/barn.git
+git clone --branch v1.1.0 https://github.com/pgsty/barn.git
 cd barn
 ```
 
-Tag `v1.0.0` reproduces the published release described in the [Barn 1.0.0 release notes](/blog/release/1.0.0/). Leave `BARN_VERSION` unset for a development build.
+Tag `v1.1.0` reproduces the published release described in the [Barn 1.1.0 release notes](/blog/release/1.1.0/). Leave `BARN_VERSION` unset for a development build.
 
 ## Build the CLI {#build-the-cli}
 
-Barn `1.0.0` pins **Go 1.27.3** in `go.mod` and `packaging/toolchain.env`, and requires Git, Make, Bash, and standard C/POSIX build tools (compiling the CLI does not require QEMU or host-network setup):
+Barn `1.1.0` pins **Go 1.27.3** in `go.mod` and `packaging/toolchain.env`, and requires Git, Make, Bash, and standard C/POSIX build tools (compiling the CLI does not require QEMU or host-network setup):
 
 ```bash
-BARN_VERSION=1.0.0 make build
+BARN_VERSION=1.1.0 make build
 export PATH="$PWD/bin:$PATH"
 barn version
 ```
 
 `make build` compiles both `barn` and `barn-hosts-helper` into `bin/.barn-releases/`, embeds the helper's SHA-256 digest into the CLI, and creates entry-point symlinks under `bin/`. Always use `make build` rather than a bare `go build ./cmd/barn`, and keep `bin/.barn-releases/` alongside the `bin/` links if you move the build output.
 
-Without `BARN_VERSION`, development builds report `dev` (or use `BARN_VERSION=1.0.0-dev.1` to stamp a local candidate), and the commit field marks modified working trees as `uncommitted`.
+Without `BARN_VERSION`, development builds report `dev` (or use `BARN_VERSION=1.1.0-dev.1` to stamp a local candidate), and the commit field marks modified working trees as `uncommitted`.
 
 To cross-compile the Go CLI and helper for all four supported targets (`darwin_amd64`, `darwin_arm64`, `linux_amd64`, and `linux_arm64`), run `make cross`. Keep build artifacts (`bin/`, `dist/`, `.goreleaser-*/`) and lab inventories out of version control; check ignore rules before generating them in the working tree.
 
@@ -43,7 +43,7 @@ Before rebuilding a local Mac bundle, stop any running Mac VMs that use it.
 On an Apple Silicon Mac running macOS 27+ with **Xcode 27+** selected for `xcrun` (providing the macOS 27 SDK and Swift compiler), run:
 
 ```bash
-BARN_VERSION=1.0.0 make mac-build
+BARN_VERSION=1.1.0 make mac-build
 export PATH="$PWD/bin/mac:$PATH"
 barn mac doctor
 ```

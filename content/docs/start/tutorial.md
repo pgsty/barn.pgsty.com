@@ -56,7 +56,7 @@ mkdir -p ~/barn-lab && cd ~/barn-lab
 barn up
 ```
 
-When neither an inventory file nor an active deployment exists, `barn up` prints a short setup plan before it changes anything. Only the rows that apply appear: `dependencies` (`install` in 1.0.0) lists missing packages (QEMU, UEFI firmware, OpenSSH) and the package manager, `network` names the fixed-IP subnet it prepares, `config` names the one-node `barn.yml` it writes, and `sudo` says which steps need root. On `main` on a host that already has QEMU:
+When neither an inventory file nor an active deployment exists, `barn up` prints a short setup plan before it changes anything. Only the rows that apply appear: `dependencies` lists missing packages (QEMU, UEFI firmware, OpenSSH) and the package manager, `network` names the fixed-IP subnet it prepares, `config` names the one-node `barn.yml` it writes, and `sudo` says which steps need root. On a host that already has QEMU:
 
 ```text
 ITEM     STATE    MESSAGE
@@ -70,12 +70,9 @@ Answer once; `sudo` may then ask for your password. Barn downloads and verifies 
 
 ```text
 NAME  ADDRESS      STATE  MESSAGE
-meta  10.10.10.10  ready  SSH ready
-up 1/1 nodes: 14.2s [DONE]
-connect: barn ssh meta
+meta  10.10.10.10  ready  SSH ready: barn ssh meta
+boot 1/1 nodes: 39s [DONE]
 ```
-
-(In 1.0.0, the final summary prints `✓  1 node ready` and `connect:   barn ssh meta`; redirected output on `main` prints `up: 1 node ready` and `connect: barn ssh meta`.)
 
 If `barn up` stops with an error instead, run `barn doctor` to check the host and `barn logs meta` to read the guest console, fix the reported problem, and run `barn up` again. See [Troubleshooting](../troubleshooting/) for common failures.
 
@@ -110,7 +107,7 @@ NAME  ADDRESS      STATE    IMAGE             CPU  MEMORY
 meta  10.10.10.10  running  u24@20261017.0.1  2    4.0 GiB
 ```
 
-`barn status` reports each node's fixed address, recorded state, image release, and size (in 1.0.0, `STATE` appears before `ADDRESS`). Run guest commands from the host by putting `--` before the remote command:
+`barn status` reports each node's fixed address, recorded state, image release, and size. Run guest commands from the host by putting `--` before the remote command:
 
 ```bash
 barn exec meta -- hostname

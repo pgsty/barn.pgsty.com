@@ -6,10 +6,7 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-This reference follows **Barn `main`** for global presentation options and Linux lab commands. For macOS guests, see [Mac Commands](../mac/). Check your build with `barn version` and each command's `--help`.
-
-> [!NOTE]
-> The expanded `--image/-I`, `--arch/-A`, and `purge --ask` options are unreleased changes after 1.0.0. In 1.0.0, `purge` still asks terminal users to type `purge` and accepts `--yes`/`--force`. This page describes the new `main` behavior; see the [1.0.0 release notes](../../../blog/release/1.0.0/) for that release.
+This reference follows **Barn 1.1.0** for global presentation options and Linux lab commands. For macOS guests, see [Mac Commands](../mac/). Check your build with `barn version` and each command's `--help`.
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -24,10 +21,6 @@ barn image pull --help
 ```
 
 Running `barn` with no arguments prints the same complete help as `barn --help` and exits `0`; with `--json` or `--yaml` it returns an `actions[]` array of suggested next commands instead. Invoking a command group without a subcommand—such as `barn image`—exits `2` (printing help in text mode or a usage error object in JSON/YAML mode). Explicit `--help` always prints human-readable help and exits `0`. Use `barn --version` or `barn version` to inspect the build identity.
-
-## 1.x compatibility {#compatibility}
-
-From 1.0.0, an incompatible change to any of the following requires a new major version: command names, aliases, flags, and argument grammar (including `--` before a remote command); exit codes and the structured `error` and `reason` values; existing `--json` and `--yaml` fields (new fields may be added); the inventory format and the meaning of existing `vm_*` keys; `BARN_*` environment variables; and the deployment and Mac state under `BARN_HOME`, which a 1.x release reads from earlier 1.x releases and from 0.9.3 without recreating VMs. Human-readable text, help wording, progress lines, and log contents can change in any release, so scripts should rely on structured output and exit codes. The [1.0.0 release notes](../../../blog/release/1.0.0/#compatibility) record this scope.
 
 ## Commands {#commands}
 
@@ -134,7 +127,7 @@ Notes on flag behavior:
 - Standalone `image info/pull/import` default to the host architecture without reading inventory `vm_arch`; select another with `-A`. `image import -A` requires `--name`. Since qcow2 metadata cannot identify the guest CPU, the declared architecture must match the actual image.
 - `network` and `hosts` `install`/`uninstall` display a plan and prompt for confirmation on a terminal (`install` defaults to yes; `uninstall` defaults to no). Without `--yes`, they only print the plan and exit `0` when stdin is not a terminal or the output is `--json`/`--yaml`; check `applied` in the structured report, or pass `--yes` to apply the plan. On macOS, first-time network installation is handled by `barn setup`. `network uninstall` refuses to remove the host network while VMs are running, and stopping or destroying a deployment leaves the host network installed. On Linux, `network uninstall` keeps the global networkd unit state when other host links exist or exclusive Barn use cannot be established; the plan reports `preserve_networkd`, and the applied report explains the decision in `checks.networkd`.
 - Safety and repository flags (`--ask`, `--mirror`, `--force`, `--rollback`, `--remove`, `--allow-downgrade`, `--sudo`, `--delete-persistent`, `--purge`) are long-form only. On Linux commands, `-f` selects `--file` (except `barn logs -f`, where `-f` means `--follow`), `-n` means `--no-wait` (whereas `barn mac logs -n` sets the line count), and `-d` means `--dry-run`.
-- `barn purge` deletes immediately by default: all nodes, persistent disks, SSH keys, deployment state, and the default SSH config fragment are removed; cached images and the host network remain. Only `--ask` displays the node list and deletion scope before prompting: `y`/`yes` confirms; `n`/`no`, an empty line, or EOF cancels with exit `130`. It no longer asks for the word `purge` or accepts `--yes`, `-y`, or `--force`. With no deployment, default `barn purge` and whole-deployment `barn destroy` succeed cleanly; purge also removes retained persistent disks with intact Barn ownership metadata. Unverifiable retained directories still prevent deletion. If deployment state is missing, `destroy --force --delete-persistent` and `destroy --force --purge` direct you to `barn purge`.
+- `barn purge` deletes immediately by default: all nodes, persistent disks, SSH keys, deployment state, and the default SSH config fragment are removed; cached images and the host network remain. Only `--ask` displays the node list and deletion scope before prompting: `y`/`yes` confirms; `n`/`no`, an empty line, or EOF cancels with exit `130`. It does not accept `--yes`, `-y`, or `--force`. With no deployment, default `barn purge` and whole-deployment `barn destroy` succeed cleanly; purge also removes retained persistent disks with intact Barn ownership metadata. Unverifiable retained directories still prevent deletion. If deployment state is missing, `destroy --force --delete-persistent` and `destroy --force --purge` direct you to `barn purge`.
 
 ## Structured failures {#structured-failures}
 
