@@ -91,6 +91,8 @@ Without selectors, Barn evaluates the whole inventory: CPU and memory changes us
 
 ## Concurrent commands {#concurrent-commands}
 
+For parallel node work within one command, the unreleased development version adds `--parallel/-p` with a CPU-based default; see [Lifecycle concurrency](../../reference/cli/#lifecycle-concurrency) for the supported commands and the difference from Barn 1.1.0.
+
 Mutating commands (`up`, `start`, `stop`, `restart`, `reload`, `resize`, `recreate`, `destroy`, `purge`, and `provision`) acquire the deployment lock in `BARN_HOME`, waiting up to 10 minutes (`provision --timeout` can impose a shorter deadline) if another operation is in flight. While waiting, Barn prints the lock holder's command, PID, and start time; if the wait times out, it exits with code `4` (`error: conflict`, `reason: deployment_busy`). The lock releases automatically when the holding process exits—never delete lock files manually.
 
 Read-only and access commands (`status`, `ssh`, `exec`, `ssh-config`, and the state read in `hosts`) read the last published state without waiting on the lock. If a mutating command is currently running, `barn status` includes a `note` indicating the active operation. See [Troubleshooting](../troubleshooting/#a-command-was-killed) for interrupted runs.

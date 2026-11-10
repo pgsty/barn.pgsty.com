@@ -129,6 +129,27 @@ Notes on flag behavior:
 - Safety and repository flags (`--ask`, `--mirror`, `--force`, `--rollback`, `--remove`, `--allow-downgrade`, `--sudo`, `--delete-persistent`, `--purge`) are long-form only. On Linux commands, `-f` selects `--file` (except `barn logs -f`, where `-f` means `--follow`), `-n` means `--no-wait` (whereas `barn mac logs -n` sets the line count), and `-d` means `--dry-run`.
 - `barn purge` deletes immediately by default: all nodes, persistent disks, SSH keys, deployment state, and the default SSH config fragment are removed; cached images and the host network remain. Only `--ask` displays the node list and deletion scope before prompting: `y`/`yes` confirms; `n`/`no`, an empty line, or EOF cancels with exit `130`. It does not accept `--yes`, `-y`, or `--force`. With no deployment, default `barn purge` and whole-deployment `barn destroy` succeed cleanly; purge also removes retained persistent disks with intact Barn ownership metadata. Unverifiable retained directories still prevent deletion. If deployment state is missing, `destroy --force --delete-persistent` and `destroy --force --purge` direct you to `barn purge`.
 
+### Lifecycle concurrency in the development version {#lifecycle-concurrency}
+
+As of 2026-11-11, the unreleased development version defaults Linux VM lifecycle concurrency to `max(1, logical CPUs - 2)`, using the logical CPU count available to the Barn process. Each phase uses at most its selected node count. Released Barn 1.1.0 uses at most four workers and has no lifecycle `--parallel` flag.
+
+In the development version, `up`, `start`, `stop`, `restart`, `reload`, `recreate`, `destroy`, and `purge` accept `--parallel/-p` with zero or a positive integer. Omitting the flag uses the CPU-based default; explicitly passing `--parallel 0` runs all selected nodes concurrently. A positive value sets the concurrency limit, and `--parallel 1` runs node work serially. The override applies to disk preparation, startup, and shutdown where those phases occur; state commits and artifact removal retain their existing ordering. Values above 16 are accepted, and values above the node count create no extra workers. The option belongs to the command invocation and is preserved in suggested retry commands, including an explicit zero.
+
+```bash
+barn up -p 0
+barn up --parallel 8
+barn start -p 1
+barn restart meta node-1 -p 2
+```
+
+A startup worker remains occupied while its guest boots and passes SSH/readiness checks. With `--no-wait`, it becomes available after QEMU starts and its process identity is verified. Disk preparation completes before the startup phase begins. `provision --parallel` keeps its separate default of `1`; native macOS guest limits are documented under [Mac commands](../mac/).
+
+Implementation and regression coverage: [concurrency policy](https://github.com/pgsty/barn/blob/main/internal/private/concurrency.go), [startup and preparation tests](https://github.com/pgsty/barn/blob/main/internal/private/concurrency_test.go), and [CLI parameter tests](https://github.com/pgsty/barn/blob/main/cmd/barn/lifecycle_parallel_test.go).
+
+Native acceptance on 2026-11-10 used six Debian 13 guests in a temporary `BARN_HOME` on macOS/arm64 with 18 logical CPUs. The automatic default was 16 and reached six concurrent startups; an explicit value of 1 kept startup and shutdown serial; an explicit value of 32 reached six concurrent restarts. All guests passed readiness checks, and the test deployment was destroyed afterward.
+
+On 2026-11-11, a second isolated run on the same host verified explicit zero with 18 Debian 13 guests: all 18 started concurrently and passed readiness checks in 39.6 seconds. Selecting three nodes for stop/start produced a concurrency peak of three in each phase while preserving the other 15 VM processes. The test deployment was destroyed afterward, and all six pre-existing VM processes remained unchanged. Regression tests also cover positive limits above 16, negative values rejected before state changes, and retries retaining explicit zero.
+
 ## Structured failures {#structured-failures}
 
 Always check the process exit code first, then parse the command's output.

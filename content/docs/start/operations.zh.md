@@ -89,6 +89,8 @@ barn plan node-2 -f barn.yml
 
 ## 并发命令 {#concurrent-commands}
 
+单条命令内部的节点并行操作，在未发布开发版本中可通过 `--parallel/-p` 调整，默认值根据 CPU 数计算；支持的命令与 Barn 1.1.0 的差异见[生命周期并发](../../reference/cli/#lifecycle-concurrency)。
+
 修改部署状态的命令（`up`、`start`、`stop`、`restart`、`reload`、`resize`、`recreate`、`destroy`、`purge` 和 `provision`）会获取 `BARN_HOME` 下的部署锁。若其他操作正在运行，命令最长等待 10 分钟（`provision --timeout` 可指定更短的期限），并打印持锁命令、PID 与启动时间；等待超时将返回退出码 `4`（`error: conflict`、`reason: deployment_busy`）。持锁进程退出后锁会自动释放，切勿手动删除锁文件。
 
 只读与连接类命令（`status`、`ssh`、`exec`、`ssh-config` 以及 `hosts` 的状态读取）无需等待锁，直接读取最新已发布的状态。若后台正有变更命令持锁运行，`barn status` 会附带一条 `note` 说明当前正在执行的操作。异常中断后的恢复步骤见[故障排查](../troubleshooting/#a-command-was-killed)。

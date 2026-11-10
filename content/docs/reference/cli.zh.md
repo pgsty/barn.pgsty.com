@@ -129,6 +129,27 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 - 涉及安全确认与仓库选择的开关（`--ask`、`--mirror`、`--force`、`--rollback`、`--remove`、`--allow-downgrade`、`--sudo`、`--delete-persistent`、`--purge`）只提供长参数。在 Linux 命令中，`-f` 表示 `--file`（`barn logs -f` 例外，表示 `--follow`），`-n` 表示 `--no-wait`（而 `barn mac logs -n` 表示日志行数），`-d` 表示 `--dry-run`。
 - `barn purge` 默认立即执行整套清理，删除所有节点、持久盘、密钥、部署状态与默认 SSH 配置片段，保留镜像缓存与宿主网络。只有传入 `--ask` 时才先展示节点列表与清理范围：输入 `y`/`yes` 确认，`n`/`no`、空行或 EOF 取消并返回 `130`；不接受 `--yes`、`-y` 或 `--force`。当环境中尚无部署时，默认 `barn purge` 与整体 `barn destroy` 均直接返回成功（`purge` 还会清理归属元数据完整的残留持久盘）。无法确认残留目录归属时仍会拒绝删除。若部署状态文件已缺失，执行 `destroy --force --delete-persistent` 或 `destroy --force --purge` 会报错并提示改用 `barn purge`。
 
+### 开发版本的生命周期并发 {#lifecycle-concurrency}
+
+截至 2026-11-11，未发布开发版本将 Linux 虚拟机生命周期默认并发设为 `max(1, 逻辑 CPU 数 - 2)`，CPU 数取 Barn 进程检测到的可用逻辑 CPU 数，各阶段实际并发不超过该阶段所选节点数。已发布的 Barn 1.1.0 最多使用四个工作线程，生命周期命令尚不支持 `--parallel`。
+
+开发版本的 `up`、`start`、`stop`、`restart`、`reload`、`recreate`、`destroy` 与 `purge` 接受零或正整数参数 `--parallel/-p`。省略参数时采用 CPU 默认策略，显式传入 `--parallel 0` 则让所选节点全部并行；正数指定并发上限，`--parallel 1` 可将节点操作设为串行。该参数覆盖命令涉及的磁盘准备、启动与停机阶段并发，状态提交与文件删除沿用原有顺序。超过 16 的值也会生效，超过节点数则不会多建工作线程。该选项仅作用于本次命令，失败后建议的重试命令会保留显式传入的值，包括零。
+
+```bash
+barn up -p 0
+barn up --parallel 8
+barn start -p 1
+barn restart meta node-1 -p 2
+```
+
+启动工作线程在客机启动、等待 SSH 与就绪检查完成期间一直占用并发名额。传入 `--no-wait` 后，QEMU 启动且进程身份核验通过即可释放名额。磁盘准备阶段全部结束后才进入启动阶段。`provision --parallel` 保持独立的默认值 `1`；原生 macOS 客机的运行数量限制见 [Mac 命令](../mac/)。
+
+实现与回归测试依据：[并发策略](https://github.com/pgsty/barn/blob/main/internal/private/concurrency.go)、[启动与准备测试](https://github.com/pgsty/barn/blob/main/internal/private/concurrency_test.go)、[CLI 参数测试](https://github.com/pgsty/barn/blob/main/cmd/barn/lifecycle_parallel_test.go)。
+
+2026-11-10 真机验收在具有 18 个逻辑 CPU 的 macOS/arm64 宿主上，通过临时 `BARN_HOME` 管理六台 Debian 13 客机：自动默认值为 16，实际启动并发峰值为六；显式设为 1 时，启动与停止均为串行；显式设为 32 时，重启并发峰值为六。全部客机通过就绪检查，测试部署已在结束后销毁。
+
+2026-11-11 在同一宿主上另建临时部署，验证显式零值：18 台 Debian 13 客机全部并行启动，并在 39.6 秒内通过就绪检查。选择其中三台执行停止和启动，两阶段并发峰值均为三，其余 15 台虚拟机进程保持不变。测试部署已在结束后销毁，原有六台虚拟机进程保持不变。回归测试另覆盖超过 16 的正数并发上限、修改状态前拒绝负数，以及重试命令保留显式零值。
+
 ## 结构化失败 {#structured-failures}
 
 编写自动化脚本时，请先检查进程退出码，再按所执行的命令解析输出。
