@@ -129,6 +129,35 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 - 涉及安全确认与仓库选择的开关（`--ask`、`--mirror`、`--force`、`--rollback`、`--remove`、`--allow-downgrade`、`--sudo`、`--delete-persistent`、`--purge`）只提供长参数。在 Linux 命令中，`-f` 表示 `--file`（`barn logs -f` 例外，表示 `--follow`），`-n` 表示 `--no-wait`（而 `barn mac logs -n` 表示日志行数），`-d` 表示 `--dry-run`。
 - `barn purge` 默认立即执行整套清理，删除所有节点、持久盘、密钥、部署状态与默认 SSH 配置片段，保留镜像缓存与宿主网络。只有传入 `--ask` 时才先展示节点列表与清理范围：输入 `y`/`yes` 确认，`n`/`no`、空行或 EOF 取消并返回 `130`；不接受 `--yes`、`-y` 或 `--force`。当环境中尚无部署时，默认 `barn purge` 与整体 `barn destroy` 均直接返回成功（`purge` 还会清理归属元数据完整的残留持久盘）。无法确认残留目录归属时仍会拒绝删除。若部署状态文件已缺失，执行 `destroy --force --delete-persistent` 或 `destroy --force --purge` 会报错并提示改用 `barn purge`。
 
+### 开发版规格参数与 SPEC 显示 {#vm-specification-flags}
+
+2026-11-11 工作区开发版新增 `--cpu/-C`、`--mem/-M`、`--scale/-S`、`--disk/-D`，与 `--image/-I`、`--arch/-A` 共用规格输入规则。上述命令表记录已发布 1.1.0；开发版支持范围如下：
+
+| 命令 | 新增支持 |
+|---|---|
+| `init`、生成模板的 `setup` | C/M/S/D，写入新清单 |
+| `validate`、`plan`、`up`、`reload`、`recreate` | C/M/S/D，仅覆盖本次期望规格 |
+| `resize` | C/M/S/D，应用 CPU/内存变化与根盘增长；保留已有 I/A 核对 |
+| 复用已有清单的 `setup` | 不接收规格覆盖，忽略规格环境变量 |
+| `start/stop/restart/status/destroy/purge` | 不接收，沿用已应用状态 |
+
+参数、单位、环境变量及保存规则见 [规格覆盖](../configuration/#specification-overrides)。`up/reload` 不会自动应用已有节点的资源变化，仍需 `resize` 或显式 `recreate`。
+
+节点表用 `SPEC` 列表示有效 CPU 与内存，例如 `1c2g`、`2c4g`、`8c16g`。`c` 表示 vCPU，`g` 表示 GiB；1536 MiB 精确显示为 `1.5g`，512 MiB 为 `0.5g`。不能整除 MiB 的字节容量用 `b` 精确保留，未知规格显示 `-`。
+
+`status` 和完成结果显示已应用规格；`plan/validate/setup` 显示期望规格。计划中的资源变化显示为 `2c4g → 4c8g`，根盘在 `ROOT` 列单独显示。`init` 摘要、生命周期动态进度及普通终端的完成结果也显示 `SPEC`。scale 不为 1 时展示基数、倍数、结果及来源；`--verbose` 也显示倍数为 1 的计算说明。JSON 保留数值 CPU 和字节容量，并在 `resources` 中提供基数、倍数、有效结果与来源，不要求脚本解析缩写。
+
+### 开发版根盘原地扩容 {#root-disk-growth}
+
+```bash
+barn resize -D 128GiB meta
+BARN_DISK=128GiB barn resize meta
+```
+
+`-D` 是绝对目标容量，重复相同目标不再修改磁盘或重启 VM；缩盘直接报错。首次扩容需要停机，原本运行的节点完成后运行，原本停机的节点临时启动完成检查与扩展后恢复停机。支持 512 字节逻辑扇区、GPT 或主 MBR 分区表中位于末端的普通 ext4/XFS 根分区；LVM、加密设备、后置分区和缺少所需工具会在修改磁盘镜像前报错。根盘与原有数据、VM UUID、SSH 密钥均保留，数据盘不参与扩容。
+
+Barn 持久化恢复阶段，核对镜像容量、客机磁盘、分区及文件系统后才完成操作。失败时 `status` 显示 `root-resize` 提示；修复报告的问题后，按提示重复相同 `resize -D` 目标。根盘已扩展但客机未完成时不会自动缩回。若清单仍保留旧容量，继续运行原清单会报告差异；需要长期保留新容量时更新 `vm_disk`。实现与测量见 [根盘扩容验收](/zh/blog/design/root-disk-growth/)。
+
 ### 开发版本的生命周期并发 {#lifecycle-concurrency}
 
 截至 2026-11-11，未发布开发版本将 Linux 虚拟机生命周期默认并发设为 `max(1, 逻辑 CPU 数 - 2)`，CPU 数取 Barn 进程检测到的可用逻辑 CPU 数，各阶段实际并发不超过该阶段所选节点数。已发布的 Barn 1.1.0 最多使用四个工作线程，生命周期命令尚不支持 `--parallel`。
@@ -170,7 +199,7 @@ barn restart meta node-1 -p 2
 
 - **`restart`**：不重新读取清单，直接按已应用状态重启节点。
 - **`reload`**：先校验本次生效的期望规格与启动依赖，通过后再停止所选节点并对这些节点执行 `up`。该命令可以新增节点；需要替换已有虚拟机的变更仍需使用 `recreate`。
-- **`resize`**：只应用 `vm_cpu` 与 `vm_mem` 变更。支持的增加操作可以热插拔；减少资源、旧虚拟机或后端不支持时会自动停机再启动，同时保留虚拟机身份与磁盘。镜像、磁盘、网络、共享目录、创建、删除及部署级变更会被拒绝。
+- **`resize`**：已发布 1.1.0 只应用 CPU 与内存变更；开发版支持 `vm_scale` 的有效规格及[根盘增长](#root-disk-growth)。支持的增加操作可以热插拔；减少资源、旧虚拟机或后端不支持时会自动停机再启动，同时保留虚拟机身份与磁盘。镜像、数据盘、网络、共享目录、创建、删除及部署级变更会被拒绝。
 - **`recreate`**：通过替换根盘和非持久数据盘来应用节点定义变更，同时保留兼容的[持久数据盘](../configuration/#data-disks)。显式选择节点执行 `plan`、`up`、`reload`、`recreate` 或 `resize` 时，其余节点保留已应用定义，即使 YAML 已修改或省略它们；未创建且未选中的节点不要求解析镜像。地址、别名、控制节点角色及部署公共设置的真实冲突仍会在预检时报错；省略选择器时则处理整份清单。
 - 当配置漂移需要执行破坏性变更时，`up` 与 `reload` 会返回 `conflict` 错误，并提示先运行 `barn plan`，再运行 `barn recreate <node>` 或 `barn destroy <node>`。在终端上，`recreate` 与 `destroy` 会列出将被替换或删除的节点，并要求输入命令名确认，传入 `--yes`（或 `--force`）可跳过；没有终端且未传这两个参数时，命令以退出码 `2` 拒绝执行。不带节点参数时，两者都作用于整套部署。
 
@@ -224,6 +253,7 @@ barn restart meta node-1 -p 2
 | 环境变量 | 用途 |
 |---|---|
 | `BARN_HOME` | 私有状态目录（默认 `~/.barn`），接受相对路径、`~/` 与目录符号链接，但不能是 `/` 或用户主目录；跨工作目录使用时建议设置绝对路径 |
+| `BARN_IMAGE/BARN_ARCH/BARN_CPU/BARN_MEM/BARN_SCALE/BARN_DISK` | 开发版 VM 规格覆盖，CLI 优先；仅在接收该字段的命令中读取，详见[规格覆盖](../configuration/#specification-overrides) |
 | `BARN_REPO` | 默认镜像仓库 URL 或路径；可被命令行的 `--mirror` 与 `--repo` 依次覆盖 |
 | `BARN_OUTPUT` | 默认输出格式（`text`、`json` 或 `yaml`）；命令行展示参数优先 |
 | `BARN_VERBOSE` | 诊断输出布尔开关默认值；命令行 `-v`/`--verbose` 优先 |

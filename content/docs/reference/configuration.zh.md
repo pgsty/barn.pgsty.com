@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-本参考对应 Barn 1.1.0，包含命令行镜像与架构覆盖。请通过 `barn version` 和命令的 `--help` 核对已安装版本。
+本文覆盖 Barn 1.1.0，以及明确标注的 2026-11-10/11 开发改动。开发候选版默认使用 1 vCPU、2 GiB，并新增 `vm_scale` 与统一规格覆盖；已发布的 1.1.0 默认仍为 2 vCPU、4 GiB，且不支持这些新增功能。用 `barn version` 和各命令的 `--help` 核对已安装版本。
 
 ## 发现顺序 {#discovery}
 
@@ -69,8 +69,9 @@ Barn 只读取节点 IPv4 键、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq
 | `vm_image` | `u24` | 镜像系列、`:channel` 通道引用或 `image@version` 版本选择器 |
 | `vm_version` | 未设置 | 匹配该数值前缀的最新版本，例如 `9` 或 `9.7` |
 | `vm_arch` | `native` | 部署级客机架构，默认跟随宿主；可显式指定 `amd64` 或 `arm64` |
-| `vm_cpu` | `2` | vCPU 核数（`1`–`256`） |
-| `vm_mem` | `4096` | 内存容量：裸整数按 MiB 计，也支持 `8GiB` 等带单位字符串（最低 `512MiB`） |
+| `vm_cpu` | `1`（开发版） | 基础 vCPU 核数，缩放后的有效核数必须在 `1`–`256` 内 |
+| `vm_mem` | `2048`（开发版） | 基础内存容量：裸整数按 MiB 计，也支持 `8GiB` 等带单位字符串（最低 `512MiB`） |
+| `vm_scale` | `1`（开发版） | 只倍乘 CPU 和内存的正整数 |
 | `vm_disk` | `64` | 根盘容量：裸整数按 GiB 计，也支持 `64GiB` 等带单位字符串 |
 | `vm_disks` | `[{path: /data}]` | 额外数据盘列表（默认挂载一块 128 GiB 非持久盘到 `/data`） |
 | `vm_alias` | `[]` | 写入客机 `/etc/hosts`、SSH 配置及可选宿主 `/etc/hosts` 的附加别名 |
@@ -92,7 +93,58 @@ vm_version: "9.8"
 
 若镜像目录中存在完全一致的版本号，Barn 优先精确匹配；否则按点号分段匹配版本前缀，并按整数大小选择匹配的最高版本（`9.8` 匹配最新的 `9.8.*` 构建，`9` 匹配最新的 `9.x` 版本，且 `9.10` 排在 `9.9` 之后）。`vm_version` 不能与已包含 `:channel` 或 `@version` 的 `vm_image` 同时使用。
 
+## 开发版本的资源缩放 {#resource-scaling}
+
+分别解析 `vm_cpu`、`vm_mem` 和 `vm_scale`：主机变量优先于最深层分组，其次是父组和 `all.vars`。缺省值依次为 1 vCPU、2048 MiB 和倍数 1。继承完成后只乘一次：
+
+```text
+CPU  = 解析后的 vm_cpu（默认 1）× 解析后的 vm_scale（默认 1）
+内存 = 解析后的 vm_mem（默认 2048 MiB）× 解析后的 vm_scale（默认 1）
+```
+
+| 配置 | 有效 CPU | 有效内存 |
+|---|---:|---:|
+| 均未配置 | 1 | 2 GiB |
+| `vm_scale: 3` | 3 | 6 GiB |
+| `vm_cpu: 2`、`vm_scale: 3` | 6 | 6 GiB |
+| `vm_mem: 4GiB`、`vm_scale: 3` | 3 | 12 GiB |
+| `vm_cpu: 2`、`vm_mem: 4GiB`、`vm_scale: 3` | 6 | 12 GiB |
+
+主机的 `vm_scale: 1` 会覆盖分组的 `vm_scale: 3`，多层倍数不累乘；同层分组冲突需要在主机上覆盖。倍数接受 1–256 的整数，同时受最终 256 vCPU 上限和内存溢出检查约束。带引号的数字、小数、布尔值、null、零和负数均无效。基础内存仍需至少 512 MiB。根盘、数据盘和共享目录不受缩放影响。参数名为 `vm_cpu` 和 `vm_mem`，不提供 `vm_memory` 别名。
+
+先执行 `barn plan -f pigsty.yml`，再用 `barn resize -f pigsty.yml` 应用 CPU/内存变更。旧部署若省略了这些字段，新版读取清单后会显示资源减少；升级前显式补上 `vm_cpu: 2`、`vm_mem: 4096` 即可保持旧默认规格。没有清单、直接使用已应用状态的命令会保留记录中的资源。
+
+## 开发版规格覆盖 {#specification-overrides}
+
+截至 2026-11-11，工作区开发版支持六项规格的统一 CLI 与环境变量输入；已发布 1.1.0 尚不支持新增的四项资源参数和这些环境变量。
+
+| 清单字段 | 命令行 | 环境变量 | 默认值 |
+|---|---|---|---|
+| `vm_image` | `--image/-I` | `BARN_IMAGE` | `u24` |
+| `vm_arch` | `--arch/-A` | `BARN_ARCH` | `native` |
+| `vm_cpu` | `--cpu/-C` | `BARN_CPU` | 1 |
+| `vm_mem` | `--mem/-M` | `BARN_MEM` | 2048 MiB |
+| `vm_scale` | `--scale/-S` | `BARN_SCALE` | 1 |
+| `vm_disk` | `--disk/-D` | `BARN_DISK` | 64 GiB |
+{.wide .expand}
+
+每个字段分别采用 `CLI > 非空环境变量 > 主机 > 最深子组 > 父组 > all.vars > 默认值`。CPU 和内存始终表示基础值，覆盖完成后各乘一次最终 scale；磁盘容量不参与倍乘。`-S 3` 替换原来的倍数，指定精确最终 CPU/内存时加 `-S 1`。CLI 与环境变量覆盖选中节点的主机值；需要保留节点特例的公共默认值写在 `all.vars`。清单语法、字段类型和继承冲突仍必须有效。
+
+```bash
+barn init full -C 2 -M 4GiB -S 2 -D 128GiB
+barn plan -f barn.yml -S 3
+BARN_SCALE=2 barn validate -f barn.yml -S 1
+```
+
+`init` 和生成模板的 `setup` 写入全部六项选择，包括默认值；保存 CPU/内存基数和倍数。首次交互式 `up` 需要生成清单时也保存本次选择。已有文件上的生命周期覆盖仅改变本次期望规格，不回写 YAML；后续读取原文件会报告差异。没有清单、只剩应用状态时，`--scale` 或 `BARN_SCALE` 要求提供 `-f`；CPU/内存可以按隐式倍数 1 设置绝对值。
+
+环境变量只影响接收相应规格的命令。`status/start/stop/restart/destroy/purge`、独立镜像管理和 `barn mac` 不读取这六项变量；`setup` 复用已有清单时也忽略它们。`resize` 接受 CPU/内存/scale、根盘容量及已有的 I/A 核对接口；`BARN_DISK` 仅用于根盘增长。空白环境值视为未设置，CLI 已遮蔽的无效环境值不报错，例如 `BARN_CPU=bad barn plan -C 2`。有效的环境覆盖会保留在后续命令的显式参数中。
+
+`--disk` 设置系统根盘的绝对容量，必须不小于基础镜像的虚拟大小，计划使用目录元数据检查，创建时再次检查实际镜像。它适用于创建、显式重建，以及 `resize -D` 的根盘原地增长。扩容只支持末端普通 ext4/XFS 根分区，不支持缩盘；流程与恢复见 [根盘扩容](../cli/#root-disk-growth)。重建会替换根盘和非持久数据盘。当前默认的 128 GiB `/data` 盘保持独立。
+
 ## 镜像与架构覆盖 {#image-and-architecture}
+
+以下 I/A 基础行为适用于 1.1.0；开发版还在 CLI 与清单之间读取上节的 `BARN_IMAGE/BARN_ARCH`。
 
 默认客机架构与宿主一致：Apple Silicon 使用 `arm64`，Intel/AMD 宿主使用 `amd64`。只有清单或命令行显式指定其他架构时才切换。优先级为 **`--arch/-A` → 清单 `vm_arch` → `native`（宿主架构）**；`-A native` 可以覆盖清单中的固定架构，恢复跟随宿主。
 
@@ -116,7 +168,7 @@ barn init full -I u24 -A arm64   # 将镜像与架构写入新清单
 
 `up`、`plan`、`reload`、`recreate`、`resize` 和 `validate` 的覆盖只对本次期望配置生效，不改写清单。要长期保留选择，请设置 `all.vars.vm_arch`、相应节点或组的 `vm_image`，并移除被替代的 `vm_version`；`init` 与生成模板的 `setup` 会直接写入这些选择。`setup` 的 `-I/-A` 不能用于已有清单。
 
-没有清单文件时，生命周期命令沿用已保存的部署规格，再应用显式覆盖。`start` 和 `restart` 始终使用已应用状态。已有 VM 的架构不会因省略 `-A` 或修改清单而自动改变：`up` 会报告漂移，实际切换架构需要选择全部已有节点执行 `recreate`。`resize` 虽接受覆盖用于核对期望配置，仍只允许修改 CPU 与内存。
+没有清单文件时，生命周期命令沿用已保存的部署规格，再应用显式覆盖。`start` 和 `restart` 始终使用已应用状态。已有 VM 的架构不会因省略 `-A` 或修改清单而自动改变：`up` 会报告漂移，实际切换架构需要选择全部已有节点执行 `recreate`。已发布 1.1.0 的 `resize` 仅修改 CPU/内存；开发版另支持根盘原地增长。
 
 客机与宿主架构不同时使用 QEMU TCG。Linux 宿主的 `barn setup` 默认只安装本机架构的 QEMU；运行跨架构客机前，需安装对应的 `qemu-system-*` 与 UEFI 固件。加速方式与镜像例外见[运行时策略](../images/#runtime-policy)。
 
@@ -173,6 +225,6 @@ Barn 依次按显式 `nodename`、`<pg_cluster>-<pg_seq>`、`node-<IP末段>` �
 Barn 为每个解析后的节点计算规格哈希：
 
 - `barn up` 会创建新增节点、启动已停止节点，并在不重启 QEMU 进程的前提下重试运行中节点尚未完成的客机初始化步骤。
-- 修改节点的 CPU 或内存后使用 `barn resize <node>`，该操作保留虚拟机身份与磁盘。修改镜像、磁盘、共享目录或其他虚拟机定义后，需要执行 `barn recreate <node>` 才能生效。从清单中删去节点（或设为 `vm_skip: true`）只会在 `plan` 中将其标记为 `missing`，Barn 绝不会自动销毁已有节点。
+- 修改节点的 CPU 或内存后使用 `barn resize <node>`，该操作保留虚拟机身份与磁盘。开发版还通过 `resize -D` 支持根盘增长。修改镜像、数据盘、共享目录或其他虚拟机定义后，需要执行 `barn recreate <node>` 才能生效。从清单中删去节点（或设为 `vm_skip: true`）只会在 `plan` 中将其标记为 `missing`，Barn 绝不会自动销毁已有节点。
 - 修改部署级属性（`vm_arch`、登录用户名或 `/24` 子网）需要重建整套部署。
 - 由于 `plan` 与 `up` 会将镜像通道和版本前缀解析为具体的镜像摘要，执行 `barn update` 更新镜像目录后，即便 `barn.yml` 原文未改，也可能产生镜像版本漂移。建议为每个节点显式固定 `nodename`，避免修改 `pg_cluster` 时导致旧节点变成 `missing` 并额外派生出新节点。

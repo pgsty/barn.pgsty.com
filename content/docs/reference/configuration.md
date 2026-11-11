@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-This reference covers Barn 1.1.0, including image and architecture overrides. Check your installed build with `barn version` and each command's `--help`.
+This reference covers Barn 1.1.0 and the explicitly marked development changes prepared on 2026-11-10/11. The development candidate defaults to 1 vCPU and 2 GiB and adds `vm_scale` and unified specification overrides; released 1.1.0 defaults to 2 vCPU and 4 GiB and has none of those additions. Check your installed build with `barn version` and each command's `--help`.
 
 ## Discovery {#discovery}
 
@@ -69,8 +69,9 @@ Barn reads node IPv4 keys, `nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node
 | `vm_image` | `u24` | Image family, `:channel` reference, or `image@version` selector |
 | `vm_version` | unset | Newest numeric version matching this prefix, such as `9` or `9.7` |
 | `vm_arch` | `native` | Deployment-wide guest architecture; follows the host unless explicitly set to `amd64` or `arm64` |
-| `vm_cpu` | `2` | vCPU count (`1`–`256`) |
-| `vm_mem` | `4096` | Memory size: bare integer in MiB, or an explicit unit string such as `8GiB` (minimum `512MiB`) |
+| `vm_cpu` | `1` (development) | Base vCPU count; the effective count after scaling must be `1`–`256` |
+| `vm_mem` | `2048` (development) | Base memory size: bare integer in MiB, or an explicit unit string such as `8GiB` (minimum `512MiB`) |
+| `vm_scale` | `1` (development) | Positive integer multiplying CPU and memory only |
 | `vm_disk` | `64` | Root disk capacity: bare integer in GiB, or an explicit unit string such as `64GiB` |
 | `vm_disks` | `[{path: /data}]` | Extra data disks (defaults to one 128 GiB non-persistent disk mounted at `/data`) |
 | `vm_alias` | `[]` | Additional guest `/etc/hosts`, SSH config, and optional host `/etc/hosts` aliases |
@@ -92,7 +93,58 @@ vm_version: "9.8"
 
 If an exact version match exists in the catalog, Barn selects it; otherwise it matches dot-separated numeric prefixes and picks the highest version (`9.8` selects the latest `9.8.*` build, `9` selects the latest `9.x` release, and `9.10` sorts after `9.9`). Use `vm_version` only with a bare family name in `vm_image` (without `:channel` or `@version`).
 
+## Resource scaling in the development version {#resource-scaling}
+
+Resolve `vm_cpu`, `vm_mem`, and `vm_scale` independently: host variables override the deepest group, which overrides parent groups and `all.vars`. Missing values default to 1 vCPU, 2048 MiB, and a scale of 1. Multiply once after inheritance:
+
+```text
+CPU    = resolved(vm_cpu, default=1) × resolved(vm_scale, default=1)
+Memory = resolved(vm_mem, default=2048 MiB) × resolved(vm_scale, default=1)
+```
+
+| Settings | Effective CPU | Effective memory |
+|---|---:|---:|
+| None | 1 | 2 GiB |
+| `vm_scale: 3` | 3 | 6 GiB |
+| `vm_cpu: 2`, `vm_scale: 3` | 6 | 6 GiB |
+| `vm_mem: 4GiB`, `vm_scale: 3` | 3 | 12 GiB |
+| `vm_cpu: 2`, `vm_mem: 4GiB`, `vm_scale: 3` | 6 | 12 GiB |
+
+A host's `vm_scale: 1` replaces a group's `vm_scale: 3`; group and host scales do not compound. Equal-depth conflicts require a host override. Scale accepts integers from 1 to 256, subject to the effective 256-vCPU limit and memory overflow checks. Quoted numbers, fractions, booleans, null, zero, and negative values fail validation. Base memory still requires at least 512 MiB. Root disks, data disks, and shares are unaffected. Use the exact keys `vm_cpu` and `vm_mem`; `vm_memory` is not an alias.
+
+Inspect `barn plan -f pigsty.yml`, then apply CPU/memory changes with `barn resize -f pigsty.yml`. Existing deployments that omit these fields will show a resource decrease when their inventory is read by the new build. Add `vm_cpu: 2` and `vm_mem: 4096` before upgrading to preserve the previous defaults. Commands using applied state without an inventory keep the recorded resources.
+
+## Development specification overrides {#specification-overrides}
+
+As of 2026-11-11, the working-tree development build accepts unified CLI and environment inputs for six specification fields. Released 1.1.0 does not support the four new resource flags or these environment variables.
+
+| Inventory field | CLI | Environment variable | Default |
+|---|---|---|---|
+| `vm_image` | `--image/-I` | `BARN_IMAGE` | `u24` |
+| `vm_arch` | `--arch/-A` | `BARN_ARCH` | `native` |
+| `vm_cpu` | `--cpu/-C` | `BARN_CPU` | 1 |
+| `vm_mem` | `--mem/-M` | `BARN_MEM` | 2048 MiB |
+| `vm_scale` | `--scale/-S` | `BARN_SCALE` | 1 |
+| `vm_disk` | `--disk/-D` | `BARN_DISK` | 64 GiB |
+{.wide .expand}
+
+Each field follows `CLI > nonempty environment > host > deepest child group > parent group > all.vars > default`. CPU and memory always specify bases; multiply each once by the final scale after applying overrides. Disk capacity does not scale. `-S 3` replaces the previous multiplier; add `-S 1` for exact final CPU/memory. CLI and environment override host values on selected nodes. Put common defaults in `all.vars` when host exceptions should remain effective. Inventory syntax, field types, and inheritance conflicts must remain valid.
+
+```bash
+barn init full -C 2 -M 4GiB -S 2 -D 128GiB
+barn plan -f barn.yml -S 3
+BARN_SCALE=2 barn validate -f barn.yml -S 1
+```
+
+`init` and template-generating `setup` write all six choices, including defaults, and save CPU/memory bases and scale. The first interactive `up` also saves its choices if it needs to generate an inventory. Lifecycle overrides on an existing file change only the current desired specification without rewriting YAML; reading the original file later reports drift. When only applied state remains, `--scale` or `BARN_SCALE` requires `-f`; CPU/memory can set absolute values with an implicit scale of 1.
+
+Environment variables affect only commands accepting the corresponding specifications. `status/start/stop/restart/destroy/purge`, independent image management, and `barn mac` ignore these six variables. So does `setup` when reusing an inventory. `resize` accepts CPU/memory/scale, root capacity, and its existing I/A consistency checks; `BARN_DISK` only grows the root disk. Whitespace-only environment values mean unset, and invalid values shadowed by CLI do not fail: `BARN_CPU=bad barn plan -C 2` uses 2. Effective environment overrides are preserved as explicit flags in follow-up commands.
+
+`--disk` sets the absolute system root capacity, which must be at least the base image's virtual size. Planning checks catalog metadata; creation checks the actual image again. It applies to creation, explicit recreation, and in-place root growth through `resize -D`. Growth supports last plain ext4/XFS root partitions and never shrinks them; see [root disk growth](../cli/#root-disk-growth) for the workflow and recovery. Recreation replaces root and nonpersistent data disks. The default 128 GiB `/data` disk remains separate.
+
 ## Image and architecture overrides {#image-and-architecture}
+
+The following I/A behavior applies to 1.1.0. The development build additionally reads `BARN_IMAGE/BARN_ARCH` between CLI and inventory precedence, as described above.
 
 Guests default to the host architecture: `arm64` on Apple Silicon and `amd64` on Intel/AMD hosts. Another architecture is selected only when explicitly requested in the inventory or command line. Precedence is **`--arch/-A` → inventory `vm_arch` → `native` (host architecture)**. Use `-A native` to override a fixed inventory architecture and follow the host again.
 
@@ -173,6 +225,6 @@ Explicit node selectors apply only selected changes: `plan node-1`, `up node-1`,
 Barn computes a specification hash for every resolved node:
 
 - `barn up` creates newly added nodes, starts stopped nodes, and retries unfinished guest provisioning on running nodes without restarting their QEMU processes.
-- Modifying a node's CPU or memory uses `barn resize <node>` and preserves its identity and disks. Image, disk, share, or other VM definition changes require `barn recreate <node>`. Removing a node from the inventory (or setting `vm_skip: true`) reports the node as `missing` in `plan` without automatically destroying it.
+- Modifying a node's CPU or memory uses `barn resize <node>` and preserves its identity and disks. The development build also supports grow-only root capacity through `resize -D`. Image, data-disk, share, or other VM definition changes require `barn recreate <node>`. Removing a node from the inventory (or setting `vm_skip: true`) reports the node as `missing` in `plan` without automatically destroying it.
 - Changing deployment-wide settings (`vm_arch`, login username, or the `/24` subnet) requires recreating the entire deployment.
 - Because `plan` and `up` resolve image channels and version prefixes against the active catalog, running `barn update` can introduce image drift even when `barn.yml` has not changed. Always keep an explicit `nodename` on each host so renaming `pg_cluster` does not turn an existing node into a `missing` old node plus a new node.
