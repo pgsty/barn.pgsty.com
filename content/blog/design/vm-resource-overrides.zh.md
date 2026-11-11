@@ -164,7 +164,7 @@ DNS 已拆成独立设计，不将 hosts 发布或服务域名混入这六个规
 
 统一流程为：选择命令模式与输入来源 → 收集允许的 CLI/环境覆盖 → 解析清单继承 → 按节点叠加对应字段 → 一次性计算有效规格 → 校验 → 计划/执行。保留严格 `vm_*` 命名空间；清单自身的语法、字段类型和继承冲突仍须有效，CLI 覆盖不能绕过未知字段、损坏 YAML 和选择器错误。倍乘后的 CPU 上限与内存溢出在覆盖完成后检查。
 
-工作区使用 [resources.go](https://github.com/pgsty/barn/blob/main/internal/config/resources.go) 保存基础值、倍率与来源，[vm_inputs.go](https://github.com/pgsty/barn/blob/main/cmd/barn/vm_inputs.go) 统一注册六项输入并解析允许的环境变量。[inventory.go](https://github.com/pgsty/barn/blob/main/internal/config/inventory.go) 在倍乘前应用选中节点的资源覆盖；镜像和架构保留现有覆盖语义。`init/setup` 共用模板生成器，`up` 内部准备宿主时保留已求出的规格。[root_resize.go](https://github.com/pgsty/barn/blob/main/internal/private/root_resize.go) 复用 `disk.Manager.Grow`，在部署锁内编排停机扩盘、客机验证和失败恢复。
+工作区使用 `internal/config/resources.go` 保存基础值、倍率与来源，`cmd/barn/vm_inputs.go` 统一注册六项输入并解析允许的环境变量。[inventory.go](https://github.com/pgsty/barn/blob/main/internal/config/inventory.go) 在倍乘前应用选中节点的资源覆盖；镜像和架构保留现有覆盖语义。`init/setup` 共用模板生成器，`up` 内部准备宿主时保留已求出的规格。`internal/private/root_resize.go` 复用 `disk.Manager.Grow`，在部署锁内编排停机扩盘、客机验证和失败恢复。
 
 | 阶段 | 交付内容 | 验收重点 |
 |---|---|---|
@@ -175,4 +175,6 @@ DNS 已拆成独立设计，不将 hosts 发布或服务域名混入这六个规
 
 A、B、C 与 SPEC 显示均已实现；根盘扩容经过独立的 ext4/XFS 真机验收。源码还应覆盖 [模板生成](https://github.com/pgsty/barn/blob/main/internal/config/template.go)、[setup](https://github.com/pgsty/barn/blob/main/cmd/barn/setup.go)、[resize 边界](https://github.com/pgsty/barn/blob/main/internal/private/resize.go) 与 [根盘创建](https://github.com/pgsty/barn/blob/main/internal/disk/disk.go) 的回归。
 
-本轮验收覆盖 [资源解析与边界](https://github.com/pgsty/barn/blob/main/internal/config/resources_test.go)、[CLI/环境优先级、模板复用、重试及 SPEC](https://github.com/pgsty/barn/blob/main/cmd/barn/vm_inputs_test.go)，并运行 `make build`、源码 `make check` 和站点 `make check`。构建与只读 CLI 验收使用临时 `BARN_HOME`；没有对现有 VM 或宿主网络执行变更。根盘扩容还覆盖 [故障边界测试](https://github.com/pgsty/barn/blob/main/internal/private/root_resize_test.go) 与独立临时部署的 [真机验收](/zh/blog/design/root-disk-growth/)。当前契约见 [规格覆盖](/zh/docs/reference/configuration/#specification-overrides) 与 [SPEC 显示](/zh/docs/reference/cli/#vm-specification-flags)。
+本轮验收覆盖 `internal/config/resources_test.go`、`cmd/barn/vm_inputs_test.go`，并运行 `make build`、源码 `make check` 和站点 `make check`。构建与只读 CLI 验收使用临时 `BARN_HOME`；没有对现有 VM 或宿主网络执行变更。根盘扩容还覆盖 `internal/private/root_resize_test.go` 与独立临时部署的 [真机验收](/zh/blog/design/root-disk-growth/)。当前契约见 [规格覆盖](/zh/docs/reference/configuration/#specification-overrides) 与 [SPEC 显示](/zh/docs/reference/cli/#vm-specification-flags)。
+
+实现依据为本地提交 `1e24768`，尚未进入本次核对的远端 main；以下新增源码以仓库相对路径标示，版本范围见[命令参考](/zh/docs/reference/commands/#versions)。

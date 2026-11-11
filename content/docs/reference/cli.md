@@ -1,12 +1,12 @@
 ---
-title: CLI
+title: CLI Contracts
 description: Barn commands, important flags, structured output, and exit codes.
 weight: 20
 icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-This reference follows **Barn 1.1.0** for global presentation options and Linux lab commands. For macOS guests, see [Mac Commands](../mac/). Check your build with `barn version` and each command's `--help`.
+This page describes global presentation, Linux lifecycle semantics, structured output, and exit codes. For syntax, all options, defaults, and examples for each command, use the [Command Reference](../commands/). **Barn 1.1.0** is the baseline; explicitly marked development sections follow the [local main and working-tree versions](../commands/#versions). Native Mac runtime contracts are in [Mac Reference](../mac/).
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -118,6 +118,7 @@ Each command exposes only the flags that apply to its operation:
 | `network install` | `--cidr/-c` (default `10.10.10.0/24`), `--mode/-m` (default `host`), `--yes/-y`; macOS-only `--archive/-a`, `--interface-id/-i` |
 | `network status` | Optional `--cidr/-c` |
 | `network uninstall`, `hosts install/uninstall` | `--yes/-y` |
+| `hosts install` (development) | `--file/-f`: publish inventory nodes and `vm_hosts`, including before VM creation |
 {.wide .expand}
 
 Notes on flag behavior:
@@ -173,7 +174,7 @@ barn restart meta node-1 -p 2
 
 A startup worker remains occupied while its guest boots and passes SSH/readiness checks. With `--no-wait`, it becomes available after QEMU starts and its process identity is verified. Disk preparation completes before the startup phase begins. `provision --parallel` keeps its separate default of `1`; native macOS guest limits are documented under [Mac commands](../mac/).
 
-Implementation and regression coverage: [concurrency policy](https://github.com/pgsty/barn/blob/main/internal/private/concurrency.go), [startup and preparation tests](https://github.com/pgsty/barn/blob/main/internal/private/concurrency_test.go), and [CLI parameter tests](https://github.com/pgsty/barn/blob/main/cmd/barn/lifecycle_parallel_test.go).
+Implementation and regression coverage in local commit `158786a`: `internal/private/concurrency.go`, `internal/private/concurrency_test.go`, and `cmd/barn/lifecycle_parallel_test.go`. As of this review these files have not reached remote main; see the [version baseline](../commands/#versions).
 
 Native acceptance on 2026-11-10 used six Debian 13 guests in a temporary `BARN_HOME` on macOS/arm64 with 18 logical CPUs. The automatic default was 16 and reached six concurrent startups; an explicit value of 1 kept startup and shutdown serial; an explicit value of 32 reached six concurrent restarts. All guests passed readiness checks, and the test deployment was destroyed afterward.
 

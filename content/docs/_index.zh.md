@@ -15,6 +15,8 @@ Barn 为开发和测试提供本地虚拟机。本文档对应 **Barn 1.1.0**，
 - [原生 macOS 虚拟机](start/macos/) — 在 Apple Silicon 上运行相互隔离的 macOS 27+ 虚拟机，提供原生桌面窗口、SSH、VirtioFS 共享目录与剪贴板同步。
 {.cards}
 
+逐命令用法、全部选项与示例见[命令参考](reference/commands/)；开发功能与已发布接口的区别见[版本基线](reference/commands/#versions)。
+
 ## 常见任务 {#common-tasks}
 
 - [日常操作](start/operations/) — 查看状态、启停节点、通过 `plan` 预览配置变更，以及重建或销毁虚拟机。

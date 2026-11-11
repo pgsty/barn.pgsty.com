@@ -30,11 +30,13 @@ barn version
 
 `make build` 会在 `bin/.barn-releases/` 下编译配套的 `barn` 与 `barn-hosts-helper`，将 helper 的 SHA-256 摘要嵌入 CLI，并在 `bin/` 下创建入口符号链接。请始终使用 `make build` 而非裸跑 `go build ./cmd/barn`；移动构建产物时请一并保留 `bin/.barn-releases/` 目录与 `bin/` 下的两个链接。
 
-未指定 `BARN_VERSION` 时，开发构建默认将版本号标记为 `dev`（本地候选构建可传入 `BARN_VERSION=1.1.0-dev.1`），工作区存在未提交改动时 commit 字段会显示为 `uncommitted`。
+未指定 `BARN_VERSION` 时，开发构建默认将版本号标记为 `dev`（本地候选构建可传入 `BARN_VERSION=1.2.0-dev.1`），工作区存在未提交改动时 commit 字段会显示为 `uncommitted`。
 
 执行 `make cross` 可在 `bin/darwin_amd64`、`bin/darwin_arm64`、`bin/linux_amd64` 与 `bin/linux_arm64` 下交叉编译四个目标平台的 Go CLI 与 helper。构建产物（`bin/`、`dist/`、`.goreleaser-*/`）及实验环境清单不应纳入版本控制；在工作树内生成前，请确认对应路径已被忽略。
 
 请针对准备使用的源码运行下方贡献者检查；历次带日期的验收记录见[验证历史](../../about/history/)。
+
+本次核对的本地开发提交 `6ab0cd5` 使用 **Go 1.27.4**，候选版本可设为 `BARN_VERSION=1.2.0-dev.1`；GoReleaser 与 Syft 的版本也已调整。开发源码以其自身 `packaging/toolchain.env` 为准，具体版本边界见[命令参考](../../reference/commands/#versions)。
 
 ## 构建 Mac 原生组件 {#mac-component}
 

@@ -8,6 +8,10 @@ icon: fa-solid fa-clock-rotate-left
 > [!NOTE]
 > This page collects dated source, packaging, VM, and public-installation evidence through `1.1.0`. Each entry retains its tested revision and scope. For current host support and release behavior, see [Platforms and Limits](../status/) and the [release notes](/blog/release/).
 
+## Barn 1.2.0 preparation — 2026-11-12 {#release-1-2-0-preparation}
+
+The [1.2.0 readiness review](/blog/design/release-1-2-0-readiness/) records the uncommitted candidate's source, catalog, full snapshot, Linux/KVM and native Mac checks, along with the remaining commit, CI, signing, and publication gates.
+
 ## Barn 1.1.0 final acceptance — 2026-11-09 {#release-1-1-0}
 
 | Item | Recorded identity |

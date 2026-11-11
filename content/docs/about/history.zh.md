@@ -8,6 +8,10 @@ icon: fa-solid fa-clock-rotate-left
 > [!NOTE]
 > 本页汇集截至 `1.1.0` 的源码、打包、VM 与公开安装验证记录，每条保留原有日期、测试版本和范围。当前宿主支持与版本行为请查阅[平台与限制](../status/)及[发布说明](/zh/blog/release/)。
 
+## Barn 1.2.0 发布准备 — 2026-11-12 {#release-1-2-0-preparation}
+
+[1.2.0 发布准备核对](/zh/blog/design/release-1-2-0-readiness/)记录了未提交候选版本的源码、镜像目录、完整 snapshot、Linux/KVM 与原生 Mac 检查，以及尚待完成的提交、CI、签名和公开发布门禁。
+
 ## Barn 1.1.0 最终验收 — 2026-11-09 {#release-1-1-0}
 
 | 项目 | 记录的身份 |

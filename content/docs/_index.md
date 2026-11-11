@@ -15,6 +15,8 @@ Barn provisions local virtual machines for development and testing. This documen
 - [Native macOS VMs](start/macos/) — Run isolated macOS 27+ machines on Apple Silicon with a native desktop window, SSH, VirtioFS shared folders, and clipboard sync.
 {.cards}
 
+Find every command, option, and example in the [Command Reference](reference/commands/). Its [version baseline](reference/commands/#versions) distinguishes development features from the published interface.
+
 ## Common tasks {#common-tasks}
 
 - [Daily operations](start/operations/) — Start, stop, inspect, plan changes, and recreate Linux lab nodes.

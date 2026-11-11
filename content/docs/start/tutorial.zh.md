@@ -9,6 +9,8 @@ aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 
 在 Mac 或 Linux 宿主上创建一台 Ubuntu 24.04 虚拟机，通过 SSH 登录，再用同一份 YAML 清单扩展为多节点固定 IP 实验环境。如需在 Apple Silicon 上运行 macOS 客机，请阅读 [macOS 虚拟机教程](../macos/)。
 
+本教程按稳定版 **1.1.0** 演示，默认每节点 2 vCPU、4 GiB。使用开发构建时先核对[版本差异](../../reference/commands/#versions)，或在清单中显式设置所需资源。
+
 ## 开始之前 {#install}
 
 [安装 Barn](../installation/)，并确保宿主至少预留 4 GiB 可用内存供客机使用。请在交互式终端中以普通用户执行下面的命令：Barn 改动宿主前会询问一次，只有需要管理员权限的步骤才会提示输入 `sudo` 密码。CI 等无人值守场景请参阅[自动化指南](../automation/)。在中国大陆，可以在首次 `barn up` 时加上 `--mirror`，从中国官方仓库 `repo.pigsty.cc` 下载镜像。

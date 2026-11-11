@@ -13,8 +13,8 @@ columns:
   - title: 参考手册
     links:
       - { label: Linux 配置, url: "docs/reference/configuration/" }
-      - { label: CLI 命令参考, url: "docs/reference/cli/" }
-      - { label: Mac 命令参考, url: "docs/reference/mac/" }
+      - { label: CLI 命令参考, url: "docs/reference/commands/" }
+      - { label: Mac 命令参考, url: "docs/reference/commands/mac/" }
       - { label: Linux 镜像, url: "docs/reference/images/" }
       - { label: 平台与限制, url: "docs/about/status/" }
   - title: 项目

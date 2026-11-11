@@ -60,8 +60,10 @@ Debian 13 also uses systemd-growfs at boot. The failure test disabled automatic 
 
 ## Code and checks {#implementation}
 
-[Recovery orchestration](https://github.com/pgsty/barn/blob/main/internal/private/root_resize.go) holds the deployment lock and reuses existing start, stop, and process identity checks. The [guest script](https://github.com/pgsty/barn/blob/main/internal/private/root_resize_guest.py) validates layout, identity, and capacity. The [recovery record](https://github.com/pgsty/barn/blob/main/internal/state/root_resize.go) is written atomically with node state. The [disk layer](https://github.com/pgsty/barn/blob/main/internal/disk/disk.go) grows qcow2 only while offline.
+`internal/private/root_resize.go` holds the deployment lock and reuses existing start, stop, and process identity checks. The `internal/private/root_resize_guest.py` validates layout, identity, and capacity. The `internal/state/root_resize.go` is written atomically with node state. The [disk layer](https://github.com/pgsty/barn/blob/main/internal/disk/disk.go) grows qcow2 only while offline.
 
-[Failure-boundary tests](https://github.com/pgsty/barn/blob/main/internal/private/root_resize_test.go) cover lost responses before and after side effects, retries, shrink rejection, node selection, capacity committed before completion, and identity/capacity failures. CLI regressions cover `-D/BARN_DISK`, retry inputs, recovery hints for stopped nodes, and SPEC/ROOT output. Delivery checks use source `make check` and site `make check`.
+`internal/private/root_resize_test.go` cover lost responses before and after side effects, retries, shrink rejection, node selection, capacity committed before completion, and identity/capacity failures. CLI regressions cover `-D/BARN_DISK`, retry inputs, recovery hints for stopped nodes, and SPEC/ROOT output. Delivery checks use source `make check` and site `make check`.
 
 Offline image mutation and subsequent guest partition/filesystem expansion follow [QEMU's disk tool documentation](https://www.qemu.org/docs/master/tools/qemu-img.html). The growpart no-change exit code follows the [cloud-utils manual](https://github.com/canonical/cloud-utils/blob/main/man/growpart.1). Online QMP growth and additional root layouts require separate design and acceptance.
+
+Implementation evidence is local commit `1e24768`, not yet present on the reviewed remote main. New source files below are identified by repository-relative paths; see the [command reference version baseline](/docs/reference/commands/#versions).

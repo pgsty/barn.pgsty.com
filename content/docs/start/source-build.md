@@ -30,11 +30,13 @@ barn version
 
 `make build` compiles both `barn` and `barn-hosts-helper` into `bin/.barn-releases/`, embeds the helper's SHA-256 digest into the CLI, and creates entry-point symlinks under `bin/`. Always use `make build` rather than a bare `go build ./cmd/barn`, and keep `bin/.barn-releases/` alongside the `bin/` links if you move the build output.
 
-Without `BARN_VERSION`, development builds report `dev` (or use `BARN_VERSION=1.1.0-dev.1` to stamp a local candidate), and the commit field marks modified working trees as `uncommitted`.
+Without `BARN_VERSION`, development builds report `dev` (or use `BARN_VERSION=1.2.0-dev.1` to stamp a local candidate), and the commit field marks modified working trees as `uncommitted`.
 
 To cross-compile the Go CLI and helper for all four supported targets (`darwin_amd64`, `darwin_arm64`, `linux_amd64`, and `linux_arm64`), run `make cross`. Keep build artifacts (`bin/`, `dist/`, `.goreleaser-*/`) and lab inventories out of version control; check ignore rules before generating them in the working tree.
 
 Run the contributor checks below against the exact checkout you intend to use. Earlier dated acceptance records are kept in [Validation History](../../about/history/).
+
+The reviewed local development commit `6ab0cd5` uses **Go 1.27.4** and can be stamped with `BARN_VERSION=1.2.0-dev.1`; its GoReleaser and Syft pins also differ. Follow `packaging/toolchain.env` in the checkout being built. See the [command reference version baseline](../../reference/commands/#versions).
 
 ## Build the Mac component {#mac-component}
 

@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-This reference covers Barn 1.1.0 and the explicitly marked development changes prepared on 2026-11-10/11. The development candidate defaults to 1 vCPU and 2 GiB and adds `vm_scale` and unified specification overrides; released 1.1.0 defaults to 2 vCPU and 4 GiB and has none of those additions. Check your installed build with `barn version` and each command's `--help`.
+This reference covers Barn 1.1.0 and explicitly marked development changes checked on 2026-11-11. Local main `6ab0cd5` defaults to 1 vCPU and 2 GiB and adds `vm_scale` and specification overrides; `vm_hosts` and `hosts install -f` are additional uncommitted working-tree changes. Released 1.1.0 defaults to 2 vCPUs and 4 GiB and has none of those additions. See the [version baseline](../commands/#versions) and check your build with `barn version` and `--help`.
 
 ## Discovery {#discovery}
 
@@ -69,9 +69,10 @@ Barn reads node IPv4 keys, `nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node
 | `vm_image` | `u24` | Image family, `:channel` reference, or `image@version` selector |
 | `vm_version` | unset | Newest numeric version matching this prefix, such as `9` or `9.7` |
 | `vm_arch` | `native` | Deployment-wide guest architecture; follows the host unless explicitly set to `amd64` or `arm64` |
-| `vm_cpu` | `1` (development) | Base vCPU count; the effective count after scaling must be `1`–`256` |
-| `vm_mem` | `2048` (development) | Base memory size: bare integer in MiB, or an explicit unit string such as `8GiB` (minimum `512MiB`) |
-| `vm_scale` | `1` (development) | Positive integer multiplying CPU and memory only |
+| `vm_cpu` | `2` (1.1.0), `1` (local main) | Base vCPU count; the effective count after scaling must be `1`–`256` |
+| `vm_mem` | `4096` (1.1.0), `2048` (local main) | Base memory size: bare integer in MiB, or an explicit unit string such as `8GiB` (minimum `512MiB`) |
+| `vm_scale` | `1` (local main) | Positive integer multiplying CPU and memory only |
+| `vm_hosts` | `[]` (working tree) | Extra local hosts mappings, declared only in `all.vars` |
 | `vm_disk` | `64` | Root disk capacity: bare integer in GiB, or an explicit unit string such as `64GiB` |
 | `vm_disks` | `[{path: /data}]` | Extra data disks (defaults to one 128 GiB non-persistent disk mounted at `/data`) |
 | `vm_alias` | `[]` | Additional guest `/etc/hosts`, SSH config, and optional host `/etc/hosts` aliases |
@@ -113,6 +114,34 @@ Memory = resolved(vm_mem, default=2048 MiB) × resolved(vm_scale, default=1)
 A host's `vm_scale: 1` replaces a group's `vm_scale: 3`; group and host scales do not compound. Equal-depth conflicts require a host override. Scale accepts integers from 1 to 256, subject to the effective 256-vCPU limit and memory overflow checks. Quoted numbers, fractions, booleans, null, zero, and negative values fail validation. Base memory still requires at least 512 MiB. Root disks, data disks, and shares are unaffected. Use the exact keys `vm_cpu` and `vm_mem`; `vm_memory` is not an alias.
 
 Inspect `barn plan -f pigsty.yml`, then apply CPU/memory changes with `barn resize -f pigsty.yml`. Existing deployments that omit these fields will show a resource decrease when their inventory is read by the new build. Add `vm_cpu: 2` and `vm_mem: 4096` before upgrading to preserve the previous defaults. Commands using applied state without an inventory keep the recorded resources.
+
+## Local service names in the development version {#local-hosts}
+
+This section describes the uncommitted hosts extension, absent from both v1.1.0 and local main commit `6ab0cd5`.
+
+Declare finite service mappings in `all.vars.vm_hosts`. Barn combines them with node names and `vm_alias` when publishing from an explicit inventory:
+
+```yaml {title="pigsty.yml"}
+all:
+  vars:
+    vm_hosts:
+      - {address: 10.10.10.10, names: [i.pigsty, m.pigsty]}
+      - {address: 10.10.10.100, names: [pg-dns-service]}
+  hosts:
+    10.10.10.10: {nodename: meta}
+```
+
+```bash
+barn hosts install -f pigsty.yml --json  # preview, including before VM creation
+barn hosts install -f pigsty.yml --yes  # publish; sudo may ask for a password
+barn hosts uninstall --yes
+```
+
+Each entry requires `address` and a non-empty `names` list. Addresses must be canonical IPv4 addresses in the inventory's private `/24`, within `.9`–`.254`; `.1`–`.8` are reserved for the host and DHCP. Identical name/address pairs deduplicate; names compare without case, and different destinations fail validation. Existing conflicting names outside the Barn-owned block also stop publication. A hosts record does not configure a VIP in a guest.
+
+These mappings affect only the host's `/etc/hosts`. Editing them does not change the VM spec hash, configure guest DNS, or trigger VM drift. Without `-f`, `hosts install` publishes only names and aliases from applied VM state, replacing the whole Barn block; repeat the explicit inventory command to retain service names. `up` never publishes this file automatically. An unchanged plan needs no sudo; each changed system hosts file requires privilege. Wildcards, SRV records, and live primary discovery require a DNS service.
+
+Pigsty's development `bin/sandbox-dns` extracts its portal, node, PostgreSQL, VIP, and MinIO names for this interface. See the [migration audit](/blog/design/pigsty-barn-migration/).
 
 ## Development specification overrides {#specification-overrides}
 

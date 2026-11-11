@@ -46,15 +46,15 @@ languages:
               icon: fa-solid fa-download
               keywords: [install, brew, download, upgrade, package]
             - id: cli_reference
-              title: CLI Reference
-              description: Look up Barn flags, lifecycle commands, and JSON output
-              url: /docs/reference/cli/
+              title: Command Reference
+              description: Look up every Barn command, option, default, and example
+              url: /docs/reference/commands/
               icon: fa-solid fa-code
               keywords: [cli, command, flags, json, exit code]
             - id: mac_reference
               title: Mac Commands Reference
               description: Look up barn mac subcommands, schemas, and runtime layout
-              url: /docs/reference/mac/
+              url: /docs/reference/commands/mac/
               icon: fa-solid fa-laptop-code
               keywords: [barn mac, runtime, clone, open, configure]
             - id: release_notes
@@ -158,15 +158,15 @@ languages:
               icon: fa-solid fa-download
               keywords: [install, brew, 安装, 下载, 升级]
             - id: cli_reference
-              title: CLI 命令参考
-              description: 查阅 Barn 全局参数、生命周期子命令与 JSON 输出结构
-              url: /zh/docs/reference/cli/
+              title: 命令参考
+              description: 查阅 Barn 全部命令、选项、默认值与使用示例
+              url: /zh/docs/reference/commands/
               icon: fa-solid fa-code
               keywords: [cli, 命令, 参数, json, 退出码]
             - id: mac_reference
               title: Mac 命令参考
               description: 查阅 barn mac 子命令、JSON 模式与运行时目录布局
-              url: /zh/docs/reference/mac/
+              url: /zh/docs/reference/commands/mac/
               icon: fa-solid fa-laptop-code
               keywords: [barn mac, 运行时, 克隆, open, configure]
             - id: release_notes

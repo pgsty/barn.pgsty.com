@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-本文覆盖 Barn 1.1.0，以及明确标注的 2026-11-10/11 开发改动。开发候选版默认使用 1 vCPU、2 GiB，并新增 `vm_scale` 与统一规格覆盖；已发布的 1.1.0 默认仍为 2 vCPU、4 GiB，且不支持这些新增功能。用 `barn version` 和各命令的 `--help` 核对已安装版本。
+本文覆盖 Barn 1.1.0 及明确标注的开发改动，核对日期为 2026-11-11。本地 main `6ab0cd5` 默认使用 1 vCPU、2 GiB，新增 `vm_scale` 与规格覆盖；`vm_hosts` 和 `hosts install -f` 则来自额外的未提交工作区改动。已发布的 1.1.0 默认仍为 2 vCPU、4 GiB，且不支持这些新增功能。具体范围见[版本基线](../commands/#versions)，并用 `barn version` 与 `--help` 核对已安装构建。
 
 ## 发现顺序 {#discovery}
 
@@ -69,9 +69,10 @@ Barn 只读取节点 IPv4 键、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq
 | `vm_image` | `u24` | 镜像系列、`:channel` 通道引用或 `image@version` 版本选择器 |
 | `vm_version` | 未设置 | 匹配该数值前缀的最新版本，例如 `9` 或 `9.7` |
 | `vm_arch` | `native` | 部署级客机架构，默认跟随宿主；可显式指定 `amd64` 或 `arm64` |
-| `vm_cpu` | `1`（开发版） | 基础 vCPU 核数，缩放后的有效核数必须在 `1`–`256` 内 |
-| `vm_mem` | `2048`（开发版） | 基础内存容量：裸整数按 MiB 计，也支持 `8GiB` 等带单位字符串（最低 `512MiB`） |
-| `vm_scale` | `1`（开发版） | 只倍乘 CPU 和内存的正整数 |
+| `vm_cpu` | `2`（1.1.0）、`1`（本地 main） | 基础 vCPU 核数，缩放后的有效核数必须在 `1`–`256` 内 |
+| `vm_mem` | `4096`（1.1.0）、`2048`（本地 main） | 基础内存容量：裸整数按 MiB 计，也支持 `8GiB` 等带单位字符串（最低 `512MiB`） |
+| `vm_scale` | `1`（本地 main） | 只倍乘 CPU 和内存的正整数 |
+| `vm_hosts` | `[]`（工作区） | 额外的本机 hosts 映射，只能在 `all.vars` 声明 |
 | `vm_disk` | `64` | 根盘容量：裸整数按 GiB 计，也支持 `64GiB` 等带单位字符串 |
 | `vm_disks` | `[{path: /data}]` | 额外数据盘列表（默认挂载一块 128 GiB 非持久盘到 `/data`） |
 | `vm_alias` | `[]` | 写入客机 `/etc/hosts`、SSH 配置及可选宿主 `/etc/hosts` 的附加别名 |
@@ -113,6 +114,34 @@ CPU  = 解析后的 vm_cpu（默认 1）× 解析后的 vm_scale（默认 1）
 主机的 `vm_scale: 1` 会覆盖分组的 `vm_scale: 3`，多层倍数不累乘；同层分组冲突需要在主机上覆盖。倍数接受 1–256 的整数，同时受最终 256 vCPU 上限和内存溢出检查约束。带引号的数字、小数、布尔值、null、零和负数均无效。基础内存仍需至少 512 MiB。根盘、数据盘和共享目录不受缩放影响。参数名为 `vm_cpu` 和 `vm_mem`，不提供 `vm_memory` 别名。
 
 先执行 `barn plan -f pigsty.yml`，再用 `barn resize -f pigsty.yml` 应用 CPU/内存变更。旧部署若省略了这些字段，新版读取清单后会显示资源减少；升级前显式补上 `vm_cpu: 2`、`vm_mem: 4096` 即可保持旧默认规格。没有清单、直接使用已应用状态的命令会保留记录中的资源。
+
+## 开发版本的本机服务域名 {#local-hosts}
+
+本节描述尚未提交的 hosts 扩展，v1.1.0 与本地 main 提交 `6ab0cd5` 均不包含此功能。
+
+在 `all.vars.vm_hosts` 中声明有限的服务映射。显式指定清单发布时，Barn 将它们与节点名、`vm_alias` 合并：
+
+```yaml {title="pigsty.yml"}
+all:
+  vars:
+    vm_hosts:
+      - {address: 10.10.10.10, names: [i.pigsty, m.pigsty]}
+      - {address: 10.10.10.100, names: [pg-dns-service]}
+  hosts:
+    10.10.10.10: {nodename: meta}
+```
+
+```bash
+barn hosts install -f pigsty.yml --json  # 预览，VM 创建前也可使用
+barn hosts install -f pigsty.yml --yes  # 发布，sudo 可能要求密码
+barn hosts uninstall --yes
+```
+
+每条记录必须包含 `address` 与非空 `names` 列表。地址必须是清单私网 `/24` 内的规范 IPv4，范围为 `.9`–`.254`；`.1`–`.8` 保留给宿主与 DHCP。同名同 IP 去重，名称按大小写不敏感比较；同名不同 IP 报错。Barn 管理块外已有冲突名称时也会停止发布。hosts 记录本身不会在客机上配置 VIP。
+
+这些映射只影响宿主的 `/etc/hosts`，修改它们不会改变 VM 规格摘要、配置客机 DNS 或产生 VM 漂移。不带 `-f` 时，`hosts install` 只发布已应用 VM 状态中的名称和别名，并替换整个 Barn 管理块；需要保留服务域名时应始终显式指定清单。`up` 不会自动发布此文件。内容不变时无需 sudo，系统 hosts 内容有变时仍需权限。通配符、SRV 记录以及动态主库发现需要 DNS 服务。
+
+Pigsty 开发版的 `bin/sandbox-dns` 会提取 portal、节点、PostgreSQL、VIP 和 MinIO 名称，再交给此接口。具体范围见 [迁移排查](/zh/blog/design/pigsty-barn-migration/)。
 
 ## 开发版规格覆盖 {#specification-overrides}
 

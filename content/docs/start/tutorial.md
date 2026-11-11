@@ -9,6 +9,8 @@ aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 
 Create an Ubuntu 24.04 VM on your Mac or Linux host, connect over SSH, and scale it into a multi-node fixed-IP lab from a single YAML inventory. For macOS guests on Apple Silicon, see the [macOS VM guide](../macos/).
 
+This walkthrough uses stable **1.1.0**, whose default is 2 vCPUs and 4 GiB per node. For a development build, check the [version differences](../../reference/commands/#versions) or set the required resources explicitly in the inventory.
+
 ## Before you start {#install}
 
 [Install Barn](../installation/) and make sure your host has at least 4 GiB of free memory for the guest. Run the commands below as your normal user in an interactive terminal: Barn asks once before it changes the host and prompts for `sudo` only for the steps that need it. For unattended CI runs, see [Automation](../automation/). In mainland China, add `--mirror` to the first `barn up` to download images from the China repository at `repo.pigsty.cc`.

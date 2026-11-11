@@ -1,12 +1,12 @@
 ---
-title: 命令行
+title: CLI 契约
 description: Barn 命令、关键参数、结构化输出与退出码。
 weight: 20
 icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-本页跟随 **Barn 1.1.0** 的全局展示参数与 Linux 实验环境命令。macOS 客机命令请查阅 [Mac 命令](../mac/)。请运行 `barn version` 与命令的 `--help` 核对当前构建。
+本页说明全局展示、Linux 生命周期语义、结构化输出与退出码；各命令的语法、全部选项、默认值与示例见[命令参考](../commands/)。默认基线为 **Barn 1.1.0**，明确标出的开发章节对应[本地 main 与工作区版本](../commands/#versions)。原生 Mac 运行时契约见 [Mac 参考](../mac/)。
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -118,6 +118,7 @@ Barn 在每个 `BARN_HOME`（默认 `~/.barn`，详见[配置发现规则](../co
 | `network install` | `--cidr/-c`（默认 `10.10.10.0/24`）、`--mode/-m`（默认 `host`）、`--yes/-y`；macOS 专用 `--archive/-a`、`--interface-id/-i` |
 | `network status` | 可选 `--cidr/-c` |
 | `network uninstall`、`hosts install/uninstall` | `--yes/-y` |
+| `hosts install`（开发版） | `--file/-f`：发布清单中的节点与 `vm_hosts`，不要求已创建 VM |
 {.wide .expand}
 
 参数使用说明：
@@ -173,7 +174,7 @@ barn restart meta node-1 -p 2
 
 启动工作线程在客机启动、等待 SSH 与就绪检查完成期间一直占用并发名额。传入 `--no-wait` 后，QEMU 启动且进程身份核验通过即可释放名额。磁盘准备阶段全部结束后才进入启动阶段。`provision --parallel` 保持独立的默认值 `1`；原生 macOS 客机的运行数量限制见 [Mac 命令](../mac/)。
 
-实现与回归测试依据：[并发策略](https://github.com/pgsty/barn/blob/main/internal/private/concurrency.go)、[启动与准备测试](https://github.com/pgsty/barn/blob/main/internal/private/concurrency_test.go)、[CLI 参数测试](https://github.com/pgsty/barn/blob/main/cmd/barn/lifecycle_parallel_test.go)。
+实现与回归测试位于本地提交 `158786a` 的 `internal/private/concurrency.go`、`internal/private/concurrency_test.go`、`cmd/barn/lifecycle_parallel_test.go`。截至本次核对，这些文件尚未进入远端 main，具体范围见[版本基线](../commands/#versions)。
 
 2026-11-10 真机验收在具有 18 个逻辑 CPU 的 macOS/arm64 宿主上，通过临时 `BARN_HOME` 管理六台 Debian 13 客机：自动默认值为 16，实际启动并发峰值为六；显式设为 1 时，启动与停止均为串行；显式设为 32 时，重启并发峰值为六。全部客机通过就绪检查，测试部署已在结束后销毁。
 

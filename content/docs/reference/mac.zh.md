@@ -1,5 +1,5 @@
 ---
-title: Mac 命令
+title: Mac 运行时参考
 description: barn mac 的命令与参数、机器规则、JSON 结果、失败原因、网络与文件。
 weight: 25
 icon: fa-brands fa-apple
@@ -13,6 +13,8 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 
 本参考说明 **Barn 1.1.0** 的命令接口与 `Barn.app`（macOS 宿主上运行虚拟机的原生应用包，runner 协议版本 `2`）。Apple Silicon 发行包与 Homebrew 安装已包含 App，安装步骤见 [macOS 客机指南](../../start/macos/#install)。
 
+各子命令的完整语法、选项和示例见 [macOS 命令参考](../commands/mac/)。本页集中说明机器规则、网络、结果格式和状态文件。
+
 ## 命令 {#commands}
 
 | 命令 | 用途 |
@@ -25,7 +27,7 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 | `open [name]` | 打开桌面窗口；若虚拟机已停止则先启动 |
 | `ssh [name] [-- command...]` | 打开交互式终端，或将 `--` 后的命令行交给客机 shell 执行 |
 | `exec [name] -- command...` | 在客机中执行程序并保留参数边界 |
-| `configure name` | 修改已停止虚拟机的 CPU、内存、共享目录、网段或剪贴板设置 |
+| `configure name` | 停机修改 CPU、内存、共享目录或网段；剪贴板配置可在运行时保存，下次启动生效 |
 | `recreate name` | 用全新的 macOS 克隆替换虚拟机，保留原有硬件与网络设置 |
 | `destroy name...` | 删除一台或多台虚拟机 |
 | `password [name]` | 显示或复制客机登录密码 |

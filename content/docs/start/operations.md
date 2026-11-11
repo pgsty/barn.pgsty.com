@@ -42,7 +42,7 @@ barn reload -f barn.yml       # validate inventory, stop selected nodes, and run
 
 `reload` is a controlled stop-and-boot cycle. It can add new nodes and start stopped nodes, but it refuses existing-node changes to CPU, memory, image, disks, shares, addresses, or other VM definitions before stopping anything.
 
-For CPU or memory changes, edit `vm_cpu` or `vm_mem` and run `barn resize`. When the running QEMU instance has reserved capacity, Barn hot-plugs supported increases; decreases and unsupported backends use an automatic stop/start fallback while preserving the VM identity and disks. `resize` does not apply image, disk, network, or share changes; use `recreate` for those.
+For CPU or memory changes, edit `vm_cpu` or `vm_mem` and run `barn resize`. When the running QEMU instance has reserved capacity, Barn hot-plugs supported increases; decreases and unsupported backends use an automatic stop/start fallback while preserving the VM identity and disks. In stable 1.1.0, `resize` does not apply image, disk, network, or share changes; use `recreate` for those. The local development build also supports [in-place root growth](../../reference/cli/#root-disk-growth); see the [version baseline](../../reference/commands/#versions).
 
 If online resize is interrupted after hotplugging, `barn status` reports that live CPU and memory may differ from the applied configuration (`reason: resize_incomplete`). Run `barn resize NODE` again, or run `barn restart NODE` to return to the committed resources. Offline resize holds the deployment lock while stopping and updating the node.
 

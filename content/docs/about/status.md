@@ -17,6 +17,8 @@ This documentation covers **Barn 1.1.0** (see the [Installation Guide](../../sta
 - **Changes in 1.1.0**: Command-line `--image/-I` and `--arch/-A` overrides select the base image and guest architecture without rewriting `barn.yml`, terminal progress uses one live table for Linux and `barn mac` commands, interrupted online `resize` is detected by `status` and recovered by `up`, `start`, or `resize`, and `barn purge` removes the deployment immediately unless `--ask` is passed. Upgrading from `1.0.0` or `0.9.3` keeps existing VMs; earlier changes are recorded in the [1.0.0 Release Notes](/blog/release/1.0.0/) and [Barn 0.9.3 Changes](../0.9.3-changes/).
 - **Historical verification**: Dated test records are archived in [Validation History](../history/) and [Barn 1.1.0 Local Acceptance](../local-acceptance-1.1.0/).
 
+Development content is marked against the [version baseline](../../reference/commands/#versions): on 2026-11-11 local main contained three unpublished commits, while inventory-based hosts publication remained uncommitted. Installing stable 1.1.0 does not enable those interfaces.
+
 ## Linux guests {#linux-guests}
 
 | Host | Architecture | Native acceleration | Minimum QEMU |

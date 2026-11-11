@@ -211,4 +211,4 @@ cta:
   actions:
     - { label: Linux Lab Tutorial, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: Native macOS Guide, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
-    - { label: CLI Reference, url: docs/reference/cli/, icon: fa-solid fa-book, style: ghost }
+    - { label: CLI Reference, url: docs/reference/commands/, icon: fa-solid fa-book, style: ghost }

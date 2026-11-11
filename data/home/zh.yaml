@@ -201,4 +201,4 @@ cta:
   actions:
     - { label: Linux 实验环境教程, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: 原生 macOS 指南, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
-    - { label: CLI 命令参考, url: docs/reference/cli/, icon: fa-solid fa-book, style: ghost }
+    - { label: CLI 命令参考, url: docs/reference/commands/, icon: fa-solid fa-book, style: ghost }

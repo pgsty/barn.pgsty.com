@@ -1,5 +1,5 @@
 ---
-title: Mac Commands
+title: Mac Runtime Reference
 description: barn mac commands and flags, machine rules, JSON results, failure reasons, networks, and files.
 weight: 25
 icon: fa-brands fa-apple
@@ -13,6 +13,8 @@ Running macOS guests requires an Apple Silicon Mac on macOS 27 or later, invoked
 
 This reference covers the **Barn 1.1.0** command interface and `Barn.app`, the native macOS app bundle that runs the VMs (runner protocol `2`). The Apple Silicon release and Homebrew installation include the app; see [macOS Guests](../../start/macos/#install).
 
+For complete per-command syntax, options, and examples, see the [macOS Command Reference](../commands/mac/). This page collects machine rules, networking, result formats, and state files.
+
 ## Commands {#commands}
 
 | Command | Purpose |
@@ -25,7 +27,7 @@ This reference covers the **Barn 1.1.0** command interface and `Barn.app`, the n
 | `open [name]` | Open the desktop window, starting the VM first if needed |
 | `ssh [name] [-- command...]` | Open an interactive shell, or pass a command string after `--` to the guest shell |
 | `exec [name] -- command...` | Execute a remote program while preserving argument boundaries |
-| `configure name` | Update a stopped VM's CPUs, memory, shares, subnet, or clipboard setting |
+| `configure name` | Update CPUs, memory, shares, or subnet while stopped; clipboard can change while running |
 | `recreate name` | Replace a VM with a fresh macOS clone while keeping its hardware and network settings |
 | `destroy name...` | Delete one or more VMs |
 | `password [name]` | Print or copy the guest login password |

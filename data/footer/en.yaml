@@ -13,8 +13,8 @@ columns:
   - title: Reference
     links:
       - { label: Linux Configuration, url: "docs/reference/configuration/" }
-      - { label: CLI Reference, url: "docs/reference/cli/" }
-      - { label: Mac Commands, url: "docs/reference/mac/" }
+      - { label: CLI Reference, url: "docs/reference/commands/" }
+      - { label: Mac Commands, url: "docs/reference/commands/mac/" }
       - { label: Linux Images, url: "docs/reference/images/" }
       - { label: Platforms and Limits, url: "docs/about/status/" }
   - title: Project

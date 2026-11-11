@@ -60,8 +60,10 @@ Debian 13 的 systemd-growfs 也会在启动时扩展根文件系统。故障验
 
 ## 代码与检查 {#implementation}
 
-[恢复编排](https://github.com/pgsty/barn/blob/main/internal/private/root_resize.go) 持有部署锁并复用已有启动、停止与进程身份核验；[客机脚本](https://github.com/pgsty/barn/blob/main/internal/private/root_resize_guest.py) 做布局、身份及容量校验；[恢复记录](https://github.com/pgsty/barn/blob/main/internal/state/root_resize.go) 随节点状态原子写入；[磁盘层](https://github.com/pgsty/barn/blob/main/internal/disk/disk.go) 只在离线状态增长 qcow2。
+`internal/private/root_resize.go` 持有部署锁并复用已有启动、停止与进程身份核验；`internal/private/root_resize_guest.py` 做布局、身份及容量校验；`internal/state/root_resize.go` 随节点状态原子写入；[磁盘层](https://github.com/pgsty/barn/blob/main/internal/disk/disk.go) 只在离线状态增长 qcow2。
 
-[故障边界测试](https://github.com/pgsty/barn/blob/main/internal/private/root_resize_test.go) 覆盖各阶段在副作用前后失去响应、重复执行、缩盘拒绝、节点选择、容量已记账但操作未完成，以及身份和容量验证失败。CLI 回归覆盖 `-D/BARN_DISK`、重试参数、停机节点的恢复提示及 SPEC/ROOT 输出。交付检查使用源码 `make check` 与站点 `make check`。
+`internal/private/root_resize_test.go` 覆盖各阶段在副作用前后失去响应、重复执行、缩盘拒绝、节点选择、容量已记账但操作未完成，以及身份和容量验证失败。CLI 回归覆盖 `-D/BARN_DISK`、重试参数、停机节点的恢复提示及 SPEC/ROOT 输出。交付检查使用源码 `make check` 与站点 `make check`。
 
 离线修改镜像及后续扩展客机分区/文件系统的边界依据 [QEMU 磁盘工具文档](https://www.qemu.org/docs/master/tools/qemu-img.html)；growpart 的无变化退出码按 [cloud-utils 手册](https://github.com/canonical/cloud-utils/blob/main/man/growpart.1) 处理。后续在线 QMP 扩盘及其他根布局应单独设计和验收。
+
+实现依据为本地提交 `1e24768`，尚未进入本次核对的远端 main；以下新增源码以仓库相对路径标示，版本范围见[命令参考](/zh/docs/reference/commands/#versions)。
