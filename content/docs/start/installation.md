@@ -1,5 +1,5 @@
 ---
-title: Install Barn
+title: Download and Install Barn
 linkTitle: Installation
 description: Install Barn 1.2.0 on macOS or Linux, check requirements, and keep the application up to date.
 weight: 5
@@ -67,6 +67,22 @@ A default Linux VM uses **1 vCPU and 2 GiB of memory**, backed by thin-provision
 
 The first macOS VM requires roughly **65 GiB of free disk space** to hold Apple's ~25 GiB restore image, the ~27 GiB installed base image, and initial guest writes. By default, a Mac VM uses 4 vCPUs, 8 GiB of memory, and a 100 GiB APFS clone disk. Later Mac VMs inherit the prepared base image's capacity unless you pass `--disk`. See [Platforms and limits](../../about/status/) for guest-specific constraints.
 
+## Download Barn 1.2.0 {#release-downloads}
+
+The stable release was published on **2026-11-12**. Select the host operating system and CPU architecture:
+
+| Host OS | Architecture | Archive | Debian / Ubuntu | RHEL / Fedora |
+|---|---|---|---|---|
+| macOS | Apple Silicon (`arm64`) | [tar.gz](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_darwin_arm64.tar.gz) | — | — |
+| macOS | Intel (`amd64`) | [tar.gz](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_darwin_amd64.tar.gz) | — | — |
+| Linux | x86-64 (`amd64`) | [tar.gz](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_amd64.tar.gz) | [DEB](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_amd64.deb) | [RPM](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_amd64.rpm) |
+| Linux | ARM64 (`arm64`) | [tar.gz](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_arm64.tar.gz) | [DEB](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_arm64.deb) | [RPM](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_arm64.rpm) |
+{.wide .expand}
+
+[SHA-256 checksums](https://github.com/pgsty/barn/releases/download/v1.2.0/checksums.txt) · [Release metadata](https://github.com/pgsty/barn/releases/download/v1.2.0/release.json) · [Installer script](https://github.com/pgsty/barn/releases/download/v1.2.0/install.sh)
+
+Each archive and package has a matching `.spdx.json` dependency inventory on the [GitHub Release](https://github.com/pgsty/barn/releases/tag/v1.2.0). The Darwin arm64 archive includes the signed, notarized `Barn.app`.
+
 ## Other installation methods {#other-installation-methods}
 
 ### Linux packages {#linux-packages}
@@ -76,6 +92,8 @@ The DEB and RPM packages declare their QEMU, UEFI firmware, and OpenSSH dependen
 ```bash {tab="Debian / Ubuntu" group="linux-package" value="deb"}
 barn_release=https://github.com/pgsty/barn/releases/download/v1.2.0
 curl -fLO "$barn_release/barn_1.2.0_linux_amd64.deb"
+curl -fLO "$barn_release/checksums.txt"
+sha256sum --check --ignore-missing checksums.txt
 sudo apt install ./barn_1.2.0_linux_amd64.deb
 barn version
 ```
@@ -83,6 +101,8 @@ barn version
 ```bash {tab="RHEL / Fedora" group="linux-package" value="rpm"}
 barn_release=https://github.com/pgsty/barn/releases/download/v1.2.0
 curl -fLO "$barn_release/barn_1.2.0_linux_amd64.rpm"
+curl -fLO "$barn_release/checksums.txt"
+sha256sum --check --ignore-missing checksums.txt
 sudo dnf install ./barn_1.2.0_linux_amd64.rpm
 barn version
 ```
@@ -113,10 +133,11 @@ Upgrade using the same channel you used to install Barn. On macOS with Homebrew:
 ```bash
 brew update
 brew upgrade pgsty/infra/barn
+command -v barn
 barn version
 ```
 
-On Linux, re-run `install.sh` (it selects the latest stable release unless `BARN_VERSION` is set) or install the newer `.deb` / `.rpm` package, then run `command -v barn` and `barn version` to confirm the active binary.
+On Linux, re-run `install.sh` (it selects the latest stable release unless `BARN_VERSION` is set) or install the newer `.deb` / `.rpm` package, then run `command -v barn` and `barn version` to confirm the active binary. If both a user-directory install and a system package/Homebrew install exist, update the copy selected by `PATH`, or adjust `PATH` and verify the version again.
 
 Barn decouples CLI upgrades from guest image updates so existing VMs never change OS versions unexpectedly:
 

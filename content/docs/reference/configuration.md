@@ -69,10 +69,10 @@ Barn reads node IPv4 keys, `nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node
 | `vm_image` | `u24` | Image family, `:channel` reference, or `image@version` selector |
 | `vm_version` | unset | Newest numeric version matching this prefix, such as `9` or `9.7` |
 | `vm_arch` | `native` | Deployment-wide guest architecture; follows the host unless explicitly set to `amd64` or `arm64` |
-| `vm_cpu` | `2` (1.1.0), `1` (1.2.0) | Base vCPU count; the effective count after scaling must be `1`–`256` |
-| `vm_mem` | `4096` (1.1.0), `2048` (1.2.0) | Base memory size: bare integer in MiB, or an explicit unit string such as `8GiB` (minimum `512MiB`) |
-| `vm_scale` | `1` (1.2.0) | Positive integer multiplying CPU and memory only |
-| `vm_hosts` | `[]` (1.2.0) | Extra local hosts mappings, declared only in `all.vars` |
+| `vm_cpu` | `1` | Base vCPU count; the effective count after scaling must be `1`–`256` |
+| `vm_mem` | `2048` | Base memory size: bare integer in MiB, or an explicit unit string such as `8GiB` (minimum `512MiB`) |
+| `vm_scale` | `1` | Positive integer multiplying CPU and memory only |
+| `vm_hosts` | `[]` | Extra local hosts mappings, declared only in `all.vars` |
 | `vm_disk` | `64` | Root disk capacity: bare integer in GiB, or an explicit unit string such as `64GiB` |
 | `vm_disks` | `[{path: /data}]` | Extra data disks (defaults to one 128 GiB non-persistent disk mounted at `/data`) |
 | `vm_alias` | `[]` | Additional guest `/etc/hosts`, SSH config, and optional host `/etc/hosts` aliases |
@@ -173,9 +173,9 @@ Environment variables affect only commands accepting the corresponding specifica
 
 ## Image and architecture overrides {#image-and-architecture}
 
-The following I/A behavior applies to 1.1.0. Barn 1.2.0 additionally reads `BARN_IMAGE/BARN_ARCH` between CLI and inventory precedence, as described above.
+Image and architecture follow the same [specification precedence](#specification-overrides) as the resource fields: CLI flags, nonempty environment variables, inventory values, then defaults.
 
-Guests default to the host architecture: `arm64` on Apple Silicon and `amd64` on Intel/AMD hosts. Another architecture is selected only when explicitly requested in the inventory or command line. Precedence is **`--arch/-A` → inventory `vm_arch` → `native` (host architecture)**. Use `-A native` to override a fixed inventory architecture and follow the host again.
+Guests default to the host architecture: `arm64` on Apple Silicon and `amd64` on Intel/AMD hosts. Another architecture can be selected through the CLI, environment, or inventory. Precedence is **`--arch/-A` → `BARN_ARCH` → inventory `vm_arch` → `native` (host architecture)**. Use `-A native` to override the environment and inventory and follow the host again.
 
 | Architecture | Aliases | Meaning |
 |---|---|---|
@@ -186,10 +186,10 @@ Guests default to the host architecture: `arm64` on Apple Silicon and `amd64` on
 
 `vm_arch` applies to the entire deployment; define it once under `all.vars`. Every managed node must resolve to the same architecture. Node variables and selectors cannot create a deployment with mixed architectures.
 
-`--image/-I` overrides `vm_image` and `vm_version` for selected nodes without changing the architecture. The catalog must provide the requested architecture variant; a missing variant is an error and never selects another architecture automatically.
+`--image/-I` overrides `BARN_IMAGE` and the selected nodes' `vm_image`/`vm_version` without changing architecture. Without the flag, a nonempty `BARN_IMAGE` overrides the inventory image. The catalog must provide the requested architecture variant; a missing variant is an error and never selects another architecture automatically.
 
 ```bash
-barn plan -I u24                 # Ubuntu 24.04; retain the inventory or host architecture
+barn plan -I u24                 # Ubuntu 24.04; retain the environment, inventory, or host architecture
 barn up -I u24 -A amd64          # Use amd64 Ubuntu 24.04 for this invocation
 barn plan -A native              # Override the inventory architecture with the host's
 barn init full -I u24 -A arm64   # Save both choices in a new inventory
@@ -197,7 +197,7 @@ barn init full -I u24 -A arm64   # Save both choices in a new inventory
 
 Overrides on `up`, `plan`, `reload`, `recreate`, `resize`, and `validate` change only the desired configuration for that invocation. To keep a choice, set `all.vars.vm_arch` and the relevant node or group `vm_image`, removing any superseded `vm_version`. `init` and template-generating `setup` write the choices into the new inventory. Setup's `-I/-A` flags cannot be used with an existing inventory.
 
-When no inventory file exists, lifecycle commands use the saved deployment specification before applying explicit overrides. `start` and `restart` always use applied state. Omitting `-A` or editing the inventory never converts an existing VM: `up` reports drift, and switching architecture requires `recreate` with all existing nodes selected. Although `resize` accepts overrides to check desired state, it still applies only CPU and memory changes.
+When no inventory file exists, lifecycle commands use the saved deployment specification before applying explicit overrides. `start` and `restart` always use applied state. Omitting `-A` or editing the inventory never converts an existing VM: `up` reports drift, and switching architecture requires `recreate` with all existing nodes selected. `resize` applies CPU/memory changes and grows supported root disks; image and architecture changes require `recreate`.
 
 Guests whose architecture differs from the host use QEMU TCG. On Linux, `barn setup` installs the native emulator; install the target `qemu-system-*` binary and UEFI firmware before starting a foreign guest. See [Runtime policy](../images/#runtime-policy) for acceleration and image exceptions.
 

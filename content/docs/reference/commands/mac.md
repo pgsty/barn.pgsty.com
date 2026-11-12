@@ -7,7 +7,7 @@ date: 2026-11-11
 
 Manage named native macOS VMs, desktop access, restore images, and shared bases.
 
-All options below are present in 1.1.0 and the reviewed development tree.
+This reference covers **Barn 1.2.0**. All options below were also available in 1.1.0.
 
 Native macOS VMs require Apple Silicon, macOS 27+, and the matching `Barn.app` native app bundle, invoked as the logged-in desktop user. Their state lives under `$BARN_HOME/mac` and is independent of the Linux inventory.
 

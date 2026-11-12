@@ -42,7 +42,7 @@ quickstart:
     - { label: 单机, value: 1 个 vCPU · 2 GiB 内存 }
     - { label: 磁盘, value: '64 GiB 根盘 · 128 GiB `/data`' }
   links:
-    - { label: 安装选项, url: docs/start/installation/ }
+    - { label: 下载与安装, url: docs/start/installation/#release-downloads }
     - { label: 与 Pigsty 配合使用, url: 'docs/start/automation/#pair-the-lab-with-pigsty' }
   demo: |-
     {{< asciinema file="images/barn-first-run.cast" title="Barn 1.1.0 · macOS → Pigsty full" rows="18" fit="both" speed="1.25" idleTimeLimit="0.7" poster="npt:0:23.63" preload="true" >}}
@@ -77,7 +77,7 @@ capabilities:
       motto: 一份 YAML 清单，拉起固定 IP 节点
       bullets:
         - '在 [`barn.yml`](docs/reference/configuration/) 中声明节点、CPU、内存与磁盘'
-        - '固定私网 IP，自动配好 SSH 密钥与 `/etc/hosts`'
+        - '固定私网 IP 与 SSH 密钥；用 [`barn hosts install`](docs/reference/commands/access/#barn-hosts-install) 发布宿主名称'
         - '重跑 [`barn up`](docs/reference/cli/) 即可收敛，删除始终显式执行'
       value: 同一份文件可以直接交给 Pigsty 或 `ansible-playbook -i`。
       visual:
@@ -85,7 +85,7 @@ capabilities:
         aria_label: 用 barn up 启动四节点的 barn.yml 主机清单
         title: barn.yml  ·  barn up
         lines:
-          - { class: c, prefix: '# barn init full', text: '' }
+          - { class: c, prefix: '# 最简四节点清单', text: '' }
           - { class: k, prefix: 'all:', text: '' }
           - { class: k, prefix: '  vars: ', text: '{ admin_ip: 10.10.10.10 }' }
           - { class: k, prefix: '  children:', text: '' }

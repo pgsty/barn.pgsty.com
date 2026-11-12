@@ -69,10 +69,10 @@ Barn 只读取节点 IPv4 键、`nodename`、`admin_ip`、`pg_cluster`、`pg_seq
 | `vm_image` | `u24` | 镜像系列、`:channel` 通道引用或 `image@version` 版本选择器 |
 | `vm_version` | 未设置 | 匹配该数值前缀的最新版本，例如 `9` 或 `9.7` |
 | `vm_arch` | `native` | 部署级客机架构，默认跟随宿主；可显式指定 `amd64` 或 `arm64` |
-| `vm_cpu` | `2`（1.1.0）、`1`（1.2.0） | 基础 vCPU 核数，缩放后的有效核数必须在 `1`–`256` 内 |
-| `vm_mem` | `4096`（1.1.0）、`2048`（1.2.0） | 基础内存容量：裸整数按 MiB 计，也支持 `8GiB` 等带单位字符串（最低 `512MiB`） |
-| `vm_scale` | `1`（1.2.0） | 只倍乘 CPU 和内存的正整数 |
-| `vm_hosts` | `[]`（1.2.0） | 额外的本机 hosts 映射，只能在 `all.vars` 声明 |
+| `vm_cpu` | `1` | 基础 vCPU 核数，缩放后的有效核数必须在 `1`–`256` 内 |
+| `vm_mem` | `2048` | 基础内存容量：裸整数按 MiB 计，也支持 `8GiB` 等带单位字符串（最低 `512MiB`） |
+| `vm_scale` | `1` | 只倍乘 CPU 和内存的正整数 |
+| `vm_hosts` | `[]` | 额外的本机 hosts 映射，只能在 `all.vars` 声明 |
 | `vm_disk` | `64` | 根盘容量：裸整数按 GiB 计，也支持 `64GiB` 等带单位字符串 |
 | `vm_disks` | `[{path: /data}]` | 额外数据盘列表（默认挂载一块 128 GiB 非持久盘到 `/data`） |
 | `vm_alias` | `[]` | 写入客机 `/etc/hosts`、SSH 配置及可选宿主 `/etc/hosts` 的附加别名 |
@@ -173,9 +173,9 @@ BARN_SCALE=2 barn validate -f barn.yml -S 1
 
 ## 镜像与架构覆盖 {#image-and-architecture}
 
-以下 I/A 基础行为适用于 1.1.0；1.2.0 还在 CLI 与清单之间读取上节的 `BARN_IMAGE/BARN_ARCH`。
+镜像与架构遵循相同的[规格优先级](#specification-overrides)：命令行参数、非空环境变量、清单值，最后使用默认值。
 
-默认客机架构与宿主一致：Apple Silicon 使用 `arm64`，Intel/AMD 宿主使用 `amd64`。只有清单或命令行显式指定其他架构时才切换。优先级为 **`--arch/-A` → 清单 `vm_arch` → `native`（宿主架构）**；`-A native` 可以覆盖清单中的固定架构，恢复跟随宿主。
+默认客机架构与宿主一致：Apple Silicon 使用 `arm64`，Intel/AMD 宿主使用 `amd64`。可以通过命令行、环境变量或清单选择其他架构。优先级为 **`--arch/-A` → `BARN_ARCH` → 清单 `vm_arch` → `native`（宿主架构）**；`-A native` 可以覆盖环境变量与清单，恢复跟随宿主。
 
 | 架构值 | 别名 | 含义 |
 |---|---|---|
@@ -186,10 +186,10 @@ BARN_SCALE=2 barn validate -f barn.yml -S 1
 
 `vm_arch` 是整套部署共用的属性，请在 `all.vars` 中统一定义。每个托管节点必须解析为同一架构，不能用节点变量或节点选择器混合架构。
 
-`--image/-I` 覆盖所选节点的 `vm_image` 与 `vm_version`，不改变架构。镜像目录必须提供目标架构的变体，否则报错；Barn 不会因为镜像缺少该变体而切换架构。
+`--image/-I` 优先于 `BARN_IMAGE` 和所选节点的 `vm_image`/`vm_version`，不改变架构。未传该参数时，非空的 `BARN_IMAGE` 覆盖清单镜像。镜像目录必须提供目标架构的变体，否则报错；Barn 不会因为镜像缺少该变体而切换架构。
 
 ```bash
-barn plan -I u24                 # 使用 Ubuntu 24.04，架构仍遵循清单或宿主默认值
+barn plan -I u24                 # 使用 Ubuntu 24.04，架构仍遵循环境变量、清单或宿主默认值
 barn up -I u24 -A amd64          # 本次使用 amd64 Ubuntu 24.04
 barn plan -A native              # 覆盖清单架构，按宿主架构预览
 barn init full -I u24 -A arm64   # 将镜像与架构写入新清单
@@ -197,7 +197,7 @@ barn init full -I u24 -A arm64   # 将镜像与架构写入新清单
 
 `up`、`plan`、`reload`、`recreate`、`resize` 和 `validate` 的覆盖只对本次期望配置生效，不改写清单。要长期保留选择，请设置 `all.vars.vm_arch`、相应节点或组的 `vm_image`，并移除被替代的 `vm_version`；`init` 与生成模板的 `setup` 会直接写入这些选择。`setup` 的 `-I/-A` 不能用于已有清单。
 
-没有清单文件时，生命周期命令沿用已保存的部署规格，再应用显式覆盖。`start` 和 `restart` 始终使用已应用状态。已有 VM 的架构不会因省略 `-A` 或修改清单而自动改变：`up` 会报告漂移，实际切换架构需要选择全部已有节点执行 `recreate`。已发布 1.1.0 的 `resize` 仅修改 CPU/内存；1.2.0 另支持根盘原地增长。
+没有清单文件时，生命周期命令沿用已保存的部署规格，再应用显式覆盖。`start` 和 `restart` 始终使用已应用状态。已有 VM 的架构不会因省略 `-A` 或修改清单而自动改变：`up` 会报告漂移，实际切换架构需要选择全部已有节点执行 `recreate`。`resize` 应用 CPU/内存变更并扩大受支持的根盘；镜像和架构变更需要 `recreate`。
 
 客机与宿主架构不同时使用 QEMU TCG。Linux 宿主的 `barn setup` 默认只安装本机架构的 QEMU；运行跨架构客机前，需安装对应的 `qemu-system-*` 与 UEFI 固件。加速方式与镜像例外见[运行时策略](../images/#runtime-policy)。
 

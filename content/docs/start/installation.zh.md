@@ -1,5 +1,5 @@
 ---
-title: 安装 Barn
+title: 下载与安装 Barn
 linkTitle: 安装
 description: 在 macOS 或 Linux 上安装 Barn 1.2.0，检查系统要求，并了解升级方式。
 weight: 5
@@ -67,6 +67,22 @@ barn version
 
 首次创建 macOS 虚拟机约需 **65 GiB 可用磁盘空间**，用于存放 Apple 恢复镜像（约 25 GiB）、已安装的基础镜像（约 27 GiB）以及初始写入数据。Mac 虚拟机默认分配 4 vCPU、8 GiB 内存和 100 GiB APFS 克隆磁盘；后续新建虚拟机除非通过 `--disk` 另行指定，否则默认沿用已有基础镜像的磁盘容量。各客机的具体约束见[平台与限制](../../about/status/)。
 
+## 下载 Barn 1.2.0 {#release-downloads}
+
+正式版发布于 **2026-11-12**，请按宿主系统与处理器架构选择文件：
+
+| 宿主系统 | 架构 | 归档 | Debian / Ubuntu | RHEL / Fedora |
+|---|---|---|---|---|
+| macOS | Apple Silicon (`arm64`) | [tar.gz](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_darwin_arm64.tar.gz) | — | — |
+| macOS | Intel (`amd64`) | [tar.gz](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_darwin_amd64.tar.gz) | — | — |
+| Linux | x86-64 (`amd64`) | [tar.gz](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_amd64.tar.gz) | [DEB](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_amd64.deb) | [RPM](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_amd64.rpm) |
+| Linux | ARM64 (`arm64`) | [tar.gz](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_arm64.tar.gz) | [DEB](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_arm64.deb) | [RPM](https://github.com/pgsty/barn/releases/download/v1.2.0/barn_1.2.0_linux_arm64.rpm) |
+{.wide .expand}
+
+[SHA-256 校验表](https://github.com/pgsty/barn/releases/download/v1.2.0/checksums.txt) · [发行元数据](https://github.com/pgsty/barn/releases/download/v1.2.0/release.json) · [安装脚本](https://github.com/pgsty/barn/releases/download/v1.2.0/install.sh)
+
+每个归档和软件包均提供同名的 `.spdx.json` 依赖清单，见 [GitHub Release](https://github.com/pgsty/barn/releases/tag/v1.2.0)。Darwin arm64 归档包含签名并公证的 `Barn.app`。
+
 ## 其他安装方式 {#other-installation-methods}
 
 ### Linux 软件包 {#linux-packages}
@@ -76,6 +92,8 @@ DEB 与 RPM 软件包已声明 QEMU、UEFI 固件和 OpenSSH 依赖。ARM64 宿�
 ```bash {tab="Debian / Ubuntu" group="linux-package" value="deb"}
 barn_release=https://github.com/pgsty/barn/releases/download/v1.2.0
 curl -fLO "$barn_release/barn_1.2.0_linux_amd64.deb"
+curl -fLO "$barn_release/checksums.txt"
+sha256sum --check --ignore-missing checksums.txt
 sudo apt install ./barn_1.2.0_linux_amd64.deb
 barn version
 ```
@@ -83,6 +101,8 @@ barn version
 ```bash {tab="RHEL / Fedora" group="linux-package" value="rpm"}
 barn_release=https://github.com/pgsty/barn/releases/download/v1.2.0
 curl -fLO "$barn_release/barn_1.2.0_linux_amd64.rpm"
+curl -fLO "$barn_release/checksums.txt"
+sha256sum --check --ignore-missing checksums.txt
 sudo dnf install ./barn_1.2.0_linux_amd64.rpm
 barn version
 ```
@@ -113,10 +133,11 @@ shasum -a 256 -c checksums.txt --ignore-missing
 ```bash
 brew update
 brew upgrade pgsty/infra/barn
+command -v barn
 barn version
 ```
 
-Linux 用户可重新运行 `install.sh`（未设置 `BARN_VERSION` 时选择最新稳定版），或安装新版 `.deb` / `.rpm` 软件包，随后通过 `command -v barn` 和 `barn version` 确认当前生效的二进制路径。
+Linux 用户可重新运行 `install.sh`（未设置 `BARN_VERSION` 时选择最新稳定版），或安装新版 `.deb` / `.rpm` 软件包，随后通过 `command -v barn` 和 `barn version` 确认当前生效的二进制路径。 若用户目录和系统包/Homebrew 中都安装了 Barn，请更新当前 `PATH` 选中的安装，或调整 `PATH` 后再次核验版本。
 
 Barn 将程序升级与客机镜像更新解耦，避免升级工具时意外改动现有虚拟机的系统版本：
 

@@ -19,6 +19,8 @@ GitHub 签名 secrets 仍未配置，本次采用文档中的本机签名流程�
 
 最终回下载归档通过 Linux/KVM 18 步和原生 Mac 全部 15 阶段。补充原生 UI 检查确认桌面登录、双向纯文本剪贴板、关闭窗口后 VM 与 SSH 继续运行，以及正常关机。隔离的 1.1.0 → 1.2.0 升级和重复安装通过；`darwin/arm64`、`linux/amd64` 均通过公网 latest 与指定版本安装。[Homebrew 更新](https://github.com/pgsty/homebrew-infra/commit/f1b83ae)覆盖四平台，真实 1.1.0 → 1.2.0 升级、`brew test`、style 和严格在线 audit 通过。
 
+[Homebrew 三平台 CI](https://github.com/pgsty/homebrew-infra/actions/runs/43128081768) 在 `e633aee` 上通过，覆盖 Linux、Apple Silicon 与 Intel macOS 的语法、style、updater、readall 和 audit 检查。Intel 初始化曾因 runner 预装 Azure CLI 的自动迁移而从源码构建 OpenSSL；将初始化阶段限制为刷新元数据后重跑通过，后续 Formula 检查保持完整。
+
 最终 Mac 验收保留了一次访问 Apple HTTPS 时的 TLS 超时。相同请求随后返回 HTTP 200；续跑前重新核验双机身份、磁盘哨兵和基础镜像摘要，再完成其余阶段。GUI 验收后测试 VM 已停止。GitHub 直连下载超时后改用宿主已有代理，公开下载未携带认证；失败日志均予保留。
 
 首页保留明确标注日期与版本的 1.1.0 录像，并说明 1.2.0 的默认值和输出变化。重录四节点首次运行需要空闲的 `.10–.13` 地址，本次发布期间由宿主已有 VM 占用。发布身份与公开渠道证据另见[验证历史](/zh/docs/about/history/#release-1-2-0)。

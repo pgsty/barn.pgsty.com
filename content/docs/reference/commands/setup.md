@@ -53,7 +53,7 @@ barn init [meta|dual|trio|full] [flags]
 
 Generate a Pigsty-compatible YAML inventory. The default is the one-node `meta` template in `./barn.yml`; `dual`, `trio`, and `full` add nodes at `.11`, `.12`, and `.13`. The control node is `.10`. Existing files require `--force`; `-o -` prints the inventory. This command does not download images or prepare the host.
 
-Stable 1.1.0 defaults to 2 vCPUs and 4 GiB per node; 1.2.0 defaults to 1 vCPU and 2 GiB. Both use a 64 GiB root and a separate 128 GiB `/data` disk. The 1.2.0 templates persist all six specification fields, including `vm_scale`. See [specification defaults](../../configuration/#specification-overrides).
+Barn 1.2.0 defaults to 1 vCPU and 2 GiB per node, with a 64 GiB root and a separate 128 GiB `/data` disk. Generated templates persist all six specification fields, including `vm_scale`. Version 1.1.0 used 2 vCPUs and 4 GiB by default. See [specification defaults](../../configuration/#specification-overrides).
 
 | Option | Meaning / default | Available in |
 |---|---|---|

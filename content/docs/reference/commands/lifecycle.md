@@ -167,9 +167,9 @@ barn reload meta --mirror
 barn resize [node...] [flags]
 ```
 
-Apply CPU and memory changes while preserving VM identity, disks, and SSH keys. Supported increases use hotplug; decreases or unsupported live changes use a stop/start fallback. Stable 1.1.0 reads CPU/memory changes from the inventory. Image, architecture, data-disk, network, share, create, and remove changes cannot be applied by resize.
+Apply CPU/memory changes and grow the root disk while preserving VM identity, disks, and SSH keys. Desired resources come from the inventory, environment, or CLI overrides. Supported CPU/memory increases use hotplug; decreases or unsupported live changes use a stop/start fallback. Image, architecture, data-disk, network, share, create, and remove changes cannot be applied by resize.
 
-Barn 1.2.0 additionally accepts resource flags and grows the existing root with `-D 128GiB`. Root growth stops QEMU, expands its image, boots the guest to grow and verify a last plain ext4/XFS root partition, then restores an initially stopped VM to stopped. Targets must grow and align to 512 bytes. Retry an interrupted growth with the same target; shrinking, LVM, encrypted roots, and non-last partitions are unsupported. See [root growth and recovery](../../cli/#root-disk-growth). CLI overrides do not rewrite the inventory.
+Use `-D 128GiB` to grow the existing root to 128 GiB. Root growth stops QEMU, expands its image, boots the guest to grow and verify a last plain ext4/XFS root partition, then restores an initially stopped VM to stopped. Targets must grow and align to 512 bytes. Retry an interrupted growth with the same target; shrinking, LVM, encrypted roots, and non-last partitions are unsupported. See [root growth and recovery](../../cli/#root-disk-growth). CLI overrides do not rewrite the inventory.
 
 | Option | Meaning / default | Available in |
 |---|---|---|

@@ -44,7 +44,7 @@ quickstart:
     - { label: Per node, value: 1 vCPU · 2 GiB memory }
     - { label: Disks, value: '64 GiB root · 128 GiB `/data`' }
   links:
-    - { label: Installation options, url: docs/start/installation/ }
+    - { label: Downloads and installation, url: docs/start/installation/#release-downloads }
     - { label: Use with Pigsty, url: 'docs/start/automation/#pair-the-lab-with-pigsty' }
   demo: |-
     {{< asciinema file="images/barn-first-run.cast" title="Barn 1.1.0 · macOS → Pigsty full" rows="18" fit="both" speed="1.25" idleTimeLimit="0.7" poster="npt:0:23.63" preload="true" >}}
@@ -79,7 +79,7 @@ capabilities:
       motto: One YAML inventory for fixed-IP nodes
       bullets:
         - 'Nodes, CPU, memory, and disks in one [`barn.yml`](docs/reference/configuration/)'
-        - 'Fixed private IPs, SSH keys, and `/etc/hosts` wired in'
+        - 'Fixed private IPs and SSH keys; publish names with [`barn hosts install`](docs/reference/commands/access/#barn-hosts-install)'
         - 'Re-run [`barn up`](docs/reference/cli/) to converge; deletion stays explicit'
       value: Pass the same file to Pigsty or `ansible-playbook -i`.
       visual:
@@ -87,7 +87,7 @@ capabilities:
         aria_label: A four-node barn.yml inventory started with barn up
         title: barn.yml  ·  barn up
         lines:
-          - { class: c, prefix: '# barn init full', text: '' }
+          - { class: c, prefix: '# Minimal four-node inventory', text: '' }
           - { class: k, prefix: 'all:', text: '' }
           - { class: k, prefix: '  vars: ', text: '{ admin_ip: 10.10.10.10 }' }
           - { class: k, prefix: '  children:', text: '' }

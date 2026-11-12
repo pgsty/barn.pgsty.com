@@ -6,7 +6,7 @@ weight: 35
 icon: fa-brands fa-apple
 ---
 
-维护者通过常规的 `barn_VERSION_darwin_arm64.tar.gz` 归档交付 Mac 原生组件。从 `0.9.2` 起，标准安装脚本与 `pgsty/infra/barn` Homebrew Formula 会一并安装 CLI、配套的 hosts helper 与 macOS 宿主上的原生应用包 `Barn.app`。本文是维护中的发布手册，于 2026-11-08 对照发布脚本核验；开发构建请参阅[从源码构建](../../start/source-build/#mac-component)。
+维护者通过常规的 `barn_VERSION_darwin_arm64.tar.gz` 归档交付 Mac 原生组件。从 `0.9.2` 起，标准安装脚本与 `pgsty/infra/barn` Homebrew Formula 会一并安装 CLI、配套的 hosts helper 与 macOS 宿主上的原生应用包 `Barn.app`。本文是维护中的发布手册，于 2026-11-12 对照 `v1.2.0` 发布脚本核验；开发构建请参阅[从源码构建](../../start/source-build/#mac-component)。
 
 ## 统一发布身份 {#release-identity}
 
@@ -49,7 +49,7 @@ BARN_MAC_PAYLOAD="$RELEASE_DIR/native.tar.gz" \
 
 正式原生构建与 `release-local` 都会在构建前执行 `make catalog-check` 对应的门禁。官方镜像目录发生变化时，先按[发布门禁](../engineering/#release-outputs-and-gates)同步并测试。快照或 `uncommitted` 载荷不能用于正式本地发布。`release-local` 核验归档、软件包、SBOM、校验和与 CLI/helper 配对，将完整制品写入指定目录。
 
-开发打包逻辑时，可用 `BARN_MAC_PAYLOAD=/absolute/native.tar.gz make release-snapshot` 验证原生载荷合并。载荷版本必须匹配 `.goreleaser.yaml` 选择的快照版本，例如 `v1.1.0` 之后为 `1.1.1-next`；脏工作树使用 `uncommitted`，干净源码使用完整提交号。快照接受 ad-hoc 签名，正式发行检查要求载荷已经过 Developer ID 签名与公证。
+开发打包逻辑时，可用 `BARN_MAC_PAYLOAD=/absolute/native.tar.gz make release-snapshot` 验证原生载荷合并。载荷版本必须匹配 `.goreleaser.yaml` 选择的快照版本，例如 `v1.2.0` 之后为 `1.2.1-next`；脏工作树使用 `uncommitted`，干净源码使用完整提交号。快照接受 ad-hoc 签名，正式发行检查要求载荷已经过 Developer ID 签名与公证。
 
 ## 配置自动签名 {#ci-signing}
 

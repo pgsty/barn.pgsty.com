@@ -53,7 +53,7 @@ barn init [meta|dual|trio|full] [flags]
 
 生成兼容 Pigsty 的 YAML 清单，默认在 `./barn.yml` 写入单节点 `meta` 模板，控制节点地址为 `.10`；`dual`、`trio`、`full` 依次增加 `.11`、`.12`、`.13` 节点。覆盖已有文件必须加 `--force`，`-o -` 将清单输出到 stdout。本命令不下载镜像或准备宿主。
 
-稳定版 1.1.0 每节点默认 2 vCPU、4 GiB，1.2.0 为 1 vCPU、2 GiB；两者均默认 64 GiB 根盘和独立的 128 GiB `/data` 盘。1.2.0 模板保存六项规格字段，包括 `vm_scale`。详见[规格默认值](../../configuration/#specification-overrides)。
+Barn 1.2.0 每节点默认 1 vCPU、2 GiB，使用 64 GiB 根盘和独立的 128 GiB `/data` 盘；生成的模板保存六项规格字段，包括 `vm_scale`。1.1.0 的 CPU 与内存默认值为 2 vCPU、4 GiB。详见[规格默认值](../../configuration/#specification-overrides)。
 
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|

@@ -9,7 +9,7 @@ cascade:
   type: docs
 ---
 
-Barn（**Bootstrap And Run Nodes**）是面向本地数据库实验、Linux 开发与 macOS 测试的 Apache-2.0 开源虚拟机管理工具。
+Barn（**Bootstrap And Run Nodes**）是面向本地数据库实验、Linux 开发与 macOS 测试的 Apache-2.0 开源虚拟机管理工具。当前稳定版为 **1.2.0**，发布于 **2026-11-12**，提供 macOS 与 Linux 的 arm64、amd64 二进制发行包，详见[下载与安装](../start/installation/#release-downloads)。
 
 - [平台与限制](status/) — Barn 1.2.0 的宿主环境要求、客机兼容矩阵与存储规则
 - [设计说明](design/) — 单清单 Linux 实验环境与独立 `barn mac` 虚拟机的架构设计
@@ -17,7 +17,7 @@ Barn（**Bootstrap And Run Nodes**）是面向本地数据库实验、Linux 开�
 - [参与贡献](engineering/) — 源码目录结构、本地构建与测试门禁、打包快照及镜像目录维护
 - [Mac 发布](mac-release/) — 原生载荷配对、Developer ID 签名、公证与安装验收
 - [Barn 1.2.0 发布](/zh/blog/release/1.2.0/) — 规格覆盖、根盘扩容、并发、服务名与升级步骤
-- [1.1.0 本机验收](local-acceptance-1.1.0/) — Apple Silicon 原地升级、多发行版 Linux 矩阵与原生 Mac 完整验收记录
+- [1.2.0 发布验收](/zh/blog/design/release-1-2-0-readiness/) — 正式签名制品、Linux/KVM 与原生 Mac 验收、公开下载及 Homebrew 升级
 - [验证历史](history/) — 历次版本发布、真机虚拟化测试与镜像校验的归档记录
 {.cards}
 

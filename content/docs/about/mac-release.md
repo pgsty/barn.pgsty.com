@@ -6,7 +6,7 @@ weight: 35
 icon: fa-brands fa-apple
 ---
 
-Maintainers ship the native macOS component inside the ordinary `barn_VERSION_darwin_arm64.tar.gz` archive. Since `0.9.2`, the standard installer and `pgsty/infra/barn` Homebrew formula install the CLI, its matching hosts helper, and `Barn.app` together. This page is the maintained release handbook, checked against the release scripts on 2026-11-08. For a development build, use [Build from Source](../../start/source-build/#mac-component).
+Maintainers ship the native macOS component inside the ordinary `barn_VERSION_darwin_arm64.tar.gz` archive. Since `0.9.2`, the standard installer and `pgsty/infra/barn` Homebrew formula install the CLI, its matching hosts helper, and `Barn.app` together. This page is the maintained release handbook, checked against the `v1.2.0` release scripts on 2026-11-12. For a development build, use [Build from Source](../../start/source-build/#mac-component).
 
 ## Keep one release identity {#release-identity}
 
@@ -49,7 +49,7 @@ BARN_MAC_PAYLOAD="$RELEASE_DIR/native.tar.gz" \
 
 The formal native build and `release-local` enforce the `make catalog-check` gate before building. Synchronize and test any changed official catalog first, following the [release gates](../engineering/#release-outputs-and-gates). A snapshot or `uncommitted` payload cannot serve as a formal local release. `release-local` verifies archives, packages, SBOMs, checksums, and CLI/helper pairing, and writes the assembled assets to the specified directory.
 
-For packaging development, `BARN_MAC_PAYLOAD=/absolute/native.tar.gz make release-snapshot` exercises native payload composition. Match the payload to the snapshot version selected by `.goreleaser.yaml`—for example, `1.1.1-next` after `v1.1.0`—and use `uncommitted` for a dirty checkout or the full commit for clean source. Snapshots accept ad-hoc signatures; formal release verification requires a notarized Developer ID payload.
+For packaging development, `BARN_MAC_PAYLOAD=/absolute/native.tar.gz make release-snapshot` exercises native payload composition. Match the payload to the snapshot version selected by `.goreleaser.yaml`—for example, `1.2.1-next` after `v1.2.0`—and use `uncommitted` for a dirty checkout or the full commit for clean source. Snapshots accept ad-hoc signatures; formal release verification requires a notarized Developer ID payload.
 
 ## Configure automated signing {#ci-signing}
 

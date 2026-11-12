@@ -36,7 +36,9 @@ For a generated inventory, `barn init [template] --image <reference>` writes `al
 
 `--image/-I` and `--arch/-A` share consistent spellings: `barn init full -I u24 -A amd64` saves both choices in a new inventory; the same flags on `validate`, `plan`, `up`, `reload`, `recreate`, and `resize` only override desired state for that invocation. For example, preview `barn plan -f barn.yml -I u24 -A arm64 --json`, then use the same overrides when applying it. Setup's `-I/-A` remain limited to template generation.
 
-Without an architecture flag, Barn uses inventory `vm_arch`, falling back to the host when unset; `-A native` overrides the inventory and follows the host. Existing VMs require `recreate` to change image or architecture. For repeatable CI, save `vm_image`, `vm_arch`, and an exact image version; see the [configuration reference](../../reference/configuration/#image-and-architecture).
+The same commands also accept `--cpu/-C`, `--mem/-M`, `--scale/-S`, and `--disk/-D`. Each specification follows CLI flags → nonempty `BARN_*` environment variables → inventory → defaults. Reuse the same flags and environment for `validate`, `plan`, and the operation that applies the plan.
+
+Without an architecture flag, Barn uses `BARN_ARCH`, then inventory `vm_arch`, falling back to the host when unset; `-A native` overrides both and follows the host. Existing VMs require `recreate` to change image or architecture. For repeatable CI, save `vm_image`, `vm_arch`, and an exact image version; see the [configuration reference](../../reference/configuration/#image-and-architecture).
 
 `barn setup --yes` accepts the host-preparation plan without asking. On a terminal, `up`, `start`, `restart`, and `reload` show the same plan and ask once before installing packages or the Barn network; without a terminal they only report what is missing, so run `barn setup --yes` before them.
 
