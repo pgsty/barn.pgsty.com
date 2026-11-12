@@ -9,11 +9,11 @@ aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 
 在 Mac 或 Linux 宿主上创建一台 Ubuntu 24.04 虚拟机，通过 SSH 登录，再用同一份 YAML 清单扩展为多节点固定 IP 实验环境。如需在 Apple Silicon 上运行 macOS 客机，请阅读 [macOS 虚拟机教程](../macos/)。
 
-本教程按稳定版 **1.1.0** 演示，默认每节点 2 vCPU、4 GiB。使用开发构建时先核对[版本差异](../../reference/commands/#versions)，或在清单中显式设置所需资源。
+本教程使用 **Barn 1.2.0**，默认每节点 1 vCPU、2 GiB；可在清单中显式设置资源，详见[配置默认值](../../reference/configuration/#vm-variables)。
 
 ## 开始之前 {#install}
 
-[安装 Barn](../installation/)，并确保宿主至少预留 4 GiB 可用内存供客机使用。请在交互式终端中以普通用户执行下面的命令：Barn 改动宿主前会询问一次，只有需要管理员权限的步骤才会提示输入 `sudo` 密码。CI 等无人值守场景请参阅[自动化指南](../automation/)。在中国大陆，可以在首次 `barn up` 时加上 `--mirror`，从中国官方仓库 `repo.pigsty.cc` 下载镜像。
+[安装 Barn](../installation/)，并确保宿主至少预留 2 GiB 可用内存供客机使用。请在交互式终端中以普通用户执行下面的命令：Barn 改动宿主前会询问一次，只有需要管理员权限的步骤才会提示输入 `sudo` 密码。CI 等无人值守场景请参阅[自动化指南](../automation/)。在中国大陆，可以在首次 `barn up` 时加上 `--mirror`，从中国官方仓库 `repo.pigsty.cc` 下载镜像。
 
 ## 首次启动前定制配置 {#customize}
 
@@ -33,8 +33,8 @@ aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
      vars:
        admin_ip: 10.10.10.10
        vm_image: u24
-       vm_cpu: 2
-       vm_mem: 4GiB
+       vm_cpu: 1
+       vm_mem: 2GiB
      children:
        nodes:
          hosts:
@@ -90,7 +90,7 @@ barn ssh
 |---|---|
 | 节点与地址 | `meta`（`10.10.10.10`） |
 | 镜像 | Ubuntu 24.04（`u24:stable`，与宿主架构一致） |
-| CPU 与内存 | 2 vCPU、4 GiB |
+| CPU 与内存 | 1 vCPU、2 GiB |
 | 磁盘 | 64 GiB 根盘写时复制层，以及挂载到 `/data` 的 128 GiB 测试数据盘 |
 
 两块磁盘均为按需增长的 `qcow2` 稀疏文件。如果默认网段 `10.10.10.0/24` 与本机现有路由冲突，首次 `setup` 会为未修改过的默认模板自动选择另一个空闲的私有 `/24` 网段——实际分配的地址以生成的 `barn.yml` 和 `barn status` 为准。
@@ -105,8 +105,8 @@ barn status
 ```
 
 ```text
-NAME  ADDRESS      STATE    IMAGE             CPU  MEMORY
-meta  10.10.10.10  running  u24@20261017.0.1  2    4.0 GiB
+NAME  ADDRESS      STATE    IMAGE             SPEC  ROOT
+meta  10.10.10.10  running  u24@20261017.0.1  1c2g  64 GiB
 ```
 
 `barn status` 列出每个节点的固定地址、记录的状态、镜像版本与规格。在宿主上执行客机命令时，用 `--` 隔开远程命令：
@@ -123,7 +123,7 @@ barn exec meta -- df -h / /data
 
 ## 扩容为多节点环境 {#scale}
 
-要把实验环境扩展为四个节点（按默认每节点 4 GiB 计算共需 16 GiB 客机内存），在现有 `barn.yml` 的 `all.children.nodes.hosts` 下追加三个节点。新地址需要与 `meta` 位于同一个 `/24`；如果首次运行时 Barn 改选了其他网段，请使用那个网段：
+要把实验环境扩展为四个节点（按默认每节点 2 GiB 计算共需 8 GiB 客机内存），在现有 `barn.yml` 的 `all.children.nodes.hosts` 下追加三个节点。新地址需要与 `meta` 位于同一个 `/24`；如果首次运行时 Barn 改选了其他网段，请使用那个网段：
 
 ```yaml {title="barn.yml"}
 all:

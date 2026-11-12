@@ -6,7 +6,7 @@ icon: fa-solid fa-terminal
 aliases: [/docs/reference/json-api/]
 ---
 
-This page describes global presentation, Linux lifecycle semantics, structured output, and exit codes. For syntax, all options, defaults, and examples for each command, use the [Command Reference](../commands/). **Barn 1.1.0** is the baseline; explicitly marked development sections follow the [local main and working-tree versions](../commands/#versions). Native Mac runtime contracts are in [Mac Reference](../mac/).
+This page describes Barn 1.2.0 global presentation, Linux lifecycle semantics, structured output, and exit codes. For syntax, options, defaults, and examples, use the [Command Reference](../commands/). Native Mac runtime contracts are in [Mac Reference](../mac/).
 
 ```text
 barn [--json|--yaml] [-v|--verbose] <command> [flags] [node...]
@@ -118,7 +118,7 @@ Each command exposes only the flags that apply to its operation:
 | `network install` | `--cidr/-c` (default `10.10.10.0/24`), `--mode/-m` (default `host`), `--yes/-y`; macOS-only `--archive/-a`, `--interface-id/-i` |
 | `network status` | Optional `--cidr/-c` |
 | `network uninstall`, `hosts install/uninstall` | `--yes/-y` |
-| `hosts install` (development) | `--file/-f`: publish inventory nodes and `vm_hosts`, including before VM creation |
+| `hosts install` (1.2.0) | `--file/-f`: publish inventory nodes and `vm_hosts`, including before VM creation |
 {.wide .expand}
 
 Notes on flag behavior:
@@ -130,9 +130,9 @@ Notes on flag behavior:
 - Safety and repository flags (`--ask`, `--mirror`, `--force`, `--rollback`, `--remove`, `--allow-downgrade`, `--sudo`, `--delete-persistent`, `--purge`) are long-form only. On Linux commands, `-f` selects `--file` (except `barn logs -f`, where `-f` means `--follow`), `-n` means `--no-wait` (whereas `barn mac logs -n` sets the line count), and `-d` means `--dry-run`.
 - `barn purge` deletes immediately by default: all nodes, persistent disks, SSH keys, deployment state, and the default SSH config fragment are removed; cached images and the host network remain. Only `--ask` displays the node list and deletion scope before prompting: `y`/`yes` confirms; `n`/`no`, an empty line, or EOF cancels with exit `130`. It does not accept `--yes`, `-y`, or `--force`. With no deployment, default `barn purge` and whole-deployment `barn destroy` succeed cleanly; purge also removes retained persistent disks with intact Barn ownership metadata. Unverifiable retained directories still prevent deletion. If deployment state is missing, `destroy --force --delete-persistent` and `destroy --force --purge` direct you to `barn purge`.
 
-### Development specification flags and SPEC display {#vm-specification-flags}
+### Specification flags and SPEC display {#vm-specification-flags}
 
-The 2026-11-11 working-tree development build adds `--cpu/-C`, `--mem/-M`, `--scale/-S`, and `--disk/-D`, sharing input rules with `--image/-I` and `--arch/-A`. The command table above records released 1.1.0; development support is:
+Barn 1.2.0 adds `--cpu/-C`, `--mem/-M`, `--scale/-S`, and `--disk/-D`, sharing input rules with `--image/-I` and `--arch/-A`. Specification options are available on:
 
 | Command | Added support |
 |---|---|
@@ -148,7 +148,7 @@ Node tables use `SPEC` for effective CPU and memory, such as `1c2g`, `2c4g`, and
 
 `status` and completion results show applied resources; `plan/validate/setup` show desired resources. Plans show changes as `2c4g → 4c8g`, with root capacity in a separate `ROOT` column. The `init` summary, live lifecycle progress, and ordinary terminal completion results also display `SPEC`. When scale differs from 1, output explains the base, multiplier, result, and sources; `--verbose` also explains calculations with scale 1. JSON retains numeric CPU and byte capacities, with bases, scale, effective results, and sources under `resources`; scripts need not parse the abbreviation.
 
-### Development in-place root disk growth {#root-disk-growth}
+### In-place root disk growth {#root-disk-growth}
 
 ```bash
 barn resize -D 128GiB meta
@@ -159,11 +159,11 @@ BARN_DISK=128GiB barn resize meta
 
 Barn persists recovery stages and checks image, guest disk, partition, and filesystem capacities before completion. On failure, `status` shows a `root-resize` warning. Fix the reported problem and repeat the same `resize -D` target. A grown image is never shrunk to undo incomplete guest expansion. An inventory retaining the old size reports drift on the next run; update `vm_disk` to keep the new size permanently. See [root growth acceptance](/blog/design/root-disk-growth/) for implementation details and measurements.
 
-### Lifecycle concurrency in the development version {#lifecycle-concurrency}
+### Lifecycle concurrency in 1.2.0 {#lifecycle-concurrency}
 
-As of 2026-11-11, the unreleased development version defaults Linux VM lifecycle concurrency to `max(1, logical CPUs - 2)`, using the logical CPU count available to the Barn process. Each phase uses at most its selected node count. Released Barn 1.1.0 uses at most four workers and has no lifecycle `--parallel` flag.
+Barn 1.2.0 defaults Linux VM lifecycle concurrency to `max(1, logical CPUs - 2)`, using the logical CPU count available to the Barn process. Each phase uses at most its selected node count. Released Barn 1.1.0 uses at most four workers and has no lifecycle `--parallel` flag.
 
-In the development version, `up`, `start`, `stop`, `restart`, `reload`, `recreate`, `destroy`, and `purge` accept `--parallel/-p` with zero or a positive integer. Omitting the flag uses the CPU-based default; explicitly passing `--parallel 0` runs all selected nodes concurrently. A positive value sets the concurrency limit, and `--parallel 1` runs node work serially. The override applies to disk preparation, startup, and shutdown where those phases occur; state commits and artifact removal retain their existing ordering. Values above 16 are accepted, and values above the node count create no extra workers. The option belongs to the command invocation and is preserved in suggested retry commands, including an explicit zero.
+In 1.2.0, `up`, `start`, `stop`, `restart`, `reload`, `recreate`, `destroy`, and `purge` accept `--parallel/-p` with zero or a positive integer. Omitting the flag uses the CPU-based default; explicitly passing `--parallel 0` runs all selected nodes concurrently. A positive value sets the concurrency limit, and `--parallel 1` runs node work serially. The override applies to disk preparation, startup, and shutdown where those phases occur; state commits and artifact removal retain their existing ordering. Values above 16 are accepted, and values above the node count create no extra workers. The option belongs to the command invocation and is preserved in suggested retry commands, including an explicit zero.
 
 ```bash
 barn up -p 0
@@ -174,7 +174,7 @@ barn restart meta node-1 -p 2
 
 A startup worker remains occupied while its guest boots and passes SSH/readiness checks. With `--no-wait`, it becomes available after QEMU starts and its process identity is verified. Disk preparation completes before the startup phase begins. `provision --parallel` keeps its separate default of `1`; native macOS guest limits are documented under [Mac commands](../mac/).
 
-Implementation and regression coverage in local commit `158786a`: `internal/private/concurrency.go`, `internal/private/concurrency_test.go`, and `cmd/barn/lifecycle_parallel_test.go`. As of this review these files have not reached remote main; see the [version baseline](../commands/#versions).
+Implementation and regression coverage: [`concurrency.go`](https://github.com/pgsty/barn/blob/v1.2.0/internal/private/concurrency.go), [`concurrency_test.go`](https://github.com/pgsty/barn/blob/v1.2.0/internal/private/concurrency_test.go), and [`lifecycle_parallel_test.go`](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/lifecycle_parallel_test.go).
 
 Native acceptance on 2026-11-10 used six Debian 13 guests in a temporary `BARN_HOME` on macOS/arm64 with 18 logical CPUs. The automatic default was 16 and reached six concurrent startups; an explicit value of 1 kept startup and shutdown serial; an explicit value of 32 reached six concurrent restarts. All guests passed readiness checks, and the test deployment was destroyed afterward.
 
@@ -200,7 +200,7 @@ When invoked without node arguments, lifecycle commands target all managed nodes
 
 - **`restart`** restarts applied nodes using their committed state without re-reading `barn.yml`.
 - **`reload`** validates the effective desired specification and startup dependencies before stopping selected nodes, then runs `up` for that selection. It can add nodes; changes that replace an existing VM still require `recreate`.
-- **`resize`** in released 1.1.0 applies only CPU/memory changes; the development build also supports effective `vm_scale` resources and [root growth](#root-disk-growth). Supported increases may be hot-plugged; decreases, older VMs, and unsupported backends use a stop/start fallback while preserving the VM identity and disks. It refuses image, data-disk, network, share, create, remove, and deployment-wide changes.
+- **`resize`** in released 1.1.0 applies only CPU/memory changes; 1.2.0 also supports effective `vm_scale` resources and [root growth](#root-disk-growth). Supported increases may be hot-plugged; decreases, older VMs, and unsupported backends use a stop/start fallback while preserving the VM identity and disks. It refuses image, data-disk, network, share, create, remove, and deployment-wide changes.
 - **`recreate`** applies changed node definitions by replacing root disks and non-persistent data disks while reattaching compatible [persistent data disks](../configuration/#data-disks). Explicit `plan`, `up`, `reload`, `recreate`, and `resize` selections retain unselected peers' applied definitions, including peers edited or omitted in YAML. Uncreated, unselected nodes do not require image resolution. Conflicting addresses, aliases, control-node roles, or deployment-wide settings still fail preflight; omitting selectors applies the whole inventory.
 - When configuration drift requires a destructive action, `up` and `reload` exit with a `conflict` error pointing to `barn plan` and `barn recreate <node>` or `barn destroy <node>`. On a terminal, `recreate` and `destroy` list the nodes they replace or remove and require typing the command name unless `--yes` (or `--force`) is passed; without a terminal they exit `2` unless one of those flags is present. Without node arguments, both apply to the whole deployment.
 
@@ -254,7 +254,7 @@ When one or more nodes fail during a batch operation, Barn preserves any nodes t
 | Environment variable | Purpose |
 |---|---|
 | `BARN_HOME` | Private state directory (default `~/.barn`); accepts relative paths, `~/`, and directory symlinks, but not `/` or the home root. Prefer an absolute path across working directories |
-| `BARN_IMAGE/BARN_ARCH/BARN_CPU/BARN_MEM/BARN_SCALE/BARN_DISK` | Development VM specification overrides; CLI takes priority. Read only by commands accepting each field; see [specification overrides](../configuration/#specification-overrides) |
+| `BARN_IMAGE/BARN_ARCH/BARN_CPU/BARN_MEM/BARN_SCALE/BARN_DISK` | 1.2.0 VM specification overrides; CLI takes priority. Read only by commands accepting each field; see [specification overrides](../configuration/#specification-overrides) |
 | `BARN_REPO` | Default image repository URL or path; overridden by `--mirror` and `--repo` |
 | `BARN_OUTPUT` | Default output format (`text`, `json`, or `yaml`); overridden by `--json`/`--yaml` |
 | `BARN_VERBOSE` | Boolean default for diagnostic output; overridden by `-v`/`--verbose` |

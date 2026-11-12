@@ -7,7 +7,7 @@ sections:
   - cta
 
 hero:
-  eyebrow: Barn 1.1.0 · 稳定版 · Apache-2.0
+  eyebrow: Barn 1.2.0 · 稳定版 · Apache-2.0
   title_lines:
     - words:
         - { text: 多节点 Linux 实验环境 }
@@ -27,8 +27,8 @@ hero:
     - { label: 启动 Linux 实验环境, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: 运行 macOS 虚拟机, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
   detail:
-    label: 了解 1.1.0 的新变化
-    url: blog/release/1.1.0/
+    label: 了解 1.2.0 的新变化
+    url: blog/release/1.2.0/
 
 quickstart:
   eyebrow: 快速上手
@@ -39,13 +39,15 @@ quickstart:
   facts:
     - { label: 节点, value: '4 台虚拟机 · `10.10.10.10–13`' }
     - { label: 镜像, value: 'Ubuntu 24.04 · `u24:stable`' }
-    - { label: 单机, value: 2 个 vCPU · 4 GiB 内存 }
+    - { label: 单机, value: 1 个 vCPU · 2 GiB 内存 }
     - { label: 磁盘, value: '64 GiB 根盘 · 128 GiB `/data`' }
   links:
     - { label: 安装选项, url: docs/start/installation/ }
     - { label: 与 Pigsty 配合使用, url: 'docs/start/automation/#pair-the-lab-with-pigsty' }
   demo: |-
-    {{< asciinema file="images/barn-first-run.cast" title="macOS · Homebrew → Pigsty full" rows="18" fit="both" speed="1.25" idleTimeLimit="0.7" poster="npt:0:23.63" preload="true" >}}
+    {{< asciinema file="images/barn-first-run.cast" title="Barn 1.1.0 · macOS → Pigsty full" rows="18" fit="both" speed="1.25" idleTimeLimit="0.7" poster="npt:0:23.63" preload="true" >}}
+
+    录像录于 11 月 9 日，使用 Barn 1.1.0。1.2.0 的操作命令相同，默认规格改为 1 vCPU / 2 GiB，状态表改用 `SPEC` / `ROOT` 列。
   body: |-
     ```bash {title="macOS · Homebrew"}
     # 安装 CLI、Barn.app 与 QEMU

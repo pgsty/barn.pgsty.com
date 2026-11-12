@@ -7,11 +7,11 @@ date: 2026-11-11
 
 Plan, create, start, resize, inspect, and explicitly remove Linux virtual machines.
 
-Availability labels distinguish **1.1.0**, **local main**, and **working tree**; see the [version baseline](/docs/reference/commands/#versions). All commands inherit the [global options](/docs/reference/commands/#global-options).
+This reference covers **Barn 1.2.0**. Option tables distinguish options also available in **1.1.0** from additions in **1.2.0**; see the [version baseline](/docs/reference/commands/#versions). All commands inherit the [global options](/docs/reference/commands/#global-options).
 
 Node arguments are resolved names such as `meta` and `node-1`. Omit them to select all nodes in the command’s inventory/applied scope. IP addresses, groups, and `vm_alias` are not selectors. `plan`, `up`, `reload`, `resize`, and `recreate` read `-f`, then the current directory’s inventory, then applied state. Other lifecycle commands use applied state directly.
 
-Specification overrides, scaling, and their environment variables are defined in [Configuration](../../configuration/#specification-overrides). Development concurrency applies only where `--parallel` is listed; `plan`, `resize`, and `status` do not accept it. For structured results and exit codes, see [CLI contracts](../../cli/#lifecycle-results).
+Specification overrides, scaling, and their environment variables are defined in [Configuration](../../configuration/#specification-overrides). The 1.2.0 concurrency option applies only where `--parallel` is listed; `plan`, `resize`, and `status` do not accept it. For structured results and exit codes, see [CLI contracts](../../cli/#lifecycle-results).
 
 ## `barn plan` {#barn-plan}
 
@@ -27,14 +27,14 @@ Aliases: `pl`.
 
 | Option | Meaning / default | Available in |
 |---|---|---|
-| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides are development-only | 1.1.0 |
-| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | Local main |
-| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | Local main |
+| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides require 1.2.0 | 1.1.0 |
+| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | 1.2.0 |
+| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | 1.2.0 |
 | `-f, --file string` | desired inventory; defaults to the discovered inventory, then the applied state | 1.1.0 |
-| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides are development-only | 1.1.0 |
-| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | Local main |
+| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides require 1.2.0 | 1.1.0 |
+| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | 1.2.0 |
 | `-r, --repo string` | image repository URL or directory; overrides $BARN_REPO | 1.1.0 |
-| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | Local main |
+| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -55,18 +55,18 @@ On an interactive first run, it can prepare missing host dependencies and genera
 
 | Option | Meaning / default | Available in |
 |---|---|---|
-| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides are development-only | 1.1.0 |
-| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | Local main |
-| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | Local main |
+| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides require 1.2.0 | 1.1.0 |
+| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | 1.2.0 |
+| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | 1.2.0 |
 | `-f, --file string` | desired inventory; defaults to the discovered inventory, then the applied state | 1.1.0 |
-| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides are development-only | 1.1.0 |
-| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | Local main |
+| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides require 1.2.0 | 1.1.0 |
+| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | 1.2.0 |
 | `--mirror` | use the China official repository at repo.pigsty.cc; overridden by `--repo` | 1.1.0 |
 | `-n, --no-wait` | return once QEMU is running, without waiting for the guest to boot | 1.1.0 |
-| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | Local main |
+| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | 1.2.0 |
 | `-r, --repo string` | image repository URL or directory; overrides `--mirror` and $BARN_REPO | 1.1.0 |
 | `--rollback` | remove safe artifacts from nodes that fail to prepare | 1.1.0 |
-| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | Local main |
+| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -87,7 +87,7 @@ Start selected stopped nodes from applied state and wait for SSH. It works from 
 | Option | Meaning / default | Available in |
 |---|---|---|
 | `-n, --no-wait` | return once QEMU is running, without waiting for the guest to boot | 1.1.0 |
-| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | Local main |
+| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -105,7 +105,7 @@ Stop selected running Linux VMs using their recorded process identities. It reta
 
 | Option | Meaning / default | Available in |
 |---|---|---|
-| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | Local main |
+| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -124,7 +124,7 @@ Stop and start existing nodes using applied state. Inventory edits are not read.
 | Option | Meaning / default | Available in |
 |---|---|---|
 | `-n, --no-wait` | return once QEMU is running, without waiting for the guest to boot | 1.1.0 |
-| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | Local main |
+| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -142,18 +142,18 @@ Validate the desired specification and startup dependencies before stopping sele
 
 | Option | Meaning / default | Available in |
 |---|---|---|
-| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides are development-only | 1.1.0 |
-| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | Local main |
-| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | Local main |
+| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides require 1.2.0 | 1.1.0 |
+| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | 1.2.0 |
+| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | 1.2.0 |
 | `-f, --file string` | desired inventory; defaults to the discovered inventory, then the applied state | 1.1.0 |
-| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides are development-only | 1.1.0 |
-| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | Local main |
+| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides require 1.2.0 | 1.1.0 |
+| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | 1.2.0 |
 | `--mirror` | use the China official repository at repo.pigsty.cc; overridden by `--repo` | 1.1.0 |
 | `-n, --no-wait` | return once QEMU is running, without waiting for the guest to boot | 1.1.0 |
-| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | Local main |
+| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | 1.2.0 |
 | `-r, --repo string` | image repository URL or directory; overrides `--mirror` and $BARN_REPO | 1.1.0 |
 | `--rollback` | remove safe artifacts from nodes that fail to prepare | 1.1.0 |
-| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | Local main |
+| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -169,17 +169,17 @@ barn resize [node...] [flags]
 
 Apply CPU and memory changes while preserving VM identity, disks, and SSH keys. Supported increases use hotplug; decreases or unsupported live changes use a stop/start fallback. Stable 1.1.0 reads CPU/memory changes from the inventory. Image, architecture, data-disk, network, share, create, and remove changes cannot be applied by resize.
 
-The development build additionally accepts resource flags and grows the existing root with `-D 128GiB`. Root growth stops QEMU, expands its image, boots the guest to grow and verify a last plain ext4/XFS root partition, then restores an initially stopped VM to stopped. Targets must grow and align to 512 bytes. Retry an interrupted growth with the same target; shrinking, LVM, encrypted roots, and non-last partitions are unsupported. See [root growth and recovery](../../cli/#root-disk-growth). CLI overrides do not rewrite the inventory.
+Barn 1.2.0 additionally accepts resource flags and grows the existing root with `-D 128GiB`. Root growth stops QEMU, expands its image, boots the guest to grow and verify a last plain ext4/XFS root partition, then restores an initially stopped VM to stopped. Targets must grow and align to 512 bytes. Retry an interrupted growth with the same target; shrinking, LVM, encrypted roots, and non-last partitions are unsupported. See [root growth and recovery](../../cli/#root-disk-growth). CLI overrides do not rewrite the inventory.
 
 | Option | Meaning / default | Available in |
 |---|---|---|
-| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides are development-only | 1.1.0 |
-| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | Local main |
-| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | Local main |
+| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides require 1.2.0 | 1.1.0 |
+| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | 1.2.0 |
+| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | 1.2.0 |
 | `-f, --file string` | desired inventory; defaults to the discovered inventory, then the applied state | 1.1.0 |
-| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides are development-only | 1.1.0 |
-| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | Local main |
-| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | Local main |
+| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides require 1.2.0 | 1.1.0 |
+| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | 1.2.0 |
+| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -202,18 +202,18 @@ Aliases: `rc`.
 
 | Option | Meaning / default | Available in |
 |---|---|---|
-| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides are development-only | 1.1.0 |
-| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | Local main |
-| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | Local main |
+| `-A, --arch string` | override deployment vm_arch: native, amd64, or arm64; environment overrides require 1.2.0 | 1.1.0 |
+| `-C, --cpu string` | Base vCPUs before scale, integer 1–256; effective CPU count is also limited to 256; overrides BARN_CPU | 1.2.0 |
+| `-D, --disk string` | Absolute root capacity, at least the base virtual size; bare integer means GiB; overrides BARN_DISK | 1.2.0 |
 | `-f, --file string` | desired inventory; defaults to the discovered inventory, then the applied state | 1.1.0 |
 | `--force` | recreate without the interactive confirmation (required without a terminal) | 1.1.0 |
-| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides are development-only | 1.1.0 |
-| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | Local main |
+| `-I, --image string` | override vm_image/vm_version for selected nodes; environment overrides require 1.2.0 | 1.1.0 |
+| `-M, --mem string` | Base memory before scale, minimum 512 MiB; bare integer means MiB; overrides BARN_MEM | 1.2.0 |
 | `--mirror` | use the China official repository at repo.pigsty.cc; overridden by `--repo` | 1.1.0 |
 | `-n, --no-wait` | return once QEMU is running, without waiting for the guest to boot | 1.1.0 |
-| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | Local main |
+| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | 1.2.0 |
 | `-r, --repo string` | image repository URL or directory; overrides `--mirror` and $BARN_REPO | 1.1.0 |
-| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | Local main |
+| `-S, --scale string` | Integer 1–256 multiplying base CPU and memory only; disk does not scale; overrides BARN_SCALE | 1.2.0 |
 | `--yes` | same as `--force` | 1.1.0 |
 {.wide .expand}
 
@@ -229,7 +229,7 @@ barn recreate -f pigsty.yml meta --yes
 barn status [node...] [flags]
 ```
 
-Inspect recorded node configuration and live QEMU process identity without requiring the inventory directory. `running` reports a verified VM process, not an SSH readiness probe. `--verbose` adds runtime details; `--json` exposes node records, active-operation notes, and failures. A degraded node can produce exit `5` while healthy peers are still listed. Development text output uses compact `SPEC` values such as `2c4g`.
+Inspect recorded node configuration and live QEMU process identity without requiring the inventory directory. `running` reports a verified VM process, not an SSH readiness probe. `--verbose` adds runtime details; `--json` exposes node records, active-operation notes, and failures. A degraded node can produce exit `5` while healthy peers are still listed. The 1.2.0 text output uses compact `SPEC` values such as `2c4g`.
 
 Aliases: `st`.
 
@@ -257,7 +257,7 @@ Aliases: `de`.
 |---|---|---|
 | `--delete-persistent` | also delete owned persistent data disks | 1.1.0 |
 | `--force` | destroy without the interactive confirmation (required without a terminal) | 1.1.0 |
-| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | Local main |
+| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | 1.2.0 |
 | `--purge` | terminal disposal: also delete persistent disks, keys, and deployment state | 1.1.0 |
 | `--yes` | same as `--force` | 1.1.0 |
 {.wide .expand}
@@ -276,12 +276,12 @@ barn purge [flags]
 
 Immediately delete the entire Linux deployment, including root disks, persistent data disks, keys, state, and the default SSH fragment. It takes no node names and reads no inventory. It has no `--yes`, `-y`, or `--force`: use `--ask` when you want to review the scope and confirm with `y/yes` (Enter cancels).
 
-Cached images, host networking, and Mac VMs remain. An absent deployment is an idempotent success; ambiguous retained artifacts still require identity checks. The development `--parallel` flag controls node work during disposal.
+Cached images, host networking, and Mac VMs remain. An absent deployment is an idempotent success; ambiguous retained artifacts still require identity checks. The 1.2.0 `--parallel` flag controls node work during disposal.
 
 | Option | Meaning / default | Available in |
 |---|---|---|
 | `--ask` | show the deletion scope and ask for y/yes before purging | 1.1.0 |
-| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | Local main |
+| `-p, --parallel int` | Node concurrency: omitted = max(1, logical CPUs - 2); 0 = all selected nodes; positive = limit | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -291,6 +291,6 @@ barn --json purge
 
 ## Implementation {#implementation}
 
-[command_lifecycle.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_lifecycle.go) · [main.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/main.go)
+[command_lifecycle.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_lifecycle.go) · [main.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/main.go)
 
-The [version baseline](/docs/reference/commands/#versions) records the additional local commits and uncommitted extension checked on 2026-11-11.
+The [version baseline](/docs/reference/commands/#versions) identifies the released source and the changes since 1.1.0.

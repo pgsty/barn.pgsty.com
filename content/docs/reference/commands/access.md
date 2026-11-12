@@ -7,7 +7,7 @@ date: 2026-11-11
 
 Connect to Linux guests, run scripts, read logs, and publish SSH or hosts entries.
 
-Availability labels distinguish **1.1.0**, **local main**, and **working tree**; see the [version baseline](/docs/reference/commands/#versions). All commands inherit the [global options](/docs/reference/commands/#global-options).
+This reference covers **Barn 1.2.0**. Option tables distinguish options also available in **1.1.0** from additions in **1.2.0**; see the [version baseline](/docs/reference/commands/#versions). All commands inherit the [global options](/docs/reference/commands/#global-options).
 
 ## `barn ssh` {#barn-ssh}
 
@@ -127,13 +127,13 @@ barn hosts install [flags]
 
 Publish applied node names and aliases in the Barn-owned block of the host’s `/etc/hosts`, using the digest-matched privileged helper. On a terminal it shows the change and asks before applying; in noninteractive or structured mode it only previews unless `--yes` is passed. An unchanged block requires no privilege. This file is not automatically published by `up`.
 
-The uncommitted working-tree extension adds `-f pigsty.yml`, publishing inventory nodes plus `all.vars.vm_hosts` before VM creation. It replaces the whole Barn block, so a later call without `-f` drops inventory-only service names. This option is absent from both v1.1.0 and local commit `6ab0cd5`; see [local service names](../../configuration/#local-hosts).
+Barn 1.2.0 adds `-f pigsty.yml`, publishing inventory nodes plus `all.vars.vm_hosts` before VM creation. It replaces the whole Barn block, so a later call without `-f` drops inventory-only service names. See [local service names](../../configuration/#local-hosts).
 
 Aliases: `i`.
 
 | Option | Meaning / default | Available in |
 |---|---|---|
-| `-f, --file string` | Inventory nodes, aliases and vm_hosts; usable before VM creation (working tree only) | Working tree |
+| `-f, --file string` | Inventory nodes, aliases and vm_hosts; usable before VM creation | 1.2.0 |
 | `-y, --yes` | apply the displayed privileged plan without confirmation (sudo may still ask for a password) | 1.1.0 |
 {.wide .expand}
 
@@ -164,6 +164,6 @@ barn hosts uninstall --yes
 
 ## Implementation {#implementation}
 
-[command_root.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_root.go) · [command_access.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_access.go) · [main.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/main.go)
+[command_root.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_root.go) · [command_access.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_access.go) · [main.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/main.go)
 
-The [version baseline](/docs/reference/commands/#versions) records the additional local commits and uncommitted extension checked on 2026-11-11.
+The [version baseline](/docs/reference/commands/#versions) identifies the released source and the changes since 1.1.0.

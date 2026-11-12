@@ -1,6 +1,6 @@
 ---
 title: 从源码构建
-description: 构建 Barn 1.1.0 或开发分支，准备 Mac 原生组件，并运行贡献者检查。
+description: 构建 Barn 1.2.0 或开发分支，准备 Mac 原生组件，并运行贡献者检查。
 weight: 80
 icon: fa-solid fa-hammer
 ---
@@ -9,34 +9,34 @@ icon: fa-solid fa-hammer
 
 ## 检出源码 {#check-out-the-source}
 
-克隆 **v1.1.0** 标签以复现本文档对应的发行版（开发主分支时可省略 `--branch v1.1.0`），并在提交构建记录时附上 `git log -1 --oneline` 与 `git status --short`：
+克隆 **v1.2.0** 标签以复现本文档对应的发行版（开发主分支时可省略 `--branch v1.2.0`），并在提交构建记录时附上 `git log -1 --oneline` 与 `git status --short`：
 
 ```bash
-git clone --branch v1.1.0 https://github.com/pgsty/barn.git
+git clone --branch v1.2.0 https://github.com/pgsty/barn.git
 cd barn
 ```
 
-`v1.1.0` 标签用于复现 [Barn 1.1.0 发布说明](/zh/blog/release/1.1.0/)所描述的已发布版本。开发构建不要设置 `BARN_VERSION`，避免将开发构建标记为正式的 `1.1.0`。
+`v1.2.0` 标签用于复现 [Barn 1.2.0 发布说明](/zh/blog/release/1.2.0/)所描述的已发布版本。开发构建不要设置 `BARN_VERSION`，避免将开发构建标记为正式的 `1.2.0`。
 
 ## 构建 CLI {#build-the-cli}
 
-Barn `1.1.0` 在 `go.mod` 与 `packaging/toolchain.env` 中固定使用 **Go 1.27.3**，并依赖 Git、Make、Bash 与标准编译工具（仅编译 CLI 无需安装 QEMU 或配置宿主网络）：
+Barn `1.2.0` 在 `go.mod` 与 `packaging/toolchain.env` 中固定使用 **Go 1.27.4**，并依赖 Git、Make、Bash 与标准编译工具（仅编译 CLI 无需安装 QEMU 或配置宿主网络）：
 
 ```bash
-BARN_VERSION=1.1.0 make build
+BARN_VERSION=1.2.0 make build
 export PATH="$PWD/bin:$PATH"
 barn version
 ```
 
 `make build` 会在 `bin/.barn-releases/` 下编译配套的 `barn` 与 `barn-hosts-helper`，将 helper 的 SHA-256 摘要嵌入 CLI，并在 `bin/` 下创建入口符号链接。请始终使用 `make build` 而非裸跑 `go build ./cmd/barn`；移动构建产物时请一并保留 `bin/.barn-releases/` 目录与 `bin/` 下的两个链接。
 
-未指定 `BARN_VERSION` 时，开发构建默认将版本号标记为 `dev`（本地候选构建可传入 `BARN_VERSION=1.2.0-dev.1`），工作区存在未提交改动时 commit 字段会显示为 `uncommitted`。
+未指定 `BARN_VERSION` 时，开发构建默认将版本号标记为 `dev`，工作区存在未提交改动时 commit 字段会显示为 `uncommitted`。
 
 执行 `make cross` 可在 `bin/darwin_amd64`、`bin/darwin_arm64`、`bin/linux_amd64` 与 `bin/linux_arm64` 下交叉编译四个目标平台的 Go CLI 与 helper。构建产物（`bin/`、`dist/`、`.goreleaser-*/`）及实验环境清单不应纳入版本控制；在工作树内生成前，请确认对应路径已被忽略。
 
 请针对准备使用的源码运行下方贡献者检查；历次带日期的验收记录见[验证历史](../../about/history/)。
 
-本次核对的本地开发提交 `6ab0cd5` 使用 **Go 1.27.4**，候选版本可设为 `BARN_VERSION=1.2.0-dev.1`；GoReleaser 与 Syft 的版本也已调整。开发源码以其自身 `packaging/toolchain.env` 为准，具体版本边界见[命令参考](../../reference/commands/#versions)。
+工具版本以当前检出的 `packaging/toolchain.env` 为准；正式发行包按[签名与公证流程](../../about/mac-release/)构建。
 
 ## 构建 Mac 原生组件 {#mac-component}
 
@@ -45,7 +45,7 @@ barn version
 在运行 macOS 27+ 的 Apple Silicon Mac 上，确认 `xcrun` 已指向 **Xcode 27+**（提供 macOS 27 SDK 与 Swift 编译器），然后执行：
 
 ```bash
-BARN_VERSION=1.1.0 make mac-build
+BARN_VERSION=1.2.0 make mac-build
 export PATH="$PWD/bin/mac:$PATH"
 barn mac doctor
 ```

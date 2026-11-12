@@ -12,7 +12,7 @@ Barn resolves Linux guest images from a static catalog and immutable `qcow2` art
 
 ## Aliases and pull order {#aliases-and-pull-order}
 
-Barn 1.1.0 embeds image catalog `2026110502`, including Debian 13 image `20261103.2651.1`. It covers 9 distribution families with one `stable` version each, for 17 image artifacts: `el7` is `amd64`-only, and every other family provides both `amd64` and `arm64`. When no image is specified, Barn selects `u24:stable` (Ubuntu 24.04 LTS) on the host's native architecture.
+Barn 1.2.0 embeds image catalog `2026110502`, including Debian 13 image `20261103.2651.1`. It covers 9 distribution families with one `stable` version each, for 17 image artifacts: `el7` is `amd64`-only, and every other family provides both `amd64` and `arm64`. When no image is specified, Barn selects `u24:stable` (Ubuntu 24.04 LTS) on the host's native architecture.
 
 The table below lists the `stable` channel targets in embedded catalog `2026110502`. Run `barn update` followed by `barn image list` to inspect the latest catalog published on your selected repository, and see [Platforms and Limits](../../about/status/) for host support details.
 

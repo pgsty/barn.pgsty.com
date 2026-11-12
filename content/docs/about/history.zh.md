@@ -6,11 +6,29 @@ icon: fa-solid fa-clock-rotate-left
 ---
 
 > [!NOTE]
-> 本页汇集截至 `1.1.0` 的源码、打包、VM 与公开安装验证记录，每条保留原有日期、测试版本和范围。当前宿主支持与版本行为请查阅[平台与限制](../status/)及[发布说明](/zh/blog/release/)。
+> 本页汇集截至 `1.2.0` 的源码、打包、VM 与公开安装验证记录，每条保留原有日期、测试版本和范围。当前宿主支持与版本行为请查阅[平台与限制](../status/)及[发布说明](/zh/blog/release/)。
+
+## Barn 1.2.0 最终验收 — 2026-11-12 {#release-1-2-0}
+
+| 项目 | 记录的身份 |
+|---|---|
+| 标签与提交 | `v1.2.0` → `90f615804b823b4eb491101e642073dcd37a9700` |
+| 构建时间 | `2026-11-11T23:38:07Z`；`SOURCE_DATE_EPOCH=1794440287` |
+| GitHub Release | ID `442314866`；于 `2026-11-12T00:05:32Z` 作为 stable/latest 发布 |
+| Apple 公证 | 提交 `165b486b-5055-4eca-a595-54bed6bdd6c1` 获得 Accepted |
+| 签名目录 | Revision `2026110502`；SHA-256 `d41e46d20bc57cb1b071e3919a27a8f7f703df2addca879970a528e7ab004065` |
+{.wide .expand}
+
+- **CI 与打包**：[源码/Mac CI](https://github.com/pgsty/barn/actions/runs/43121333312)与[完整打包 CI](https://github.com/pgsty/barn/actions/runs/43121333418)均通过发布提交。[标签工作流](https://github.com/pgsty/barn/actions/runs/43122351097)通过签名配置检查并跳过远端组装；正式发行包按文档中的本机签名流程构建。`make release-local`、签名、公证、staple 与 Gatekeeper 均通过。
+- **最终制品与目录**：全部 20 个 draft 附件及 20 个匿名公开下载的大小与 SHA-256 均匹配已核验本地字节。两个官方目录均通过验签、全新数据根激活和内置字节比对，每个镜像源的 17 个 stable 制品通过可达性/大小检查；运行时选用镜像的下载也核验了制品摘要。
+- **最终运行时**：回下载 Linux 归档通过 18 步 KVM 验收，覆盖 ext4/XFS 根盘扩容、幂等性、拒绝缩盘、客机工具失败、CLI 中断、身份/数据保留、并发与销毁。原生 Mac 回下载载荷完成全部 15 阶段，补充通过桌面、双向剪贴板、关窗后后台运行、SSH 与正常关机检查。一次 Apple HTTPS 超时保留日志，重新核验身份与基底后续跑成功，产品字节未改动。
+- **公开交付**：`darwin/arm64`、`linux/amd64` 均通过公网 latest 与指定版本安装；隔离的 1.1.0 安装器升级及重复安装通过。[Homebrew 更新](https://github.com/pgsty/homebrew-infra/commit/f1b83ae)通过真实 1.1.0 → 1.2.0 升级、`brew test`、style 与严格在线 audit。双语参考按 1.2.0 记录 57 个命令，每种语言含 174 项本地选项。
+
+物理宿主运行覆盖为 `darwin/arm64` 与 `linux/amd64`；`darwin/amd64` 和原生 `linux/arm64` 完成交叉构建及制品检查。首页历史 1.1.0 录像已明确标注版本。候选升级证据、重试记录及范围限制见[完整发布核对](/zh/blog/design/release-1-2-0-readiness/)。
 
 ## Barn 1.2.0 发布准备 — 2026-11-12 {#release-1-2-0-preparation}
 
-[1.2.0 发布准备核对](/zh/blog/design/release-1-2-0-readiness/)记录了未提交候选版本的源码、镜像目录、完整 snapshot、Linux/KVM 与原生 Mac 检查，以及尚待完成的提交、CI、签名和公开发布门禁。
+[1.2.0 发布准备核对](/zh/blog/design/release-1-2-0-readiness/)记录了未提交候选版本的源码、镜像目录、完整 snapshot、Linux/KVM 与原生 Mac 检查，以及随后完成的提交、CI、签名和公开发布门禁。
 
 ## Barn 1.1.0 最终验收 — 2026-11-09 {#release-1-1-0}
 

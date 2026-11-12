@@ -11,7 +11,7 @@ barn [--json|--yaml] [-v|--verbose] mac <command> [flags] [name...]
 
 Running macOS guests requires an Apple Silicon Mac on macOS 27 or later, invoked as the logged-in desktop user. Commands that talk to the native runner reject `root` with `mac_root` and unsupported hosts with `mac_host_unsupported`. Top-level `--help` hides `mac` on Linux and Intel Macs, while local-state queries such as `barn mac image ls` work without invoking the runner. Running `barn mac` with no subcommand executes `barn mac ls`.
 
-This reference covers the **Barn 1.1.0** command interface and `Barn.app`, the native macOS app bundle that runs the VMs (runner protocol `2`). The Apple Silicon release and Homebrew installation include the app; see [macOS Guests](../../start/macos/#install).
+This reference covers the **Barn 1.2.0** command interface and `Barn.app`, the native macOS app bundle that runs the VMs (runner protocol `2`). The Apple Silicon release and Homebrew installation include the app; see [macOS Guests](../../start/macos/#install).
 
 For complete per-command syntax, options, and examples, see the [macOS Command Reference](../commands/mac/). This page collects machine rules, networking, result formats, and state files.
 

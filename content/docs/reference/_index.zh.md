@@ -1,7 +1,7 @@
 ---
 title: 参考
 linkTitle: 参考
-description: Barn 1.1.0 的配置字段、命令参数、输出格式与镜像仓库说明。
+description: Barn 1.2.0 的配置字段、命令参数、输出格式与镜像仓库说明。
 weight: 20
 icon: fa-solid fa-book-open
 no_list: true
@@ -9,7 +9,7 @@ cascade:
   type: docs
 ---
 
-本节汇总全部命令、配置字段、输出格式与镜像仓库规则，以 **Barn 1.1.0** 为稳定基线，并在[版本表](commands/#versions)中单独标出 2026-11-11 核对的本地 main 与未提交开发功能。需要按步骤上手操作时，请先阅读[使用指南](../start/)。
+本节汇总 **Barn 1.2.0** 的全部命令、配置字段、输出格式与镜像仓库规则；[版本表](commands/#versions)标明相对 1.1.0 的新增功能。需要按步骤上手操作时，请先阅读[使用指南](../start/)。
 
 - [命令参考](commands/) — 全部 Linux 与 macOS 命令、完整选项表、默认值、示例与可用版本
 - [Linux 配置](configuration/) — 清单发现顺序、变量继承、默认值、数据盘、目录共享与节点漂移规则
@@ -19,4 +19,4 @@ cascade:
 - [镜像流水线](image-pipeline/) — 面向贡献者的 Linux qcow2 候选镜像校验与离线归一化工具
 {.cards}
 
-Barn 的对外接口是 `barn` 命令行（可通过 `barn version` 与 `barn <command> --help` 查看当前安装版本）；Go 仓库 `internal/` 下的包属于内部实现。镜像表对应 Barn 1.1.0 二进制内置的镜像目录快照，日常运行 `barn update` 即可激活更新的签名仓库元数据，无需升级可执行文件。构建与发布门禁详见[发布工程](../about/engineering/)。
+Barn 的对外接口是 `barn` 命令行（可通过 `barn version` 与 `barn <command> --help` 查看当前安装版本）；Go 仓库 `internal/` 下的包属于内部实现。镜像表对应 Barn 1.2.0 二进制内置的镜像目录快照，日常运行 `barn update` 即可激活更新的签名仓库元数据，无需升级可执行文件。构建与发布门禁详见[发布工程](../about/engineering/)。

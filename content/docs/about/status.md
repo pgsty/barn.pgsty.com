@@ -1,7 +1,7 @@
 ---
 title: Platforms and Limits
 linkTitle: Platforms and Limits
-description: Barn 1.1.0 host requirements, Linux guest compatibility, macOS requirements, and storage limits.
+description: Barn 1.2.0 host requirements, Linux guest compatibility, macOS requirements, and storage limits.
 weight: 10
 icon: fa-solid fa-laptop-code
 ---
@@ -10,14 +10,14 @@ Barn is built for **local development and testing**. Use this page to check host
 
 ## Version {#documentation-baseline}
 
-This documentation covers **Barn 1.1.0** (see the [Installation Guide](../../start/installation/) and [1.1.0 Release Notes](/blog/release/1.1.0/)). Run `barn version` to check your installed binary; the Linux image catalog updates independently via `barn update`.
+This documentation covers **Barn 1.2.0** (see the [Installation Guide](../../start/installation/) and [1.2.0 Release Notes](/blog/release/1.2.0/)). Run `barn version` to check your installed binary; the Linux image catalog updates independently via `barn update`.
 
-- **Stable channel**: [Barn 1.1.0](https://github.com/pgsty/barn/releases/tag/v1.1.0) was published on 2026-11-09 as a regular GitHub release, so `releases/latest`, the download installer without `BARN_VERSION`, and the Homebrew formula select it; DEB and RPM packages are downloaded from the release. Set `BARN_VERSION=1.1.0` to pin it.
+- **Stable channel**: [Barn 1.2.0](https://github.com/pgsty/barn/releases/tag/v1.2.0) was published on 2026-11-12 as a regular GitHub release, so `releases/latest`, the download installer without `BARN_VERSION`, and the Homebrew formula select it; DEB and RPM packages are downloaded from the release. Set `BARN_VERSION=1.2.0` to pin it.
 - **Native macOS component**: The Darwin arm64 archive and Apple Silicon Homebrew install include the signed, notarized `Barn.app` alongside the matching CLI and helper. Go and Xcode are not required; see [macOS Guests](../../start/macos/#install).
-- **Changes in 1.1.0**: Command-line `--image/-I` and `--arch/-A` overrides select the base image and guest architecture without rewriting `barn.yml`, terminal progress uses one live table for Linux and `barn mac` commands, interrupted online `resize` is detected by `status` and recovered by `up`, `start`, or `resize`, and `barn purge` removes the deployment immediately unless `--ask` is passed. Upgrading from `1.0.0` or `0.9.3` keeps existing VMs; earlier changes are recorded in the [1.0.0 Release Notes](/blog/release/1.0.0/) and [Barn 0.9.3 Changes](../0.9.3-changes/).
+- **Changes in 1.2.0**: Resource and environment overrides, recoverable root-disk growth, lifecycle `--parallel`, and inventory-based host names. Linux defaults change to 1 vCPU / 2 GiB; set `vm_cpu: 2` and `vm_mem: 4GiB` explicitly to preserve 1.1.0 defaults. Existing applied VMs retain their resources until a resource-changing operation is requested.
 - **Historical verification**: Dated test records are archived in [Validation History](../history/) and [Barn 1.1.0 Local Acceptance](../local-acceptance-1.1.0/).
 
-Development content is marked against the [version baseline](../../reference/commands/#versions): on 2026-11-11 local main contained three unpublished commits, while inventory-based hosts publication remained uncommitted. Installing stable 1.1.0 does not enable those interfaces.
+See the [version baseline](../../reference/commands/#versions) for option availability and the [1.2.0 validation record](/blog/design/release-1-2-0-readiness/) for release evidence.
 
 ## Linux guests {#linux-guests}
 
@@ -29,7 +29,7 @@ Development content is marked against the [version baseline](../../reference/com
 
 Barn builds release binaries for all four host targets, with primary live-hypervisor test coverage on `darwin/arm64` and `linux/amd64`. On Linux hosts, Barn requires accessible `/dev/kvm` and either NetworkManager or `systemd-networkd`. Run `barn doctor` to inspect host readiness or `barn setup --dry-run` to preview dependency and network setup.
 
-The catalog embedded in Barn 1.1.0, revision `2026110502`, provides **9 distribution families and 17 image artifacts** with `u24:stable` as the default: Ubuntu 22.04/24.04/26.04 LTS, Debian 12/13, Rocky Linux 8/9/10, and CentOS 7 (see [Linux Images](../../reference/images/) for exact versions):
+The catalog embedded in Barn 1.2.0, revision `2026110502`, provides **9 distribution families and 17 image artifacts** with `u24:stable` as the default: Ubuntu 22.04/24.04/26.04 LTS, Debian 12/13, Rocky Linux 8/9/10, and CentOS 7 (see [Linux Images](../../reference/images/) for exact versions):
 
 - Each user manages one Linux lab in a private RFC1918 `/24`; the node count is limited only by the subnet's usable addresses and host resources.
 - Foreign-architecture guests run under QEMU TCG software emulation. Rocky Linux 8 `arm64` also uses TCG on Apple Silicon because its 64 KiB page-size kernel is incompatible with Apple HVF.

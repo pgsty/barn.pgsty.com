@@ -9,11 +9,11 @@ aliases: [/docs/start/lab/, /docs/start/pigsty/, /docs/features/]
 
 Create an Ubuntu 24.04 VM on your Mac or Linux host, connect over SSH, and scale it into a multi-node fixed-IP lab from a single YAML inventory. For macOS guests on Apple Silicon, see the [macOS VM guide](../macos/).
 
-This walkthrough uses stable **1.1.0**, whose default is 2 vCPUs and 4 GiB per node. For a development build, check the [version differences](../../reference/commands/#versions) or set the required resources explicitly in the inventory.
+This walkthrough uses **Barn 1.2.0**, with 1 vCPU and 2 GiB per node by default. Set resource fields explicitly to customize the lab; see [configuration defaults](../../reference/configuration/#vm-variables).
 
 ## Before you start {#install}
 
-[Install Barn](../installation/) and make sure your host has at least 4 GiB of free memory for the guest. Run the commands below as your normal user in an interactive terminal: Barn asks once before it changes the host and prompts for `sudo` only for the steps that need it. For unattended CI runs, see [Automation](../automation/). In mainland China, add `--mirror` to the first `barn up` to download images from the China repository at `repo.pigsty.cc`.
+[Install Barn](../installation/) and make sure your host has at least 2 GiB of free memory for the guest. Run the commands below as your normal user in an interactive terminal: Barn asks once before it changes the host and prompts for `sudo` only for the steps that need it. For unattended CI runs, see [Automation](../automation/). In mainland China, add `--mirror` to the first `barn up` to download images from the China repository at `repo.pigsty.cc`.
 
 ## Customize before the first start {#customize}
 
@@ -33,8 +33,8 @@ The default lab is one Ubuntu node using the host architecture: `arm64` on Apple
      vars:
        admin_ip: 10.10.10.10
        vm_image: u24
-       vm_cpu: 2
-       vm_mem: 4GiB
+       vm_cpu: 1
+       vm_mem: 2GiB
      children:
        nodes:
          hosts:
@@ -90,7 +90,7 @@ barn ssh
 |---|---|
 | Node and address | `meta` at `10.10.10.10` |
 | Image | Ubuntu 24.04 (`u24:stable`, native host architecture) |
-| CPU and memory | 2 vCPUs, 4 GiB |
+| CPU and memory | 1 vCPU, 2 GiB |
 | Disks | 64 GiB root overlay, 128 GiB test data disk mounted at `/data` |
 
 Both disks are thin-provisioned `qcow2` files that grow as data is written. If `10.10.10.0/24` conflicts with an existing route on your machine, first-run setup automatically picks a free private `/24` for a fresh default template—check the generated `barn.yml` and `barn status` for the assigned IP.
@@ -105,8 +105,8 @@ barn status
 ```
 
 ```text
-NAME  ADDRESS      STATE    IMAGE             CPU  MEMORY
-meta  10.10.10.10  running  u24@20261017.0.1  2    4.0 GiB
+NAME  ADDRESS      STATE    IMAGE             SPEC  ROOT
+meta  10.10.10.10  running  u24@20261017.0.1  1c2g  64 GiB
 ```
 
 `barn status` reports each node's fixed address, recorded state, image release, and size. Run guest commands from the host by putting `--` before the remote command:
@@ -123,7 +123,7 @@ barn exec meta -- df -h / /data
 
 ## Scale to a multi-node lab {#scale}
 
-To grow the lab to four nodes (16 GiB of guest memory at the default 4 GiB per node), add three host entries under `all.children.nodes.hosts` in your existing `barn.yml`. Use addresses from the same `/24` as `meta`; if first-run setup chose another subnet, use that one:
+To grow the lab to four nodes (8 GiB of guest memory at the default 2 GiB per node), add three host entries under `all.children.nodes.hosts` in your existing `barn.yml`. Use addresses from the same `/24` as `meta`; if first-run setup chose another subnet, use that one:
 
 ```yaml {title="barn.yml"}
 all:

@@ -7,11 +7,11 @@ date: 2026-11-11
 
 规划、创建、启停、调整、查看和显式删除 Linux 虚拟机。
 
-选项表区分 **1.1.0**、**本地 main** 与 **工作区**，具体范围见[版本基线](/zh/docs/reference/commands/#versions)。所有命令继承[全局选项](/zh/docs/reference/commands/#global-options)。
+本参考对应 **Barn 1.2.0**；选项表区分 **1.1.0 已有选项** 与 **1.2.0 新增选项**，具体范围见[版本基线](/zh/docs/reference/commands/#versions)。所有命令继承[全局选项](/zh/docs/reference/commands/#global-options)。
 
 节点参数使用 `meta`、`node-1` 等解析后的名称，省略时选择该命令清单或已应用范围内的全部节点；IP、组名、`vm_alias` 均不能作为选择器。`plan`、`up`、`reload`、`resize`、`recreate` 依次读取 `-f`、当前目录清单、已应用状态，其他生命周期命令直接使用已应用状态。
 
-规格覆盖、缩放和环境变量见[配置参考](../../configuration/#specification-overrides)。开发版并发选项只适用于下文列出 `--parallel` 的命令，`plan`、`resize`、`status` 不接受它。结构化结果与退出码见 [CLI 契约](../../cli/#lifecycle-results)。
+规格覆盖、缩放和环境变量见[配置参考](../../configuration/#specification-overrides)。1.2.0 并发选项只适用于下文列出 `--parallel` 的命令，`plan`、`resize`、`status` 不接受它。结构化结果与退出码见 [CLI 契约](../../cli/#lifecycle-results)。
 
 ## `barn plan` {#barn-plan}
 
@@ -28,13 +28,13 @@ barn plan [node...] [flags]
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
 | `-A, --arch string` | 客机架构：`native`、`amd64`、`arm64`；也接受 `x86_64`、`x64`、`aarch64`、`a64` | 1.1.0 |
-| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 本地 main |
-| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 本地 main |
+| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 1.2.0 |
+| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 1.2.0 |
 | `-f, --file string` | 显式清单路径；生命周期命令依次使用该文件、当前目录发现的清单、已应用状态 | 1.1.0 |
 | `-I, --image string` | 镜像引用，如 `u24`、`el9:stable` 或 `d13@20261103`；覆盖所选节点的 `vm_image/vm_version` | 1.1.0 |
-| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 本地 main |
+| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 1.2.0 |
 | `-r, --repo string` | 镜像仓库 URL 或本地目录，优先于 `BARN_REPO`；支持 `--mirror` 的命令中也优先于该选项 | 1.1.0 |
-| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 本地 main |
+| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -56,17 +56,17 @@ barn up [node...] [flags]
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
 | `-A, --arch string` | 客机架构：`native`、`amd64`、`arm64`；也接受 `x86_64`、`x64`、`aarch64`、`a64` | 1.1.0 |
-| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 本地 main |
-| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 本地 main |
+| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 1.2.0 |
+| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 1.2.0 |
 | `-f, --file string` | 显式清单路径；生命周期命令依次使用该文件、当前目录发现的清单、已应用状态 | 1.1.0 |
 | `-I, --image string` | 镜像引用，如 `u24`、`el9:stable` 或 `d13@20261103`；覆盖所选节点的 `vm_image/vm_version` | 1.1.0 |
-| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 本地 main |
+| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 1.2.0 |
 | `--mirror` | 使用中国官方源 `https://repo.pigsty.cc/barn`；显式 `--repo` 优先 | 1.1.0 |
 | `-n, --no-wait` | QEMU 启动并通过进程身份核验后返回；SSH 就绪与客机恢复延后到下一次 `up` | 1.1.0 |
-| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 本地 main |
+| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 1.2.0 |
 | `-r, --repo string` | 镜像仓库 URL 或本地目录，优先于 `BARN_REPO`；支持 `--mirror` 的命令中也优先于该选项 | 1.1.0 |
 | `--rollback` | 清理本次准备失败节点中尚未提交、可以安全回收的制品 | 1.1.0 |
-| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 本地 main |
+| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -87,7 +87,7 @@ barn start [node...] [flags]
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
 | `-n, --no-wait` | QEMU 启动并通过进程身份核验后返回；SSH 就绪与客机恢复延后到下一次 `up` | 1.1.0 |
-| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 本地 main |
+| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -105,7 +105,7 @@ barn stop [node...] [flags]
 
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
-| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 本地 main |
+| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -124,7 +124,7 @@ barn restart [node...] [flags]
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
 | `-n, --no-wait` | QEMU 启动并通过进程身份核验后返回；SSH 就绪与客机恢复延后到下一次 `up` | 1.1.0 |
-| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 本地 main |
+| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -143,17 +143,17 @@ barn reload [node...] [flags]
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
 | `-A, --arch string` | 客机架构：`native`、`amd64`、`arm64`；也接受 `x86_64`、`x64`、`aarch64`、`a64` | 1.1.0 |
-| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 本地 main |
-| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 本地 main |
+| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 1.2.0 |
+| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 1.2.0 |
 | `-f, --file string` | 显式清单路径；生命周期命令依次使用该文件、当前目录发现的清单、已应用状态 | 1.1.0 |
 | `-I, --image string` | 镜像引用，如 `u24`、`el9:stable` 或 `d13@20261103`；覆盖所选节点的 `vm_image/vm_version` | 1.1.0 |
-| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 本地 main |
+| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 1.2.0 |
 | `--mirror` | 使用中国官方源 `https://repo.pigsty.cc/barn`；显式 `--repo` 优先 | 1.1.0 |
 | `-n, --no-wait` | QEMU 启动并通过进程身份核验后返回；SSH 就绪与客机恢复延后到下一次 `up` | 1.1.0 |
-| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 本地 main |
+| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 1.2.0 |
 | `-r, --repo string` | 镜像仓库 URL 或本地目录，优先于 `BARN_REPO`；支持 `--mirror` 的命令中也优先于该选项 | 1.1.0 |
 | `--rollback` | 清理本次准备失败节点中尚未提交、可以安全回收的制品 | 1.1.0 |
-| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 本地 main |
+| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -169,17 +169,17 @@ barn resize [node...] [flags]
 
 调整 CPU 与内存，保留 VM 身份、磁盘与 SSH 密钥。支持的增加操作使用热插拔，减少资源或不支持在线修改时使用停机再启动。稳定版 1.1.0 从清单读取 CPU/内存变更；镜像、架构、数据盘、网络、共享目录、节点创建和移除均不能通过 resize 应用。
 
-开发版还接受资源参数，并可用 `-D 128GiB` 原地扩容根盘：停止 QEMU、扩展镜像、启动客机扩展并核验最后一个普通 ext4/XFS 根分区，原先停止的 VM 最后恢复为停止状态。目标只能增加，且须对齐 512 字节。中断后用同一目标重试；不支持缩小、LVM、加密根盘或非末尾分区。详见[根盘扩容与恢复](../../cli/#root-disk-growth)。命令行覆盖不改写清单。
+1.2.0 还接受资源参数，并可用 `-D 128GiB` 原地扩容根盘：停止 QEMU、扩展镜像、启动客机扩展并核验最后一个普通 ext4/XFS 根分区，原先停止的 VM 最后恢复为停止状态。目标只能增加，且须对齐 512 字节。中断后用同一目标重试；不支持缩小、LVM、加密根盘或非末尾分区。详见[根盘扩容与恢复](../../cli/#root-disk-growth)。命令行覆盖不改写清单。
 
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
 | `-A, --arch string` | 客机架构：`native`、`amd64`、`arm64`；也接受 `x86_64`、`x64`、`aarch64`、`a64` | 1.1.0 |
-| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 本地 main |
-| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 本地 main |
+| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 1.2.0 |
+| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 1.2.0 |
 | `-f, --file string` | 显式清单路径；生命周期命令依次使用该文件、当前目录发现的清单、已应用状态 | 1.1.0 |
 | `-I, --image string` | 镜像引用，如 `u24`、`el9:stable` 或 `d13@20261103`；覆盖所选节点的 `vm_image/vm_version` | 1.1.0 |
-| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 本地 main |
-| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 本地 main |
+| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 1.2.0 |
+| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -203,17 +203,17 @@ barn recreate [node...] [flags]
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
 | `-A, --arch string` | 客机架构：`native`、`amd64`、`arm64`；也接受 `x86_64`、`x64`、`aarch64`、`a64` | 1.1.0 |
-| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 本地 main |
-| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 本地 main |
+| `-C, --cpu string` | 缩放前的基础 vCPU 数，整数 1–256；最终 CPU 数也不能超过 256 | 1.2.0 |
+| `-D, --disk string` | 根盘绝对容量，裸整数单位为 GiB，例如 `128GiB`；至少达到基础镜像虚拟容量 | 1.2.0 |
 | `-f, --file string` | 显式清单路径；生命周期命令依次使用该文件、当前目录发现的清单、已应用状态 | 1.1.0 |
 | `--force` | 跳过交互确认；无终端执行销毁或重建时必须显式确认 | 1.1.0 |
 | `-I, --image string` | 镜像引用，如 `u24`、`el9:stable` 或 `d13@20261103`；覆盖所选节点的 `vm_image/vm_version` | 1.1.0 |
-| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 本地 main |
+| `-M, --mem string` | 缩放前的基础内存，裸整数单位为 MiB，例如 `4GiB`；至少 512 MiB | 1.2.0 |
 | `--mirror` | 使用中国官方源 `https://repo.pigsty.cc/barn`；显式 `--repo` 优先 | 1.1.0 |
 | `-n, --no-wait` | QEMU 启动并通过进程身份核验后返回；SSH 就绪与客机恢复延后到下一次 `up` | 1.1.0 |
-| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 本地 main |
+| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 1.2.0 |
 | `-r, --repo string` | 镜像仓库 URL 或本地目录，优先于 `BARN_REPO`；支持 `--mirror` 的命令中也优先于该选项 | 1.1.0 |
-| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 本地 main |
+| `-S, --scale string` | CPU 与内存的整数倍率，1–256；磁盘容量不缩放 | 1.2.0 |
 | `--yes` | 确认并执行显示的计划；系统 `sudo` 仍可能要求密码 | 1.1.0 |
 {.wide .expand}
 
@@ -229,7 +229,7 @@ barn recreate -f pigsty.yml meta --yes
 barn status [node...] [flags]
 ```
 
-检查已记录的节点配置与当前 QEMU 进程身份，无需位于清单目录。`running` 表示已核验 VM 进程存在，不能据此判断 SSH 就绪。`--verbose` 增加运行时细节，`--json` 返回节点记录、正在进行的操作说明和失败信息。退化节点可能使命令退出 `5`，健康节点仍会列出。开发版文本输出使用 `2c4g` 这样的紧凑 `SPEC` 值。
+检查已记录的节点配置与当前 QEMU 进程身份，无需位于清单目录。`running` 表示已核验 VM 进程存在，不能据此判断 SSH 就绪。`--verbose` 增加运行时细节，`--json` 返回节点记录、正在进行的操作说明和失败信息。退化节点可能使命令退出 `5`，健康节点仍会列出。1.2.0 文本输出使用 `2c4g` 这样的紧凑 `SPEC` 值。
 
 别名：`st`。
 
@@ -257,7 +257,7 @@ barn destroy [node...] [flags]
 |---|---|---|
 | `--delete-persistent` | 同时删除归 Barn 所有的持久数据盘，仅支持整套部署 | 1.1.0 |
 | `--force` | 跳过交互确认；无终端执行销毁或重建时必须显式确认 | 1.1.0 |
-| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 本地 main |
+| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 1.2.0 |
 | `--purge` | 同时删除持久盘、部署密钥与状态，仅支持整套部署 | 1.1.0 |
 | `--yes` | 确认并执行显示的计划；系统 `sudo` 仍可能要求密码 | 1.1.0 |
 {.wide .expand}
@@ -276,12 +276,12 @@ barn purge [flags]
 
 立即删除整套 Linux 部署，包括根盘、持久数据盘、密钥、状态和默认 SSH 配置片段，不接受节点名或读取清单。没有 `--yes`、`-y`、`--force` 选项；需要先审阅范围时用 `--ask`，输入 `y/yes` 确认，回车取消。
 
-镜像缓存、宿主网络和 Mac VM 保留。部署不存在时幂等成功，遗留制品身份不明时仍需核验。开发版的 `--parallel` 控制清理过程中的节点并发。
+镜像缓存、宿主网络和 Mac VM 保留。部署不存在时幂等成功，遗留制品身份不明时仍需核验。1.2.0 的 `--parallel` 控制清理过程中的节点并发。
 
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
 | `--ask` | 先显示节点与删除范围，要求输入 `y/yes`；`n/no` 或回车取消 | 1.1.0 |
-| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 本地 main |
+| `-p, --parallel int` | 节点并发上限；省略时为 `max(1, 逻辑 CPU 数 - 2)`，`0` 表示所选节点全部并发 | 1.2.0 |
 {.wide .expand}
 
 ```bash
@@ -291,6 +291,6 @@ barn --json purge
 
 ## 实现依据 {#implementation}
 
-[command_lifecycle.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_lifecycle.go) · [main.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/main.go)
+[command_lifecycle.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_lifecycle.go) · [main.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/main.go)
 
-2026-11-11 额外核对的本地提交与未提交扩展见[版本基线](/zh/docs/reference/commands/#versions)。
+发布源码与相对 1.1.0 的变化见[版本基线](/zh/docs/reference/commands/#versions)。

@@ -7,7 +7,7 @@ date: 2026-11-11
 
 Inspect, install, and remove the fixed-IP network used by Linux guests.
 
-Availability labels distinguish **1.1.0**, **local main**, and **working tree**; see the [version baseline](/docs/reference/commands/#versions). All commands inherit the [global options](/docs/reference/commands/#global-options).
+This reference covers **Barn 1.2.0**. Option tables distinguish options also available in **1.1.0** from additions in **1.2.0**; see the [version baseline](/docs/reference/commands/#versions). All commands inherit the [global options](/docs/reference/commands/#global-options).
 
 ## `barn network status` {#barn-network-status}
 
@@ -78,6 +78,6 @@ barn network uninstall --yes
 
 ## Implementation {#implementation}
 
-[command_network.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_network.go)
+[command_network.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_network.go)
 
-The [version baseline](/docs/reference/commands/#versions) records the additional local commits and uncommitted extension checked on 2026-11-11.
+The [version baseline](/docs/reference/commands/#versions) identifies the released source and the changes since 1.1.0.

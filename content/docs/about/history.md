@@ -6,11 +6,29 @@ icon: fa-solid fa-clock-rotate-left
 ---
 
 > [!NOTE]
-> This page collects dated source, packaging, VM, and public-installation evidence through `1.1.0`. Each entry retains its tested revision and scope. For current host support and release behavior, see [Platforms and Limits](../status/) and the [release notes](/blog/release/).
+> This page collects dated source, packaging, VM, and public-installation evidence through `1.2.0`. Each entry retains its tested revision and scope. For current host support and release behavior, see [Platforms and Limits](../status/) and the [release notes](/blog/release/).
+
+## Barn 1.2.0 final acceptance — 2026-11-12 {#release-1-2-0}
+
+| Item | Recorded identity |
+|---|---|
+| Tag and commit | `v1.2.0` → `90f615804b823b4eb491101e642073dcd37a9700` |
+| Build time | `2026-11-11T23:38:07Z`; `SOURCE_DATE_EPOCH=1794440287` |
+| GitHub Release | ID `442314866`; published `2026-11-12T00:05:32Z` as stable/latest |
+| Apple notarization | Accepted submission `165b486b-5055-4eca-a595-54bed6bdd6c1` |
+| Signed catalog | Revision `2026110502`; SHA-256 `d41e46d20bc57cb1b071e3919a27a8f7f703df2addca879970a528e7ab004065` |
+{.wide .expand}
+
+- **CI and packaging:** [Source/Mac CI](https://github.com/pgsty/barn/actions/runs/43121333312) and [complete packaging CI](https://github.com/pgsty/barn/actions/runs/43121333418) passed the release commit. The [tag workflow](https://github.com/pgsty/barn/actions/runs/43122351097) passed its signing-configuration check and skipped remote assembly; the documented local signing path produced the formal release. `make release-local`, signatures, notarization, staple, and Gatekeeper passed.
+- **Final artifacts and catalog:** All 20 draft and all 20 anonymous public downloads matched the verified local sizes and SHA-256 digests. Both official catalogs verified, activated in fresh roots, and matched the embedded bytes; each mirror's 17 stable artifacts passed reachability/size checks. Selected runtime image downloads also verified their payload digests.
+- **Final runtime:** The downloaded Linux archive passed 18 KVM operations covering ext4/XFS root growth, idempotence, shrink rejection, guest-tool failure, CLI interruption, identity/data retention, concurrency, and teardown. The downloaded native Mac bundle completed all 15 lifecycle phases plus desktop, two-way clipboard, close-window background execution, SSH, and normal shutdown. One Apple HTTPS timeout was preserved and retried successfully after identity/base checks; no product bytes changed.
+- **Public delivery:** Public latest and pinned installers passed on `darwin/arm64` and `linux/amd64`. Isolated installer upgrade from 1.1.0 and repeated installation passed. The [Homebrew update](https://github.com/pgsty/homebrew-infra/commit/f1b83ae) passed a real 1.1.0 → 1.2.0 upgrade, `brew test`, style, and strict online audit. The bilingual reference now documents 57 commands and 174 local option entries per language against 1.2.0.
+
+Physical runtime coverage was `darwin/arm64` and `linux/amd64`; `darwin/amd64` and native `linux/arm64` received cross-build and artifact checks. The historical 1.1.0 homepage recording is explicitly labelled. See the [complete release review](/blog/design/release-1-2-0-readiness/) for candidate upgrade evidence, retained retries, and scope limits.
 
 ## Barn 1.2.0 preparation — 2026-11-12 {#release-1-2-0-preparation}
 
-The [1.2.0 readiness review](/blog/design/release-1-2-0-readiness/) records the uncommitted candidate's source, catalog, full snapshot, Linux/KVM and native Mac checks, along with the remaining commit, CI, signing, and publication gates.
+The [1.2.0 readiness review](/blog/design/release-1-2-0-readiness/) preserves the uncommitted candidate's source, catalog, full snapshot, Linux/KVM and native Mac checks, followed by the completed commit, CI, signing, and publication gates.
 
 ## Barn 1.1.0 final acceptance — 2026-11-09 {#release-1-1-0}
 

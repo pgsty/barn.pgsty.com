@@ -1,7 +1,7 @@
 ---
 title: 平台与限制
 linkTitle: 平台与限制
-description: Barn 1.1.0 的宿主要求、Linux 镜像兼容性、macOS 运行条件与存储限制。
+description: Barn 1.2.0 的宿主要求、Linux 镜像兼容性、macOS 运行条件与存储限制。
 weight: 10
 icon: fa-solid fa-laptop-code
 ---
@@ -10,14 +10,14 @@ Barn 专为 **本地开发与测试** 设计。在搭建实验环境前，可通
 
 ## 版本 {#documentation-baseline}
 
-当前文档对应稳定版 **Barn 1.1.0**（安装方式与版本变更详见[安装指南](../../start/installation/)与 [1.1.0 发布说明](/zh/blog/release/1.1.0/)）。可通过 `barn version` 查看本地安装版本；Linux 镜像目录通过 `barn update` 独立更新。
+当前文档对应稳定版 **Barn 1.2.0**（安装方式与版本变更详见[安装指南](../../start/installation/)与 [1.2.0 发布说明](/zh/blog/release/1.2.0/)）。可通过 `barn version` 查看本地安装版本；Linux 镜像目录通过 `barn update` 独立更新。
 
-- **稳定版渠道**：[Barn 1.1.0](https://github.com/pgsty/barn/releases/tag/v1.1.0) 于 2026-11-09 作为 GitHub 正式版发布，`releases/latest`、不带 `BARN_VERSION` 的下载安装器与 Homebrew 配方都会选择此版本，DEB 与 RPM 软件包从发布页下载；需要固定版本时设置 `BARN_VERSION=1.1.0`。
+- **稳定版渠道**：[Barn 1.2.0](https://github.com/pgsty/barn/releases/tag/v1.2.0) 于 2026-11-12 作为 GitHub 正式版发布，`releases/latest`、不带 `BARN_VERSION` 的下载安装器与 Homebrew 配方都会选择此版本，DEB 与 RPM 软件包从发布页下载；需要固定版本时设置 `BARN_VERSION=1.2.0`。
 - **macOS 原生组件**：Darwin arm64 归档与 Apple Silicon Homebrew 安装均包含经过签名、公证的 `Barn.app` 及配套 CLI/helper，无需安装 Go 或 Xcode，详见 [macOS 客机指南](../../start/macos/#install)。
-- **1.1.0 变更**：命令行 `--image/-I` 与 `--arch/-A` 可在不改写 `barn.yml` 的情况下指定基础镜像与客机架构，Linux 与 `barn mac` 终端进度统一为实时表格，中断的在线 `resize` 由 `status` 识别并可通过 `up`、`start` 或 `resize` 恢复，`barn purge` 默认直接删除部署并提供 `--ask` 确认提示。从 `1.0.0` 或 `0.9.3` 升级无需重建虚拟机；早期变更记录见 [1.0.0 发布说明](/zh/blog/release/1.0.0/)与 [Barn 0.9.3 变更](../0.9.3-changes/)。
+- **1.2.0 变更**：新增规格与环境变量覆盖、可恢复的根盘扩容、生命周期 `--parallel` 和清单 hosts 发布。Linux 默认规格改为 1 vCPU / 2 GiB；显式设置 `vm_cpu: 2`、`vm_mem: 4GiB` 可保留 1.1.0 的默认值。已应用 VM 的资源会保留到显式执行资源变更操作为止。
 - **历史验证记录**：历次真机验收与测试记录归档在[验证历史](../history/)与 [Barn 1.1.0 本机完整验收](../local-acceptance-1.1.0/)中。
 
-开发内容按[版本基线](../../reference/commands/#versions)单独标注：2026-11-11 的本地 main 比远端多三个未发布提交，hosts 清单扩展仍在未提交工作区中。安装稳定版不会获得这些接口。
+选项可用范围见[版本基线](../../reference/commands/#versions)，发布证据见 [1.2.0 验收记录](/zh/blog/design/release-1-2-0-readiness/)。
 
 ## Linux 客机 {#linux-guests}
 
@@ -29,7 +29,7 @@ Barn 专为 **本地开发与测试** 设计。在搭建实验环境前，可通
 
 Barn 为上述四个平台构建发行二进制，真机虚拟化测试主要覆盖 `darwin/arm64` 与 `linux/amd64`。Linux 宿主需要可访问的 `/dev/kvm` 以及 NetworkManager 或 `systemd-networkd`。可运行 `barn doctor` 检查宿主环境，或用 `barn setup --dry-run` 预览依赖安装与网络配置计划。
 
-Barn 1.1.0 内置镜像目录 revision `2026110502` 提供 **9 个发行版系列、17 个镜像产物**，默认镜像为 `u24:stable`：Ubuntu 22.04/24.04/26.04 LTS、Debian 12/13、Rocky Linux 8/9/10 与 CentOS 7（具体版本号见[镜像参考](../../reference/images/)）：
+Barn 1.2.0 内置镜像目录 revision `2026110502` 提供 **9 个发行版系列、17 个镜像产物**，默认镜像为 `u24:stable`：Ubuntu 22.04/24.04/26.04 LTS、Debian 12/13、Rocky Linux 8/9/10 与 CentOS 7（具体版本号见[镜像参考](../../reference/images/)）：
 
 - 每位用户管理一套 Linux 部署，使用私有 RFC1918 `/24` 网段；节点数量只受网段可用地址与宿主资源限制。
 - 跨架构客机使用 QEMU TCG 软件模拟；Rocky Linux 8 `arm64` 因采用与 Apple HVF 不兼容的 64 KiB 页大小内核，在 Apple Silicon 上同样自动使用 TCG。

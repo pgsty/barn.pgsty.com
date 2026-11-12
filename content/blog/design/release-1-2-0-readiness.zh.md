@@ -1,6 +1,6 @@
 ---
-title: "Barn 1.2.0 发布准备核对"
-description: "1.2.0 候选版本的发布门禁、升级兼容性、打包与真机验收。"
+title: "Barn 1.2.0 发布准备与最终验收"
+description: "Barn 1.2.0 的发布门禁、升级兼容性、打包与真机验收。"
 date: 2026-11-12
 lastmod: 2026-11-12
 weight: 76
@@ -9,9 +9,23 @@ tags: [Release, Testing, CLI]
 icon: fa-solid fa-clipboard-check
 ---
 
-**状态，2026-11-12**：候选版本已通过源码检查、镜像目录验证、完整 snapshot 打包与 Linux/Mac 运行时验收。正式发布仍需冻结发布提交、通过该提交的 CI，并构建匹配的签名与公证 Mac 载荷。当前公开稳定版仍为 [1.1.0](https://github.com/pgsty/barn/releases/tag/v1.1.0)。
+**状态，2026-11-12**：[Barn 1.2.0](https://github.com/pgsty/barn/releases/tag/v1.2.0) 已作为 stable/latest 发布。下方记录最终验收结果，候选版本章节保留早期审查及其原始范围。
+
+## 最终发布 {#final-release}
+
+标签 `v1.2.0` 指向 `90f615804b823b4eb491101e642073dcd37a9700`。[源码/Mac CI](https://github.com/pgsty/barn/actions/runs/43121333312)与[完整打包 CI](https://github.com/pgsty/barn/actions/runs/43121333418)在打标签前通过同一提交。437 个已审查构建输入均与候选摘要清单一致；正式打包前再次通过签名镜像目录门禁。
+
+GitHub 签名 secrets 仍未配置，本次采用文档中的本机签名流程。Apple 接受公证提交 `165b486b-5055-4eca-a595-54bed6bdd6c1`；`make release-local` 通过归档、DEB/RPM、SPDX、helper 配对、时间戳与软件包/归档一致性检查。下载后的 CLI/helper/App 通过 Developer ID、staple 与 Gatekeeper 检查。20 个 draft 附件和全部 20 个匿名公开下载的大小与 SHA-256 均匹配已核验字节。
+
+最终回下载归档通过 Linux/KVM 18 步和原生 Mac 全部 15 阶段。补充原生 UI 检查确认桌面登录、双向纯文本剪贴板、关闭窗口后 VM 与 SSH 继续运行，以及正常关机。隔离的 1.1.0 → 1.2.0 升级和重复安装通过；`darwin/arm64`、`linux/amd64` 均通过公网 latest 与指定版本安装。[Homebrew 更新](https://github.com/pgsty/homebrew-infra/commit/f1b83ae)覆盖四平台，真实 1.1.0 → 1.2.0 升级、`brew test`、style 和严格在线 audit 通过。
+
+最终 Mac 验收保留了一次访问 Apple HTTPS 时的 TLS 超时。相同请求随后返回 HTTP 200；续跑前重新核验双机身份、磁盘哨兵和基础镜像摘要，再完成其余阶段。GUI 验收后测试 VM 已停止。GitHub 直连下载超时后改用宿主已有代理，公开下载未携带认证；失败日志均予保留。
+
+首页保留明确标注日期与版本的 1.1.0 录像，并说明 1.2.0 的默认值和输出变化。重录四节点首次运行需要空闲的 `.10–.13` 地址，本次发布期间由宿主已有 VM 占用。发布身份与公开渠道证据另见[验证历史](/zh/docs/about/history/#release-1-2-0)。
 
 ## 候选版本身份 {#candidate-identity}
+
+下表记录准备工作开始时的状态，早于正式发布提交。
 
 | 项目 | 本次核对的状态 |
 |---|---|
@@ -22,13 +36,13 @@ icon: fa-solid fa-clipboard-check
 | 镜像目录 | Revision `2026110502`，默认镜像为原生架构的 `u24:stable` |
 {.wide .expand}
 
-Snapshot 版本按现有 `incpatch` 规则从最近标签 `v1.1.0` 推导。正式 `1.2.0` 制品必须从最终的 `v1.2.0` 提交重新构建；snapshot 二进制将修改工作树明确标记为 `uncommitted`。
+Snapshot 版本按现有 `incpatch` 规则从最近标签 `v1.1.0` 推导。正式 `1.2.0` 制品随后已从最终的 `v1.2.0` 提交重新构建；snapshot 二进制将修改工作树明确标记为 `uncommitted`。
 
 ## 已完成的收尾 {#resolved}
 
 - 默认 shell 优先使用 GoReleaser 2.18.3，而源码要求 2.20.1。本次验证使用已下载的锁定工具，打包前执行 `packaging/check-toolchain.sh all` 核实了全部版本。
 - Changelog 和发布草稿遗漏了 Linux 默认规格从 2 vCPU / 4 GiB 改为 1 vCPU / 2 GiB。现已补充显式设置 `vm_cpu: 2`、`vm_mem: 4GiB` 的保留方法，并用两个版本的二进制对比了隐式与显式清单。
-- 发布草稿补齐了 `all.vars.vm_hosts` 和 `hosts install -f`。实现和测试仍需纳入发布提交；候选版已在创建 VM 前通过清单预览检查。
+- 发布草稿补齐了 `all.vars.vm_hosts` 和 `hosts install -f`。实现和测试随后纳入提交 `ad74cc9`；候选版已在创建 VM 前通过清单预览检查。
 - 根目录的 `.idea/` 和本地 `barn.yml` 已加入忽略规则，文件仍保留在磁盘上。原有源码修改和历史文档删除均予保留。
 
 ## 已通过的门禁 {#completed-gates}
@@ -68,15 +82,15 @@ Snapshot 版本按现有 `incpatch` 规则从最近标签 `v1.1.0` 推导。正�
 
 测试目录通过 APFS 克隆复用了已准备好的 macOS 27.0 基础镜像（`26A428`），并关闭了自动宿主 SSH 配置集成。15 阶段脚本覆盖双机身份隔离、客机账户策略、独立网络、DNS/HTTPS、远程参数与退出码、共享目录读写、停止/启动、CPU/内存配置、两台 VM 上限、重建后的身份轮换、基础镜像不变性、重复 `up`，以及销毁一台 VM 时保留另一台。自动验收结束后，保留的测试 VM 已停止。
 
-解包后的 App 还打开了保留 VM 的桌面，目视检查确认其自动登录到 macOS Finder 桌面，随后正常关闭 VM。本次未确认关闭窗口后的行为或剪贴板传输。Snapshot 使用 ad-hoc 签名；正式验收还需检查最终 Developer ID 签名、公证字节，以及 Gatekeeper、安装、关闭窗口和剪贴板行为。
+解包后的 App 还打开了保留 VM 的桌面，目视检查确认其自动登录到 macOS Finder 桌面，随后正常关闭 VM。本次未确认关闭窗口后的行为或剪贴板传输。Snapshot 使用 ad-hoc 签名；最终 Developer ID 签名、公证版本随后通过了上方记录的 Gatekeeper、安装、关闭窗口和剪贴板检查。
 
-## 发布前剩余顺序 {#remaining}
+## 发布执行记录 {#remaining}
 
-1. 定稿带日期的 1.2.0 changelog 和英文发布正文，再审阅并提交本次计划交付的源码，包括 hosts 实现及新增测试，保留预期的历史文档删除；双语命令参考与文档校正单独提交。发布前分别检查两个仓库的最终状态和差异。
-2. 推送冻结后的源码提交，要求源码 CI 和打包 CI 对该 revision 全部通过。本次查看的远端流水线仍指向 1.1.0，不能用本地成功代替这个门禁。
-3. 为已通过 CI 的核准提交创建 `v1.2.0` 标签。正式构建前重跑在线目录门禁，按[本机 Mac 发布流程](/zh/docs/about/mac-release/#local-release)构建同版本、同提交的 Developer ID 签名与公证载荷，再用 `make release-local` 组装完整发行包。
-4. 对最终签名制品验证首次安装、重复安装、升级、GUI/剪贴板和运行时冒烟测试。上传 draft 后回下载全部附件，与已核验的本地字节比对，再发布为 stable/latest。
-5. 制品公开后更新 Homebrew 四个平台的 URL/摘要并发布双语站点，将命令参考版本基线、默认值、项目状态、发布草稿与安装示例切换到已发布的 1.2.0 事实；验收匿名下载、默认安装器与 Homebrew 升级。
+1. 源码变更纳入 `ad74cc9`、`90f6158`，命令参考与文档核对单独纳入 `24ff1e2`；两个仓库均已推送并通过 CI。
+2. 源码与打包 CI 通过 `90f6158` 后，创建并推送 `v1.2.0` 标签。
+3. 目录门禁通过后，按[本机 Mac 发布流程](/zh/docs/about/mac-release/#local-release)构建同身份的签名、公证载荷，完整发行包通过 `make release-local`。
+4. 最终归档验收与全部 20 个 draft 附件回下载通过后，公开为 stable/latest；随后核验全部 20 个公开下载及两平台安装器。
+5. Homebrew 与双语指南更新到 1.2.0，涵盖默认规格、命令选项、升级说明与发布证据。
 {.steps}
 
-2026-11-12 查询时，GitHub 的六项 Mac 签名 secret 名称均未配置，因此 tag 工作流会跳过自动发行包组装。本机有两个 Developer ID Application 身份，可沿用 1.1.0 的本机签名发布路径。本次没有导出密钥、修改签名配置、创建标签或发布版本。
+本次使用已有本机 Developer ID 身份及已保存的公证 profile，未导出密钥或修改签名凭据。

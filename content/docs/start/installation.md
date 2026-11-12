@@ -1,18 +1,18 @@
 ---
 title: Install Barn
 linkTitle: Installation
-description: Install Barn 1.1.0 on macOS or Linux, check requirements, and keep the application up to date.
+description: Install Barn 1.2.0 on macOS or Linux, check requirements, and keep the application up to date.
 weight: 5
 icon: fa-solid fa-download
 aliases: [/docs/start/upgrade/]
 ---
 
-Barn 1.1.0 ships archives for macOS and Linux on **arm64 and amd64**, along with DEB and RPM packages for Linux. Always run `barn` as your normal Unix user; after installing, continue with the [Linux quick start](../tutorial/) or [macOS VM guide](../macos/).
+Barn 1.2.0 ships archives for macOS and Linux on **arm64 and amd64**, along with DEB and RPM packages for Linux. Always run `barn` as your normal Unix user; after installing, continue with the [Linux quick start](../tutorial/) or [macOS VM guide](../macos/).
 
 > [!NOTE]
-> [Barn 1.1.0](https://github.com/pgsty/barn/releases/tag/v1.1.0) is the current stable release. It is published on GitHub's regular release channel, so `releases/latest`, the installer without `BARN_VERSION`, and the Homebrew formula select it; set `BARN_VERSION=1.1.0` to pin it. The Apple Silicon archive includes the matching `barn`, `barn-hosts-helper`, and native macOS app bundle (`Barn.app`), signed with Developer ID and notarized by Apple. Go and Xcode are only needed for [source builds](../source-build/).
+> [Barn 1.2.0](https://github.com/pgsty/barn/releases/tag/v1.2.0) is the current stable release. It is published on GitHub's regular release channel, so `releases/latest`, the installer without `BARN_VERSION`, and the Homebrew formula select it; set `BARN_VERSION=1.2.0` to pin it. The Apple Silicon archive includes the matching `barn`, `barn-hosts-helper`, and native macOS app bundle (`Barn.app`), signed with Developer ID and notarized by Apple. Go and Xcode are only needed for [source builds](../source-build/).
 
-| Component | Purpose | Included in 1.1.0 downloads |
+| Component | Purpose | Included in 1.2.0 downloads |
 |---|---|---|
 | `barn` | Go CLI for Linux labs and macOS VM lifecycle | All four platform archives and Linux packages |
 | `barn-hosts-helper` | Companion binary for `/etc/hosts` name integration | Packaged alongside its matching CLI |
@@ -38,7 +38,7 @@ On Apple Silicon, the [Homebrew formula](https://github.com/pgsty/homebrew-infra
 {{< /tab >}}
 {{< tab label="Linux" value="linux" >}}
 
-Download `install.sh` and run it. Without `BARN_VERSION`, it installs the latest stable release; set `BARN_VERSION=1.1.0` to pin this one. The script detects `amd64` or `arm64`, verifies the archive SHA-256 against `checksums.txt`, and installs the CLI and matching `barn-hosts-helper` under `~/.local/bin` without `sudo`:
+Download `install.sh` and run it. Without `BARN_VERSION`, it installs the latest stable release; set `BARN_VERSION=1.2.0` to pin this one. The script detects `amd64` or `arm64`, verifies the archive SHA-256 against `checksums.txt`, and installs the CLI and matching `barn-hosts-helper` under `~/.local/bin` without `sudo`:
 
 ```bash {wrap=true}
 curl -fLO https://github.com/pgsty/barn/releases/latest/download/install.sh
@@ -63,7 +63,7 @@ When you run `barn up` interactively for the first time, Barn checks for missing
 | macOS 27 | Apple Silicon, macOS 27+, logged-in desktop session | `Barn.app` native component; no QEMU required |
 {.platform-table .wide .expand}
 
-A default Linux VM uses **2 vCPUs and 4 GiB of memory**, backed by thin-provisioned `qcow2` disks (64 GiB root disk and 128 GiB test data disk) that grow as data is written.
+A default Linux VM uses **1 vCPU and 2 GiB of memory**, backed by thin-provisioned `qcow2` disks (64 GiB root disk and 128 GiB test data disk) that grow as data is written.
 
 The first macOS VM requires roughly **65 GiB of free disk space** to hold Apple's ~25 GiB restore image, the ~27 GiB installed base image, and initial guest writes. By default, a Mac VM uses 4 vCPUs, 8 GiB of memory, and a 100 GiB APFS clone disk. Later Mac VMs inherit the prepared base image's capacity unless you pass `--disk`. See [Platforms and limits](../../about/status/) for guest-specific constraints.
 
@@ -74,26 +74,26 @@ The first macOS VM requires roughly **65 GiB of free disk space** to hold Apple'
 The DEB and RPM packages declare their QEMU, UEFI firmware, and OpenSSH dependencies automatically. On ARM64 hosts, replace `amd64` with `arm64`:
 
 ```bash {tab="Debian / Ubuntu" group="linux-package" value="deb"}
-barn_release=https://github.com/pgsty/barn/releases/download/v1.1.0
-curl -fLO "$barn_release/barn_1.1.0_linux_amd64.deb"
-sudo apt install ./barn_1.1.0_linux_amd64.deb
+barn_release=https://github.com/pgsty/barn/releases/download/v1.2.0
+curl -fLO "$barn_release/barn_1.2.0_linux_amd64.deb"
+sudo apt install ./barn_1.2.0_linux_amd64.deb
 barn version
 ```
 
 ```bash {tab="RHEL / Fedora" group="linux-package" value="rpm"}
-barn_release=https://github.com/pgsty/barn/releases/download/v1.1.0
-curl -fLO "$barn_release/barn_1.1.0_linux_amd64.rpm"
-sudo dnf install ./barn_1.1.0_linux_amd64.rpm
+barn_release=https://github.com/pgsty/barn/releases/download/v1.2.0
+curl -fLO "$barn_release/barn_1.2.0_linux_amd64.rpm"
+sudo dnf install ./barn_1.2.0_linux_amd64.rpm
 barn version
 ```
 
 ### Manual archives {#manual-archives}
 
-Download `barn_1.1.0_<os>_<arch>.tar.gz` (`darwin` or `linux`, `arm64` or `amd64`) and `checksums.txt` from [Barn 1.1.0 on GitHub](https://github.com/pgsty/barn/releases/tag/v1.1.0), then verify the SHA-256 digest before extracting:
+Download `barn_1.2.0_<os>_<arch>.tar.gz` (`darwin` or `linux`, `arm64` or `amd64`) and `checksums.txt` from [Barn 1.2.0 on GitHub](https://github.com/pgsty/barn/releases/tag/v1.2.0), then verify the SHA-256 digest before extracting:
 
 ```bash
-barn_release=https://github.com/pgsty/barn/releases/download/v1.1.0
-curl -fLO "$barn_release/barn_1.1.0_darwin_arm64.tar.gz"
+barn_release=https://github.com/pgsty/barn/releases/download/v1.2.0
+curl -fLO "$barn_release/barn_1.2.0_darwin_arm64.tar.gz"
 curl -fLO "$barn_release/checksums.txt"
 shasum -a 256 -c checksums.txt --ignore-missing
 ```
@@ -106,7 +106,7 @@ To work on Barn or compile the native `Barn.app` bundle for macOS guests, see [B
 
 ## Upgrade Barn {#upgrade-barn}
 
-Upgrading from 1.0.0 to **1.1.0** preserves VM disks, SSH keys, state, and configuration under `~/.barn`. Stop running Mac VMs first, then replace the CLI, `barn-hosts-helper`, and `Barn.app` together through your installation channel. The new `-I/-A` options select images and guest architectures; existing VMs still require `recreate` to apply either change. See the [1.1.0 release notes](/blog/release/1.1.0/). For upgrades from 0.9.3 or earlier, also review the [1.0.0 upgrade notes](/blog/release/1.0.0/#upgrade).
+Upgrading from **1.1.0 to 1.2.0** preserves VM disks, SSH keys, state, and configuration under `~/.barn`. Stop running Mac VMs before replacing the CLI, helper, and `Barn.app` together. Linux inventories that omit CPU/memory now resolve to 1 vCPU / 2 GiB; explicitly set `vm_cpu: 2` and `vm_mem: 4GiB` to preserve the old defaults and inspect `barn plan`. Existing applied VMs keep their resources until a resource-changing operation is requested. See the [1.2.0 release notes](/blog/release/1.2.0/).
 
 Upgrade using the same channel you used to install Barn. On macOS with Homebrew:
 

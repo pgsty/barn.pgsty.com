@@ -7,7 +7,7 @@ date: 2026-11-11
 
 连接 Linux 客机、执行脚本、读取日志，以及发布 SSH 和 hosts 条目。
 
-选项表区分 **1.1.0**、**本地 main** 与 **工作区**，具体范围见[版本基线](/zh/docs/reference/commands/#versions)。所有命令继承[全局选项](/zh/docs/reference/commands/#global-options)。
+本参考对应 **Barn 1.2.0**；选项表区分 **1.1.0 已有选项** 与 **1.2.0 新增选项**，具体范围见[版本基线](/zh/docs/reference/commands/#versions)。所有命令继承[全局选项](/zh/docs/reference/commands/#global-options)。
 
 ## `barn ssh` {#barn-ssh}
 
@@ -78,7 +78,7 @@ barn provision [node...] [flags]
 
 通过已验证的部署 SSH 连接，将本地 Bash 脚本流式发送给所选运行中节点；未选节点时针对全部节点。脚本不会作为文件留在客机，执行记录包含脚本摘要；命令不创建或启动 VM。
 
-必须指定 `--script`，默认串行执行，整个操作默认超时一小时。此处 `--parallel 0` 无效，与开发版生命周期并发规则不同。`--sudo` 在客机使用非交互的 `sudo -n`，需确保客机用户已有权限。结构化输出可以检查各节点的执行结果与失败。
+必须指定 `--script`，默认串行执行，整个操作默认超时一小时。此处 `--parallel 0` 无效，与 1.2.0 生命周期并发规则不同。`--sudo` 在客机使用非交互的 `sudo -n`，需确保客机用户已有权限。结构化输出可以检查各节点的执行结果与失败。
 
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
@@ -127,13 +127,13 @@ barn hosts install [flags]
 
 通过摘要匹配的提权 helper，将已应用节点的名称和别名写入宿主 `/etc/hosts` 的 Barn 区块。终端先展示变更并询问；非交互或结构化模式默认只预览，显式 `--yes` 才执行。区块内容未变化时无需提权，`up` 不会自动发布此文件。
 
-未提交的工作区扩展新增 `-f pigsty.yml`，可在创建 VM 前发布清单节点及 `all.vars.vm_hosts`。每次替换整个 Barn 区块，后来不带 `-f` 执行会移除仅来自清单的服务名。v1.1.0 和本地提交 `6ab0cd5` 都没有此选项，详见[本机服务名](../../configuration/#local-hosts)。
+Barn 1.2.0 新增 `-f pigsty.yml`，可在创建 VM 前发布清单节点及 `all.vars.vm_hosts`。每次替换整个 Barn 区块，后来不带 `-f` 执行会移除仅来自清单的服务名，详见[本机服务名](../../configuration/#local-hosts)。
 
 别名：`i`。
 
 | 选项 | 含义 / 默认值 | 可用版本 |
 |---|---|---|
-| `-f, --file string` | 发布清单节点、别名与 `vm_hosts`；无需预先创建 VM（仅工作区实现） | 工作区 |
+| `-f, --file string` | 发布清单节点、别名与 `vm_hosts`；无需预先创建 VM | 1.2.0 |
 | `-y, --yes` | 确认并执行显示的计划；系统 `sudo` 仍可能要求密码 | 1.1.0 |
 {.wide .expand}
 
@@ -164,6 +164,6 @@ barn hosts uninstall --yes
 
 ## 实现依据 {#implementation}
 
-[command_root.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_root.go) · [command_access.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_access.go) · [main.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/main.go)
+[command_root.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_root.go) · [command_access.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_access.go) · [main.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/main.go)
 
-2026-11-11 额外核对的本地提交与未提交扩展见[版本基线](/zh/docs/reference/commands/#versions)。
+发布源码与相对 1.1.0 的变化见[版本基线](/zh/docs/reference/commands/#versions)。

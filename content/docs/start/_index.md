@@ -9,7 +9,7 @@ cascade:
   type: docs
 ---
 
-These guides cover **Barn 1.1.0**. The [Barn 1.1.0 release notes](/blog/release/1.1.0/) summarize its changes and the upgrade from 1.0.0. You can run both Linux labs and isolated macOS VMs on the same Apple Silicon Mac—each workflow manages its own VMs under `~/.barn`.
+These guides cover **Barn 1.2.0**. The [Barn 1.2.0 release notes](/blog/release/1.2.0/) summarize its changes and the upgrade from 1.1.0. You can run both Linux labs and isolated macOS VMs on the same Apple Silicon Mac—each workflow manages its own VMs under `~/.barn`.
 
 ## Get started {#get-started}
 
@@ -29,6 +29,6 @@ These guides cover **Barn 1.1.0**. The [Barn 1.1.0 release notes](/blog/release/
 ## Diagnostics, source builds, and cleanup {#diagnostics-source-builds-and-cleanup}
 
 - [Troubleshooting](troubleshooting/) — Runbooks for host readiness, network repairs, guest stage warnings, SSH keys, and interrupted commands.
-- [Build from Source](source-build/) — Compile the `v1.1.0` CLI, `barn-hosts-helper`, and native `Barn.app` bundle, and run contributor test gates.
+- [Build from Source](source-build/) — Compile the `v1.2.0` CLI, `barn-hosts-helper`, and native `Barn.app` bundle, and run contributor test gates.
 - [Uninstall and Clean Up](uninstall/) — Tear down Linux and macOS VMs cleanly, prune image caches, remove host networking, and uninstall Barn.
 {.cards}

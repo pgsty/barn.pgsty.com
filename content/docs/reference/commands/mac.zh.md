@@ -7,7 +7,7 @@ date: 2026-11-11
 
 管理具名原生 macOS VM、桌面访问、恢复镜像与共享基础镜像。
 
-下列选项均存在于 1.1.0 及本次核对的开发工作区。
+下列选项均存在于 1.1.0 和 1.2.0。
 
 原生 macOS VM 需要 Apple Silicon、macOS 27+ 与匹配的 `Barn.app`（宿主上的原生应用包），应由已登录桌面的普通用户运行。状态位于 `$BARN_HOME/mac`，独立于 Linux 清单。
 
@@ -384,6 +384,6 @@ barn --json mac doctor
 
 ## 实现依据 {#implementation}
 
-[command_mac.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_mac.go)
+[command_mac.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_mac.go)
 
-2026-11-11 额外核对的本地提交与未提交扩展见[版本基线](/zh/docs/reference/commands/#versions)。
+发布源码与相对 1.1.0 的变化见[版本基线](/zh/docs/reference/commands/#versions)。

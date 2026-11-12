@@ -6,7 +6,7 @@ icon: fa-solid fa-file-code
 aliases: [/docs/concepts/project-model/]
 ---
 
-This reference covers Barn 1.1.0 and explicitly marked development changes checked on 2026-11-11. Local main `6ab0cd5` defaults to 1 vCPU and 2 GiB and adds `vm_scale` and specification overrides; `vm_hosts` and `hosts install -f` are additional uncommitted working-tree changes. Released 1.1.0 defaults to 2 vCPUs and 4 GiB and has none of those additions. See the [version baseline](../commands/#versions) and check your build with `barn version` and `--help`.
+This reference covers **Barn 1.2.0**. Linux defaults are 1 vCPU and 2 GiB. To preserve the 1.1.0 defaults on upgrade, explicitly set `vm_cpu: 2` and `vm_mem: 4GiB`. See the [version baseline](../commands/#versions) and check the installed build with `barn version` and `--help`.
 
 ## Discovery {#discovery}
 
@@ -69,10 +69,10 @@ Barn reads node IPv4 keys, `nodename`, `admin_ip`, `pg_cluster`, `pg_seq`, `node
 | `vm_image` | `u24` | Image family, `:channel` reference, or `image@version` selector |
 | `vm_version` | unset | Newest numeric version matching this prefix, such as `9` or `9.7` |
 | `vm_arch` | `native` | Deployment-wide guest architecture; follows the host unless explicitly set to `amd64` or `arm64` |
-| `vm_cpu` | `2` (1.1.0), `1` (local main) | Base vCPU count; the effective count after scaling must be `1`–`256` |
-| `vm_mem` | `4096` (1.1.0), `2048` (local main) | Base memory size: bare integer in MiB, or an explicit unit string such as `8GiB` (minimum `512MiB`) |
-| `vm_scale` | `1` (local main) | Positive integer multiplying CPU and memory only |
-| `vm_hosts` | `[]` (working tree) | Extra local hosts mappings, declared only in `all.vars` |
+| `vm_cpu` | `2` (1.1.0), `1` (1.2.0) | Base vCPU count; the effective count after scaling must be `1`–`256` |
+| `vm_mem` | `4096` (1.1.0), `2048` (1.2.0) | Base memory size: bare integer in MiB, or an explicit unit string such as `8GiB` (minimum `512MiB`) |
+| `vm_scale` | `1` (1.2.0) | Positive integer multiplying CPU and memory only |
+| `vm_hosts` | `[]` (1.2.0) | Extra local hosts mappings, declared only in `all.vars` |
 | `vm_disk` | `64` | Root disk capacity: bare integer in GiB, or an explicit unit string such as `64GiB` |
 | `vm_disks` | `[{path: /data}]` | Extra data disks (defaults to one 128 GiB non-persistent disk mounted at `/data`) |
 | `vm_alias` | `[]` | Additional guest `/etc/hosts`, SSH config, and optional host `/etc/hosts` aliases |
@@ -94,7 +94,7 @@ vm_version: "9.8"
 
 If an exact version match exists in the catalog, Barn selects it; otherwise it matches dot-separated numeric prefixes and picks the highest version (`9.8` selects the latest `9.8.*` build, `9` selects the latest `9.x` release, and `9.10` sorts after `9.9`). Use `vm_version` only with a bare family name in `vm_image` (without `:channel` or `@version`).
 
-## Resource scaling in the development version {#resource-scaling}
+## Resource scaling in 1.2.0 {#resource-scaling}
 
 Resolve `vm_cpu`, `vm_mem`, and `vm_scale` independently: host variables override the deepest group, which overrides parent groups and `all.vars`. Missing values default to 1 vCPU, 2048 MiB, and a scale of 1. Multiply once after inheritance:
 
@@ -115,9 +115,9 @@ A host's `vm_scale: 1` replaces a group's `vm_scale: 3`; group and host scales d
 
 Inspect `barn plan -f pigsty.yml`, then apply CPU/memory changes with `barn resize -f pigsty.yml`. Existing deployments that omit these fields will show a resource decrease when their inventory is read by the new build. Add `vm_cpu: 2` and `vm_mem: 4096` before upgrading to preserve the previous defaults. Commands using applied state without an inventory keep the recorded resources.
 
-## Local service names in the development version {#local-hosts}
+## Local service names in 1.2.0 {#local-hosts}
 
-This section describes the uncommitted hosts extension, absent from both v1.1.0 and local main commit `6ab0cd5`.
+Inventory-based hosts publication is available in Barn 1.2.0.
 
 Declare finite service mappings in `all.vars.vm_hosts`. Barn combines them with node names and `vm_alias` when publishing from an explicit inventory:
 
@@ -143,9 +143,9 @@ These mappings affect only the host's `/etc/hosts`. Editing them does not change
 
 Pigsty's development `bin/sandbox-dns` extracts its portal, node, PostgreSQL, VIP, and MinIO names for this interface. See the [migration audit](/blog/design/pigsty-barn-migration/).
 
-## Development specification overrides {#specification-overrides}
+## Specification overrides {#specification-overrides}
 
-As of 2026-11-11, the working-tree development build accepts unified CLI and environment inputs for six specification fields. Released 1.1.0 does not support the four new resource flags or these environment variables.
+Barn 1.2.0 accepts unified CLI and environment inputs for six specification fields. Version 1.1.0 supports the image/architecture flags but not the four resource flags or these environment variables.
 
 | Inventory field | CLI | Environment variable | Default |
 |---|---|---|---|
@@ -173,7 +173,7 @@ Environment variables affect only commands accepting the corresponding specifica
 
 ## Image and architecture overrides {#image-and-architecture}
 
-The following I/A behavior applies to 1.1.0. The development build additionally reads `BARN_IMAGE/BARN_ARCH` between CLI and inventory precedence, as described above.
+The following I/A behavior applies to 1.1.0. Barn 1.2.0 additionally reads `BARN_IMAGE/BARN_ARCH` between CLI and inventory precedence, as described above.
 
 Guests default to the host architecture: `arm64` on Apple Silicon and `amd64` on Intel/AMD hosts. Another architecture is selected only when explicitly requested in the inventory or command line. Precedence is **`--arch/-A` → inventory `vm_arch` → `native` (host architecture)**. Use `-A native` to override a fixed inventory architecture and follow the host again.
 
@@ -254,6 +254,6 @@ Explicit node selectors apply only selected changes: `plan node-1`, `up node-1`,
 Barn computes a specification hash for every resolved node:
 
 - `barn up` creates newly added nodes, starts stopped nodes, and retries unfinished guest provisioning on running nodes without restarting their QEMU processes.
-- Modifying a node's CPU or memory uses `barn resize <node>` and preserves its identity and disks. The development build also supports grow-only root capacity through `resize -D`. Image, data-disk, share, or other VM definition changes require `barn recreate <node>`. Removing a node from the inventory (or setting `vm_skip: true`) reports the node as `missing` in `plan` without automatically destroying it.
+- Modifying a node's CPU or memory uses `barn resize <node>` and preserves its identity and disks. Barn 1.2.0 also supports grow-only root capacity through `resize -D`. Image, data-disk, share, or other VM definition changes require `barn recreate <node>`. Removing a node from the inventory (or setting `vm_skip: true`) reports the node as `missing` in `plan` without automatically destroying it.
 - Changing deployment-wide settings (`vm_arch`, login username, or the `/24` subnet) requires recreating the entire deployment.
 - Because `plan` and `up` resolve image channels and version prefixes against the active catalog, running `barn update` can introduce image drift even when `barn.yml` has not changed. Always keep an explicit `nodename` on each host so renaming `pg_cluster` does not turn an existing node into a `missing` old node plus a new node.

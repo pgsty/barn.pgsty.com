@@ -7,7 +7,7 @@ date: 2026-11-11
 
 检查、安装和移除 Linux 客机使用的固定 IP 网络。
 
-选项表区分 **1.1.0**、**本地 main** 与 **工作区**，具体范围见[版本基线](/zh/docs/reference/commands/#versions)。所有命令继承[全局选项](/zh/docs/reference/commands/#global-options)。
+本参考对应 **Barn 1.2.0**；选项表区分 **1.1.0 已有选项** 与 **1.2.0 新增选项**，具体范围见[版本基线](/zh/docs/reference/commands/#versions)。所有命令继承[全局选项](/zh/docs/reference/commands/#global-options)。
 
 ## `barn network status` {#barn-network-status}
 
@@ -78,6 +78,6 @@ barn network uninstall --yes
 
 ## 实现依据 {#implementation}
 
-[command_network.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_network.go)
+[command_network.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_network.go)
 
-2026-11-11 额外核对的本地提交与未提交扩展见[版本基线](/zh/docs/reference/commands/#versions)。
+发布源码与相对 1.1.0 的变化见[版本基线](/zh/docs/reference/commands/#versions)。

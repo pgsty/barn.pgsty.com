@@ -42,7 +42,7 @@ barn reload -f barn.yml       # validate inventory, stop selected nodes, and run
 
 `reload` is a controlled stop-and-boot cycle. It can add new nodes and start stopped nodes, but it refuses existing-node changes to CPU, memory, image, disks, shares, addresses, or other VM definitions before stopping anything.
 
-For CPU or memory changes, edit `vm_cpu` or `vm_mem` and run `barn resize`. When the running QEMU instance has reserved capacity, Barn hot-plugs supported increases; decreases and unsupported backends use an automatic stop/start fallback while preserving the VM identity and disks. In stable 1.1.0, `resize` does not apply image, disk, network, or share changes; use `recreate` for those. The local development build also supports [in-place root growth](../../reference/cli/#root-disk-growth); see the [version baseline](../../reference/commands/#versions).
+For CPU or memory changes, edit `vm_cpu` or `vm_mem` and run `barn resize`. Supported increases can use hotplug; decreases and unsupported backends use a stop/start fallback while preserving VM identity and disks. Barn 1.2.0 also supports [in-place root growth](../../reference/cli/#root-disk-growth) with `resize -D`. Image, data-disk, network, and share changes require `recreate`.
 
 If online resize is interrupted after hotplugging, `barn status` reports that live CPU and memory may differ from the applied configuration (`reason: resize_incomplete`). Run `barn resize NODE` again, or run `barn restart NODE` to return to the committed resources. Offline resize holds the deployment lock while stopping and updating the node.
 
@@ -91,7 +91,7 @@ Without selectors, Barn evaluates the whole inventory: CPU and memory changes us
 
 ## Concurrent commands {#concurrent-commands}
 
-For parallel node work within one command, the unreleased development version adds `--parallel/-p` with a CPU-based default; see [Lifecycle concurrency](../../reference/cli/#lifecycle-concurrency) for the supported commands and the difference from Barn 1.1.0.
+For parallel node work within one command, Barn 1.2.0 adds `--parallel/-p` with a CPU-based default; see [Lifecycle concurrency](../../reference/cli/#lifecycle-concurrency) for the supported commands and the difference from Barn 1.1.0.
 
 Mutating commands (`up`, `start`, `stop`, `restart`, `reload`, `resize`, `recreate`, `destroy`, `purge`, and `provision`) acquire the deployment lock in `BARN_HOME`, waiting up to 10 minutes (`provision --timeout` can impose a shorter deadline) if another operation is in flight. While waiting, Barn prints the lock holder's command, PID, and start time; if the wait times out, it exits with code `4` (`error: conflict`, `reason: deployment_busy`). The lock releases automatically when the holding process exits—never delete lock files manually.
 

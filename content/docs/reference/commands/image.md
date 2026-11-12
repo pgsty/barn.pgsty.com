@@ -7,7 +7,7 @@ date: 2026-11-11
 
 Refresh signed catalogs, inspect or download images, import local files, and prune caches.
 
-Availability labels distinguish **1.1.0**, **local main**, and **working tree**; see the [version baseline](/docs/reference/commands/#versions). All commands inherit the [global options](/docs/reference/commands/#global-options).
+This reference covers **Barn 1.2.0**. Option tables distinguish options also available in **1.1.0** from additions in **1.2.0**; see the [version baseline](/docs/reference/commands/#versions). All commands inherit the [global options](/docs/reference/commands/#global-options).
 
 Official repositories and HTTP sources require a trusted detached signature. An explicitly selected custom HTTPS repository or local directory can be unsigned, provided the source is exactly that repository's `catalog.json`. Any supplied signature must verify. See [catalog trust](../../images/#trust-and-verification).
 
@@ -192,6 +192,6 @@ barn image prune --repo /srv/barn --yes
 
 ## Implementation {#implementation}
 
-[command_image.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_image.go) · [images.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/images.go)
+[command_image.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_image.go) · [images.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/images.go)
 
-The [version baseline](/docs/reference/commands/#versions) records the additional local commits and uncommitted extension checked on 2026-11-11.
+The [version baseline](/docs/reference/commands/#versions) identifies the released source and the changes since 1.1.0.

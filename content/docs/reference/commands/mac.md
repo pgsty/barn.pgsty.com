@@ -406,6 +406,6 @@ barn --json mac doctor
 
 ## Implementation {#implementation}
 
-[command_mac.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_mac.go)
+[command_mac.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_mac.go)
 
-The [version baseline](/docs/reference/commands/#versions) records the additional local commits and uncommitted extension checked on 2026-11-11.
+The [version baseline](/docs/reference/commands/#versions) identifies the released source and the changes since 1.1.0.

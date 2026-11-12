@@ -4,6 +4,7 @@ linkTitle: 命令参考
 description: 逐项介绍 Barn 全部命令的语法、局部选项、默认值、使用示例与版本范围。
 weight: 5
 date: 2026-11-11
+lastmod: 2026-11-12
 icon: fa-solid fa-terminal
 no_list: true
 ---
@@ -12,18 +13,15 @@ no_list: true
 
 ## 版本基线 {#versions}
 
-**2026-11-11** 分别从正式标签 `v1.1.0` 与当前开发工作区构建 CLI，对照真实帮助输出核对：
+本参考对应 **2026-11-12** 发布的 **Barn 1.2.0**，源码为 [`90f6158`](https://github.com/pgsty/barn/tree/v1.2.0)。中英文页面均已对照 CLI 帮助核对，覆盖 57 个操作命令与 174 项局部选项。
 
-| 标记 | 源码范围 | 行为 |
+| 标记 | 可用范围 | 行为 |
 |---|---|---|
-| **1.1.0** | 已发布的 `v1.1.0`，提交 `b2cc8da`；拉取后的 `origin/main` 也指向这里 | Linux VM 默认 2 vCPU、4 GiB；支持镜像/架构选项，通过清单调整 CPU/内存 |
-| **本地 main** | `6ab0cd5`，领先 `origin/main` 三个提交 | 生命周期 `--parallel`；`--cpu/--mem/--scale/--disk` 和六个 `BARN_*` 规格覆盖；1 vCPU/2 GiB 默认值；`vm_scale`；根盘原地扩容 |
-| **工作区** | `6ab0cd5` 之上的未提交改动 | `all.vars.vm_hosts` 与 `hosts install --file/-f` |
+| **1.1.0** | 1.1.0 与 1.2.0 均支持的选项 | 1.1.0 默认 2 vCPU / 4 GiB，通过清单调整 CPU/内存 |
+| **1.2.0** | 1.2.0 新增 | 规格选项与环境变量、`vm_scale`、根盘扩容、生命周期 `--parallel`、`vm_hosts` 和 `hosts install -f`；默认规格改为 1 vCPU / 2 GiB |
 {.wide .expand}
 
-最新已发布版本仍为 [1.1.0](https://github.com/pgsty/barn/releases/tag/v1.1.0)。安装该版本或检出本次拉取到的远端 main，都不会获得本地 main 和工作区的新增功能；1.2.0 发布说明目前为草稿。用 `barn version` 和 `barn COMMAND --help` 核对已安装构建支持的接口。
-
-本地 main 包含 `158786a`（并发）、`1e24768`（规格与根盘扩容）、`6ab0cd5`（工具链及发布准备）。实现与回归依据包括 `cmd/barn/vm_inputs.go`、`cmd/barn/vm_inputs_test.go`、`cmd/barn/lifecycle_parallel_test.go`、`internal/config/resources_test.go`、`internal/private/root_resize_test.go`。工作区 hosts 扩展由 `cmd/barn/hosts_inventory_test.go`、`internal/config/inventory_test.go`、`internal/hostconfig/hostconfig_test.go` 覆盖。
+升级时如需保留旧默认值，请显式设置 `vm_cpu: 2`、`vm_mem: 4GiB`，并检查 `barn plan`。已应用 VM 的资源会保留到显式执行资源变更操作为止。用 `barn version` 和 `barn COMMAND --help` 核对已安装构建；另见[发布说明](/zh/blog/release/1.2.0/)与[发布验收](/zh/blog/design/release-1-2-0-readiness/)。
 
 ## 命令索引 {#command-index}
 

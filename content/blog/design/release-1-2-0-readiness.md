@@ -1,6 +1,6 @@
 ---
-title: "Barn 1.2.0 release readiness"
-description: "Release gates, upgrade compatibility, packaging, and physical-host acceptance for the 1.2.0 candidate."
+title: "Barn 1.2.0 release readiness and acceptance"
+description: "Release gates, upgrade compatibility, packaging, and physical-host acceptance for Barn 1.2.0."
 date: 2026-11-12
 lastmod: 2026-11-12
 weight: 76
@@ -9,9 +9,23 @@ tags: [Release, Testing, CLI]
 icon: fa-solid fa-clipboard-check
 ---
 
-**Status, 2026-11-12:** The candidate has passed source checks, catalog verification, complete snapshot packaging, and Linux/Mac runtime acceptance. Publication still requires a frozen release commit, CI on that commit, and a matching signed and notarized Mac payload. The published stable version remains [1.1.0](https://github.com/pgsty/barn/releases/tag/v1.1.0).
+**Status, 2026-11-12:** [Barn 1.2.0](https://github.com/pgsty/barn/releases/tag/v1.2.0) is published as stable/latest. Its final acceptance is recorded below; the candidate sections preserve the earlier review and its original scope.
+
+## Final release {#final-release}
+
+Tag `v1.2.0` points to `90f615804b823b4eb491101e642073dcd37a9700`. [Source/Mac CI](https://github.com/pgsty/barn/actions/runs/43121333312) and [complete packaging CI](https://github.com/pgsty/barn/actions/runs/43121333418) passed that exact commit before tagging. All 437 reviewed build inputs match the candidate manifest. The signed catalog gate passed again before formal packaging.
+
+The release used the documented local signing path because GitHub signing secrets remain unconfigured. Apple accepted notarization `165b486b-5055-4eca-a595-54bed6bdd6c1`. `make release-local` passed archive, DEB/RPM, SPDX, helper-pairing, timestamp, and package/archive checks. Downloaded CLI/helper/app bytes passed Developer ID, staple, and Gatekeeper checks. All 20 draft attachments and all 20 anonymous public downloads match the verified sizes and SHA-256 digests.
+
+The final downloaded archives passed 18 Linux/KVM operations and all 15 native Mac lifecycle phases. Additional native UI checks confirmed desktop login, two-way plain-text clipboard transfer, a closed window leaving the VM and SSH running, and normal shutdown. Isolated 1.1.0 → 1.2.0 upgrade and repeat installation passed. Both `darwin/arm64` and `linux/amd64` passed public latest and pinned installation. The [Homebrew update](https://github.com/pgsty/homebrew-infra/commit/f1b83ae) covers four platforms; real 1.1.0 → 1.2.0 upgrade, `brew test`, style, and strict online audit passed.
+
+The final Mac run retained an initial Apple HTTPS TLS timeout. The identical request subsequently returned HTTP 200; the harness resumed after rechecking both guest identities, disk sentinels, and the base digest, then completed the remaining phases. The test VM was stopped after GUI acceptance. GitHub direct-download timeouts were resolved using the hosts' existing proxies; the public downloads used no authentication. Failure logs were retained.
+
+The homepage keeps its explicitly dated 1.1.0 recording and explains the 1.2.0 default/output changes. A fresh four-node first-run recording needs free `.10–.13` addresses; existing host VMs occupied them during this release. Release identity and public-channel evidence are also listed in [Validation History](/docs/about/history/#release-1-2-0).
 
 ## Candidate identity {#candidate-identity}
+
+This table records the state at the start of preparation, before the final release commits.
 
 | Item | Reviewed state |
 |---|---|
@@ -22,13 +36,13 @@ icon: fa-solid fa-clipboard-check
 | Catalog | Revision `2026110502`, default `u24:stable` on the native architecture |
 {.wide .expand}
 
-The snapshot version follows the existing `incpatch` rule from the last tag, `v1.1.0`. Formal `1.2.0` assets must be rebuilt from the final `v1.2.0` commit. Snapshot binaries deliberately identify the modified tree as `uncommitted`.
+The snapshot version follows the existing `incpatch` rule from the last tag, `v1.1.0`. Formal `1.2.0` assets were subsequently rebuilt from the final `v1.2.0` commit. Snapshot binaries deliberately identify the modified tree as `uncommitted`.
 
 ## Issues resolved during preparation {#resolved}
 
 - The default shell selected GoReleaser 2.18.3 while the source requires 2.20.1. The validation run used the already downloaded pinned tools, and `packaging/check-toolchain.sh all` confirmed every version before packaging.
 - The changelog and release-note drafts omitted the Linux default change from 2 vCPUs / 4 GiB to 1 vCPU / 2 GiB. They now explain how to preserve the earlier defaults with explicit `vm_cpu: 2` and `vm_mem: 4GiB`. Both binaries were checked against implicit and explicit inventories.
-- The release drafts now include `all.vars.vm_hosts` and `hosts install -f`. Their implementation and tests still need to enter the release commit. The candidate's inventory-only preview was exercised before VM creation.
+- The release drafts now include `all.vars.vm_hosts` and `hosts install -f`. Their implementation and tests subsequently entered commit `ad74cc9`. The candidate's inventory-only preview was exercised before VM creation.
 - Root-level `.idea/` and the local `barn.yml` are now ignored and were retained on disk. Existing source edits and historical-document deletions were preserved.
 
 ## Completed gates {#completed-gates}
@@ -68,15 +82,15 @@ Implementation evidence is in `internal/private/root_resize.go`, `internal/priva
 
 The test root used an APFS clone of the prepared macOS 27.0 base (`26A428`). Its configuration disabled automatic host SSH integration. The 15-phase harness covered two independent VMs, guest account policy, private networks, DNS/HTTPS, remote argument and exit-code preservation, shared-folder writes, stop/start, CPU/memory reconfiguration, the two-VM host limit, recreate identity rotation, base-image immutability, repeated `up`, and destruction of one VM while preserving its peer. The survivor was stopped after the automated run.
 
-The packaged app also opened the survivor's desktop, and visual inspection confirmed automatic login to the macOS Finder desktop. The VM was then shut down normally. This check did not establish the close-window behavior or clipboard transfer. The snapshot uses ad-hoc signing; formal acceptance still needs the final Developer ID/notarized bytes and their Gatekeeper, installation, window-close, and clipboard checks.
+The packaged app also opened the survivor's desktop, and visual inspection confirmed automatic login to the macOS Finder desktop. The VM was then shut down normally. This check did not establish the close-window behavior or clipboard transfer. The snapshot used ad-hoc signing; the final Developer ID/notarized release subsequently passed Gatekeeper, installation, window-close, and clipboard checks as recorded above.
 
-## Remaining release sequence {#remaining}
+## Release execution {#remaining}
 
-1. Finalize the dated 1.2.0 changelog and English release body, then review and commit the intended source changes, including the hosts implementation and its new test; retain the intended historical-document deletions. Commit the bilingual command reference and documentation corrections separately. Check both repositories' final status and diff before publishing anything.
-2. Push the frozen source commit and require source CI and packaging CI to pass that exact revision. The remote runs checked during this review still target 1.1.0; local success does not replace this gate.
-3. Tag the approved commit that passed CI as `v1.2.0`. Re-run the online catalog gate before the formal build. Follow [the local Mac release procedure](/docs/about/mac-release/#local-release) to build a matching Developer ID signed and notarized payload, then assemble the complete release with `make release-local`.
-4. Verify first/repeated installation, upgrade, GUI/clipboard, and runtime smoke tests using the final signed assets. Upload a draft, re-download every attachment, and compare its bytes with the verified local output before publishing stable/latest.
-5. Update all four Homebrew archive URLs/checksums and publish the bilingual site after the assets are public. Switch the command-reference version baseline, defaults, status, release draft, and install examples to the released 1.2.0 facts. Verify anonymous downloads, the default installer, and Homebrew upgrade.
+1. Source changes were committed in `ad74cc9` and `90f6158`; the command reference and documentation review were separately committed in `24ff1e2`. Both repositories were pushed and their CI passed.
+2. Source and packaging CI passed `90f6158`, then `v1.2.0` was tagged and pushed.
+3. The catalog gate passed, and the [local Mac release procedure](/docs/about/mac-release/#local-release) produced matching signed/notarized assets. `make release-local` verified the complete release.
+4. Final archive acceptance and all 20 draft re-downloads passed before stable/latest publication. All 20 public downloads and both platform installers passed afterward.
+5. Homebrew and the bilingual guides were updated to 1.2.0, including default resources, command options, upgrade notes, and release evidence.
 {.steps}
 
-All six GitHub Mac signing secret names were absent when checked on 2026-11-12. The tag workflow therefore skips automatic release assembly. Two local Developer ID Application identities are available; the local signed-release path used for 1.1.0 remains the appropriate route. No keys were exported, signing secrets changed, tags created, or releases published during this review.
+This release used an existing local Developer ID identity and stored notary profile. No keys were exported or signing credentials changed.

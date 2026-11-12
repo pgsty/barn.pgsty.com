@@ -7,7 +7,7 @@ date: 2026-11-11
 
 更新签名目录、查看和下载镜像、导入本地文件以及清理缓存。
 
-选项表区分 **1.1.0**、**本地 main** 与 **工作区**，具体范围见[版本基线](/zh/docs/reference/commands/#versions)。所有命令继承[全局选项](/zh/docs/reference/commands/#global-options)。
+本参考对应 **Barn 1.2.0**；选项表区分 **1.1.0 已有选项** 与 **1.2.0 新增选项**，具体范围见[版本基线](/zh/docs/reference/commands/#versions)。所有命令继承[全局选项](/zh/docs/reference/commands/#global-options)。
 
 官方仓库和 HTTP 源必须提供受信任的分离签名。显式选择的自定义 HTTPS 仓库或本地目录可以不签名，但来源必须恰好是该仓库的 `catalog.json`；只要提供了签名，就必须验签成功。详见[目录信任规则](../../images/#trust-and-verification)。
 
@@ -192,6 +192,6 @@ barn image prune --repo /srv/barn --yes
 
 ## 实现依据 {#implementation}
 
-[command_image.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/command_image.go) · [images.go](https://github.com/pgsty/barn/blob/v1.1.0/cmd/barn/images.go)
+[command_image.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/command_image.go) · [images.go](https://github.com/pgsty/barn/blob/v1.2.0/cmd/barn/images.go)
 
-2026-11-11 额外核对的本地提交与未提交扩展见[版本基线](/zh/docs/reference/commands/#versions)。
+发布源码与相对 1.1.0 的变化见[版本基线](/zh/docs/reference/commands/#versions)。

@@ -7,7 +7,7 @@ sections:
   - cta
 
 hero:
-  eyebrow: Barn 1.1.0 · Stable · Apache-2.0
+  eyebrow: Barn 1.2.0 · Stable · Apache-2.0
   title_lines:
     - words:
         - { text: Multi-Node Linux Labs }
@@ -29,8 +29,8 @@ hero:
     - { label: Start a Linux lab, url: docs/start/tutorial/, icon: fa-solid fa-terminal, style: primary }
     - { label: Run a macOS VM, url: docs/start/macos/, icon: fa-brands fa-apple, style: ghost }
   detail:
-    label: What's new in 1.1.0
-    url: blog/release/1.1.0/
+    label: What's new in 1.2.0
+    url: blog/release/1.2.0/
 
 quickstart:
   eyebrow: Quick start
@@ -41,13 +41,15 @@ quickstart:
   facts:
     - { label: Nodes, value: '4 VMs · `10.10.10.10–13`' }
     - { label: Image, value: 'Ubuntu 24.04 · `u24:stable`' }
-    - { label: Per node, value: 2 vCPUs · 4 GiB memory }
+    - { label: Per node, value: 1 vCPU · 2 GiB memory }
     - { label: Disks, value: '64 GiB root · 128 GiB `/data`' }
   links:
     - { label: Installation options, url: docs/start/installation/ }
     - { label: Use with Pigsty, url: 'docs/start/automation/#pair-the-lab-with-pigsty' }
   demo: |-
-    {{< asciinema file="images/barn-first-run.cast" title="macOS · Homebrew → Pigsty full" rows="18" fit="both" speed="1.25" idleTimeLimit="0.7" poster="npt:0:23.63" preload="true" >}}
+    {{< asciinema file="images/barn-first-run.cast" title="Barn 1.1.0 · macOS → Pigsty full" rows="18" fit="both" speed="1.25" idleTimeLimit="0.7" poster="npt:0:23.63" preload="true" >}}
+
+    Recorded with Barn 1.1.0 on November 9. Barn 1.2.0 uses the same commands, with 1 vCPU / 2 GiB defaults and `SPEC` / `ROOT` status columns.
   body: |-
     ```bash {title="macOS · Homebrew"}
     # Installs the CLI, Barn.app, and QEMU

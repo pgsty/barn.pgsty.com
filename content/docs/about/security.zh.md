@@ -1,6 +1,6 @@
 ---
 title: 安全与信任
-description: Barn 1.1.0 的宿主权限、客机凭据、共享目录，以及应用与镜像的独立信任边界。
+description: Barn 1.2.0 的宿主权限、客机凭据、共享目录，以及应用与镜像的独立信任边界。
 weight: 25
 icon: fa-solid fa-shield-halved
 ---
@@ -60,7 +60,7 @@ Barn 将软件分发与镜像校验划分为四个彼此独立的信任机制：
 
 发布资产均从对应标签的源码构建：配齐 Mac 签名密钥时由标签工作流构建，否则走文档中的本地发布流程。发布提交必须先通过源码 CI；两条路径都要求软件包、归档、SBOM 与校验和验证通过后才能创建 GitHub Release 草稿，本地发布步骤见 [Mac 发布手册](../mac-release/)。
 
-`1.1.0` 的 `release.json` 用 `signed:false, attested:false` 描述通用发行元数据的范围：Git tag、通用校验和及发布元数据没有独立密码学签名或 attestation。目录的 Minisign 校验与 Apple Silicon 代码签名/公证仍分别适用于上表中的对象，[最终验收记录](../history/#release-1-1-0)逐项验证了这些机制。
+`1.2.0` 的 `release.json` 用 `signed:false, attested:false` 描述通用发行元数据的范围：Git tag、通用校验和及发布元数据没有独立密码学签名或 attestation。目录的 Minisign 校验与 Apple Silicon 代码签名/公证仍分别适用于上表中的对象，[最终验收记录](/zh/blog/design/release-1-2-0-readiness/)逐项验证了这些机制。
 
 两个官方镜像仓库（`https://repo.pigsty.io/barn` 与 `https://repo.pigsty.cc/barn`）无论通过默认配置还是 `--repo` 显式选中，均强制要求有效的 minisign 目录签名。通过 `--repo` 或 `BARN_REPO` 显式指定的自定义 HTTPS 仓库或本地目录仓库可以使用未签名目录，请仅添加你信任的镜像源（详见[镜像参考](../../reference/images/)）。
 

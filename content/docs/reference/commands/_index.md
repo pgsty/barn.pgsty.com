@@ -4,6 +4,7 @@ linkTitle: Commands
 description: Every Barn command with syntax, all local options, defaults, examples, and version availability.
 weight: 5
 date: 2026-11-11
+lastmod: 2026-11-12
 icon: fa-solid fa-terminal
 no_list: true
 ---
@@ -12,18 +13,15 @@ Find a command below for its arguments, complete local option table, examples, a
 
 ## Version baseline {#versions}
 
-Checked on **2026-11-11** against help output built separately from release tag `v1.1.0` and the current development checkout:
+This reference covers **Barn 1.2.0**, released on **2026-11-12** from [`90f6158`](https://github.com/pgsty/barn/tree/v1.2.0). Its 57 operation commands and 174 local option entries were checked against the CLI help output in both languages.
 
-| Label | Source | Behavior |
+| Label | Availability | Behavior |
 |---|---|---|
-| **1.1.0** | Published `v1.1.0`, commit `b2cc8da`; also the fetched `origin/main` | Default Linux VM: 2 vCPUs, 4 GiB; image/architecture flags; CPU/memory resize from the inventory |
-| **Local main** | `6ab0cd5`, three commits ahead of `origin/main` | Lifecycle `--parallel`; `--cpu/--mem/--scale/--disk` and six `BARN_*` specification overrides; 1 vCPU/2 GiB defaults; `vm_scale`; in-place root growth |
-| **Working tree** | Uncommitted changes on top of `6ab0cd5` | `all.vars.vm_hosts` and `hosts install --file/-f` |
+| **1.1.0** | Options available in both 1.1.0 and 1.2.0 | 1.1.0 used 2 vCPUs / 4 GiB by default and accepted CPU/memory resize through the inventory |
+| **1.2.0** | Added in 1.2.0 | Resource flags and environment overrides, `vm_scale`, root-disk growth, lifecycle `--parallel`, `vm_hosts`, and `hosts install -f`; defaults are now 1 vCPU / 2 GiB |
 {.wide .expand}
 
-The latest published release remains [1.1.0](https://github.com/pgsty/barn/releases/tag/v1.1.0). Local main and working-tree additions are not available merely by installing that release or checking out the fetched remote main. The 1.2.0 release notes are a draft. `barn version` and `barn COMMAND --help` identify what an installed build supports.
-
-The local-main changes were reviewed in `158786a` (concurrency), `1e24768` (specifications and root growth), and `6ab0cd5` (toolchain and release preparation). Their implementation and regression coverage include `cmd/barn/vm_inputs.go`, `cmd/barn/vm_inputs_test.go`, `cmd/barn/lifecycle_parallel_test.go`, `internal/config/resources_test.go`, and `internal/private/root_resize_test.go`. The working-tree hosts extension is covered by `cmd/barn/hosts_inventory_test.go`, `internal/config/inventory_test.go`, and `internal/hostconfig/hostconfig_test.go`.
+To preserve the previous defaults when upgrading, set `vm_cpu: 2` and `vm_mem: 4GiB` explicitly and inspect `barn plan`. Existing applied VMs keep their resources until a resource-changing operation is requested. Use `barn version` and `barn COMMAND --help` to check an installed build. See the [release notes](/blog/release/1.2.0/) and [release validation](/blog/design/release-1-2-0-readiness/).
 
 ## Command index {#command-index}
 
