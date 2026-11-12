@@ -62,6 +62,8 @@ When auditing CLI behavior or configuration examples against the `v1.2.0` source
 
 `wrangler.toml` configures Cloudflare Pages with the current supported Hugo release and `GO_VERSION=1.27.3` for both Production and Preview deployments, targeting `https://barn.pgsty.com/`.
 
+The `content/render.html` and `print/page-content.html` partial overrides preserve OINK v1.5.1's rendering behavior and use `content/literal-code.html` to wrap code in Cloudflare's [email-obfuscation exclusion comments](https://developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation/#prevent-cloudflare-from-obfuscating-email). Without these guards, the CDN mistakes image selectors such as `u24@20261017.0.1` for email addresses. Keep `minify.tdewolff.html.keepComments` enabled, review the overrides when upgrading OINK, and verify literal examples on the public site after deployment; local HTML alone cannot exercise this CDN behavior.
+
 ## Content policy
 
 Store each English page beside its Simplified Chinese counterpart as `page.md` and `page.zh.md`. Follow [STYLE_GUIDE.md](STYLE_GUIDE.md) for writing style, terminology, and OINK component usage. Place blog posts under `content/blog/article`, `content/blog/design`, or `content/blog/release`.

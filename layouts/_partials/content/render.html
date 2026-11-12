@@ -1,0 +1,6 @@
+{{- /* Keep the OINK v1.5.1 content runtime registrations. */ -}}
+{{- $content := .Content -}}
+{{- partial "code/register-rendered-ids.html" (dict "page" . "content" $content) -}}
+{{- partial "content/register-derived.html" (dict "page" . "html" $content "raw" .RawContent) -}}
+
+{{- return (partial "content/literal-code.html" $content) -}}

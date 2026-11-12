@@ -5,7 +5,7 @@ description: "Why Barn separates human-authored image policy from generated meta
 date: 2026-08-29T19:00:00+08:00
 weight: 50
 categories: [Design]
-tags: [Images, Supply Chain, catalog]
+tags: [Images, Supply Chain, Catalog]
 icon: fa-solid fa-box-archive
 lastmod: 2026-11-09
 ---

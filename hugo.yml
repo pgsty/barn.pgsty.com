@@ -270,6 +270,12 @@ markup:
     noClasses: false
     codeFences: true
 
+minify:
+  tdewolff:
+    html:
+      # Keep the Cloudflare email_off guards around literal code examples.
+      keepComments: true
+
 outputs:
   home: [HTML, RSS, markdown, LLMS]
   page: [HTML, markdown]

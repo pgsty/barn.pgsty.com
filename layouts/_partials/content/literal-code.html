@@ -1,0 +1,8 @@
+{{- /* Image selectors such as u24@20261017.0.1 are code, not email addresses.
+  Protect code spans and fenced blocks from Cloudflare Email Address Obfuscation.
+  hugo.yml keeps these documented comments when minifying HTML.
+  https://developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation/
+*/ -}}
+{{- $content := replaceRE `(<code(?:\s[^>]*)?>)` `<!--email_off-->${1}` . -}}
+{{- $content = replace $content "</code>" "</code><!--/email_off-->" -}}
+{{- return ($content | safeHTML) -}}
