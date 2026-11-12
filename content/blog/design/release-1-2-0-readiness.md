@@ -23,6 +23,8 @@ The final Mac run retained an initial Apple HTTPS TLS timeout. The identical req
 
 The homepage keeps its explicitly dated 1.1.0 recording and explains the 1.2.0 default/output changes. A fresh four-node first-run recording needs free `.10–.13` addresses; existing host VMs occupied them during this release. Release identity and public-channel evidence are also listed in [Validation History](/docs/about/history/#release-1-2-0).
 
+The 1.2.0 site update at `b9e6498` passed [site CI](https://github.com/pgsty/barn.pgsty.com/actions/runs/43125783766) and became the active Cloudflare production deployment. The production build checked 303 HTML pages; 19 public checks covered bilingual release, installation and command pages, canonical URLs, sitemaps, search indexes, robots, and a real 404. The final browser connection timed out, so visual evidence retains the earlier local spot-check scope.
+
 ## Candidate identity {#candidate-identity}
 
 This table records the state at the start of preparation, before the final release commits.
